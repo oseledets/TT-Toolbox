@@ -1,0 +1,48 @@
+16 December 2009 
+TT Toolbox 1.1 started
+Two directories: core and cross
+core will contain newest version of basic subroutines with help
+Maybe we need to fix tt_mat_to_vec stuff? (i.e. Matrix and Vector
+formats should be applicable for:
+tt_compr2
+tt_dot2
+tt_dist2
+tt_dot
+tt_dist
+tt_add
+at least)
+
+13 February 2009 
+tt_trim
+tt_squeeze
+tt_ones
+tt_eye
+tt_size
+tt_zeros
+tt_mkron
+tt_shf
+tt_lapl
+tt_transp
+nd_lapl2
+tt_exp2
+tt_mvdot
+tt_conv
+tt_ismatrix
+tt_mat_compr2
+ttm_add
+tt_merge
+Several functions now accept matrices & vectors as arguments
+tt_vec_to_diag
+tt_mvals
+tt_addbl
+tt_addvecttobl
+tt_als
+tt_blqr
+tt_mbl
+tt_bldot
+tt_mmals
+tt_addrow
+tt_elem2
+tt_mvk2
+tt_kron2
+tt_mat_full_vec

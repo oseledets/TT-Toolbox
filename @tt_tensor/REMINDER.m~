@@ -1,0 +1,6 @@
+%Two simple functions are required
+%The storage for tt_tensor is the following:
+%Dimension d
+%size vector n
+%rank vector r
+%cores, stored contigi

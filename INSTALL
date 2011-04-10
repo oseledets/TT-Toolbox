@@ -1,0 +1,7 @@
+Add to path this directory
+by 
+addpath(pwd)
+and
+core/ exp/ core/
+subdirectories
+(also addpath)
