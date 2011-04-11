@@ -4,4 +4,4 @@ addpath(pwd)
 and
 core/ exp/ core/
 subdirectories
-(also addpath)
+(also use addpath)
