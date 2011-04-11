@@ -9,7 +9,7 @@ function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P)
 %   P = I
 
 % Inner parameters
-max_full_size=2500;
+max_full_size=1000;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
@@ -344,14 +344,9 @@ for swp=1:nswp
 %             sol = gmres(@(v)(B*amg_ncycles(v,grid_data,smooth_data,5)), rhs, 50, tol, 10, [], [], sol_prev2);
 %             sol=amg_ncycles(sol,grid_data,smooth_data,5);
 %             sol = gmres(B, rhs, 50, tol, 10, [], [], sol_prev);
-            %sol = B \ rhs;
-          %  if (numel(isnan(B)> 0))
-          %    keyboard;
-          %  end
-            sol=pinv(B,1e-8)*rhs;
-%             tic;
+            sol = B \ rhs;
             res=B*sol;
-%             toc;
+
             res_true = norm(res-rhs)/norm(rhs);
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
@@ -360,6 +355,7 @@ for swp=1:nswp
             conv_factor=(res_new/res_prev);
             iB=[];
             if (res_new*(conv_factor)>eps) % we need a prec.
+                keyboard;
                 iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 %                 iB=tt_mat_compr(iB, 1e-2)
             end;
