@@ -32,9 +32,10 @@ for i=1:niter
     bt1=reshape(bt,[m,R,m]); bt1=permute(bt1,[1,3,2]); bt1=reshape(bt1,[m*m,R]);
     p=bt1'*bt1; %p matrix is ready
     %Compute the local matrix sum_{a,b} p_{ab} A^{\top}_b A_a,
-    %or the summation: \sum_{a,b,k} p(a,b) A(i,k,a)*A(j,k,b)
-    a2=reshape(a,[n*n,R]); a2=a2*p; %a2 is (i,k,b), sum over (k,b)
-    a2=reshape(a2,[n,n*R]); a3=reshape(a,[n,n*R]);
+    %it is A(k,i,b)*A(k,j,a)*p(a,b)
+    a2=reshape(a,[n*n,R]); a2=a2*p; %a2 is (k,j,b), sum over (k,b) with (k,i,b)
+    a3=reshape(a,[n,n,R]); a3=permute(a3,[2,1,3]); a3=reshape(a3,[n,n*R]);
+    a2=reshape(a2,[n,n,R]); a2=permute(a2,[2,1,3]); a2=reshape(a2,[n,n*R]);
     loc_mat=a3*a2'; %Should be valid even for complex numbers
     %For the right hand side
     %Compute the q matrix <b,v> = b is m x m x R, V is m x m x rr
@@ -48,16 +49,17 @@ for i=1:niter
     a2=reshape(a,[n,n*R]);
     rhs=u2*a2';
     x= loc_mat \ rhs;
-    %norm(tt_matrix(mat)*kron(tt_matrix(x,1e-10),tt_matrix(y,1e-10))-tt_matrix(rhs1))
-     %Iterate over y
+    %cond(loc_mat)
+    %Iterate over y
     at=a1*x;
     %bt is n*R*n, scalar product of 
     at1=reshape(at,[n,R,n]); at1=permute(at1,[1,3,2]); at1=reshape(at1,[n*n,R]);
     p=at1'*at1; %p matrix is ready
     %Compute the local matrix sum_{a,b} p_{ab} A^{\top}_b A_a,
     %or the summation: \sum_{a,b,k} p(a,b) A(i,k,a)*A(j,k,b)
-    b2=reshape(b,[m*m,R]); b2=b2*p; %a2 is (i,k,b), sum over (k,b)
-    b2=reshape(b2,[m,m*R]); b3=reshape(b,[m,m*R]);
+    b2=reshape(b,[m*m,R]); b2=b2*p; %a2 is (k,j,b), sum over (k,b) with (k,i,b)
+    b3=reshape(b,[m,m,R]); b3=permute(b3,[2,1,3]); b3=reshape(b3,[m,m*R]);
+    b2=reshape(b2,[m,m,R]); b2=permute(b2,[2,1,3]); b2=reshape(b2,[m,m*R]);
     loc_mat=b3*b2'; %Should be valid even for complex numbers
     %For the right hand side
     %Compute the q matrix <b,v> = b is m x m x R, V is m x m x rr
@@ -71,6 +73,8 @@ for i=1:niter
     b2=reshape(b,[m,m*R]);
     rhs=v2*b2';
     y= loc_mat \ rhs;
+    %    norm(tt_matrix(mat)*kron(tt_matrix(x,1e-10),tt_matrix(y,1e-10))-tt_matrix(rhs1))
+    %keyboard;
     %norm(tt_matrix(mat)*kron(tt_matrix(x,1e-10),tt_matrix(y,1e-10))-tt_mat
     %rix(rhs1))
 end
