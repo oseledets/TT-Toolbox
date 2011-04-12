@@ -14,8 +14,14 @@ end
 loc_slv=10;
 m0=tt_matrix(mat);
 nrm=norm(rhs);
+
 rhs1=rhs-m0*sol;
-sol1=zeros(size(sol));
+if ( norm ( rhs1 ) > norm (rhs ) )
+  sol1=zeros(size(sol));
+  rhs1=rhs;
+else
+  sol1=sol;    
+end
 i=1;
 er=2*eps*nrm;
 m=size(mat{2},1);
@@ -25,6 +31,7 @@ while ( i < niter && er > eps*nrm )
    sol1=sol1+kron(y,x);
    er=norm(rhs1); 
    fprintf('i=%d, er=%3.2e \n',i,er/nrm);
+   %keyboard;
    i=i+1;
    
 end

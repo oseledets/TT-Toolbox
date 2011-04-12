@@ -329,7 +329,7 @@ for swp=1:nswp
         else
             %res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             %sol_new = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
-            sol = als_solve2(B,rhs,tol,sol_prev,100);
+            sol = als_solve3(B,rhs,tol,sol_prev,100);
             res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
 %             toc;
             res_true = norm(res-rhs)/norm(rhs);
