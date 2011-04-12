@@ -355,7 +355,7 @@ for swp=1:nswp
             conv_factor=(res_new/res_prev);
             iB=[];
             if (res_new*(conv_factor)>eps) % we need a prec.
-                keyboard;
+               % keyboard;
                 iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 %                 iB=tt_mat_compr(iB, 1e-2)
             end;

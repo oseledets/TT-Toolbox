@@ -315,25 +315,34 @@ for swp=1:nswp
 %             res_true = norm(bfun3(B, B2, sol, rx1, m1, m2, rx3, rz1, n1, n2, rz3, ra2, 'B')-rhs)/norm(rhs);
 %         end;
         if (strcmp(MatVec,'full'))
-%             grid_data=amg_grids_setup(B);
-%             smooth_params=amg_smoother_params(grid_data);
-%             smooth_data=amg_smoother_setup(grid_data, smooth_params);
-%             sol_prev2=B*sol_prev;
-%             sol = gmres(@(v)(B*amg_ncycles(v,grid_data,smooth_data,5)), rhs, 50, tol, 10, [], [], sol_prev2);
-%             sol=amg_ncycles(sol,grid_data,smooth_data,5);
-%             sol = gmres(B, rhs, 50, tol, 10, [], [], sol_prev);
+
             sol = B \ rhs;
             res=B*sol;
 
             res_true = norm(res-rhs)/norm(rhs);
         else
+             sol=sol_prev;
             %res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             %sol_new = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
-            sol = als_solve3(B,rhs,tol,sol_prev,100);
-            res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+           res_true=2*tol;
+           maxit=10;
+           q=1;
+         %  while (res_true > tol && q <= maxit ) 
+            %sol = als_solve2(B,rhs,tol,sol,100);
+            
+            %keyboard;
+            %do some more gmres
+            %sol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 10, tol, 1, [], [], sol);
+           sol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 10, tol, 1, @(x) als_solve2(B,x,tol,[],100), [], sol);
+
+            
+                        res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
 %             toc;
             res_true = norm(res-rhs)/norm(rhs);
-          %  keyboard;
+          %   q=q+1;
+             
+         %    end
+
         end;
         
         sol=reshape(sol,[rxm1*m1,m2*rxm3]);
