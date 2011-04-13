@@ -1,5 +1,5 @@
-function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P)
-% function [x]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P])
+function [x]=dmrg_solve3(A, y, x0, eps, tol, rmax, nswp, P)
+% function [x]=dmrg_solve3(A, y, [x0], eps, [tol], [rmax], [nswp], [P])
 % Solves the system P(k,n)*A(n,m)*x(m)=P(k,n)*y(n)
 % Default values:
 %   x0 = random rank-2
