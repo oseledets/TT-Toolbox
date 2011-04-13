@@ -30,7 +30,7 @@ while ( i < niter && er > eps*nrm )
    [x,y]=als_solve(mat,rhs1,randn(m,1),loc_slv); rhs1=rhs1-(m0*kron(y,x)); 
    sol1=sol1+kron(y,x);
    er=norm(rhs1); 
-   fprintf('i=%d, er=%3.2e \n',i,er/nrm);
+   %fprintf('i=%d, er=%3.2e \n',i,er/nrm);
    %keyboard;
    i=i+1;
    

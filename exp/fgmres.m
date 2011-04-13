@@ -1,7 +1,7 @@
-function [sol,res,its] = fgmres (A,PRE,precfun,rhs,sol,im,maxits,tolIts) 
+function [sol,res,its] = fgmres (A,precfun,rhs,sol,im,maxits,tolIts) 
 %-----------------------------------------------------------------------
 %
-% function [sol,res,its] = fgmres (A,PRE,rhs,sol) 
+% function [sol,res,its] = fgmres (A,rhs,sol,im,maxits,tolIts) 
 % restarted gmres with Krylov subspace of dim = im.  
 % NOTE: this is actually fllexibe (FGMRES) -- allows
 % variations in preconditioner 
@@ -40,7 +40,7 @@ function [sol,res,its] = fgmres (A,PRE,precfun,rhs,sol,im,maxits,tolIts)
       i=i+1  ;
       its = its + 1  ;
       i1 = i + 1 ; 
-      z = feval(precfun,PRE,vv(:,i));
+      z = feval(precfun,vv(:,i));
       Z(:,i) = z; 
 %%                 modified GS  ;
       vv(1:n,i1) = A*z; 
