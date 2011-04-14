@@ -99,4 +99,16 @@ t.r=r;
 t.ps=ps;
 t.core=core;
 end
+
+% From a simple tt_tensor struct without class definition
+if (nargin == 1) && isa(varargin{1}, 'struct')
+    t.d    = varargin{1}.d;
+    t.r    = varargin{1}.r;
+    t.n    = varargin{1}.n;
+    t.core = varargin{1}.core;                    % empty tensor
+    t.ps   = cumsum([1;t.n.*t.r(1:t.d).*t.r(2:t.d+1)]);
+    t = class(t, 'tt_tensor');      
+    return;
+end;
+
 return;

@@ -5,7 +5,7 @@ function t = subsasgn(t,s,b)
              case 'n'
                 t.n=b;
              case 'm'
-                t.r=m;
+                t.m=b;
              case 'r'
                 t.tt.r=b;
              case 'core'

@@ -87,4 +87,16 @@ if ( nargin == 3 && isa(varargin{1},'tt_tensor') && isa(varargin{2},'double') &&
     t.n=n;
     t.m=m;
 end
+
+% From a simple tt_matrix struct without class definition
+if (nargin == 1) && isa(varargin{1}, 'struct')
+    
+    t.tt=tt_tensor(varargin{1}.tt);
+    t.n=varargin{1}.n; %n-dimensions
+    t.m=varargin{1}.m; %m-dimensions
+    t = class(t, 'tt_matrix');
+ 
+    return;
+end;
+
 return;
