@@ -24,7 +24,6 @@ y=x;
 %y=tt_mv(a,x);
 %y=tt_random(tt_size(x),size(x,1),2);
 ph=cell(d,1);
-yold=[];
 %ph will be rx * ra * ry 
 swp=1;
 not_converged=true;

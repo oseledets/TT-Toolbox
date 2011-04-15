@@ -48,6 +48,15 @@ for swp=1:nswp
     % 1-to-d orthogonalization
     rvx = 1; rnewx=1; phAold=1; phyold=1;
 %     rvz = 1; rnewz=1;
+      x0=tt_random(tt_size(x),size(x,1),2);
+      %Warning: bydlocode starts
+x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+
+      x=tt_add(x,x0); %This should work!
+     
+      x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
+      %bydlocode ends
+
     for i=1:d-1
         core = x{i};
         n1 = size(core,1); rx1 = size(core,2); rx2 = size(core,3);
