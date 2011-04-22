@@ -8,6 +8,8 @@ function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P)
 %   nswp=1
 %   P = I
 
+ 
+
 % Inner parameters
 max_full_size=1000;
 prec_compr=1e-3;
@@ -15,7 +17,6 @@ prec_tol=1e-1;
 prec_iters=15;
 gmres_iters=20;
 
-d=size(A,1);
 
 if ((nargin<7)||(isempty(nswp)))
     nswp=1;
@@ -26,12 +27,31 @@ end;
 if ((nargin<5)||(isempty(tol)))
     tol=eps;
 end;
-if ((nargin<8)||(isempty(P)))
-    P = tt_eye(tt_size(y), d);
-end;
 if ((nargin<3)||(isempty(x0)))
     x0=tt_random(tt_size(y), d, 2);
 end;
+
+
+
+if ( isa(A,'tt_matrix') )
+  A=core(A);
+end
+if ( nargin == 8  && isa(P,'tt_matrix') )
+  P=core(P);
+end
+if ( isa(x0,'tt_tensor') )
+  x0=core(x0);
+end
+if ( isa(y,'tt_tensor') )
+  y=core(y);
+end
+
+
+d=size(A,1);
+if ((nargin<8)||(isempty(P)))
+    P = tt_eye(tt_size(y), d);
+end;
+
 
 x=x0;
 
@@ -58,23 +78,23 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
       %bydlocode ends
 
     for i=1:d-1
-        core = x{i};
-        n1 = size(core,1); rx1 = size(core,2); rx2 = size(core,3);
-        core = reshape(permute(core, [2 1 3]), rx1, n1*rx2);
-        core = rvx*core; % size rnew,n1,rx2
+        cre = x{i};
+        n1 = size(cre,1); rx1 = size(cre,2); rx2 = size(cre,3);
+        cre = reshape(permute(cre, [2 1 3]), rx1, n1*rx2);
+        cre = rvx*cre; % size rnew,n1,rx2
         rx1=rnewx;
-        core = reshape(core, rx1*n1, rx2);
-        [q,rvx]=qr(core,0); % size rx1*n1,r2new - r2new,rx2
+        cre = reshape(cre, rx1*n1, rx2);
+        [q,rvx]=qr(cre,0); % size rx1*n1,r2new - r2new,rx2
         rnewx = min(rx1*n1, rx2);
         x{i}=permute(reshape(q, rx1, n1, rnewx), [2 1 3]);
         
-%         core = z{i};
-%         n1 = size(core,1); rz1 = size(core,2); rz2 = size(core,3);
-%         core = reshape(permute(core, [2 1 3]), rz1, n1*rz2);
-%         core = rvz*core; % size rnew,n1,rx2
+%         cre = z{i};
+%         n1 = size(cre,1); rz1 = size(cre,2); rz2 = size(cre,3);
+%         cre = reshape(permute(cre, [2 1 3]), rz1, n1*rz2);
+%         cre = rvz*cre; % size rnew,n1,rx2
 %         rz1=rnewz;
-%         core = reshape(core, rz1*n1, rz2);
-%         [q,rvz]=qr(core,0); % size rx1*n1,r2new - r2new,rx2
+%         cre = reshape(cre, rz1*n1, rz2);
+%         [q,rvz]=qr(cre,0); % size rx1*n1,r2new - r2new,rx2
 %         rnewz = min(rz1*n1, rz2);
 %         z{i}=permute(reshape(q, rz1, n1, rnewz), [2 1 3]);        
         
@@ -146,17 +166,17 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
         phyold=permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);
         phy{i}=phyold;
     end;
-    % convolve rv with the last core
-    core = x{d};
-    n1 = size(core,1); rx1 = size(core,2); rx2 = size(core,3);
-    core = reshape(permute(core, [2 1 3]), rx1, n1*rx2);
-    core = rvx*core; % size rnew,n1,rx2
-    x{d}=permute(reshape(core, rnewx, n1, rx2), [2 1 3]);
-%     core = z{d};
-%     n1 = size(core,1); rz1 = size(core,2); rz2 = size(core,3);
-%     core = reshape(permute(core, [2 1 3]), rz1, n1*rz2);
-%     core = rvz*core; % size rnew,n1,rx2
-%     z{d}=permute(reshape(core, rnewz, n1, rz2), [2 1 3]);    
+    % convolve rv with the last cre
+    cre = x{d};
+    n1 = size(cre,1); rx1 = size(cre,2); rx2 = size(cre,3);
+    cre = reshape(permute(cre, [2 1 3]), rx1, n1*rx2);
+    cre = rvx*cre; % size rnew,n1,rx2
+    x{d}=permute(reshape(cre, rnewx, n1, rx2), [2 1 3]);
+%     cre = z{d};
+%     n1 = size(cre,1); rz1 = size(cre,2); rz2 = size(cre,3);
+%     cre = reshape(permute(cre, [2 1 3]), rz1, n1*rz2);
+%     cre = rvz*cre; % size rnew,n1,rx2
+%     z{d}=permute(reshape(cre, rnewz, n1, rz2), [2 1 3]);    
     
     % Now, start the d-to-1 DMRG iteration
     phAold=1; phyold=1;
@@ -419,17 +439,17 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 %         rx2=r;
         rxm2=r; rxn2=r;
 %         % Orthogonalize Z
-%         core = z{i};
-%         n2 = size(core,1); rz2 = size(core,2); rz3 = size(core,3);
-%         core = reshape(permute(core, [1 3 2]), n2*rz3, rz2);
-%         [q,rvz]=qr(core,0); % size n2,rz3,rz2new - rz2new,rz2
+%         cre = z{i};
+%         n2 = size(cre,1); rz2 = size(cre,2); rz3 = size(cre,3);
+%         cre = reshape(permute(cre, [1 3 2]), n2*rz3, rz2);
+%         [q,rvz]=qr(cre,0); % size n2,rz3,rz2new - rz2new,rz2
 %         rnewz = min(n2*rz3, rz2);
 %         z{i}=permute(reshape(q, n2, rz3, rnewz), [1 3 2]);
-%         core = z{i-1};
-%         n1 = size(core,1); rz1 = size(core,2); rz2 = size(core,3); 
-%         core = reshape(core, n1*rz1, rz2);
-%         core = core*(rvz.'); % size n1*rz1*rnewz
-%         z{i-1}=reshape(core, n1, rz1, rnewz);
+%         cre = z{i-1};
+%         n1 = size(cre,1); rz1 = size(cre,2); rz2 = size(cre,3); 
+%         cre = reshape(cre, n1*rz1, rz2);
+%         cre = cre*(rvz.'); % size n1*rz1*rnewz
+%         z{i-1}=reshape(cre, n1, rz1, rnewz);
 %         rz2 = rnewz;
         
         % update phi

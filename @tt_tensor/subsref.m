@@ -35,16 +35,16 @@ switch s(1).type
       cr1=zeros(ps1(d+1)-1,1);
       for i=1:d
          ind=pp{i}; 
-         core=cr(ps(i):ps(i+1)-1);
-         core=reshape(core,[r(i),n(i),r(i+1)]);
-         core=core(:,ind,:);
-         cr1(ps1(i):ps1(i+1)-1)=core(:);          
+         crx=cr(ps(i):ps(i+1)-1);
+         crx=reshape(crx,[r(i),n(i),r(i+1)]);
+         crx=crx(:,ind,:);
+         cr1(ps1(i):ps1(i+1)-1)=crx(:);          
       end
       if ( prod(n0) == 1 ) %single element
          v=1;
          for i=1:d
-            core=cr1(ps1(i):ps1(i+1)-1); core=reshape(core,[r(i),r(i+1)]);
-            v=v*core;
+            crx=cr1(ps1(i):ps1(i+1)-1); crx=reshape(crx,[r(i),r(i+1)]);
+            v=v*crx;
          end
          elem=v;
       else
@@ -68,6 +68,16 @@ switch s(1).type
              otherwise
                  error(['No field ', s.subs, ' is here.']);
           end
+    case '{}'
+        %Return the core in the old format
+        pp=s.subs;
+        mn=numel(pp);
+        if ( mn > 1 )
+          error('Invalid number of cores asked');
+        end
+        elem=core(tt,pp{1});
+        elem=permute(elem,[2,1,3]);
+        
     otherwise
         error('Invalid subsref.');
 end
