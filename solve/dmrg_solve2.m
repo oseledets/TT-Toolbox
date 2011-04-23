@@ -293,10 +293,10 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
         B2 = permute(B2, [5 1 3 2 6 4]);
         B2 = reshape(B2, k2*rxn3*m2*rxm3, rp2*ra2);
         % Now, compress inner rank rp2*ra2
+        %Modify it by random noise, since sometime MATLAB QR
+        %fails
+        B2=B2+max(abs(B2(:)))*randn(size(B2))*1e-16;
         [Q,R]=qr(B2,0);
-%        if (numel(find(isnan(Q)))>0)
-%          keyboard;
-%        end
 
         rnew = min(k2*rxn3*m2*rxm3, rp2*ra2);
         B2 = reshape(Q, k2*rxn3*m2*rxm3, rnew);
