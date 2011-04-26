@@ -295,21 +295,21 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
         % Now, compress inner rank rp2*ra2
         %Modify it by random noise, since sometime MATLAB QR
         %fails
-        B2=B2+max(abs(B2(:)))*randn(size(B2))*1e-16;
-        [Q,R]=qr(B2,0);
-
-        rnew = min(k2*rxn3*m2*rxm3, rp2*ra2);
-        B2 = reshape(Q, k2*rxn3*m2*rxm3, rnew);
-        B = B*(R.'); % size rxn1*rxm1*k1*m1*rnew
-   
-        B = reshape(B, rxn1*k1*rxm1*m1, rnew);
-        [U,S,V]=svd(B, 'econ');
-        S = diag(S);
-        rB = my_chop2(S, eps*norm(S));
-        B = U(:,1:rB);
-        V = V(:,1:rB)*diag(S(1:rB)); % size rnew*rB        
-        B2 = B2*V; % size k2*rxn3*m2*rxm3*rB        
-%         rB=rp2*ra2;
+%         B2=B2+max(abs(B2(:)))*randn(size(B2))*1e-16;
+%         [Q,R]=qr(B2,0);
+% 
+%         rnew = min(k2*rxn3*m2*rxm3, rp2*ra2);
+%         B2 = reshape(Q, k2*rxn3*m2*rxm3, rnew);
+%         B = B*(R.'); % size rxn1*rxm1*k1*m1*rnew
+%    
+%         B = reshape(B, rxn1*k1*rxm1*m1, rnew);
+%         [U,S,V]=svd(B, 'econ');
+%         S = diag(S);
+%         rB = my_chop2(S, eps*norm(S));
+%         B = U(:,1:rB);
+%         V = V(:,1:rB)*diag(S(1:rB)); % size rnew*rB        
+%         B2 = B2*V; % size k2*rxn3*m2*rxm3*rB        
+        rB=rp2*ra2;
         MatVec='bfun2';
         if ((rB>max(rxn1, rxn3))||(rxn1*k1*k2*rxn3<max_full_size))
             MatVec='full';
