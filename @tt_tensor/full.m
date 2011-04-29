@@ -1,4 +1,4 @@
-function [a] = full(tt)
+function [a] = full(tt, sizes)
 %[A]=FULL(TT)
 
 d=tt.d; n=tt.n; ps=tt.ps; core=tt.core; r=tt.r;
@@ -10,5 +10,9 @@ for i=1:d
   a=a*cr;
 end
 a=reshape(a,n');
+
+if (nargin>1)&&(~isempty(sizes))
+    a = reshape(a, sizes);
+end;
 
 return;

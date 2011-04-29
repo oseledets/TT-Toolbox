@@ -111,4 +111,21 @@ if (nargin == 1) && isa(varargin{1}, 'struct')
     return;
 end;
 
+% From a SDV file
+if (nargin == 1) && isa(varargin{1}, 'char')
+    [d,r,n,core] = tt_read(varargin{1});
+    
+    if (d<1)
+        fprintf('tt_read reported d=%d\n', d);
+        return;
+    end;
+    
+    t.d = d;
+    t.r = r;
+    t.n = n;
+    t.core = core;
+    t.ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
+    t = class(t, 'tt_tensor');
+end;
+
 return;

@@ -32,18 +32,22 @@ if ((nargin<3)||(isempty(x0)))
 end;
 
 
-
+input_is_tt_tensor = 0;
 if ( isa(A,'tt_matrix') )
   A=core(A);
+  input_is_tt_tensor = 1;
 end
 if ( nargin == 8  && isa(P,'tt_matrix') )
   P=core(P);
+  input_is_tt_tensor = 1;
 end
 if ( isa(x0,'tt_tensor') )
   x0=core(x0);
+  input_is_tt_tensor = 1;
 end
 if ( isa(y,'tt_tensor') )
   y=core(y);
+  input_is_tt_tensor = 1;
 end
 
 
@@ -518,6 +522,10 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 end;
 
 x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+
+if (input_is_tt_tensor)
+  x=tt_tensor(x);
+end
 
 end
 
