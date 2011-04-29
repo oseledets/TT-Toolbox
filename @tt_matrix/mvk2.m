@@ -3,18 +3,24 @@ function [y]=mvk2(a,x,eps,nswp,z,rmax)
 %Matrix-by-vector product of a TT-matrix A, by TT-tensor X,
 %with accuracy EPS, number of sweeps NSWP and initial approximation Y
 %Matrix a is n(i) x m(i), thus x is m(i) and y is n(i)
-%Would be replaced by (z  + beta*A*x)
 n=a.n;
 m=a.m;
 att=a.tt;
 corea=att.core;
 psa=att.ps;
 ra=att.r;
-y=z;
 d=att.d;
+if ( nargin <=4 || isempty(nswp) )
+  nswp = 50;
+end
+if ( nargin <=4  || isempty(z) )
+  z=x;
+end
 if ( nargin <= 5 || isempty(rmax) )
    rmax=1000;
 end
+y=z;
+
 %Warmup is to orthogonalize Y from right-to-left and compute psi-matrices
 %for Ax
 psi=cell(d+1,1); %Psi-matrices 
@@ -191,7 +197,9 @@ y.ps=psy;
 swp=swp+1;
 %fprintf('er=%3.2e \n',ermax);
 end
-%end
+if ( swp == nswp ) 
+  fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d\n', swp); 
+end%end
 %p1=tt_mvdot(core(a),core(x),y0);
 %p2=dot(y,tt_tensor(y0));
 %abs(p1-p2)/abs(p1)
