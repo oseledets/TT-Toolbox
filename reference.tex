@@ -38,8 +38,8 @@
 %\font\otimesfont=xccsy6 
 %\def\o{\mathbin{\raise1pt\hbox{\otimesfont\char'12}}}
 
-\date{January-February 2011}
-\title{TT-toolbox 2.0: Fast multidimensional array operations in TT format }
+\date{May 2011}
+\title{TT-toolbox 2.1: Fast multidimensional array operations in TT format }
 \author{I.V. Oseledets}
 
 \begin{document}
@@ -197,11 +197,9 @@ To check accuracy, overloaded functions $\texttt{minus}$ and $\texttt{norm}$ can
 \begin{lstlisting}
 >> norm(w-v)/norm(w)
 ans =
-   1.4258e-08
+   1.4258e-14
 \end{lstlisting}
-The error is only of order of square root of machine precision, since norm is computed via
-scalar products. This will be fixed in future releases of the Toolbox. One can also check
-particular elements of the tensors $w$ and $v$. This can be done either via direct indexing:
+One can also check particular elements of the tensors $w$ and $v$. This can be done either via direct indexing:
 \begin{lstlisting}
 >> em1=w(1,1,2,1,1,1,2)
 em1 =
