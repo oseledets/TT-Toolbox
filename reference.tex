@@ -400,9 +400,6 @@ using cross-DMRG method.
 \end{enumerate}`
 Note, that these routines are only efficient for small mode sizes, i.e. for the QTT case ($n=2$ or 
 sometimes $m=4$). There are several other subroutines in the subdirectory $\texttt{exp}$, you can try them out!
-Also, the most brave ones can try one cross approximation algorithm based on element evaluation, contained
-in the subdirectory $\texttt{cross}$. However, right now they are not as fast as they can be, due to 
-MATLAB indexing (well, they are fast, but not as fast as I think they should be). 
 
 As an example, consider computation of the QTT-approximation of $\sqrt{x}$ defined on $[0,1]$ on a very fine grid, one can use the 
 following code:
