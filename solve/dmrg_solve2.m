@@ -5,21 +5,24 @@ function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P)
 %   x0 = random rank-2
 %   tol = eps
 %   rmax=1000
-%   nswp=1
+%   nswp=15
 %   P = I
 
  
 
 % Inner parameters
-max_full_size=1000;
+max_full_size=100;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
 gmres_iters=20;
-
-
+verb=false;
+small_verb=true;
+use_self_prec=false;
+nswp_def=10;
+nrestart=1;
 if ((nargin<7)||(isempty(nswp)))
-    nswp=1;
+    nswp=nswp_def;
 end;
 if ((nargin<6)||(isempty(rmax)))
     rmax=1000;
@@ -75,6 +78,9 @@ for swp=1:nswp
       x0=tt_random(tt_size(x),size(x,1),2);
       %Warning: bydlocode starts
 x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+     if ( small_verb ) 
+       fprintf('sweep=%d/%d erank=%3.1f\n',swp,nswp,erank(tt_tensor(x)));
+     end
 
       x=tt_add(x,x0); %This should work!
      
@@ -383,11 +389,11 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
             res_true = norm(res-rhs)/norm(rhs);
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            sol_new = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
+            [sol_new,dmp] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
             res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             conv_factor=(res_new/res_prev);
             iB=[];
-            if (res_new*(conv_factor)>eps) % we need a prec.
+            if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
                % keyboard;
                 iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 %                 iB=tt_mat_compr(iB, 1e-2)
@@ -401,12 +407,12 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 %                 resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
 %                 dsol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, 50, tol/res_new, 20);
 %                 sol = sol_new+dsol;                
-                sol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, gmres_iters, [], [], sol_new);
+                [sol,dmp] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, gmres_iters, [], [], sol_new);
             else
 %                 sol_prev2=bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
                 resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
 %                 sol_prev2=zeros(rxm1*m1*m2*rxm3, 1);
-                dsol = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, 50, tol/res_new, gmres_iters);
+                [dsol,dmp] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
                 dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);                
                 sol = sol_new+dsol;
             end;
@@ -431,7 +437,9 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
                 resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
 %                 resid = norm(bfun3(B, B2, sol, rx1, m1, m2, rx3, rz1, n1, n2, rz3, ra2, 'B')-rhs)/norm(rhs);
             end;
+            if ( verb )
             fprintf('sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
+            end
             if ((resid<max(res_true*1.2, eps)) )
                 break;
             end;
@@ -515,8 +523,6 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
         phyold = phyold*x2; % size rp2*ry2*rxn2
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]); 
         
-%         mesh(reshape(tc_to_full(x), 1024*[1,1]));
-%         pause(0.5);
     end;
     
 end;
