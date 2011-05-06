@@ -14,7 +14,8 @@ function [mat]=nd_to_full(tt)
 %ivan.oseledets@gmail.com
 %---------------------------
 d=size(tt,1);
-arr=tt_to_full(tt);
+ttm = tt_mat_to_vec(tt);
+arr=tt_to_full(ttm);
 sz=2*ones(1,d*2);
 arr=reshape(arr,sz);
 prm=zeros(1,d*2);

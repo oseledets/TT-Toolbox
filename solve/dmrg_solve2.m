@@ -15,7 +15,7 @@ max_full_size=1000;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
-gmres_iters=20;
+gmres_iters=5;
 
 
 if ((nargin<7)||(isempty(nswp)))
