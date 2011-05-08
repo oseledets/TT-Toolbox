@@ -1,0 +1,17 @@
+These .mat files contain matrices and right-hand sides
+for the examples from the article 
+
+S. V. Dolgov and I. V. Oseledets
+``Solution of linear systems and matrix inversion in the TT-format''
+Max Planck Institute for Mathematics in Sciences Preprint 2011/19
+submitted to SISC.
+
+Each file correspond to a particular example in the paper.
+Each file contains:
+Matrix of the system A as a TT-matrix
+Right-hand side RHS as a TT-tensor
+Computed approximate solution X also as the TT-tensor
+
+You can check that AX = RHS
+by evaluating norm(A*x-rhs)/norm(rhs) (requires TT-Toolbox version >= 2.0)
+

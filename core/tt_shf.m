@@ -1,6 +1,6 @@
 function [tt]=tt_shf(d)
 %[TT]=TT_SHF(D)
-%Compute Lower shift matrix of size 2^D x 2^D in TT format
+%Compute Upper shift matrix of size 2^D x 2^D in TT format
 %
 %
 % TT Toolbox 1.1, 2009-2010

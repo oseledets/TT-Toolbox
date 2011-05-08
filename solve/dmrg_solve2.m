@@ -21,6 +21,9 @@ small_verb=true;
 use_self_prec=true;
 nswp_def=10;
 nrestart=50;
+gmres_iters=5;
+
+
 if ((nargin<7)||(isempty(nswp)))
     nswp=nswp_def;
 end;
