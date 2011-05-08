@@ -5,8 +5,8 @@ function [a]=times(b,c,varargin)
 %If optional parameter EPS is specified, use Krylov method
 if (nargin == 2 )
     %Put zaglushka in it
-    %a=tt_tensor(tt_hdm(core(b),core(c)));
-    %return
+%     a=tt_tensor(tt_hdm(core(b),core(c)));
+%     return
     %Replace zaglushka by a code
     d=b.d; n=b.n; crb=b.core; crc=c.core; rb=b.r; rc=c.r;
     psb=b.ps; psc=c.ps;

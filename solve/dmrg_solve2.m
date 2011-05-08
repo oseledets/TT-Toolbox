@@ -18,9 +18,9 @@ prec_iters=15;
 gmres_iters=20;
 verb=false;
 small_verb=true;
-use_self_prec=false;
+use_self_prec=true;
 nswp_def=10;
-nrestart=1;
+nrestart=50;
 if ((nargin<7)||(isempty(nswp)))
     nswp=nswp_def;
 end;
