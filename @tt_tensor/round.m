@@ -1,5 +1,5 @@
-function [tt]=round2(tt,varargin)
-%[TT]=ROUND2(TT,EPS)
+function [tt]=round(tt,varargin)
+%[TT]=ROUND(TT,EPS)
 %Approximate TT-tensor with relative accuracy EPS
 %[TT]=ROUND(TT,EPS,RMAX)
 %Approximate TT-tensor with relative accuracy EPS and maximal rank rmax
