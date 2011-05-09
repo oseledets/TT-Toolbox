@@ -173,12 +173,14 @@ function [blockVectorX,lambda,varargout] = ...
 
 % Check if we are in MATLAB or Octave.  ver('MATLAB') will return an empty
 % struct if we are in Octave. Used below to suppress the graphics. 
-version=ver('MATLAB');
-if all(size(version)==0)
-    matlabFlag=0;
-else
-    matlabFlag=1;
-end
+% version=ver('MATLAB');
+% if all(size(version)==0)
+%     matlabFlag=0;
+% else
+%     matlabFlag=1;
+% end
+matlabFlag=1;
+
 
 % constants
 
@@ -213,7 +215,7 @@ if n < 6
         'The code does not work for matrices of small sizes');
 end
 
-if ~isa(operatorA, 'function_handle')
+if ischar(operatorA)
     nA = size(operatorA,1);
     if any(size(operatorA) ~= nA)
         error('BLOPEX:lobpcg:MatrixNotSquare',...
@@ -294,7 +296,6 @@ for j = 1:nargin-2
             ['Input argument number ' int2str(j+2) ' not recognized.']);
     end
 end
-
 if verbosityLevel
     if issparse(blockVectorX)
         fprintf(['The sparse initial guess with %i colunms '...
@@ -303,7 +304,7 @@ if verbosityLevel
         fprintf(['The full initial guess with %i colunms '...
             'and %i raws is detected  \n'],n,blockSize);
     end
-    if isa(operatorA, 'function_handle')
+    if ischar(operatorA)
         fprintf('The main operator is detected as an M-function %s \n',...
             operatorA);
     elseif issparse(operatorA)
@@ -313,7 +314,7 @@ if verbosityLevel
     end
     if isempty(operatorB)
         fprintf('Solving standard eigenvalue problem, not generalized \n');
-    elseif isa(operatorB, 'function_handle')
+    elseif ischar(operatorB)
         fprintf(['The second operator of the generalized eigenproblem \n'...
         'is detected as an M-function %s \n'],operatorB);
     elseif issparse(operatorB)
@@ -373,7 +374,7 @@ if constraintStyle == CONVENTIONAL_CONSTRAINTS
     if isempty(operatorB)
         gramY = blockVectorY'*blockVectorY;
     else
-        if ~isa(operatorB, 'function_handle')
+        if ~ischar(operatorB)
             blockVectorBY = operatorB*blockVectorY;
         else
             blockVectorBY = feval(operatorB,blockVectorY);
@@ -392,7 +393,7 @@ if constraintStyle == CONVENTIONAL_CONSTRAINTS
 elseif constraintStyle == SYMMETRIC_CONSTRAINTS
     
     if ~isempty(operatorB)
-        if ~isa(operatorB, 'function_handle')
+        if ~ischar(operatorB)
             blockVectorY = operatorB*blockVectorY;
         else
             blockVectorY = feval(operatorB,blockVectorY);
@@ -430,7 +431,7 @@ if isempty(operatorB)
     blockVectorX = blockVectorX/gramXBX;
 else
     %[blockVectorX,blockVectorBX] = orth(operatorB,blockVectorX);
-    if ~isa(operatorB, 'function_handle')
+    if ~ischar(operatorB)
         blockVectorBX = operatorB*blockVectorX;
     else
         blockVectorBX = feval(operatorB,blockVectorX);
@@ -474,7 +475,8 @@ blockVectorAP=zeros(n,blockSize);
 blockVectorBP=zeros(n,blockSize);
 
 %Initial settings for the loop
-if ~isa(operatorA, 'function_handle')
+%keyboard;
+if ischar(operatorA)
     blockVectorAX = operatorA*blockVectorX;
 else
     blockVectorAX = feval(operatorA,blockVectorX);
@@ -624,7 +626,7 @@ for iterationNumber=1:maxIterations
             break
         end
     else
-        if ~isa(operatorB, 'function_handle')
+        if ~ischar(operatorB)
             blockVectorBR(:,activeMask) = ...
                 operatorB*blockVectorR(:,activeMask);
         else
@@ -651,7 +653,7 @@ for iterationNumber=1:maxIterations
     end
     clear gramRBR;
     
-    if ~isa(operatorA, 'function_handle')
+    if ischar(operatorA)
         blockVectorAR(:,activeMask) = operatorA*blockVectorR(:,activeMask);
     else
         blockVectorAR(:,activeMask) = ...
@@ -903,7 +905,7 @@ end
 if isempty(operatorB)
     gramXBX=full(blockVectorX'*blockVectorX);
 else
-    if ~isa(operatorB, 'function_handle')
+    if ~ischar(operatorB)
         blockVectorBX = operatorB*blockVectorX;
     else
         blockVectorBX = feval(operatorB,blockVectorX);
@@ -912,7 +914,7 @@ else
 end
 gramXBX=(gramXBX'+gramXBX)*0.5;
 
-if ~isa(operatorA, 'function_handle')
+if ischar(operatorA)
     blockVectorAX = operatorA*blockVectorX;
 else
     blockVectorAX = feval(operatorA,blockVectorX);
