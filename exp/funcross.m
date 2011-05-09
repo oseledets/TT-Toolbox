@@ -1,12 +1,27 @@
-function [y]=funcrs2(tt,fun,eps,y,nswp)
-%[Y]=FUNCRS2(TT,FUN,EPS)
-%[Y]=FUNCRS2(TT,FUN,EPS)
-%[Y]=FUNCRS2(TT,FUN,EPS,Y)
-%[Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)
+function [y]=funcross(tt,fun,eps,y,nswp)
+%[Y]=FUNCROSS(TT,FUN,EPS)
+%[Y]=FUNCROSS(TT,FUN,EPS)
+%[Y]=FUNCROSS(TT,FUN,EPS,Y)
+%[Y]=FUNCROSS(TT,FUN,EPS,Y,NSWP)
 %Computes approximation to the function FUN(TT) with accuracy EPS
 %Auxiliary parameters:  Y (initial approximation), NSWP 
 %(number of sweeps in the method 
 %Much faster then usual cross by vectorized computation of subtensors
+%It is now based on the "add" concept, not on the "replace" concept 
+%for the supercore. The compression is performed in a backwards sweep.
+
+%The scheme of the algorithm:
+%(0) --- warmup step, l-r qr. of the initial guess (no psi are needed)
+%MAIN CYCLE
+%Compress from right-to-left & compute maxvol + psi (?) matrices
+%Compute left-to-right DMRG maxvol in the add scheme,
+%i.e. after the computation of the supercore A'(i) B'(j)
+%we have 
+%[A(i),A'(i)]* [ 0 ]
+%                B'(j)]
+%At the second step one will decide, whether 
+
+
 
 
 %PARAMETERS SECTION
@@ -22,7 +37,7 @@ ps=tt.ps;
 core=tt.core;
 n=tt.n;
 r=tt.r;
-
+swp=1;
 ry=y.r;
 psy=y.ps;
 cry=y.core;
@@ -32,6 +47,65 @@ phi{1}=1;
 phx=cell(d+1,1);
 phx{d+1}=1; %For storing submatrices in U & V
 phx{1}=1;
+%First step is to orthogonalize the input from left-to-right;
+%this is the current "warm up" step;
+y=qr(y,'lr');
+y1=y;
+%keyboard
+not_converged = true;
+while ( swp < nswp && not_converged )
+   max_er=0;
+   cry_old=cry; %This is for checking the accuracy
+   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+   pos1=psy(d);
+   %The first is the the o
+   for i=d-1:-1:1
+      %Do right-to-left SVD + maxvol (i.e., no fun() is employed, just the
+      %current approximation)
+      cr=cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1);
+      cr2=cry(pos1-ry(i)*n(i)*ry(i+1):pos1-1);
+      cr2=reshape(cr2,[ry(i)*n(i),ry(i+1)]);
+      cr=reshape(cr,[ry(i+1),n(i+1)*ry(i+2)]);
+      % cr=cr.';
+      %[cr,rm]=qr(cr,0); %Here we need the truncation
+      [u,s,v]=svd(cr,'econ'); s=diag(s); 
+      ry(i+1) = my_chop2(s,norm(s)*eps/sqrt(d-1));
+      %cr = u * s * v, I think we should leave v orthogonal 
+      u=u(:,1:ry(i+1)); v=v(:,1:ry(i+1));
+      s=s(1:ry(i+1)); u=u*diag(s); 
+      cr=conj(v); %cr is n(i+1),ry(i+1),ry(i+1) ---  No. it is conj(v)
+      rm=u.'; %This is discussable --- maybe u' (or u.')?
+      %ry(i+1)=size(cr,2);
+      %Maxvol should be computed in a different matrix
+      cr0=reshape(cr,[n(i+1),ry(i+2),ry(i+1)]);
+      cr0=permute(cr0,[3,1,2]);
+      cr0=reshape(cr0,[ry(i+1)*n(i+1),ry(i+2)]);
+      cr0=cr0*phx{i+2}.';
+      cr0=reshape(cr0,[ry(i+1),n(i+1)*ry(i+2)]);
+      cr0=cr0.';
+      ind=maxvol2(cr0);
+      r1=cr0(ind,:);
+      phx{i+1}=r1;
+      %ind=maxvol2(cr); 
+      %r1=cr(ind,:);
+      %cr=cr/r1;
+      cr=cr.';
+      cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1)=cr(:);
+      pos1=pos1-ry(i)*n(i)*ry(i+1);
+      cr2=cr2*(rm).'; 
+      cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=cr2(:);
+      %Take phi matrix; convolve from right with current cors of V
+      cr0=core(ps(i+1):ps(i+2)-1);
+      cr0=reshape(cr0,[r(i+1)*n(i+1),r(i+2)]); 
+      cr0=cr0*phi{i+2}; %cr0 is now r(i)*n(i)*ry(i+1);
+      cr0=reshape(cr0,[r(i+1),n(i+1)*ry(i+2)]);
+      phi{i+1}=cr0(:,ind); 
+   end
+cry=cry(pos1:numel(cry));
+y.core=cry;
+y.r=ry;
+y.ps=psy;
+keyboard;
 %Warmup procedure: orthogonalize from right-to-left & maxvol
 pos1=psy(d);
 %Cores i
@@ -73,27 +147,18 @@ for i=d-1:-1:1
 %y.ps=psy;
 %keyboard
 
-   %Orthogonalization & maxvol is "local operation" (touches two
+   %Orthogonalization & maxvol is a "local operation" (touches two
    %cores)
    %Computation of elements requries storage of phi matrices   
 end
 %Truncate cry
 %pos1=pos1-n(1)*r(2);
-cry=cry(pos1:numel(cry));
-y.core=cry;
-y.r=ry;
-y.ps=psy;
 %keyboard
 swp=1;
 z=y;
 yold=[];
 not_converged = true;
-pos1=1;
-while ( swp < nswp && not_converged )
-    max_er=0;
-cry_old=cry; %This is for checking the accuracy
-psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
-pos1=1;
+
  for i=1:d-1
      %fprintf('i=%d \n',i);
      %We care for two cores, with number i & number i+1, and use
