@@ -15,21 +15,22 @@ function [y]=funcross(tt,fun,eps,y,nswp)
 %MAIN CYCLE
 %Compress from right-to-left & compute maxvol + psi (?) matrices
 %Compute left-to-right DMRG maxvol in the add scheme,
-%i.e. after the computation of the supercore A'(i) B'(j)
-%we have 
-%[A(i),A'(i)]* [ 0 ]
-%                B'(j)]
-%At the second step one will decide, whether 
+%The idea is simple: each supercore U*V' is randomly pushed as
+%[U,u]*[V,0]'
+
 
 
 
 
 %PARAMETERS SECTION
-rmin=1; 
 verb=true;
+ry_old=1; %This is the number of random vectors to be added    
 if (~isempty(y))
    yold=y;
 end
+
+
+
 %For this procedure we need only local (!) indices, since it
 %is more or less equivalent to orthogonalization; 
 d=tt.d; 
@@ -46,12 +47,10 @@ phx{d+1}=1; %For storing submatrices in U & V
 phx{1}=1;
 %First step is to orthogonalize the input from left-to-right;
 %this is the current "warm up" step;
-y1=y;
 y=qr(y,'lr');
 ry=y.r;
 cry=y.core;
 
-%keyboard
 not_converged = true;
 while ( swp < nswp && not_converged )
    %y0=tt_random(size(y),y.d,y.r(2:y.d));
@@ -73,10 +72,8 @@ while ( swp < nswp && not_converged )
       cr2=reshape(cr2,[ry(i)*n(i),ry(i+1)]);
       cr=reshape(cr,[ry(i+1),n(i+1)*ry(i+2)]);
       
-      %cr=cr.'; [cr,rm]=qr(cr,0);
-      %rm=2*eye(ry(i+1));
-      %cr=cr/2;
-       [u,s,v]=svd(cr,'econ'); s=diag(s); 
+      
+      [u,s,v]=svd(cr,'econ'); s=diag(s); 
        ry(i+1) = my_chop2(s,norm(s)*eps/sqrt(d-1));
        %cr = u * s * v', I think we should leave v orthogonal 
        u=u(:,1:ry(i+1)); v=v(:,1:ry(i+1));
@@ -119,7 +116,6 @@ while ( swp < nswp && not_converged )
   max_er=0;
   cry_old=cry; %This is for checking the accuracy
  for i=1:d-1
-     %fprintf('i=%d \n',i);
      %We care for two cores, with number i & number i+1, and use
      %psi(i) and psi(i+2) as a basis; also we will need to recompute
      %psi(i+1)
@@ -145,19 +141,19 @@ while ( swp < nswp && not_converged )
      cr=reshape(cr,[ry(i)*n(i),n(i+1)*ry(i+2)]);
      %Check for local approximation of cr for the error
      cry1=cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1);
-     %cry2=cry(pos1+ry(i)*n(i)*ry(i+1):pos1+ry(i)*n(i)*ry(i+1)+ry(i+1)*n(i+1)*ry(i+2)-1);
      cry2=cry_old(psy(i+1):psy(i+2)-1);
      
      cry1=reshape(cry1,[ry(i)*n(i),ry(i+1)]);
      cry2=reshape(cry2,[ry(i+1),n(i+1)*ry(i+2)]);
-     %ry_old=ry(i+1);
      
      appr=cry1*cry2;
      er=norm(appr-cr,'fro')/norm(cr,'fro');
 
      max_er=max(er,max_er);
      
-     ry_old=1;
+     %This is the random add step. Serves to improve the convergence
+     
+     
      cry1=randn(ry(i),n(i),ry_old);
     
      
@@ -170,22 +166,17 @@ while ( swp < nswp && not_converged )
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
      v=v*diag(s);
-     %ind=maxvol2(u);
-     %r1=u(ind,:); 
-     %u=u/r1; v=v*r1'; v=v.';
+
      v=v.';
      ry(i+1)=r2;
     
      
-     %This is "the double" variant
-%     
      unew=zeros(ry(i),n(i),ry(i+1)+ry_old);
-      vnew=zeros(ry_old+ry(i+1),n(i+1),ry(i+2));
-      unew(:,:,1:ry(i+1))=reshape(u,[ry(i),n(i),ry(i+1)]);
-      %unew(:,:,ry(i+1)+1:end)=reshape(cry1,[ry(i),n(i),ry_old]);
-      unew(:,:,ry(i+1)+1:end)=reshape(cry1,[ry(i),n(i),ry_old]);
+     vnew=zeros(ry_old+ry(i+1),n(i+1),ry(i+2));
+     unew(:,:,1:ry(i+1))=reshape(u,[ry(i),n(i),ry(i+1)]);
+     unew(:,:,ry(i+1)+1:end)=reshape(cry1,[ry(i),n(i),ry_old]);
       
-      vnew(1:ry(i+1),:,:)=reshape(v,[ry(i+1),n(i+1),ry(i+2)]);
+     vnew(1:ry(i+1),:,:)=reshape(v,[ry(i+1),n(i+1),ry(i+2)]);
      
      %unew=u;
      %vnew=v;
@@ -226,9 +217,13 @@ else
    er_nrm=norm(yold-y)/norm(y);
    yold=y;
 end
+if ( verb )
  fprintf('sweep=%d, er=%3.2e er_nrm=%3.2e \n',swp,max_er,er_nrm);
+end
  %fprintf('sweep=%d, er_nrm=%3.2e \n',swp,er_nrm);
-
+if ( max_er < eps && er_nrm < eps )
+  not_converged=false;
+end
 swp=swp+1;
 end     
   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
