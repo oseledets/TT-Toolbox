@@ -2,8 +2,8 @@ d0t = 7; % quantics dims for t
 d0x = 8; % quantics dims for x
 dpx = 3; % phys. dims for x
 
-a = -10;
-b = 10;
+a = -1;
+b = 1;
 % a=0; b=1;
 h = (b-a)/(2^d0x+1);
 
@@ -11,7 +11,7 @@ tol = 1e-6;
 eps = 1e-8;
 maxit = 20;
 
-T = 10;
+T = 1;
 tau = T/(2^d0t+1);
 
 Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
@@ -76,7 +76,7 @@ Ax = round(Ax, eps);
 norm_Ax = norm(Ax*x_ex)/norm(x_ex)
 
 u0 = x_ex.*x_ex;
-
+u0 = round(u0, tol);
 
 % f1 = sin((a+(1:1:2^d0x)*h)'*pi);
 % f1 = 

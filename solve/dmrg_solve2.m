@@ -323,7 +323,7 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
         B2 = B2*V; % size k2*rxn3*m2*rxm3*rB        
 %         rB=rp2*ra2;
         MatVec='bfun2';
-        if ((rB>max(rxn1, rxn3))||(rxn1*k1*k2*rxn3<max_full_size))
+        if ((rxn1*k1*k2*rxn3<max_full_size)) % (rB>max(rxn1, rxn3))||
             MatVec='full';
             B = B*(B2.'); % size rxn1*k1*rxm1*m1*k2*rxn3*m2*rxm3
             B = reshape(B, rxn1,k1,rxm1,m1,k2,rxn3,m2,rxm3);
@@ -387,39 +387,45 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 %             sol = gmres(B, rhs, 50, tol, 10, [], [], sol_prev);
             sol = B \ rhs;
             res=B*sol;
+%             nonsymm_B = norm(B-B')/norm(B)
+%             eigm = min(eig(B))
 
             res_true = norm(res-rhs)/norm(rhs);
         else
-            res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            [sol_new] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
-            res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            conv_factor=(res_new/res_prev);
-            iB=[];
-            if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
-               % keyboard;
-                iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
-%                 iB=tt_mat_compr(iB, 1e-2)
-            end;
-%             sol_prev2=L*U*sol_prev;
-%             sol = gmres(@(vec)bfun2(B,B2,(U\(L\vec)),rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3,rB), rhs, 50, tol, 10, [], [], sol_prev2);
-%             sol=U\(L\sol);
-%             sol = gmres(BB_prec, rhs, 50, tol, 10, [], [], sol_prev);
-%             sol_prev2=bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-            if (isempty(iB))
+%             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+%             [sol_new] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
+%             res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+%             conv_factor=(res_new/res_prev);
+%             iB=[];
+%             if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
+%                % keyboard;
+%                 iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
+% %                 iB=tt_mat_compr(iB, 1e-2)
+%             end;
+% %             sol_prev2=L*U*sol_prev;
+% %             sol = gmres(@(vec)bfun2(B,B2,(U\(L\vec)),rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3,rB), rhs, 50, tol, 10, [], [], sol_prev2);
+% %             sol=U\(L\sol);
+% %             sol = gmres(BB_prec, rhs, 50, tol, 10, [], [], sol_prev);
+% %             sol_prev2=bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+%             if (isempty(iB))
+% %                 resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+% %                 dsol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, 50, tol/res_new, 20);
+% %                 sol = sol_new+dsol;                
+%                 [sol] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, gmres_iters, [], [], sol_new);
+%             else
+% %                 sol_prev2=bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
 %                 resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-%                 dsol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, 50, tol/res_new, 20);
-%                 sol = sol_new+dsol;                
-                [sol] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, gmres_iters, [], [], sol_new);
-            else
-%                 sol_prev2=bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-%                 sol_prev2=zeros(rxm1*m1*m2*rxm3, 1);
-                [dsol] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
-                dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);                
-                sol = sol_new+dsol;
-            end;
+% %                 sol_prev2=zeros(rxm1*m1*m2*rxm3, 1);
+%                 [dsol] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
+%                 dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);                
+%                 sol = sol_new+dsol;
+%             end;
 %             sol = BB_prec \ sol;
 %             tic;
+            sol = als_solve_rx_2(B, rhs, tol, [], sol_prev);
+%             if (size(B{1},1)>50)
+%                 keyboard;
+%             end;
             res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
 %             toc;
             res_true = norm(res-rhs)/norm(rhs);
