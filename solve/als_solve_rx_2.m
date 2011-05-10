@@ -7,7 +7,7 @@ if (nargin<3)||(isempty(tol))
     tol=1e-12;
 end;
 if (nargin<4)||(isempty(maxit))
-    maxit=100;
+    maxit=2;
 end;
 if (nargin<5)||(isempty(x0))
     x0 = zeros(size(rhs));
@@ -16,7 +16,7 @@ if (nargin<6)||(isempty(rx))
     rx=1;
 end;
 if (nargin<7)||(isempty(nswp))
-    nswp=10;
+    nswp=8;
 end;
 
 
@@ -28,6 +28,7 @@ if (err<tol)
     return;
 end;
 
+spunct = 0;
 err_old = err;
 for i=1:maxit
     cur_x = als_solve_rx(mat, cur_rhs, tol, rx, nswp);    
@@ -38,15 +39,19 @@ for i=1:maxit
     
     err = norm(cur_rhs)/nrmf;
     conv_fact = err_old/err;
-    if (conv_fact<1.1)
+    
+    fprintf('als_solve_full: iter = %d, resid = %3.3e, rx = %d, conv_fact=%3.3f\n', i, err, rx, conv_fact);
+    
+    if (conv_fact<1.2)
+        spunct = spunct+1;
 %         if (rx<15)
 %             rx=rx+1;
 %         end;
+    end;
+    if (spunct>3)
         break; % shit happened - we've stagnated
     end;
     err_old = err;
-    
-    fprintf('als_solve_full: iter = %d, resid = %3.3e, rx = %d, conv_fact=%3.3f\n', i, err, rx, conv_fact);
     if (err<tol)
         break;
     end;

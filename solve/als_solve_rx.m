@@ -54,6 +54,7 @@ for swp=1:nswp
     phi = (phi')*phi; % size ra*rx, ra*rx
     phi = reshape(phi, ra, rx, ra, rx);
     phi = reshape(permute(phi, [1 3 2 4]), ra*ra, rx*rx);
+%     phi = reshape(permute(phi, [3 1 2 4]), ra, ra*rx*rx);
 %     a2 = reshape(mat{2}, n2, m2*ra);
 %     phi = (a2.')*phi; % size m2*ra, ra*rx
 %     phi = reshape(phi, m2, ra*ra*rx);
@@ -68,6 +69,12 @@ for swp=1:nswp
     a1 = (phi.')*a1; % size rx*rx, m1*n1
     a1 = reshape(a1, rx, rx, m1, m1);
     a1 = reshape(permute(a1, [2 4 1 3]), rx*m1, rx*m1);
+%     a1 = reshape(mat{1}, n1*m1, ra)*phi; % size n1*m1, ra*rx*rx
+%     a1 = reshape(a1, n1, m1, ra, rx, rx);
+%     a1 = reshape(permute(a1, [1 3 2 4 5]), n1*ra, m1*rx*rx);
+%     a1 = conj(reshape(permute(mat{1}, [2 1 3]), m1, n1*ra))*a1; % size m1, m1*rx*rx
+%     a1 = reshape(a1, m1, m1, rx, rx);
+%     a1 = reshape(permute(a1, [3 1 4 2]), rx*m1, rx*m1);
     
     %rhs: 
     
@@ -81,10 +88,11 @@ for swp=1:nswp
     rhs1 = reshape(rhs1.', rx*m1, 1);
     
     curx{1}=a1 \ rhs1; % new first block
+%     cond_a1 = cond(a1)
     curx{1}=reshape(curx{1}, rx, m1).';
     
     % Now, let's try the kickass by rank 1:
-    curx{1}=[curx{1}, rand(m1,1)];
+    curx{1}=[curx{1}, rand(m1,4)];
 %     rx=rx+1;
     
     % Now, let's compute the second block

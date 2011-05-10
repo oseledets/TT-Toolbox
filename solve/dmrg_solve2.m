@@ -11,7 +11,7 @@ function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P)
  
 
 % Inner parameters
-max_full_size=100;
+max_full_size=2500;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
@@ -20,7 +20,10 @@ small_verb=true;
 use_self_prec=true;
 nswp_def=10;
 nrestart=40;
-gmres_iters=10;
+gmres_iters=5;
+local_prec = 'als';
+% local_prec = 'selfprec';
+kickrank = 5;
 
 
 if ((nargin<7)||(isempty(nswp)))
@@ -32,15 +35,19 @@ end;
 if ((nargin<5)||(isempty(tol)))
     tol=eps;
 end;
-if ((nargin<3)||(isempty(x0)))
-    x0=tt_random(tt_size(y), d, 2);
-end;
 
 
 input_is_tt_tensor = 0;
 if ( isa(A,'tt_matrix') )
   A=core(A);
   input_is_tt_tensor = 1;
+  if ((nargin<3)||(isempty(x0)))
+      x0=tt_random(tt_size(y), A.tt.d, 2);
+  end;
+else
+    if ((nargin<3)||(isempty(x0)))
+        x0=tt_random(tt_size(y), max(size(A)), 2);
+    end;
 end
 if ( nargin == 8  && isa(P,'tt_matrix') )
   P=core(P);
@@ -77,16 +84,16 @@ for swp=1:nswp
     % 1-to-d orthogonalization
     rvx = 1; rnewx=1; phAold=1; phyold=1;
 %     rvz = 1; rnewz=1;
-      x0=tt_random(tt_size(x),size(x,1),2);
+%       x0=tt_random(tt_size(x),size(x,1),2);
       %Warning: bydlocode starts
-x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
-     if ( small_verb ) 
-       fprintf('sweep=%d/%d erank=%3.1f\n',swp,nswp,erank(tt_tensor(x)));
-     end
+% x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+%      if ( small_verb ) 
+%        fprintf('sweep=%d/%d erank=%3.1f\n',swp,nswp,erank(tt_tensor(x)));
+%      end
 
-      x=tt_add(x,x0); %This should work!
+%       x=tt_add(x,x0); %This should work!
      
-      x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
+%       x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
       %bydlocode ends
 
     for i=1:d-1
@@ -392,42 +399,29 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 
             res_true = norm(res-rhs)/norm(rhs);
         else
-%             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-%             [sol_new] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, 50, tol, 5, [], [], sol_prev);
-%             res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-%             conv_factor=(res_new/res_prev);
-%             iB=[];
-%             if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
-%                % keyboard;
-%                 iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
-% %                 iB=tt_mat_compr(iB, 1e-2)
-%             end;
-% %             sol_prev2=L*U*sol_prev;
-% %             sol = gmres(@(vec)bfun2(B,B2,(U\(L\vec)),rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3,rB), rhs, 50, tol, 10, [], [], sol_prev2);
-% %             sol=U\(L\sol);
-% %             sol = gmres(BB_prec, rhs, 50, tol, 10, [], [], sol_prev);
-% %             sol_prev2=bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-%             if (isempty(iB))
-% %                 resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-% %                 dsol = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, 50, tol/res_new, 20);
-% %                 sol = sol_new+dsol;                
-%                 [sol] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, gmres_iters, [], [], sol_new);
-%             else
-% %                 sol_prev2=bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-%                 resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-% %                 sol_prev2=zeros(rxm1*m1*m2*rxm3, 1);
-%                 [dsol] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
-%                 dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);                
-%                 sol = sol_new+dsol;
-%             end;
-%             sol = BB_prec \ sol;
-%             tic;
-            sol = als_solve_rx_2(B, rhs, tol, [], sol_prev);
-%             if (size(B{1},1)>50)
+            res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+            [sol_new] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, 2, [], [], sol_prev);
+            res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+            conv_factor=(res_new/res_prev);
+            if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
 %                 keyboard;
-%             end;
+                if (strcmp(local_prec, 'selfprec'))
+                    iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
+
+                    resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                    [dsol] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
+                    dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                    sol = sol_new+dsol;
+                    
+                end;
+                if (strcmp(local_prec, 'als'))
+                    sol = als_solve_rx_2(B, rhs, tol, [], sol_new);
+                end;
+            else
+                [sol] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, gmres_iters, [], [], sol_new);
+            end;
+
             res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-%             toc;
             res_true = norm(res-rhs)/norm(rhs);
         end;
         
@@ -454,6 +448,14 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
         end;
         v = v(:,1:r);
         u = u(:,1:r)*diag(s(1:r));
+        
+        % random kick ass
+        v = [v, rand(size(v,1), kickrank)];
+        u = [u, zeros(size(u,1), kickrank)];
+        [v,rv] = qr(v,0);
+        r = size(v,2);
+        u = u*(rv.');
+        
         x{i}=permute(reshape(v, m2, rxm3, r), [1 3 2]);
         x{i-1}=permute(reshape(u, rxm1, m1, r), [2 1 3]);
 %         rx2=r;
