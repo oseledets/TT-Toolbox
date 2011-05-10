@@ -15,11 +15,12 @@ verb=true;
 if (~isempty(y))
    yold=y;
 end
+y1=y;
 %For this procedure we need only local (!) indices, since it
 %is more or less equivalent to orthogonalization; 
 d=tt.d; 
 ps=tt.ps;
-core=tt.core;
+core0=tt.core;
 n=tt.n;
 r=tt.r;
 
@@ -33,62 +34,63 @@ phx=cell(d+1,1);
 phx{d+1}=1; %For storing submatrices in U & V
 phx{1}=1;
 %Warmup procedure: orthogonalize from right-to-left & maxvol
-pos1=psy(d);
-%Cores i
-for i=d-1:-1:1
-   cr=cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1);
-   cr2=cry(pos1-ry(i)*n(i)*ry(i+1):pos1-1);
-   cr2=reshape(cr2,[ry(i)*n(i),ry(i+1)]);
-   cr=reshape(cr,[ry(i+1),n(i+1)*ry(i+2)]);
-   cr=cr.';
-   [cr,rm]=qr(cr,0); 
-   ry(i+1)=size(cr,2);
-   %Maxvol should be computed in a different matrix
-   cr0=reshape(cr,[n(i+1),ry(i+2),ry(i+1)]);
-   cr0=permute(cr0,[3,1,2]);
-   cr0=reshape(cr0,[ry(i+1)*n(i+1),ry(i+2)]);
-   cr0=cr0*phx{i+2}.';
-   cr0=reshape(cr0,[ry(i+1),n(i+1)*ry(i+2)]);
-   cr0=cr0.';
-   ind=maxvol2(cr0);
-   r1=cr0(ind,:);
-   phx{i+1}=r1;
-   %ind=maxvol2(cr); 
-   %r1=cr(ind,:);
-   %cr=cr/r1;
-   cr=cr.';
-   cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1)=cr(:);
-   pos1=pos1-ry(i)*n(i)*ry(i+1);
-   cr2=cr2*(rm).'; 
-   cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=cr2(:);
-   %Take phi matrix; convolve from right with current cors of V
-   cr0=core(ps(i+1):ps(i+2)-1);
-   cr0=reshape(cr0,[r(i+1)*n(i+1),r(i+2)]); 
-   cr0=cr0*phi{i+2}; %cr0 is now r(i)*n(i)*ry(i+1);
-   cr0=reshape(cr0,[r(i+1),n(i+1)*ry(i+2)]);
-   phi{i+1}=cr0(:,ind); 
- %  psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
-%y.core=cry;
-%y.r=ry;
-%y.ps=psy;
-%keyboard
-
-   %Orthogonalization & maxvol is "local operation" (touches two
-   %cores)
-   %Computation of elements requries storage of phi matrices   
-end
-%Truncate cry
-%pos1=pos1-n(1)*r(2);
-cry=cry(pos1:numel(cry));
-y.core=cry;
-y.r=ry;
-y.ps=psy;
-%keyboard
-swp=1;
-z=y;
+   cry_old=cry; %This is for checking the accuracy
+   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+   pos1=psy(d+1);
+   %The first is the the o
+   for i=d-1:-1:1
+      %Do right-to-left SVD + maxvol (i.e., no fun() is employed, just the
+      %current approximation)
+      cr=cry(pos1-ry(i+1)*n(i+1)*ry(i+2):pos1-1);
+      cr2=cry_old(psy(i):psy(i+1)-1);
+      cr2=reshape(cr2,[ry(i)*n(i),ry(i+1)]);
+      cr=reshape(cr,[ry(i+1),n(i+1)*ry(i+2)]);
+      %cr=cr.'; 
+      %[cr,rm]=qr(cr,0);
+      %rm=2*eye(ry(i+1));
+      %cr=cr/2;
+      [u,s,v]=svd(cr,'econ'); s=diag(s); 
+      ry(i+1) = my_chop2(s,norm(s)*eps/sqrt(d-1));
+      %cr = u * s * v', I think we should leave v orthogonal 
+      u=u(:,1:ry(i+1)); v=v(:,1:ry(i+1));
+      s=s(1:ry(i+1)); u=u*diag(s); 
+      cr=conj(v); %cr is n(i+1),ry(i+2),ry(i+1) ---  No. it is conj(v)
+      rm=u.'; %This is discussable --- maybe u' (or u.')?
+      ry(i+1)=size(cr,2);
+      %Maxvol should be computed in a different matrix
+      cr0=reshape(cr,[n(i+1),ry(i+2),ry(i+1)]); 
+      cr0=permute(cr0,[3,1,2]);
+      cr0=reshape(cr0,[ry(i+1)*n(i+1),ry(i+2)]);
+      cr0=cr0*phx{i+2}.';
+      cr0=reshape(cr0,[ry(i+1),n(i+1)*ry(i+2)]);
+      cr0=cr0.';
+      ind=maxvol2(cr0);
+      r1=cr0(ind,:);
+      phx{i+1}=r1;
+      
+      cr=cr.';
+      
+      cry(pos1-ry(i+1)*n(i+1)*ry(i+2):pos1-1)=cr(:);
+      pos1=pos1-ry(i+1)*n(i+1)*ry(i+2);
+      cr2=cr2*(rm).'; 
+      cry(pos1-ry(i)*n(i)*ry(i+1):pos1-1)=cr2(:); 
+      %Take phi matrix; convolve from right with current cors of V
+      cr0=core0(ps(i+1):ps(i+2)-1);
+      cr0=reshape(cr0,[r(i+1)*n(i+1),r(i+2)]); 
+      cr0=cr0*phi{i+2}; %cr0 is now r(i)*n(i)*ry(i+1);
+      cr0=reshape(cr0,[r(i+1),n(i+1)*ry(i+2)]);
+      phi{i+1}=cr0(:,ind); 
+   end
+   pos1=pos1-ry(1)*n(1)*ry(2);
+   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+   cry=cry(pos1:numel(cry));
+   y.core=cry;
+   y.r=ry;
+   y.ps=psy;
+   
+   swp=1;
 yold=[];
 not_converged = true;
-pos1=1;
 while ( swp < nswp && not_converged )
     max_er=0;
 cry_old=cry; %This is for checking the accuracy
@@ -101,8 +103,8 @@ pos1=1;
      %psi(i+1)
      ps1=phi{i}; ps2=phi{i+2}; px1=phx{i}; px2=phx{i+2};
      %Compute (!) superblock and function (!) of it
-     cr1=core(ps(i):ps(i+1)-1);
-     cr2=core(ps(i+1):ps(i+2)-1);
+     cr1=core0(ps(i):ps(i+1)-1);
+     cr2=core0(ps(i+1):ps(i+2)-1);
      cr1=reshape(cr1,[r(i),n(i)*r(i+1)]);
      cr1=ps1*cr1;
      cr2=reshape(cr2,[r(i+1)*n(i+1),r(i+2)]);
@@ -184,8 +186,8 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      %Take current core; convolve it with 
      %core=core(ps
      %Compute (!) superblock and function (!) of it
-     cr1=core(ps(i):ps(i+1)-1);
-     cr2=core(ps(i+1):ps(i+2)-1);
+     cr1=core0(ps(i):ps(i+1)-1);
+     cr2=core0(ps(i+1):ps(i+2)-1);
      cr1=reshape(cr1,[r(i),n(i)*r(i+1)]);
      cr1=ps1*cr1;
      cr2=reshape(cr2,[r(i+1)*n(i+1),r(i+2)]);

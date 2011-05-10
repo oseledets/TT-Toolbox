@@ -14,12 +14,13 @@ function [ind]=maxvol2(a)
 %ivan.oseledets@gmail.com
 %---------------------------
 n=size(a,1); r=size(a,2);
-if ( n == r ) 
-    ind = 1:r;
+if ( n <= r ) 
+    ind = 1:n;
     return
-end 
+end
+
 %Initialize
-[l,u,p]=lu(a,'vector');
+[~,~,p]=lu(a,'vector');
 %p=randperm(n);
 ind=p(1:r);
 b=a(p,:);
