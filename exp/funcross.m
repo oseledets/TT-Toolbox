@@ -24,7 +24,7 @@ function [y]=funcross(tt,fun,eps,y,nswp)
 
 %PARAMETERS SECTION
 verb=true;
-ry_old=1; %This is the number of random vectors to be added    
+ry_old=5; %This is the number of random vectors to be added    
 if (~isempty(y))
    yold=y;
 end
@@ -52,6 +52,7 @@ ry=y.r;
 cry=y.core;
 
 not_converged = true;
+converged_once=false;
 while ( swp < nswp && not_converged )
    %y0=tt_random(size(y),y.d,y.r(2:y.d));
    %y0=tt_random(size(y),y.d,2);
@@ -74,7 +75,9 @@ while ( swp < nswp && not_converged )
       
       
       [u,s,v]=svd(cr,'econ'); s=diag(s); 
-       ry(i+1) = my_chop2(s,norm(s)*eps/sqrt(d-1));
+       %ry(i+1) = my_chop2(s,norm(s)*eps/sqrt(d-1));
+       ry(i+1)=my_chop2(s,-1);
+       ry(i+1)=min(ry(i+1),numel(s));
        %cr = u * s * v', I think we should leave v orthogonal 
        u=u(:,1:ry(i+1)); v=v(:,1:ry(i+1));
        s=s(1:ry(i+1)); u=u*diag(s); 
@@ -153,9 +156,20 @@ while ( swp < nswp && not_converged )
      
      %This is the random add step. Serves to improve the convergence
      
+     %if ( converged_once )
+     %  ry_add=ry(i+1);
+     %else
+       ry_add=ry_old;
+     %end
+     cry1=randn(ry(i),n(i),ry_add); 
+     cry1=reshape(cry1,[ry(i)*n(i),ry_add]);
+     [cry1,~]=qr(cry1,0);
+     ry_add=size(cry1,2);
+     %ttt=randn([ry(i),n(i),ry(i+1)+ry_old]);
+     %ttt(:,:,1:ry(i+1))=reshape(cry1,ry(i),n(i),ry(i+1));
+     %cry1=ttt;
+     %ry_add=ry(i+1)+ry_old;
      
-     cry1=randn(ry(i),n(i),ry_old);
-    
      
      
        
@@ -171,10 +185,10 @@ while ( swp < nswp && not_converged )
      ry(i+1)=r2;
     
      
-     unew=zeros(ry(i),n(i),ry(i+1)+ry_old);
-     vnew=zeros(ry_old+ry(i+1),n(i+1),ry(i+2));
+     unew=zeros(ry(i),n(i),ry(i+1)+ry_add);
+     vnew=zeros(ry_add+ry(i+1),n(i+1),ry(i+2));
      unew(:,:,1:ry(i+1))=reshape(u,[ry(i),n(i),ry(i+1)]);
-     unew(:,:,ry(i+1)+1:end)=reshape(cry1,[ry(i),n(i),ry_old]);
+     unew(:,:,ry(i+1)+1:end)=reshape(cry1,[ry(i),n(i),ry_add]);
       
      vnew(1:ry(i+1),:,:)=reshape(v,[ry(i+1),n(i+1),ry(i+2)]);
      
@@ -182,7 +196,7 @@ while ( swp < nswp && not_converged )
      %vnew=v;
      
      %Orthogonalize unew
-     ry(i+1)=ry(i+1)+ry_old;
+     ry(i+1)=ry(i+1)+ry_add;
      [unew,rm]=qr(reshape(unew,[ry(i)*n(i),ry(i+1)]),0);
      vnew=rm*reshape(vnew,[ry(i+1),n(i+1)*ry(i+2)]);
      ry(i+1)=size(unew,2);
@@ -222,7 +236,14 @@ if ( verb )
 end
  %fprintf('sweep=%d, er_nrm=%3.2e \n',swp,er_nrm);
 if ( max_er < eps && er_nrm < eps )
-  not_converged=false;
+    if ( converged_once )
+      not_converged=false;
+    else
+      converged_once=true;    
+      ry_old=ry_old*2;
+    end
+else
+  converged_once=false;
 end
 swp=swp+1;
 end     
