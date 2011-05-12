@@ -2,8 +2,8 @@ d0t = 7; % quantics dims for t
 d0x = 8; % quantics dims for x
 dpx = 3; % phys. dims for x
 
-a = -1;
-b = 1;
+a = -10;
+b = 10;
 % a=0; b=1;
 h = (b-a)/(2^d0x+1);
 
@@ -11,7 +11,7 @@ tol = 1e-6;
 eps = 1e-8;
 maxit = 20;
 
-T = 1;
+T = 10;
 tau = T/(2^d0t+1);
 
 Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
@@ -54,23 +54,20 @@ r2 = round(r2, eps);
 
 
 
-v1 = (eexp.*x1)*(zzz/(2*ddd^5)) - x1; % + beta*x2;
+v1 = (eexp.*x1)*(zzz/(2*ddd^5)) - x1;
 v1 = round(v1, eps);
 v2 = (eexp.*x2)*(zzz/(2*ddd^5)) - x2; % - x2.*x2.*x2;
 v3 = (eexp.*x3)*(zzz/(2*ddd^5)) - x3;
-v1 = diag(v1);
-v2 = diag(v2);
-v3 = diag(v3);
+
+vv1 = diag(v1 + beta*x2);
+vv2 = diag(v2);
+vv3 = diag(v3);
 
 phi = r2*0.5 + 0.5*zzz/(ddd^3)*eexp; % + x2.*x2.*x2.*x2/4;
 phi = round(phi, eps);
-x_ex = tt_tensor(tt_random(2,r2.d,2));
-for i=1:10
-    x_ex = x_ex + tt_tensor(tt_random(2,r2.d,2));
-    x_ex = funcrs2(phi, @(r)exp(-r), eps, x_ex, 10);
-end;
+x_ex = funcross(phi, @(r)exp(-r), eps, phi, 10);
 
-Ax = Ax + Cx1*v1 + Cx2*v2 + Cx3*v3;
+Ax = Ax + Cx1*vv1 + Cx2*vv2 + Cx3*vv3;
 Ax = round(Ax, eps);
 
 norm_Ax = norm(Ax*x_ex)/norm(x_ex)
@@ -88,7 +85,12 @@ KNm = round(KNm, eps);
 KNp = tt_matrix(tt_eye(2,dpx*d0x))/tau + Ax*0.5;
 KNp = round(KNp, eps);
 
+ons = tt_tensor(tt_ones(eexp.d, 2));
+
 results = zeros(2^d0t,1);
+angles = zeros(2^d0t,1);
+eta = zeros(2^d0t,1);
+psi = zeros(2^d0t,1);
 u = u0;
 for t=1:1:2^d0t
     u_new = mvk(KNm, u, tol, 20, u, 1000); % 1\tI - A/2
@@ -112,7 +114,25 @@ for t=1:1:2^d0t
         end;
     end;
     
-    fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e\n', t, t*tau, norm(Ax*u)/norm(u));
+    angles(t)=acos(dot(u,x_ex)/(norm(u)*norm(x_ex)));
+    nrm_u = dot(u,ons);
+    tt = zeros(dpx,dpx);
+    tt(1,1)=dot(x1.*v1, u);
+    tt(2,1)=dot(x2.*v1, u);
+    tt(3,1)=dot(x3.*v1, u);
+    tt(1,2)=dot(x1.*v2, u);
+    tt(2,2)=dot(x2.*v2, u);
+    tt(3,2)=dot(x3.*v2, u);
+    tt(1,3)=dot(x1.*v3, u);
+    tt(2,3)=dot(x2.*v3, u);
+    tt(3,3)=dot(x3.*v3, u);
+    tt = tt/nrm_u;
+    
+    eta(t) = -tt(2,1)/beta;
+    psi(t) = -(tt(1,1)-tt(2,2))/beta;
+    
+    fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t));
     results(t) = norm(Ax*u)/norm(u);
     pause(1);
+%     keyboard;
 end;

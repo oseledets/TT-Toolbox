@@ -1,5 +1,5 @@
-d0t = 12; % quantics dims for t
-d0x = 8; % quantics dims for x
+d0t = 10; % quantics dims for t
+d0x = 10; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -78,11 +78,12 @@ v3 = diag(v3);
 
 phi = r2*0.5 + 0.5*zzz/(ddd^3)*eexp; % + x2.*x2.*x2.*x2/4;
 phi = round(phi, eps);
-x_ex = tt_tensor(tt_random(2,r2.d,2));
-for i=1:10
-    x_ex = x_ex + tt_tensor(tt_random(2,r2.d,2));
-    x_ex = funcrs2(phi, @(r)exp(-r), eps, x_ex, 10);
-end;
+% x_ex = tt_tensor(tt_random(2,r2.d,2));
+% for i=1:10
+%     x_ex = x_ex + tt_tensor(tt_random(2,r2.d,2));
+%     x_ex = funcrs2(phi, @(r)exp(-r), eps, x_ex, 10);
+% end;
+x_ex = funcross(phi, @(r)exp(-r), eps, phi, 10);
 
 Ax = Ax + Cx1*v1 + Cx2*v2 + Cx3*v3;
 Ax = round(Ax, eps);
@@ -103,7 +104,7 @@ M = round(M, eps);
 % u0 = tt_tensor(tt_ones(d0x*dpx, 2));
 
 % For Fokker-Plank
-u0 = x_ex;
+u0 = eexp;
 
 u0_rhs = u0/tau - (Ax*u0)*0.5; % stuff u0 to rhs of KN scheme
 u0_rhs = round(u0_rhs, eps);
