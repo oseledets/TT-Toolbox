@@ -1,5 +1,5 @@
-d0t = 7; % quantics dims for t
-d0x = 8; % quantics dims for x
+d0t = 6; % quantics dims for t
+d0x = 7; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -20,7 +20,7 @@ Ax = Ax/(h^2);
 % For Fokker-Plank
 beta = 1;
 ddd = 0.5;
-zzz = 0.1;
+zzz = 0.1*2;
 
 Sx = tt_matrix(tt_shf(d0x));
 Grad_x = (Sx - Sx')/(2*h);
@@ -45,19 +45,18 @@ x3 = kron(kron(ttx,ex), ex);
 eexp = kron(kron(eexp1, eexp1), eexp1);
 
 r2 = x1.*x1 + x2.*x2 + x3.*x3;
-r2 = round(r2, eps);
-% eexp = tt_tensor(tt_random(2,r2.d,2));
-% for i=1:20
-%     eexp = eexp + tt_tensor(tt_random(2,r2.d,2));
-%     eexp = funcrs(r2, @(r)exp(-0.5*r/(ddd^2)), 1e-13, eexp, 5);
-% end;
+% r2 = round(r2, eps);
+eexp = funcross(r2, @(r)exp(-0.5*r/(ddd^2)), eps, r2, 10);
+% eexp = funcross(x2.*x2, @(r)exp(-0.5*r/(ddd^2)), eps, x2, 10);
 
 
 
-v1 = (eexp.*x1)*(zzz/(2*ddd^5)) - x1;
+% v1 = 0.5*(eexp.*x1)*(zzz/(2*ddd^5)) - x1*0.5;
+v1 = 0.5*((eexp.*x1)*(zzz/(2*ddd^5)) - x1);
 v1 = round(v1, eps);
-v2 = (eexp.*x2)*(zzz/(2*ddd^5)) - x2; % - x2.*x2.*x2;
-v3 = (eexp.*x3)*(zzz/(2*ddd^5)) - x3;
+v2 = 0.5*((eexp.*x2)*(zzz/(2*ddd^5)) - x2); % - x2.*x2.*x2;
+% v3 = 0.5*(eexp.*x3)*(zzz/(2*ddd^5)) - x3*0.5;
+v3 = 0.5*((eexp.*x3)*(zzz/(2*ddd^5)) - x3);
 
 vv1 = diag(v1 + beta*x2);
 vv2 = diag(v2);
@@ -67,7 +66,7 @@ phi = r2*0.5 + 0.5*zzz/(ddd^3)*eexp; % + x2.*x2.*x2.*x2/4;
 phi = round(phi, eps);
 x_ex = funcross(phi, @(r)exp(-r), eps, phi, 10);
 
-Ax = Ax + Cx1*vv1 + Cx2*vv2 + Cx3*vv3;
+Ax = Ax*0.5 + Cx1*vv1 + Cx2*vv2 + Cx3*vv3;
 Ax = round(Ax, eps);
 
 norm_Ax = norm(Ax*x_ex)/norm(x_ex)
@@ -85,6 +84,9 @@ KNm = round(KNm, eps);
 KNp = tt_matrix(tt_eye(2,dpx*d0x))/tau + Ax*0.5;
 KNp = round(KNp, eps);
 
+Euler = tt_matrix(tt_eye(2,dpx*d0x)) - Ax*tau;
+Euler = round(Euler, eps);
+
 ons = tt_tensor(tt_ones(eexp.d, 2));
 
 results = zeros(2^d0t,1);
@@ -94,6 +96,8 @@ psi = zeros(2^d0t,1);
 u = u0;
 for t=1:1:2^d0t
     u_new = mvk(KNm, u, tol, 20, u, 1000); % 1\tI - A/2
+
+    u = mvk(Euler, u, tol, 20, u, 1000);
     
 %     norm_rhs = mvk(KNp',u_new,tol,20,u_new,1000);
 %     u = u_new;
@@ -126,10 +130,10 @@ for t=1:1:2^d0t
     tt(1,3)=dot(x1.*v3, u);
     tt(2,3)=dot(x2.*v3, u);
     tt(3,3)=dot(x3.*v3, u);
-    tt = tt/nrm_u;
+    tt = tt*2/nrm_u; % 2 is dQ^*/dQ
     
-    eta(t) = -tt(2,1)/beta;
-    psi(t) = -(tt(1,1)-tt(2,2))/beta;
+    eta(t) = -tt(1,2)/beta;
+    psi(t) = -(tt(1,1)-tt(2,2))/(beta^2);
     
     fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t));
     results(t) = norm(Ax*u)/norm(u);
