@@ -1,10 +1,10 @@
-function [x]=als_solve_rx(mat, rhs, tol, rx, nswp)
+function [x]=als_solve_rx(mat, rhs, tol, drx, nswp)
 % function [x]=als_solve_rx(mat, rhs, [tol], [rx], [nswp])
 % 
 % Finds a solution to 2D TTM matrix MAT using the ALS to a 2D TT tensor
 % with rank rx, but the RHS and X are represented as full vectors.
 % TOL is the tolerance for ||x_{i+1}-x_i||/||x_i||,
-% RX is the solution rank,
+% DRX is the random kick rank,
 % NSWP - number of ALS sweeps.
 % default values:
 %   tol: 1e-12
@@ -21,16 +21,18 @@ rhs = reshape(rhs, n1, n2);
 if (nargin<3)||(isempty(tol))
     tol=1e-12;
 end;
-if (nargin<4)||(isempty(rx))
-    rx=1;
+if (nargin<4)||(isempty(drx))
+    drx=1;
 end;
 if (nargin<5)||(isempty(nswp))
     nswp=10;
 end;
 
-if (rx>m1)||(rx>m2)
-    rx = min(m1,m2);
+if (drx>m1)||(drx>m2)
+    drx = min(m1,m2);
 end;
+
+rx=1;
 
 curx = cell(2,1);
 curx{1}=rand(m1,rx);
@@ -91,8 +93,8 @@ for swp=1:nswp
 %     cond_a1 = cond(a1)
     curx{1}=reshape(curx{1}, rx, m1).';
     
-    % Now, let's try the kickass by rank 1:
-    curx{1}=[curx{1}, rand(m1,4)];
+    % Now, let's try the kickass by rank drx:
+    curx{1}=[curx{1}, rand(m1,drx)];
 %     rx=rx+1;
     
     % Now, let's compute the second block

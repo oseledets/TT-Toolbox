@@ -1,5 +1,5 @@
-d0t = 6; % quantics dims for t
-d0x = 7; % quantics dims for x
+d0t = 10; % quantics dims for t
+d0x = 10; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -93,8 +93,11 @@ results = zeros(2^d0t,1);
 angles = zeros(2^d0t,1);
 eta = zeros(2^d0t,1);
 psi = zeros(2^d0t,1);
+ttimes = zeros(2^d0t, 1);
 u = u0;
 for t=1:1:2^d0t
+    times_0 = tic;
+
     u_new = mvk(KNm, u, tol, 20, u, 1000); % 1\tI - A/2
 
     u = mvk(Euler, u, tol, 20, u, 1000);
@@ -102,9 +105,9 @@ for t=1:1:2^d0t
 %     norm_rhs = mvk(KNp',u_new,tol,20,u_new,1000);
 %     u = u_new;
     for i=1:maxit
-        tic;
+        curtime_0 = tic;
         u = dmrg_solve2(KNp, u_new, u, tol, [], [], 1, KNp');
-        cur_time = toc;
+        cur_time = toc(curtime_0);
     
         Mx = mvk(KNp,u,tol,20,u,1000);
         resid_true = norm(Mx-u_new)/norm(u_new);
@@ -112,11 +115,13 @@ for t=1:1:2^d0t
 %         resid = norm(MMx - norm_rhs)/norm(norm_rhs);
         
         fprintf('\n\n\t cur_time: %g\n\t true_resid: %3.3e\n\t erank: %g\n', cur_time, resid_true, erank(u));
-        pause(0.5);
+%        pause(0.5);
         if (resid_true<5*tol) 
             break; 
         end;
     end;
+
+    ttimes(t)=toc(times_0);
     
     angles(t)=acos(dot(u,x_ex)/(norm(u)*norm(x_ex)));
     nrm_u = dot(u,ons);
@@ -135,7 +140,7 @@ for t=1:1:2^d0t
     eta(t) = -tt(1,2)/beta;
     psi(t) = -(tt(1,1)-tt(2,2))/(beta^2);
     
-    fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t));
+    fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e. ttimes: %3.5f\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t), ttimes(t));
     results(t) = norm(Ax*u)/norm(u);
     pause(1);
 %     keyboard;

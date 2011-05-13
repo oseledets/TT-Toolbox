@@ -1,5 +1,5 @@
-function [x]=als_solve_rx_2(mat, rhs, tol, maxit, x0, rx, nswp)
-% function [x]=als_solve_rx_2(mat, rhs, [tol], [maxit], [x0], [rx], [nswp])
+function [x]=als_solve_rx_2(mat, rhs, tol, maxit, x0, drx, nswp)
+% function [x]=als_solve_rx_2(mat, rhs, [tol], [maxit], [x0], [drx], [nswp])
 
 nrmf = norm(rhs);
 
@@ -12,8 +12,8 @@ end;
 if (nargin<5)||(isempty(x0))
     x0 = zeros(size(rhs));
 end;
-if (nargin<6)||(isempty(rx))
-    rx=1;
+if (nargin<6)||(isempty(drx))
+    drx=1;
 end;
 if (nargin<7)||(isempty(nswp))
     nswp=8;
@@ -31,7 +31,7 @@ end;
 spunct = 0;
 err_old = err;
 for i=1:maxit
-    cur_x = als_solve_rx(mat, cur_rhs, tol, rx, nswp);    
+    cur_x = als_solve_rx(mat, cur_rhs, tol, drx, nswp);    
 %     cur_rhs = cur_rhs - tt_mat_full_vec(mat, cur_x);
     
     x = x+cur_x;
