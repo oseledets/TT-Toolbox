@@ -40,7 +40,7 @@ for i=1:maxit
     err = norm(cur_rhs)/nrmf;
     conv_fact = err_old/err;
     
-    fprintf('als_solve_full: iter = %d, resid = %3.3e, rx = %d, conv_fact=%3.3f\n', i, err, rx, conv_fact);
+    fprintf('als_solve_full: iter = %d, resid = %3.3e, conv_fact=%3.3f\n', i, err, conv_fact);
     
     if (conv_fact<1.2)
         spunct = spunct+1;
