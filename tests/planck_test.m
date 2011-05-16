@@ -1,18 +1,45 @@
 dpx = 10; % phys. dims for x
-nn=3;
+nn=2;
 
-%Characteristic function of a symplex via the Qtt-cross
 xx=cell(nn,1);
 a=-10;
 b=10;
 np=2^(dpx);
-h=(b-a)/(np-1);
+h=(b-a)/(np+1);
 e=tt_ones(dpx*nn,2); e=tt_tensor(e);
 for i=1:nn
   xx{i}=tt_xtr(dpx,nn,i);
-  xx{i}=a*e+(xx{i})*h;
+  xx{i}=a*e+(xx{i}+e)*h;
   xx{i}=round(xx{i},1e-8);
 end
+
+%Now be careful and generate the TRUE potential
+V=zeros(nn);
+for i=1:nn
+  for j=1:nn
+    V(i,j) = sqrt(2/nn+1)*sin(i*j*pi/(nn+1));
+  end
+end
+V=V/sqrt(nn+1);
+%Create the transformed coordinates;
+xxT=cell(nn,1);
+for i=1:nn
+  xxT{i}=xx{1}*V(i,1);
+  for j=2:nn
+    xxT{i}=xxT{i}+xx{j}*V(i,j);
+  end
+  xxT{i}=round(xxT{i},1e-8);
+end
+w1=xxT{1}.^2; w2=xxT{2}.^2; w12=(xxT{1}+xxT{2}).^2;
+ww1=funcross(w1,@(x) exp(-0.5*x/ddd.^2),1e-7,w1,100);
+
+ww12=funcross(w12,@(x) exp(-0.5*x/ddd.^2),1e-7,w12,100);
+
+return
+ %mm1=funcross(rr,@(x) exp(-0.5*x/ddd.^2),2*h^2,mm,100);
+ %if ( norm(mm-mm1)/norm(mm) > h )
+ %  fprintf('Breakdown, sir! \n');
+ %end
 %rr=cell(nn,nn);
 %rr{1}=xx{1};
 %for i=2:n
