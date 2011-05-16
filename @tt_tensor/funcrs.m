@@ -12,6 +12,7 @@ function [y]=funcrs(tt,fun,eps,y,nswp)
 %PARAMETERS SECTION
 rmin=1; 
 verb=true;
+kick_rank=5;
 if (~isempty(y))
    yold=y;
 end
@@ -104,12 +105,7 @@ pos1=1;
      cr=reshape(cr,[ry(i)*n(i),n(i+1)*ry(i+2)]);
      %Check for local approximation of cr for the error
      cry1=cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1);
-     %cry2=cry(pos1+ry(i)*n(i)*ry(i+1):pos1+ry(i)*n(i)*ry(i+1)+ry(i+1)*n(i+1)*ry(i+2)-1);
-     %if ( swp == 2 )
-     % if ( i == 5 )
-     %   keyboard;
-     % end
-     %end
+
      cry2=cry_old(psy(i+1):psy(i+2)-1);
      
      cry1=reshape(cry1,[ry(i)*n(i),ry(i+1)]);
@@ -123,7 +119,20 @@ pos1=1;
      s=diag(s);
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+     
      v=v*diag(s);
+
+     %Kick rank
+
+     
+     uadd=randn(size(u,1),kick_rank);
+     vadd=zeros(size(v,1),kick_rank);
+
+     u=[u,uadd]; v=[v,vadd];
+     [u,ru]=qr(u,0); 
+     v=v*(ru.');
+     r2=size(u,2);
+     
      ind=maxvol2(u);
      r1=u(ind,:); 
      u=u/r1; v=v*r1'; v=v.';
@@ -197,6 +206,17 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
      %Make it standard
      u=u*diag(s);
+     
+     
+     %Kick rank
+     
+     uadd=zeros(size(u,1),kick_rank);
+     vadd=rand(size(v,1),kick_rank);
+     
+     u=[u,uadd]; v=[v,vadd];
+     [v,rv]=qr(v,0); 
+     u=u*(rv.');
+     r2=size(v,2);
      ind=maxvol2(v);
      r1=v(ind,:); 
      v=v/r1; v=v.';

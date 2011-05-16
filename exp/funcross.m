@@ -64,7 +64,7 @@ while ( swp < nswp && not_converged )
     psy=y.ps;
    cry_old=cry; %This is for checking the accuracy
    pos1=psy(d+1);
-   %The first is the the o
+   %The first is the the orthogonalization
    for i=d-1:-1:1
       %Do right-to-left SVD + maxvol (i.e., no fun() is employed, just the
       %current approximation)
@@ -229,12 +229,15 @@ if ( isempty(yold) )
 else
    
    er_nrm=norm(yold-y)/norm(y);
+   if ( isinf(er_nrm) || isnan(er_nrm) )
+  %    keyboard;
+   end
    yold=y;
 end
 if ( verb )
+    
  fprintf('sweep=%d, er=%3.2e er_nrm=%3.2e \n',swp,max_er,er_nrm);
 end
- %fprintf('sweep=%d, er_nrm=%3.2e \n',swp,er_nrm);
 if ( max_er < eps && er_nrm < eps )
     if ( converged_once )
       not_converged=false;
