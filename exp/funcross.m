@@ -231,6 +231,7 @@ else
    er_nrm=norm(yold-y)/norm(y);
    if ( isinf(er_nrm) || isnan(er_nrm) )
   %    keyboard;
+     error('Nan or inf present! \n');
    end
    yold=y;
 end

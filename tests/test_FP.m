@@ -1,6 +1,6 @@
 d0t = 7;
 d0x = 6;
-nn = 8;
+nn = 3;
 
 a = -10;
 b = 10;
@@ -38,7 +38,7 @@ for i=1:nn-1
         Q{i,3}=kron(Q{i,3}, ex3);
     end;    
 end;
-
+return
 eexp = cell(nn,nn);
 for mu=1:nn
     for nu=1:nn
