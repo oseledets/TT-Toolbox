@@ -1,5 +1,5 @@
 dpx = 8; % phys. dims for x
-nn=5;
+nn=4;
 
 xx=cell(nn,3); %The space is three-dimensional
 a=-10;
@@ -19,13 +19,25 @@ for i=1:nn
 end
 
 %Now be careful and generate the TRUE potential
-V=zeros(nn);
-for i=1:nn
-  for j=1:nn
-    V(i,j) = sqrt(2/nn+1)*sin(i*j*pi/(nn+1));
-  end
-end
-V=V/sqrt(nn+1);
+z=diag(ones(nn-1,1),1);
+e0=eye(nn);
+lp=2*e0-z-z';
+[vec,ev]=eig(lp);
+ev=diag(ev);
+[ev,ind]=sort(ev,'descend');
+vec=vec(:,ind);
+V=vec';%;*diag(sqrt(ev));
+%inv(V)*lp*inv(V')
+%return
+%norm(lp-vec*diag(ev)*vec')
+%return
+%V=zeros(nn);
+%for i=1:nn
+%  for j=1:nn
+%    V(i,j) = sin(i*j*pi/(nn+1));
+%  end
+%end
+
 %Create the transformed coordinates;
 xxT=cell(nn,3);
 for i=1:nn
@@ -73,6 +85,16 @@ for i=1:nn
        eexp{i,j}=round(eexp{i,j},1e-7);
        eexp{j,i}=eexp{i,j};
     end
+end
+%We have to sum them all
+pot=1e-16*eexp{1,1}/norm(eexp{1,1}); pot=round(pot,2);
+for i=1:nn
+  for j=1:nn
+      if ( i ~= j )
+      pot=pot+eexp{i,j};
+      pot=round(pot,1e-7);
+      end
+  end
 end
 return
  %mm1=funcross(rr,@(x) exp(-0.5*x/ddd.^2),2*h^2,mm,100);
