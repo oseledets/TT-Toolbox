@@ -1,5 +1,5 @@
 d0t = 7; % quantics dims for t
-d0x = 8; % quantics dims for x
+d0x = 9; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -12,7 +12,7 @@ eps = 1e-8;
 maxit = 20;
 
 T = 10;
-tau = T/(2^d0t+1);
+tau = T/(2^d0t);
 
 Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
 Ax = Ax/(h^2);
@@ -145,3 +145,9 @@ for t=1:1:2^d0t
     pause(1);
 %     keyboard;
 end;
+
+fprintf('\t d0x=%d\n', d0x);
+fprintf('\t d0t=%d\n', d0t);
+fprintf('\t eta(T)=%3.15e\n', eta(2^d0t));
+fprintf('\t Psi(T)=%3.15e\n', psi(2^d0t));
+
