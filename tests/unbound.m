@@ -20,20 +20,25 @@
 % p3=tt_tensor(reshape(ff,n,n),1e-8);
 
 %Generate a simple "weighted" test
-d=8; n=2^d;
-a=-2;
-b=2;
+d=10; n=2^d;
+a=-10;
+b=10;
 h=(b-a)/(n-1);
 t=tt_x(d,2);t=tt_tensor(t);
 e=tt_ones(d,2);e=tt_tensor(e);
 t=a*e+t*h;
-x=kron(kron(t,e),e); y=kron(kron(e,t),e); z = kron(kron(e,e), t);
-%p=x.^2+y.^2; p=round(p,1e-8);
-p=(x+y+z).^2;
-p1=x.^2+y.^2+z.^2; p1=round(p1,1e-8);
+%x=kron(kron(t,e),e); y=kron(kron(e,t),e); z = kron(kron(e,e), t);
+x=kron(t,e); y=kron(e,t);
+
+p=(x+y).^2; p=round(p,1e-8);
+%p=(x+y+z).^2;
+%p1=x.^2+y.^2+z.^2; p1=round(p1,1e-8);
+
+p1=x.^2+y.^2; p1=round(p1,1e-8);
 %Generate the weight
 w=funcross(p1,@(x) exp(-x),1e-8,p1,10);
 p=funcross(p,@(x) exp(-x),1e-8,p,10);
+p=x.^2+y.^2 + p; p =round(p,1e-8);
 % keyboard;
 p2=w.*p; 
 p2=round(p2,1e-8);
@@ -41,11 +46,11 @@ p2=round(p2,1e-8);
 % !!! Buggy place !!!! !!! Buggy place !!!! !!! Buggy place !!!!
 % Use "full" carefully and only for small sizes!
 % Otherwise - OOM killer will do you.
-pf2=full(p2,[n^3, 1]);
-w1=full(w,[n^3, 1]);
+pf2=full(p2,[n^2, 1]);
+w1=full(w,[n^2, 1]);
 pf2=pf2./w1;
 
-norm_pf2 = norm(pf2-full(p, [n^3,1]))/norm(full(p, [n^3,1]))
+norm_pf2 = norm(pf2-full(p, [n^2,1]))/norm(full(p, [n^2,1]))
 
 
 
