@@ -1,6 +1,7 @@
 dpx = 8; % phys. dims for x
 nn=4;
-
+ddd=5;
+zzz=0.1;
 xx=cell(nn,3); %The space is three-dimensional
 a=-10;
 b=10;
@@ -61,18 +62,24 @@ end
 ruv=cell(nn,nn);
 for i=1:nn
   for j=i:nn
-     pp1=xxT{i,1};
-     pp2=xxT{i,2};
-     pp3=xxT{i,3};
+%      pp1=xxT{i,1};
+%      pp2=xxT{i,2};
+%      pp3=xxT{i,3};
+%      
+%      for k=i+1:j
+%         pp1=pp1+xxT{k,1};
+%         pp1=round(pp1,1e-10);
+%         pp2=pp2+xxT{k,2};
+%         pp2=round(pp2,1e-10);
+%         pp3=pp3+xxT{k,3};
+%         pp3=round(pp3,1e-10);
+%      end
+     pp1=xxT{i,1}-xxT{j,1};
      
-     for k=i+1:j
-        pp1=pp1+xxT{k,1};
-        pp1=round(pp1,1e-10);
-        pp2=pp2+xxT{k,2};
-        pp2=round(pp2,1e-10);
-        pp3=pp3+xxT{k,3};
-        pp3=round(pp3,1e-10);
-     end
+     pp2=xxT{i,2}-xxT{j,2};
+     
+     pp3=xxT{i,3}-xxT{j,3};
+     
      ruv{i,j}=pp1.^2+pp2.^2+pp3.^2;
      ruv{i,j}=round(ruv{i,j},1e-8);
      ruv{j,i}=ruv{i,j};
@@ -96,7 +103,13 @@ for i=1:nn
       end
   end
 end
-return
+%And the harmonic part
+% pot=pot*zzz*0.5;
+% for i=1:nn
+%    pot=pot+xxT{i}.^2;
+%    pot=round(pot,1e-7);
+% end
+%return
  %mm1=funcross(rr,@(x) exp(-0.5*x/ddd.^2),2*h^2,mm,100);
  %if ( norm(mm-mm1)/norm(mm) > h )
  %  fprintf('Breakdown, sir! \n');
