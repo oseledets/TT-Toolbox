@@ -27,22 +27,32 @@ h=(b-a)/(n-1);
 t=tt_x(d,2);t=tt_tensor(t);
 e=tt_ones(d,2);e=tt_tensor(e);
 t=a*e+t*h;
-x=kron(t,e); y=kron(e,t);
+x=kron(kron(t,e),e); y=kron(kron(e,t),e); z = kron(kron(e,e), t);
 %p=x.^2+y.^2; p=round(p,1e-8);
-p=(x-y).^2;
-p1=x.^2+y.^2; p1=round(p1,1e-8);
+p=(x+y+z).^2;
+p1=x.^2+y.^2+z.^2; p1=round(p1,1e-8);
 %Generate the weight
 w=funcross(p1,@(x) exp(-x),1e-8,p1,10);
 p=funcross(p,@(x) exp(-x),1e-8,p,10);
+% keyboard;
 p2=w.*p; 
 p2=round(p2,1e-8);
-pf2=full(p2,[n,n]);
-w1=full(w,[n,n]);
+
+% !!! Buggy place !!!! !!! Buggy place !!!! !!! Buggy place !!!!
+% Use "full" carefully and only for small sizes!
+% Otherwise - OOM killer will do you.
+pf2=full(p2,[n^3, 1]);
+w1=full(w,[n^3, 1]);
 pf2=pf2./w1;
-close all;
-mesh(pf2-full(p,[n,n]));
-figure;
-mesh(full(round(p,1e-5),[n,n])-full(p,[n,n]));
+
+norm_pf2 = norm(pf2-full(p, [n^3,1]))/norm(full(p, [n^3,1]))
+
+
+
+% close all;
+% mesh(pf2-full(p,[n,n]));
+% figure;
+% mesh(full(round(p,1e-5),[n,n])-full(p,[n,n]));
 %Generate the linear system and solve it
 %rhs=diag(w)*p; %rhs=round(rhs,1e-8);
 %sol=dmrg_solve2(diag(w),rhs,p,1e-5,1e-5,1000,10,[]);
