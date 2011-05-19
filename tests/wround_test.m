@@ -10,5 +10,5 @@ w(1:n/2)=0;
 ww=tt_tensor(reshape(w,2*ones(1,d)),1e-12);
 %wround(x,ww,
 norm(diag(ww)*(xx-true_x))
-xxx=wround(xx,ww,1e-8);
+xxx=wround(xx,ww,1e-8,[],5);
 plot(full(xxx,[n,1]))

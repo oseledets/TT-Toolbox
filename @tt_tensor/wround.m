@@ -1,35 +1,42 @@
-function [tt] = wround(tt, w, varargin)
-%[TT]=WROUND(TT,W,EPS)
+function [tt] = wround(tt, w, eps, x0, rmax)
+%[TT]=WROUND(TT,W,[EPS],[X0],[RMAX])
 %Approximate TT-tensor with relative accuracy EPS in the norm |||x||| = ||Wx||
-%[TT]=WROUND(TT,W,EPS,RMAX)
-%Approximate TT-tensor with relative accuracy EPS and maximal rank rmax in
-%the norm |||x||| = ||Wx||
+%With initial approximation x0 and maximal rank RMAX
 %W can be either a symmetric tt_matrix or a tt_tensor. In the latter case it
 %is converted to a diagonal matrix (to imply Hadamard product with W).
-eps = 1e-14;
-if (nargin == 3 )
-  eps=varargin{1};
-  rmax=prod(size(tt));
-elseif ( nargin == 4 )
-  eps=varargin{1};
-  rmax=varargin{2};
+%eps = 1e-14;
+if ( nargin == 2 || isempty(eps) )
+   eps=1e-14;
 end
+if ( nargin == 3 || isempty(x0) )
+  x0=tt;
+end
+if ( nargin == 4 || isempty(rmax) )
+  rmax=prod(size(tt));
+end
+tt=x0;
 
+%Parameters section
+nswp = 1000;
 if (~isa(w, 'tt_matrix'))
     w = diag(w);
 end;
 
-d=tt.d;
-n=tt.n;
-r=tt.r;
-pos=tt.ps;
-cr=tt.core;
 % MATLAB's object-oriented system sucks!!
 % We have to do the following crap:
 w_vec = w.tt;
 rw = w_vec.r;
 w_pos = w_vec.ps;
 w_cr = w_vec.core;
+
+
+swp = 1;
+while ( swp <= nswp ) 
+d=tt.d;
+n=tt.n;
+r=tt.r;
+pos=tt.ps;
+cr=tt.core;
 
 pos1=1;
 nrm=zeros(d,1);
@@ -172,5 +179,6 @@ end;
     cr(ps(i):ps(i+1)-1)=core1;
  end
  tt.core=cr;
-
+ swp=swp+1;
+end
 end
