@@ -1,5 +1,5 @@
-d0t = 7;
-d0x = 6;
+d0t = 8;
+d0x = d0t;
 nn = 2;
 
 a = -10;
@@ -11,7 +11,7 @@ tol = 1e-6;
 eps = 1e-8;
 maxit = 20;
 
-T = 50;
+T = 5;
 tau = T/(2^d0t+1);
 
 % For Fokker-Plank
@@ -57,7 +57,7 @@ for mu=1:nn
     end;
 end;
 
-V = cell(nn-1,3);
+VV = cell(nn-1,3);
 
 for i=1:nn-1
     V{i,1}=-Q{i,1};
@@ -157,7 +157,7 @@ eta = zeros(2^d0t,1);
 psi = zeros(2^d0t,1);
 ttimes = zeros(2^d0t, 1);
 u = u0;
-
+sol1=[];
 for t=1:1:2^d0t
     times_0 = tic;
 
@@ -204,7 +204,8 @@ for t=1:1:2^d0t
     eta(t) = -tt(1,2)/beta;
     psi(t) = -(tt(1,1)-tt(2,2))/(beta^2);
     
-    Au(t) = norm(Ax*u)/norm(u);    
+    Au(t) = norm(Ax*u)/norm(u);  
+    sol1{t}=u;
     fprintf('\n\tTime step %d (%3.5e) done. Au/u: %3.3e. ttimes: %3.5f \n\t eta: %3.5e. Psi: %3.5e\n', t, t*tau, Au(t), ttimes(t), eta(t), psi(t));
     pause(1);
 %     keyboard;
