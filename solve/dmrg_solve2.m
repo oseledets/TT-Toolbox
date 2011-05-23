@@ -306,12 +306,13 @@ for swp=1:nswp
                 resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             end;
             if ( verb )
-            fprintf('sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
+            fprintf('sweep %d, block %d, r0=%d, r1=%d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r0,r1, r, resid, er0/flm, MatVec, rB);
             end
             if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
               r1=r;
             else %Is not OK.
               r0=r+1;
+              
             end;
         end
      

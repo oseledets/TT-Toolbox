@@ -1,5 +1,3 @@
-d0t = 8;
-d0x = d0t;
 nn = 2;
 
 a = -10;
@@ -11,7 +9,7 @@ tol = 1e-6;
 eps = 1e-8;
 maxit = 20;
 
-T = 5;
+T = 10;
 tau = T/(2^d0t+1);
 
 % For Fokker-Plank
