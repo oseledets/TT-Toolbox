@@ -95,7 +95,7 @@ for swp=1:nswp
         rnewx = min(rx1*n1, rx2);
         x{i}=permute(reshape(q, rx1, n1, rnewx), [2 1 3]);
         
-        % Now, update phi. phA=X^T PA X, phY = X^T PY 
+        % Now, update phi. phA=X' PA X, phY = X' PY 
         a1 = A{i};
         n1=size(a1,1); m1=size(a1,2); ra1=size(a1,3); ra2=size(a1,4);
         p1 = P{i};
@@ -119,7 +119,7 @@ for swp=1:nswp
         phAold=reshape(phAold, rxn1, rxm2, ra2, k1, rp2);
         phAold=reshape(permute(phAold, [2 5 3 4 1]), rxm2*rp2*ra2, k1*rxn1);
         x1 = reshape(x{i}, k1*rxn1, rxn2);
-        phAold=phAold*x1; % size rxm2*rp2*ra2*rxn2
+        phAold=phAold*conj(x1); % size rxm2*rp2*ra2*rxn2 <--- complex conjugate!
         phAold = reshape(phAold, rxm2, rp2, ra2, rxn2);
         phAold = permute(phAold, [4 2 3 1]); % we need rxn2,rp2,ra2,rxm2
         phA{i}=phAold;
@@ -134,7 +134,7 @@ for swp=1:nswp
         phyold=reshape(phyold, rxn1, ry2, k1, rp2);
         phyold=reshape(permute(phyold, [4 2 3 1]), rp2*ry2, k1*rxn1);
         x1=reshape(x{i}, k1*rxn1, rxn2);
-        phyold=phyold*x1; % size rp2*ry2*rxn2
+        phyold=phyold*conj(x1); % size rp2*ry2*rxn2 <--- complex conjugate!
         phyold=permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);
         phy{i}=phyold;
     end;
@@ -232,7 +232,7 @@ for swp=1:nswp
         rB = my_chop2(S, 1e-12*norm(S)); % We don't know the cond(B), so let's obtain almost exact compression
         B = U(:,1:rB);
         V = V(:,1:rB)*diag(S(1:rB)); % size rnew*rB        
-        B2 = B2*V; % size k2*rxn3*m2*rxm3*rB        
+        B2 = B2*conj(V); % size k2*rxn3*m2*rxm3*rB        
 %         rB=rp2*ra2;
         MatVec='bfun2';
         if ((rxn1*k1*k2*rxn3<max_full_size)) % (rB>max(rxn1, rxn3))||
@@ -315,11 +315,11 @@ for swp=1:nswp
             end;
         end
      
-        v = v(:,1:r);
+        v = conj(v(:,1:r));
         u = u(:,1:r)*diag(s(1:r));
         
         % random kick %This is a production code, sir!
-        v = [v, rand(size(v,1), kickrank)];
+        v = [v, randn(size(v,1), kickrank)];
         u = [u, zeros(size(u,1), kickrank)];
         [v,rv] = qr(v,0);
         r = size(v,2);
@@ -348,7 +348,7 @@ for swp=1:nswp
         phAold = permute(phAold, [2 3 5 1 4]);
         phAold = reshape(phAold, rxm2*ra2*rp2, rxn3*k2);        
         x2 = reshape(permute(x{i}, [3 1 2]), rxn3*k2, rxn2);
-        phAold = phAold*x2; % size rxm2*ra2*rp2*rxn2
+        phAold = phAold*conj(x2); % size rxm2*ra2*rp2*rxn2 <-- cplx conjugate!
         phAold = permute(reshape(phAold, rxm2, ra2, rp2, rxn2), [4 3 2 1]);
         
         phyold = reshape(phyold, rxn3*rp3, ry3);
@@ -363,7 +363,7 @@ for swp=1:nswp
         phyold = permute(phyold, [4 2 1 3]);
         phyold = reshape(phyold, rp2*ry2, rxn3*k2);       
         x2 = reshape(permute(x{i}, [3 1 2]), rxn3*k2, rxn2);
-        phyold = phyold*x2; % size rp2*ry2*rxn2
+        phyold = phyold*conj(x2); % size rp2*ry2*rxn2 <-- cplx conjugate!
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]); 
         
     end;

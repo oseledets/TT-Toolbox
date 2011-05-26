@@ -30,7 +30,7 @@ core=permute(core,[1,3,2]); %core is i_1 \alpha_1 j_1
 core=reshape(core,[ns1*r1,ns2]);
 x=(core)*reshape(x,[n1,n2]); %x is i_1 \alpha_1,j_2,...,j_d
 x=reshape(x, [n1, n2*r1]);
-x=x'; % x is \alpha_1,j_2, ...., j_d, i_1
+x=x.'; % x is \alpha_1,j_2, ...., j_d, i_1
 msize=(n2*n1)/sz(2);
 %msize=n2/sz(2);
 %keyboard;
@@ -42,9 +42,9 @@ for k=2:d-1
     core=reshape(core,[js*r1,is*r2]);
     x=reshape(x,[js*r1,msize]); 
     %keyboard;
-    x=core'*x; %x is i_k \alpha_k j_{k+1} ... j_d i_1,i_2,...,i_{k-1} 
+    x=core.'*x; %x is i_k \alpha_k j_{k+1} ... j_d i_1,i_2,...,i_{k-1} 
     x=reshape(x,[is,msize*r2]);
-    x=x';
+    x=x.';
     msize=(is*msize)/js;
     %keyboard;
     %msize=
@@ -54,9 +54,9 @@ core=tt{d}; ns1=size(core,1); ns2=size(core,2); r=size(core,3);
 core=permute(core,[3,2,1]); %core is \alpha_{d-1} j_d i_d  
 core=reshape(core,[ns2*r,ns1]); 
 x=reshape(x,[r*ns2,msize]);
-x=core'*x; %x is i_d i_1 ... i_{d-1}
+x=core.'*x; %x is i_d i_1 ... i_{d-1}
 x=reshape(x,[ns1,msize]);
-x=x';
+x=x.';
 y=reshape(x,[n,1]);
 
 return
