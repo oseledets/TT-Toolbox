@@ -3,7 +3,7 @@ function [res]=tt_mm(mat1,mat2)
 %Matrix MAT1 by matrix MAT2 product in the TT format
 %
 %
-% TT Toolbox 1.0, 2009-2010
+% TT Toolbox 2.1, 2009-2011
 %
 %This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
 %Institute of Numerical Mathematics, Moscow, Russia

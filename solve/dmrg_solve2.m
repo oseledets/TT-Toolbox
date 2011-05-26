@@ -296,9 +296,6 @@ for swp=1:nswp
         r0=1; r1=min(size(s,1),rmax);
         r=1;
         while ( r ~= r0 || r ~= r1 )
-            %if ( i == 21 )
-            %    keyboard;
-            %end
             r=min(floor((r0+r1)/2),rmax);
             er0=norm(s(r+1:numel(s)));
             sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';

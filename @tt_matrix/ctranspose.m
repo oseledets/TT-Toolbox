@@ -4,5 +4,6 @@ function [tt1]=ctranspose(tt)
 
 %Zaglushka
 tt1=tt;
-tt1.tt=tt_tensor(tt_mat_to_vec(tt_transp(tt_vec_to_mat(core(tt.tt),tt.n,tt.m))));
-%keyboard
+tt1.tt=tt_tensor(tt_mat_to_vec(tt_transp(tt_vec_to_mat(core(tt.tt),tt.m,tt.n))));
+tt1.m=tt.n;
+tt1.n=tt.m;
