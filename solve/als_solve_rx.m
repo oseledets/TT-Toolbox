@@ -53,7 +53,7 @@ for swp=1:nswp
     a2 = reshape(a2, n2*ra, m2);
     phi = a2*curx{2}; % size n2*ra, rx
     phi = reshape(phi, n2, ra*rx);
-    phi = (phi')*phi; % size ra*rx, ra*rx
+    phi = (phi')*phi; % size ra*rx, ra*rx <-- for cplx should also work
     phi = reshape(phi, ra, rx, ra, rx);
     phi = reshape(permute(phi, [1 3 2 4]), ra*ra, rx*rx);
 %     phi = reshape(permute(phi, [3 1 2 4]), ra, ra*rx*rx);
@@ -64,7 +64,7 @@ for swp=1:nswp
 %     phi = reshape(permute(reshape(phi, rx, ra, ra, rx), [2 3 1 4]), ra*ra, rx*rx);
 %     % And the projection of the matrix
     a1 = reshape(permute(mat{1}, [3 2 1]), ra*m1, n1);
-    a1 = conj(a1)*reshape(mat{1}, n1, m1*ra); % size ra*m1, m1*ra
+    a1 = conj(a1)*reshape(mat{1}, n1, m1*ra); % size ra*m1, m1*ra <-- conjugate!
     a1 = reshape(a1, ra, m1, m1, ra);
     a1 = reshape(permute(a1, [1 4 2 3]), ra*ra, m1*m1);
 %     a1 = reshape(permute(mat{1}, [3 2 1]), ra, m1*n1);
@@ -80,7 +80,7 @@ for swp=1:nswp
     
     %rhs: 
     
-    rhs1 = rhs*conj(reshape(mat{2}, n2, m2*ra)); % size n1, m2*ra
+    rhs1 = rhs*conj(reshape(mat{2}, n2, m2*ra)); % size n1, m2*ra <-- conjugate
     rhs1 = reshape(rhs1, n1, m2, ra);
     rhs1 = reshape(permute(rhs1, [1 3 2]), n1*ra, m2);
     
@@ -94,7 +94,7 @@ for swp=1:nswp
     curx{1}=reshape(curx{1}, rx, m1).';
     
     % Now, let's try the kickass by rank drx:
-    curx{1}=[curx{1}, rand(m1,drx)];
+    curx{1}=[curx{1}, randn(m1,drx)];
 %     rx=rx+1;
     
     % Now, let's compute the second block
