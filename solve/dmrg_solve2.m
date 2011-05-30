@@ -23,7 +23,7 @@ nrestart=40;
 gmres_iters=5;
 local_prec = 'als';
 % local_prec = 'selfprec';
-kickrank = 5;
+kickrank = 2;
 
 
 if ((nargin<7)||(isempty(nswp)))
@@ -287,6 +287,9 @@ for swp=1:nswp
             res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
             res_true = norm(res-rhs)/norm(rhs);
         end;
+        
+        dx = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
+        fprintf('==sweep %d, block %d, dx=%3.3e\n', swp, i, dx);
         
         sol=reshape(sol,[rxm1*m1,m2*rxm3]);
         [u,s,v]=svd(sol,'econ');

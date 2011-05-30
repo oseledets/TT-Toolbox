@@ -1,11 +1,14 @@
-function [x]=dmrg_eig2(a,x0,eps)
+function [x]=dmrg_eig2(a,x0,eps,nswp)
 %[X]=DMRG_EIG2(A,X0,EPS)
 %Minimal eigenvalue of a QTT matrix
 %It uses "Density Matrix Normalization Group" Ideology in the following
 %way
 %It mimics Krylov matrix-by-vector product
-rmin=1; nswp=50;
-radd=0;
+if (nargin<4)||(isempty(nswp))
+    nswp=50;
+end;
+rmin=1; 
+kickrank=5;
 verb=false;
 %eps=1e-4;
 rmax=100;
@@ -127,7 +130,7 @@ b=reshape(b,[n1*n2*rxn2,m1*m2*rxm2]);
 %   
 %  
    
-   [sol,ev]=eigs(b,1,'sm');
+   [sol,ev]=eigs((b+b')*0.5,1,'sm');
 
    
 %   
@@ -244,10 +247,10 @@ for i=2:d-2
  % is (rxn1*rxn3)*n1n2m1m2 (rxm1 rxm3)
  b=permute(b,[2,3,5,8,1,4,6,7]);
  b=reshape(b,[rxn1*n1*n2*rxn3,rxm1*m1*m2*rxm3]);
- [sol,ev]=eigs(b,1,'sm');
+ [sol,ev]=eigs((b+b')*0.5,1,'sm');
  else
  [sol,ev]=lobpcg(sol_prev,@(x)bfun1(x,a1,a2,ph1,ph3,n1,m1,n2,m2,ra1,ra2,ra3,rxn1,rxm1,rxn3,rxm3));
-  %fprintf('ev=%4.10f \n',ev);
+  fprintf('ev=%4.10f \n',ev);
  
  end
  %keyboard;
@@ -263,6 +266,7 @@ for i=2:d-2
     er_max = max(er_max,er);
   end
  
+%   fprintf('block %d, norm_imag=%3.3e, b-bT=%3.3e, er=%3.3e\n', i, norm(imag(sol)), norm(b-b'), er);
 
  
  
@@ -282,7 +286,16 @@ for i=2:d-2
   if ( verb )
   fprintf('We can push rank %d to %d \n',i,r);
   end
-  u=u(:,1:r);
+  
+  % random kick
+  u=[u(:,1:r), randn(size(u,1), kickrank)];
+  v=v(:,1:r)*diag(s(1:r));
+  % random kick
+  v = [v, zeros(size(v,1), kickrank)];
+  [u,rv]=qr(u,0);
+  r = size(u,2);
+  v = v*(rv.');
+  
   u=reshape(u,[rxm1,m1,r]);
   x{i}=permute(u,[2,1,3]);
   %Recompute phx and phy
@@ -317,7 +330,6 @@ for i=2:d-2
   ph1=permute(ph1,[1,3,2]);
   phx{i}=ph1;
   %phy(rxn1,ry1)*X(n1,rxn1,rxn2)*Y(n1,ry1,ry2)-> phy(rxn2,ry2)
-  v=v(:,1:r)*diag(s(1:r));
   v=reshape(v,[m2,rxm3,r]);
   v=permute(v,[1,3,2]);
   x{i+1}=v;
@@ -356,7 +368,7 @@ end
   
  
   
-  [sol,ev]=eigs(b,1,'sm');
+  [sol,ev]=eigs((b+b')*0.5,1,'sm');
   
   
   
