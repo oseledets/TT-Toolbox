@@ -16,6 +16,8 @@ n1 = size(a1,1); m1 = size(a1,2);
 n2 = size(a2,1); m2 = size(a2,2);
 ra = size(a1,3);
 
+% tol2 = 1e-3;
+
 rhs = reshape(rhs, n1, n2);
 
 if (nargin<3)||(isempty(tol))
@@ -38,7 +40,9 @@ curx = cell(2,1);
 curx{1}=rand(m1,rx);
 curx{2}=rand(m2,rx);
 x = curx{1}*(curx{2}.');
-
+derr = 2;
+sp = 0;
+resid_old = 1;
 for swp=1:nswp
     
 
@@ -94,7 +98,11 @@ for swp=1:nswp
     curx{1}=reshape(curx{1}, rx, m1).';
     
     % Now, let's try the kickass by rank drx:
-    curx{1}=[curx{1}, randn(m1,drx)];
+%     if (mod(swp,6)==0)
+%     if (sp>5)
+        curx{1}=[curx{1}, randn(m1,drx)];
+%         sp=0;
+%     end;
 %     rx=rx+1;
     
     % Now, let's compute the second block
@@ -143,10 +151,17 @@ for swp=1:nswp
     
     x = x_new;
     
-    fprintf('als_solve: swp=%d, derr=%3.3e, rx=%d\n', swp, derr, rx);
+    resid = norm(tt_mat_full_vec(mat, x(:))-rhs(:))/norm(rhs(:));
+    conv_fact = resid_old/resid;
+    if (conv_fact-1<1e-4)
+        sp=sp+1;
+    end;
+    
+    fprintf('als_solve: swp=%d, derr=%3.3e, rx=%d, resid=%3.3e, conv-1=%3.5e\n', swp, derr, rx, resid, conv_fact-1);
     if (derr<tol)
         break;
     end;
+    resid_old = resid;
 end;
 
 x = x(:);
