@@ -1,5 +1,6 @@
 function [a] = full(tt, sizes)
 %[A]=FULL(TT)
+%Converts TT-tensor to the full tensor
 
 d=tt.d; n=tt.n; ps=tt.ps; core=tt.core; r=tt.r;
 a=1;
