@@ -8,7 +8,7 @@ if (nargin<4)||(isempty(nswp))
     nswp=50;
 end;
 rmin=1; 
-kickrank=5;
+kickrank=10;
 verb=false;
 %eps=1e-4;
 rmax=100;
@@ -30,7 +30,7 @@ phx=cell(d,1); %Phi matrices for X^T A X
 swp=1;
 not_converged = true;
 while ( swp < nswp && not_converged )
-     not_converged = false;
+%      not_converged = false;
      er_max=0;
  %x0=tt_random(tt_size(x),size(x,1),1);
  %   x=tt_add(x,x0);
@@ -288,7 +288,8 @@ for i=2:d-2
   end
   
   % random kick
-  u=[u(:,1:r), randn(size(u,1), kickrank)];
+  u = u(:,1:r);
+  u=[u, randn(size(u,1), kickrank)*max(abs(u(:)))];
   v=v(:,1:r)*diag(s(1:r));
   % random kick
   v = [v, zeros(size(v,1), kickrank)];

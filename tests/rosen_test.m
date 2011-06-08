@@ -19,16 +19,16 @@ f = (kron(e,e)-x).*(kron(e,e)-x);
 f = f+100*(y-x2).*(y-x2);
 f = round(f, 1e-12);
 
-S1 = dct(eye(16));
+S1 = dct(eye(4));
 I1 = tt_matrix(tt_eye(2,1));
-S1 = tt_matrix(full_to_nd(S1, 1e-12, 4));
+S1 = tt_matrix(full_to_nd(S1, 1e-12, 2));
 S = tt_matrix(tt_eye(2,2*d));
-for i=1:2:2*d-3
+for i=1:1:2*d-1
     cur_S = S1;
     for j=1:i-1
         cur_S = kron(I1, cur_S);
     end;
-    for j=i+1:2*d-3
+    for j=i+1:2*d-1
         cur_S = kron(cur_S, I1);
     end;
     S = S*cur_S;
@@ -40,6 +40,10 @@ F = diag(f);
 F2 = round(S*F, 1e-6)*S';
 F2 = round(F2, 1e-6);
 
-u = dmrg_eig2(core(F2), tt_random(2,2*d,2), 1e-6, 150);
+u = tt_random(2,2*d,2);
+% for i=1:20
+%     u = tt_add(u, tt_random(2,2*d,2));
+    u = dmrg_eig2(core(F2), u, 1e-6, 150);
+% end;
 u = tt_tensor(u)
 
