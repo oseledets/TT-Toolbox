@@ -1,5 +1,5 @@
-d0t = 7; % quantics dims for t
-d0x = 9; % quantics dims for x
+d0t = 8; % quantics dims for t
+d0x = 4; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -142,7 +142,7 @@ for t=1:1:2^d0t
     
     fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e. ttimes: %3.5f\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t), ttimes(t));
     results(t) = norm(Ax*u)/norm(u);
-    pause(1);
+%     pause(1);
 %     keyboard;
 end;
 
