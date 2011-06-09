@@ -153,6 +153,9 @@ while ( swp <= nswp && not_converged )
        px1=permute(px1,[1,3,2]);
        px1=reshape(px1,[ra(i),ry(i)*ry(i)]);
        px2=phi{i+2}; 
+       if ( numel(px2) ~= ra(i+2)*ry(i+2)*ry(i+2))
+        keyboard;
+       end
        px2=reshape(px2,[ra(i+2),ry(i+2),ry(i+2)]);
        %px2=permute(px2,[1,3,2]);
        %Compute the local matrix just by putting px1 into cra1, px2 into
@@ -219,7 +222,7 @@ while ( swp <= nswp && not_converged )
            %right
            
            %Prepare the truncation block
-           rhs=wnew*ev; 
+           rhs=wnew*diag(ev); 
             if (strcmp(matvec,'full'))
                 res_true = norm(fm*wnew-rhs)/norm(rhs);
             else
@@ -329,7 +332,7 @@ while ( swp <= nswp && not_converged )
        else %Implant the auxiliary core from the left block to the right block
   
            %Prepare the truncation block
-           rhs=wnew*ev; 
+           rhs=wnew*diag(ev); 
             if (strcmp(matvec,'full'))
                 res_true = norm(fm*wnew-rhs)/norm(rhs);
             else
@@ -338,7 +341,7 @@ while ( swp <= nswp && not_converged )
            wnew=reshape(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]); 
            wnew=permute(wnew,[1,2,3,5,4]); wnew=reshape(wnew,[ry(i)*n(i),n(i+1)*k*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s);
-      r0=1; r1=min(size(s,1),rmax);
+           r0=1; r1=min(size(s,1),rmax);
            r=1;
            
            while ( r ~= r0 || r ~= r1 )
@@ -453,7 +456,10 @@ while ( swp <= nswp && not_converged )
        %One block should go from cry_left to cry_right (?) --- seems no :)
      end
    end
-   %Gather the solution 
+ 
+
+end
+  %Gather the solution 
    
    ry(d+1)=k; %This is the final
    y.r=ry;
@@ -462,8 +468,6 @@ while ( swp <= nswp && not_converged )
    y.r=ry; 
    y.d=d;
    y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
-
-
 end
 
     function [x]=bfun(a,x)
@@ -488,5 +492,4 @@ end
     return
     end
 
-return
-end
+
