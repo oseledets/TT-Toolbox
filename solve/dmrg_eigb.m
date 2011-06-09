@@ -30,7 +30,7 @@ if ( nargin <= 4 || isempty(rmax) )
   rmax=1000;
 end
 if ( nargin <= 5 || isempty(nswp) )
-  nswp = 40;
+  nswp = 4;
 end
 y0=y;
 %            fm=full(a); 
@@ -54,10 +54,10 @@ y0=y;
 
 
 %Parameters section
-msize=10;
-max_l_steps=1000;
+msize=1000;
+max_l_steps=100;
 kick_rank=5;
-
+verb=true;
 %We start from the orthogonalization of the y vector from left-to-right
 %(it does not influence the TT-ranks)
 
@@ -196,8 +196,10 @@ while ( swp <= nswp && not_converged )
         bw=bfun(mm,w); ev=bw'*w; 
            er0=norm(bw-w*ev,'fro')/norm(w,'fro');
        if ( size(w,1) >= max(5*k,msize) )
+           matvec='bfun';
            [wnew,ev,fail_flag]=lobpcg(w,@(x) bfun(mm,x),eps,max_l_steps);
        else
+          matvec='full';
           fm=full(tt_matrix(mm)); 
           [v,dg]=eig(fm);
           ev=diag(dg);
@@ -209,25 +211,59 @@ while ( swp <= nswp && not_converged )
        er1=norm(bfun(mm,wnew)-wnew*diag(ev),'fro')/norm(wnew,'fro');
 
        fv=sum(ev); %The functional we minimize;
-       fprintf('sweep=%d block=%d fv=%f loc solve=%3.2e old_solve=%3.2e \n',swp,i,fv,er1,er0);
-        cry=[cry_left,cry_right];
-        y.core=cry;
-        y.r=ry; 
-        y.d=d;
+       fprintf('sweep=%d block=%d fv=%10.15f loc solve=%3.2e old_solve=%3.2e \n',swp,i,fv,er1,er0);
         
        if ( strcmp(dir,'rl') ) %Implant the auxiliary core into the i-th core
            %(a1,i1,a2,a2,i2*g,a3)-> (a1,i1*g,a2,a2,i2,a3)
            %Delete old block from the core_left, add new block to the core
            %right
+           
+           %Prepare the truncation block
+           rhs=wnew*ev; 
+            if (strcmp(matvec,'full'))
+                res_true = norm(fm*wnew-rhs)/norm(rhs);
+            else
+                res_true = norm(bfun(mm,wnew)-rhs)/norm(rhs);
+            end;
+
+           
            wnew=reshape(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]);
            wnew=permute(wnew,[1,2,5,3,4]); wnew=reshape(wnew,[ry(i)*n(i)*k,n(i+1)*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s); 
        
            %Truncation block
-           rnew=my_chop2(s,eps*norm(s)); 
+           %rnew=my_chop2(s,eps*norm(s)); 
+           %u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
+           %u=u*diag(s); %u has to be reshaped 
+           r0=1; r1=min(size(s,1),rmax);
+           r=1;
+           
+           while ( r ~= r0 || r ~= r1 )
+            r=min(floor((r0+r1)/2),rmax);
+            %er0=norm(s(r+1:numel(s)));
+            sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
+            sol = reshape(sol,[ry(i),n(i),k,n(i+1),ry(i+2)]);
+            sol=permute(sol,[1,2,4,5,3]); sol=reshape(sol,[numel(sol)/k,k]);
+            if (strcmp(matvec,'full'))
+                resid = norm(fm*sol-rhs)/norm(rhs);
+            else
+                resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
+            end;
+            if ( verb )
+            fprintf('sweep %d, block %d, r=%d, resid=%g, MatVec=%s\n', swp, i, r, resid,matvec);
+            end
+            if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
+              r1=r;
+            else %Is not OK.
+              r0=min(r+1,rmax);
+            end;
+           end
+           rnew=r;
            u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
            u=u*diag(s); %u has to be reshaped 
 
+           
+           
            %Random restart block
            radd=min(kick_rank,size(v,1)-rnew);
            rnew=rnew+radd;
@@ -292,12 +328,45 @@ while ( swp <= nswp && not_converged )
            phi{i+1}=phx; 
        else %Implant the auxiliary core from the left block to the right block
   
+           %Prepare the truncation block
+           rhs=wnew*ev; 
+            if (strcmp(matvec,'full'))
+                res_true = norm(fm*wnew-rhs)/norm(rhs);
+            else
+                res_true = norm(bfun(mm,wnew)-rhs)/norm(rhs);
+            end;  
            wnew=reshape(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]); 
            wnew=permute(wnew,[1,2,3,5,4]); wnew=reshape(wnew,[ry(i)*n(i),n(i+1)*k*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s);
+      r0=1; r1=min(size(s,1),rmax);
+           r=1;
+           
+           while ( r ~= r0 || r ~= r1 )
+            r=min(floor((r0+r1)/2),rmax);
+            %er0=norm(s(r+1:numel(s)));
+            sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
+            sol = reshape(sol,[ry(i),n(i),n(i+1),k,ry(i+2)]);
+            sol=permute(sol,[1,2,3,5,4]); sol=reshape(sol,[numel(sol)/k,k]);
+            if (strcmp(matvec,'full'))
+                resid = norm(fm*sol-rhs)/norm(rhs);
+            else
+                resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
+            end;
+            if ( verb )
+            fprintf('sweep %d, block %d, r=%d, resid=%g, MatVec=%s\n', swp, i, r, resid,matvec);
+            end
+            if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
+              r1=r;
+            else %Is not OK.
+              r0=min(r+1,rmax);
+            end;
+           end
+           rnew=r;         
+         
+           
            
            %Truncation block
-           rnew=my_chop2(s,eps*norm(s));
+           %rnew=my_chop2(s,eps*norm(s));
            u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew); v=v*diag(s); 
            
            %Random restart block
@@ -384,6 +453,17 @@ while ( swp <= nswp && not_converged )
        %One block should go from cry_left to cry_right (?) --- seems no :)
      end
    end
+   %Gather the solution 
+   
+   ry(d+1)=k; %This is the final
+   y.r=ry;
+   cry=[cry_left,cry_right];
+   y.core=cry;
+   y.r=ry; 
+   y.d=d;
+   y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+
+
 end
 
     function [x]=bfun(a,x)
