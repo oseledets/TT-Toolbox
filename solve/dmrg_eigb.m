@@ -14,7 +14,7 @@ if ( nargin <= 3 || isempty(y0) )
     %right 
    y=tt_tensor;
    y.d=d;
-   ry=2*ones(1,d); ry(1)=1; ry(d+1)=k; ry=ry';
+   ry=k*ones(1,d); ry(1)=1; ry(d+1)=k; ry=ry';
    y.r=ry;
    y.n=n;
    y.ps=cumsum([1;y.n.*ry(1:d).*ry(2:d+1)]);
@@ -153,9 +153,6 @@ while ( swp <= nswp && not_converged )
        px1=permute(px1,[1,3,2]);
        px1=reshape(px1,[ra(i),ry(i)*ry(i)]);
        px2=phi{i+2}; 
-       if ( numel(px2) ~= ra(i+2)*ry(i+2)*ry(i+2))
-        keyboard;
-       end
        px2=reshape(px2,[ra(i+2),ry(i+2),ry(i+2)]);
        %px2=permute(px2,[1,3,2]);
        %Compute the local matrix just by putting px1 into cra1, px2 into
@@ -197,7 +194,13 @@ while ( swp <= nswp && not_converged )
        end
        %Now run the eigenvalue solver
         bw=bfun(mm,w); ev=bw'*w; 
-           er0=norm(bw-w*ev,'fro')/norm(w,'fro');
+           %er0=norm(bw-w*ev,'fro')/norm(w,'fro');
+           er_old=bw-w*ev; 
+        erc=zeros(1,size(w,2));
+        for j=1:size(w,2)
+            erc(j)=norm(er_old(:,j));
+        end
+           er0=norm(er_old,'fro')/norm(w,'fro');
        if ( size(w,1) >= max(5*k,msize) )
            matvec='bfun';
            [wnew,ev,fail_flag]=lobpcg(w,@(x) bfun(mm,x),eps,max_l_steps);
@@ -215,7 +218,7 @@ while ( swp <= nswp && not_converged )
 
        fv=sum(ev); %The functional we minimize;
        fprintf('sweep=%d block=%d fv=%10.15f loc solve=%3.2e old_solve=%3.2e \n',swp,i,fv,er1,er0);
-        
+        disp(erc);
        if ( strcmp(dir,'rl') ) %Implant the auxiliary core into the i-th core
            %(a1,i1,a2,a2,i2*g,a3)-> (a1,i1*g,a2,a2,i2,a3)
            %Delete old block from the core_left, add new block to the core
