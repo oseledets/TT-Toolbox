@@ -1,11 +1,11 @@
-function [X,Y]=newton_trunc(W, F, r, tol)
+function [X,Y]=newton_trunc(W, F, r, tol, X0, Y0)
 
 m1 = size(F,1);
 m2 = size(F,2);
 n1 = size(W{1},1);
 n2 = size(W{2},1);
 R = size(W{1},3);
-maxit=25;
+maxit=10;
 gamma = 0e-10;
 
 % RHS = W*F
@@ -17,25 +17,33 @@ core2 = reshape(W{2}, n2, m2*R);
 rhs = core2*rhs; % size n2, n1
 rhs = rhs.';
 
-[X,S,Y]=svd(F, 'econ');
-X=X(:,1:r);
-Y=conj(Y(:,1:r))*S(1:r,1:r);
-X = 1e-2*[randn(m1,1), randn(m1,r-1)];
-Y = [randn(m2,1), randn(m2,r-1)];
+if (nargin<6)||(isempty(X0))||(isempty(Y0))
+    [X,S,Y]=svd(F, 'econ');
+    X=X(:,1:r);
+    Y=conj(Y(:,1:r))*S(1:r,1:r);
+%     X = 1e-2*[randn(m1,1), randn(m1,r-1)];
+%     Y = [randn(m2,1), randn(m2,r-1)];
+else
+    X=X0;
+    Y=Y0;
+    [X,rv]=qr(X,0);
+    Y = Y*(rv.');    
+end;
 
 
 for it=1:maxit           
     
     if (it==1)
         % Residual
-        core1 = reshape(permute(W{1}, [3 1 2]), R*n1, m1);
-        resid = core1*X; % size R*n1, r
-        resid = reshape(resid, R, n1*r);
-        core2 = reshape(W{2}, n2*m2, R);
-        resid = core2*resid; % size n2*m2, n1*r
-        resid = reshape(resid, n2, m2, n1, r);
-        resid = reshape(permute(resid, [3 1 2 4]), n1*n2, m2*r);
-        resid = resid*reshape(Y, m2*r, 1); % size n1*n2,1
+        resid = bfun2(W, X, Y);
+%         core1 = reshape(permute(W{1}, [3 1 2]), R*n1, m1);
+%         resid = core1*X; % size R*n1, r
+%         resid = reshape(resid, R, n1*r);
+%         core2 = reshape(W{2}, n2*m2, R);
+%         resid = core2*resid; % size n2*m2, n1*r
+%         resid = reshape(resid, n2, m2, n1, r);
+%         resid = reshape(permute(resid, [3 1 2 4]), n1*n2, m2*r);
+%         resid = resid*reshape(Y, m2*r, 1); % size n1*n2,1
         resid = reshape(resid, n1, n2) - rhs;
         
         err_old = norm(resid, 'fro')/norm(rhs, 'fro');
@@ -107,10 +115,11 @@ for it=1:maxit
     % Newton iteration
     sol = [reshape(X, m1*r, 1); reshape(Y, m2*r, 1)];
 
-    iHess = fgmres_selfprec(Hess, 1e-2, 1, 25);
+%     iHess = fgmres_selfprec(Hess, 1e-2, 1, 10);
 %     dsol = Hess \ Grad;
-    dsol = gmres(@(v)(Hess*iHess*v), Grad, 50, 1e-10, 100);
-    dsol = iHess*dsol;
+%     dsol = gmres(@(v)(Hess*iHess*v), Grad, 50, 1e-10, 20);
+%     dsol = iHess*dsol;
+    dsol = gmres(@(v)(Hess*v), Grad, 50, 1e-10, 100);
 %     dsol = pcg(Hess, Grad, 1e-10, 10000);
     sol = sol - dsol;
     
@@ -118,14 +127,15 @@ for it=1:maxit
     Y = reshape(sol((m1*r+1):((m1+m2)*r)), m2, r);
     
     % Residual
-    core1 = reshape(permute(W{1}, [3 1 2]), R*n1, m1);
-    resid = core1*X; % size R*n1, r
-    resid = reshape(resid, R, n1*r);
-    core2 = reshape(W{2}, n2*m2, R);
-    resid = core2*resid; % size n2*m2, n1*r
-    resid = reshape(resid, n2, m2, n1, r);
-    resid = reshape(permute(resid, [3 1 2 4]), n1*n2, m2*r);
-    resid = resid*reshape(Y, m2*r, 1); % size n1*n2,1
+    resid = bfun2(W,X,Y);
+%     core1 = reshape(permute(W{1}, [3 1 2]), R*n1, m1);
+%     resid = core1*X; % size R*n1, r
+%     resid = reshape(resid, R, n1*r);
+%     core2 = reshape(W{2}, n2*m2, R);
+%     resid = core2*resid; % size n2*m2, n1*r
+%     resid = reshape(resid, n2, m2, n1, r);
+%     resid = reshape(permute(resid, [3 1 2 4]), n1*n2, m2*r);
+%     resid = resid*reshape(Y, m2*r, 1); % size n1*n2,1
     resid = reshape(resid, n1, n2) - rhs;
     
     err = norm(resid, 'fro')/norm(rhs, 'fro');
@@ -147,4 +157,24 @@ end;
 X = X_good;
 Y = Y_good;
 
+end
+
+
+function [Z]=bfun2(W, X, Y)
+    m1 = size(X,1);
+    m2 = size(Y,1);
+    r = size(X,2);
+    n1 = size(W{1},1);
+    n2 = size(W{2},1);
+    R = size(W{1},3);
+    
+    core1 = reshape(permute(W{1}, [3 1 2]), R*n1, m1);
+    Z = core1*X; % size R*n1, r
+    Z = reshape(Z, R*n1,r);
+    Z = Z*(Y.'); % size R*n1, m2
+    Z = reshape(Z, R, n1, m2);
+    Z = reshape(permute(Z, [2 3 1]), n1, m2*R);
+    core2 = reshape(W{2}, n2, m2*R);
+    Z = Z*(core2.'); % size n1,n2
+    Z = reshape(Z, n1*n2, 1);
 end

@@ -1,5 +1,5 @@
-d0t = 8; % quantics dims for t
-d0x = 4; % quantics dims for x
+d0t = 9; % quantics dims for t
+d0x = 9; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -7,11 +7,11 @@ b = 10;
 % a=0; b=1;
 h = (b-a)/(2^d0x+1);
 
-tol = 1e-6;
+tol = 1e-8;
 eps = 1e-8;
 maxit = 20;
 
-T = 10;
+T = 2;
 tau = T/(2^d0t);
 
 Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
