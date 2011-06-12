@@ -1,4 +1,4 @@
-d0t = 10; % quantics dims for t
+d0t = 7; % quantics dims for t
 d0x = 10; % quantics dims for x
 dpx = 3; % phys. dims for x
 

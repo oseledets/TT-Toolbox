@@ -54,7 +54,7 @@ y0=y;
 
 
 %Parameters section
-msize=1000;
+msize=100;
 max_l_steps=100;
 kick_rank=5;
 verb=true;
@@ -113,8 +113,12 @@ for i=1:d
     %phi{i+1}=permute(phi{i+1},[1,3,2]);
 end
 
-%phh0=phi;
-ry(d+1)=rnew;
+ry(d+1)=rnew; %This value should not be modified :(((
+%Truncate the core
+cry=cry(1:pos1-1);
+y.r=ry;
+y.core=cry;
+y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
  %Test back transform
 %  y0=y;
 %  y0.n=[2*ones(d,1);k];
@@ -128,9 +132,6 @@ ry(d+1)=rnew;
 %  norm(ww1-ww0*bm)
 %keyboard;
 phi{d+1}=1; %Bydlocode, but seems necessary
-%Truncate the core
-%pos1=pos1-ry(d)*n(d)*ry(d+1);
-cry=cry(1:pos1-1);
 y.r=ry;
 y.core=cry;
 y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
@@ -208,6 +209,8 @@ while ( swp <= nswp && not_converged )
           matvec='full';
           fm=full(tt_matrix(mm)); 
           [v,dg]=eig(fm);
+          %[v,dg]=eigs(sparse(fm),k+1);
+          %keyboard;
           ev=diag(dg);
           [ev,ind]=sort(ev,'ascend');
           v=v(:,ind);
@@ -241,10 +244,10 @@ while ( swp <= nswp && not_converged )
            %rnew=my_chop2(s,eps*norm(s)); 
            %u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
            %u=u*diag(s); %u has to be reshaped 
-           r0=1; r1=min(size(s,1),rmax);
+           r0=1; r1=min(numel(s),rmax);
            r=1;
            
-           while ( r ~= r0 || r ~= r1 )
+           while ( (r ~= r0 || r ~= r1) && r0 <= r1)
             r=min(floor((r0+r1)/2),rmax);
             %er0=norm(s(r+1:numel(s)));
             sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
@@ -256,13 +259,14 @@ while ( swp <= nswp && not_converged )
                 resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
             end;
             if ( verb )
-            fprintf('sweep %d, block %d, r=%d, resid=%g, MatVec=%s\n', swp, i, r, resid,matvec);
+            fprintf('sweep %d, block %d, r0=%d, r1=%d, r=%d, resid=%g, MatVec=%s\n', swp, i, r0, r1, r, resid,matvec);
             end
             if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
               r1=r;
             else %Is not OK.
               r0=min(r+1,rmax);
             end;
+            
            end
            rnew=r;
            u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
@@ -347,7 +351,7 @@ while ( swp <= nswp && not_converged )
            r0=1; r1=min(size(s,1),rmax);
            r=1;
            
-           while ( r ~= r0 || r ~= r1 )
+           while ( (r ~= r0 || r ~= r1) && r0 <= r1)
             r=min(floor((r0+r1)/2),rmax);
             %er0=norm(s(r+1:numel(s)));
             sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
@@ -359,7 +363,7 @@ while ( swp <= nswp && not_converged )
                 resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
             end;
             if ( verb )
-            fprintf('sweep %d, block %d, r=%d, resid=%g, MatVec=%s\n', swp, i, r, resid,matvec);
+            fprintf('sweep %d, block %d, r0=%d r1=%d r=%d, resid=%g, MatVec=%s\n', swp, i, r0, r1, r, resid,matvec);
             end
             if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
               r1=r;
