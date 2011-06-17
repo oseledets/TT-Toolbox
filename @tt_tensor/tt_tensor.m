@@ -50,6 +50,7 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
    t.ps=ps;
    t = class(t, 'tt_tensor');
 end
+%From full format
 if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
     t=tt_tensor;
     b=varargin{1};
@@ -61,9 +62,9 @@ if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'
     end
     n=size(b);n=n';
 if ( numel(n) == 2 && n(2) == 1 ) %Singleton tensor
-  d=1;
+  d=1; n=n(1:d);
   r=ones(2,1);
-  core=b;
+  core=b(:);
  ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
  t.d=d;  
 t.n=n;
@@ -92,6 +93,7 @@ for i=1:d-1
 end
 r(d+1)=1;
 core(pos:pos+r(d)*n(d)*r(d+1)-1)=c(:);
+core=core(:); 
 ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
 t.d=d;
 t.n=n;

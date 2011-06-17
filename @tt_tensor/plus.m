@@ -1,6 +1,13 @@
 function [a]=plus(b,c)
 %[A]=PLUS(B,C)
 %Adds two TT-tensors B and C
+if ( isempty(b) )
+ a=c;
+ return
+elseif ( isempty(c) )
+ a=b;
+ return
+end
 a=tt_tensor;
 n1=b.n;
 r1=b.r;
