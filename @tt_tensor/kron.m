@@ -5,6 +5,13 @@ function [c] = kron(a,b)
 %Zaglushka
 %c=tt_tensor(tt_kron(core(a),core(b)));
 %Time to replace it by something meaning ful
+if ( isempty(a) )
+  c=b;
+  return
+elseif ( isempty(b) )
+  c=a;
+  return
+end
 c=tt_tensor;
 c.d=a.d+b.d;
 c.core=[a.core;b.core];

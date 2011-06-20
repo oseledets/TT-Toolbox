@@ -1,5 +1,5 @@
-function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P)
-%  function [x]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P])
+function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P, verb)
+%  function [x]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P],[verb])
 % Solves the system P(k,n)*A(n,m)*x(m)=P(k,n)*y(n)
 % Default values:
 %   x0 = random rank-2
@@ -15,7 +15,6 @@ max_full_size=2500;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
-verb=true;
 small_verb=true;
 use_self_prec=true;
 nswp_def=10;
@@ -35,7 +34,9 @@ end;
 if ((nargin<5)||(isempty(tol)))
     tol=eps;
 end;
-
+if ( (nargin<8) || (isempty(verb)) )
+  verb=true;
+end
 
 input_is_tt_tensor = 0;
 if ( isa(A,'tt_matrix') )
@@ -49,7 +50,7 @@ else
         x0=tt_random(tt_size(y), max(size(A)), 2);
     end;
 end
-if ( nargin == 8  && isa(P,'tt_matrix') )
+if ( nargin >= 8  && isa(P,'tt_matrix') )
   P=core(P);
   input_is_tt_tensor = 1;
 end
@@ -289,7 +290,9 @@ for swp=1:nswp
         end;
         
         dx = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
+        if ( verb ) 
         fprintf('==sweep %d, block %d, dx=%3.3e\n', swp, i, dx);
+        end
         
         sol=reshape(sol,[rxm1*m1,m2*rxm3]);
         [u,s,v]=svd(sol,'econ');
