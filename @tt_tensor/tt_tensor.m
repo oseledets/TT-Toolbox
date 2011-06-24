@@ -58,7 +58,7 @@ if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'
       eps=varargin{2};
     else
       eps=1e-14;
-      fprintf('Accuracy not specified, using %3.2e \n',eps);  
+      %fprintf('Accuracy not specified, using %3.2e \n',eps);  
     end
     n=size(b);n=n';
 if ( numel(n) == 2 && n(2) == 1 ) %Singleton tensor

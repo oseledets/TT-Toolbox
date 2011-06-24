@@ -264,7 +264,7 @@ for swp=1:nswp
             res_true = norm(res-rhs)/norm(rhs);
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            [sol_new] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, 2, [], [], sol_prev);
+            [sol_new,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, 2, [], [], sol_prev);
             res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             conv_factor=(res_new/res_prev);
             if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
@@ -273,7 +273,8 @@ for swp=1:nswp
                     iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 
                     resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                    [dsol] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
+                    [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
+                        rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
                     dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
                     sol = sol_new+dsol;
                     
@@ -282,7 +283,8 @@ for swp=1:nswp
                     sol = als_solve_rx_2(B, rhs, tol, [], sol_new);
                 end;
             else
-                [sol] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, gmres_iters, [], [], sol_new);
+                [sol,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
+                    rhs, nrestart, tol, gmres_iters, [], [], sol_new);
             end;
 
             res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
