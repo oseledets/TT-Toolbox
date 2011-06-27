@@ -47,7 +47,7 @@ for i=d-1:-1:1
    cr=cr.';
    cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1)=cr(:);
    pos1=pos1-ry(i)*n(i)*ry(i+1);
-   cr2=cr2*(r1*rm)'; 
+   cr2=cr2*(r1*rm).'; 
    cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=cr2(:);
    %Take phi matrix; convolve from right with current cors of V
    cr0=core(ps(i+1):ps(i+2)-1);
