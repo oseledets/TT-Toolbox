@@ -18,16 +18,15 @@ if (isa(a,'tt_matrix') && isa(b,'double') && numel(b) == 1 || (isa(b,'tt_matrix'
    end
 elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin == 2)
     %Put "zaglushka" in it
-    c=tt_tensor(tt_mv(core(a),core(b)));
-     return
+    %c=tt_tensor(tt_mv(core(a),core(b)));
+    % return
      %Replace zaglushka
      c=tt_tensor;
-     n=a.n; m=a.m; crm=a.tt.core; psm=a.tt.ps; d=a.tt.d; rm=a.tt.r;
+     n=a.n; m=a.m; crm=a.tt.core; ttm=a.tt; psm=ttm.ps; d=ttm.d; rm=ttm.r;
      rv=b.r; crv=b.core; psv=b.ps; 
      rp=rm.*rv; 
      psp=cumsum([1;n.*rp(1:d).*rp(2:d+1)]);
-     sz=dot(n.*rp(1:d),rp(2:d+1));
-     crp=zeros(sz,1);
+     crp=zeros(psp(d+1)-1,1);
      c.d=d;
      c.r=rp;
      c.n=n;
@@ -38,7 +37,7 @@ elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin == 2)
         mcur=reshape(mcur,[rm(i)*n(i),m(i),rm(i+1)]);
         mcur=permute(mcur,[1,3,2]); mcur=reshape(mcur,[rm(i)*n(i)*rm(i+1),m(i)]);
         vcur=reshape(vcur,[rv(i),m(i),rv(i+1)]);
-        vcur=permute(vcur,[2,1,3]); vcur=reshape(vcur,[m(i),rv(i),rv(i+1)]);
+        vcur=permute(vcur,[2,1,3]); vcur=reshape(vcur,[m(i),rv(i)*rv(i+1)]);
         pcur=mcur*vcur; %pcur is now rm(i)*n(i)*rm(i+1)*rv(i)*rv(i+1)
         pcur=reshape(pcur,[rm(i),n(i),rm(i+1),rv(i),rv(i+1)]);
         pcur=permute(pcur,[1,4,2,3,5]); 

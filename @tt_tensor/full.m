@@ -10,7 +10,7 @@ for i=1:d
   a=reshape(a,[numel(a)/r(i),r(i)]);
   a=a*cr;
 end
-a=reshape(a,[n',1]);
+a=reshape(a,[r(1),n',r(d+1)]);
 
 if (nargin>1)&&(~isempty(sizes))
     a = reshape(a, sizes);
