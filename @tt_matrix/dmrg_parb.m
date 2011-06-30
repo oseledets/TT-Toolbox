@@ -1,5 +1,5 @@
-function [y]=dmrg_parb(mat,a,f,eps,y0,rmax,nswp)
-%[y]=dmrg_parb(mat,a,rhs,eps,[y0],[rmax],[nswp])
+function [y]=dmrg_parb(mat,a,f,eps,y0,rmax,nswp,verb)
+%[y]=dmrg_parb(mat,a,rhs,eps,[y0],[rmax],[nswp],[ver])
 %This is not an east stuff.
 %It solve parameter-dependent problem A(y)u(y) = rhs(y)
 %With accuracy eps.
@@ -16,7 +16,7 @@ function [y]=dmrg_parb(mat,a,f,eps,y0,rmax,nswp)
 kick_rank=5;
 
 %This is the "physical dimension" size
-N=mat.n;
+
 n=a.n;
 d=a.d; %And this is for the parametric part
 %We seek for the solution as JxY1xQ1xQ1xY2xQ2
@@ -33,7 +33,7 @@ if ( nargin < 4 || isempty(y0) )
    ry=k*ones(1,d); ry(1)=k; ry(d+1)=1; ry=ry';
    y.r=ry;
    y.n=n;
-   y.ps=cumsum([1;y.n.*ry(1:d).*ry(2:d+1)]);
+   y.ps=cumsum([1;y.n.*y.r(1:y.d).*y.r(2:y.d+1)]);
    psy=y.ps;
    sz=psy(d+1)-1;
    cr=randn(1,sz);
@@ -48,6 +48,9 @@ end
 if ( nargin < 6 || isempty(nswp) )
   nswp=10;
 end
+if ( nargin < 7 || isempty(verb) )
+  verb=true;
+end
 %Matrix details
 cra=a.core;
 ra=a.r;
@@ -59,10 +62,14 @@ crf=f.core;
 psf=f.ps;
 fP=crf(psf(1):psf(2)-1); fP=reshape(fP,[N,numel(fP)/N]);
 kf=size(fP,2);
-psf=psf(2:d+2); %We need only the parametric stuff for the rhs
+crf(psf(1):psf(2)-1)=[];
 %The user will never know what happens here
 rf=f.r;
 rf=rf(2:d+2);
+nf=f.n;
+nf=nf(2:d+1);
+psf=cumsum([1;nf.*rf(1:d).*rf(2:d+1)]);
+
 
 %Right hand side details --- we would like to split 
 %the physical part and the parametric part here also,
@@ -86,19 +93,24 @@ rf=rf(2:d+2);
 yold=y;
 rm=1;
 pos1=psy(d+2)-1;
-phi=cell(d+2,1);
+phi=cell(d+1,1);
 phi{d+1}=1;
-phif=cell(d+2,1);
+phif=cell(d+1,1);
 phif{d+1}=1;
+nm=kron(mat,diag(a)); 
+
 %Right-to-left qr & maxvol
 for i=d+1:-1:2
     %fprintf('i=%d psy(%d)=%d psy(%d)=%d ry(%d)=%d n(%d)=%d ry(%d)=%d \n',i,i,psy(i),i+1,psy(i+1),i,ry(i),i,n(i),i+1,ry(i+1));
     cr=cry(psy(i):psy(i+1)-1);
     cr=reshape(cr,[ry(i)*n(i),ry(i+1)]);
     cr=cr*rm; 
-    cry1=cry;
-    cry1(psy(i):psy(i+1)-1)=cr(:);
-    y.core=cry1;
+    %cry1=cry;
+    %cry1(psy(i):psy(i+1)-1)=cr(:);
+    %y.core=cry1;
+    %norm(nm*y-f)
+    %keyboard
+
     ry(i+1)=size(cr,2); 
     cr=reshape(cr,[ry(i),n(i)*ry(i+1)]);
     cr=cr.'; %It seems to be needed
@@ -106,7 +118,7 @@ for i=d+1:-1:2
     indu=maxvol2(u); 
     r1=u(indu,:);
     u=u/r1;
-    rm=r1*rm;
+    rm=r1*rm; rm=rm.';
     rnew=size(u,2);
     u=u.'; %n(i)*ry(i+1)xry(i)->ry(i)xn(i)xry(i+1) 
     %ry(i+1)=rnew;
@@ -130,22 +142,33 @@ for i=d+1:-1:2
     phif{i-1}=crh(:,indu);
 end
 cr=cry(psy(1):psy(2)-1);
-cr=reshape(cr,[ry(1),n(1),ry(2)]);
 cr=reshape(cr,[ry(1)*n(1),ry(2)]);
 cr=cr*rm; 
 ry(2)=size(cr,2); 
-cry(pos1:pos1+ry(1)*n(1)*ry(2)-1)=cr(:);
+cry(pos1-ry(1)*n(1)*ry(2)+1:pos1)=cr(:);
+pos1=pos1-ry(1)*n(1)*ry(2)+1; %Fix it to the start
+%And now truncate cry
+cry=cry(pos1:end);
 
-%And now truncate pos
-cry=cry(pos1:numel(cry));
+%Test that here all is okey.
+psy=cumsum([1;(n).*ry(1:y.d).*ry(2:y.d+1)]);
+y.core=cry;
+y.r=ry;
+y.ps=psy;
+%norm(nm*y-f)
+%keyboard
+
+
 %Now we have to implant the "physical dimension" into the parametric 
 %part for further floating
-psy=cumsum([1;(y.n).*ry(1:d+1).*ry(2:d+2)]);
+psy=cumsum([1;(n).*ry(1:d+1).*ry(2:d+2)]);
 cr1=cry(psy(1):psy(2)-1);
 cr2=cry(psy(2):psy(3)-1); 
 cr1=reshape(cr1,[numel(cr1)/ry(2),ry(2)]);
 cr2=reshape(cr2,[ry(2),numel(cr2)/ry(2)]);
-cr_new=cr1*cr2;
+cr_new=cr1*cr2; %crnew is now NxPxRY(3)
+cr_new=reshape(cr_new,[N,n(2),ry(3)]);
+%cr_new=permute(cr_new,[2,1,3]);
 cry(1:psy(3)-1)=[];
 cry=[cr_new(:);cry]; %Well now it is prepared
 ry=[N;ry(3:end)]; %Now the physical dimension is a hanging rank
@@ -156,7 +179,6 @@ y.r=ry;
 y.n=n;
 y.d=d;
 y.ps=psy;
-
 %Start the main iteration (borrow the idea from dmrg_eigb code)
 
 
@@ -168,18 +190,24 @@ dir='lr';
 i=1;
 cry_left=cry(1:psy(2)-1); %Bullshit
 cry_right=cry(psy(2):psy(d+1)-1);
-%FUcking N^2 as a right-hands side matrix rank? N^2 x P(1) x RA(2) ->
 %P(1)xRA(2) select "good rows" out of it
 %First PHI matrix should be of size QxRY(1)xRA(1); what if RY(1) = 1?
-%We known that the considered core is Q times larger
+%We know that the considered core is Q times larger
 ry(1)=1; %This should be done
 %We computed phi up to i=1 the last one was the first parametric
 %mode i.e. (NXN x Q) x [Q x RY] and that is the true thing;
 %We then can turn it to (NxN)xRY and start with K=RY
 %B(I,J,Q)xDELTA(Q,Q')*[(Q'xP1xRA2)x(RA2xP2x)],S)-> 
 %B(I,J,Q)
-phi{1}=eye(k); %Heh, this seems ok now :)
+
+%Stupidity: gather the local matrix
+phi{1}=eye(k); %Heh, this seems ok now :) Maybe the bug is 
+%phi{1}=diag(phi{1}(:));
+%here --- we have had phi{1} of size ra(1)xry(1); 
 phif{1}=eye(kf); %The same
+%phif{1}=diag(phif{1}(:));
+%B(I,J,Q)*Z(Q)*CA(Q,P1,RA2)*CA(RA2,P2,RA3)*CA(RA3,S)
+
 while ( swp <= nswp && not_converged )
    %Gather the local matrix.( The left phi matrix always includes
    %the  "matrix" rank)
@@ -216,7 +244,7 @@ while ( swp <= nswp && not_converged )
    crf2=crf(psf(i+1):psf(i+2)-1);
    ph1=reshape(ph1,[kf*ry(i),rf(i)]); %
    crf1=reshape(crf1,[rf(i),n(i)*rf(i+1)]);
-   ph1=ph1*crf1; %ph1 is k*ry(i)*n(i)*ra(i+1);
+   ph1=ph1*crf1;
    bf1=ph1; %Save for phi calculations
    bf1=reshape(bf1,[numel(bf1)/rf(i+1),rf(i+1)]);
    crf2=reshape(crf2,[rf(i+1)*n(i+1),rf(i+2)]);
@@ -225,39 +253,48 @@ while ( swp <= nswp && not_converged )
    bf2=reshape(bf2,[rf(i+1),numel(bf2)/rf(i+1)]);
    ph1=bf1*bf2;
    ph1=reshape(ph1,[kf,numel(ph1)/kf]);
-   fB=fP*ph1; %B is NxNxry(i)*n(i+1)*ry(i+2)
+   fB=fP*ph1; %fB is Nxry(i)*n(i)*n(i+1)*ry(i+2)
    py=ry(i)*n(i)*n(i+1)*ry(i+2);
    fB=reshape(fB,N,py);
    solB=zeros(N,py);
    for j=1:py
-     solB(:,j)=B(:,j) \ fB(:,j); %He-he
+     solB(:,j)=reshape(B(:,:,j),N,N) \ fB(:,j); %Bug fixed
    end
    %solB is Nxry(i)*n(i)*n(i+1)*ry(i+2)
    solB=reshape(solB,[N,ry(i),n(i),n(i+1),ry(i+2)]);
    %Compute the previous solution
    if ( strcmp(dir,'lr') )
      pos=numel(cry_left);
-     w1=cry_left(pos-ry(i)*n(i)*ry(i+1)*N+1:pos);
+     w1=cry_left(pos-ry(i)*N*n(i)*ry(i+1)+1:pos);
      w2=cry_right(1:ry(i+1)*n(i+1)*ry(i+2));
      w1=reshape(w1,[numel(w1)/ry(i+1),ry(i+1)]);
      w2=reshape(w2,[ry(i+1),numel(w2)/ry(i+1)]);
-     w=w1*w2; w=reshape(w,[ry(i),n(i),N,n(i+1),ry(i+2)]);
-     w=permute(w,[3,1,2,4,5]); 
+     w=w1*w2; w=reshape(w,[ry(i),N,n(i),n(i+1),ry(i+2)]);
+     w=permute(w,[2,1,3,4,5]); 
    elseif (strcmp(dir,'rl') )
           pos=numel(cry_left);
      w1=cry_left(pos-ry(i)*n(i)*ry(i+1)+1:pos);
      w2=cry_right(1:ry(i+1)*N*n(i+1)*ry(i+2));
-     w1=reshape(w1,[numel(w1)/ry(i+1),ry(i+1)]);
+     w1=reshape(w1,[numel(w1)/ry(i+1),ry(i+1)]);  %Final step is like [ry(i)xNxn(i)]n(i+1)xry(i+2) -> ry(i)xn(i)x [Nxn(i+1)*ry(i+2)]
      w2=reshape(w2,[ry(i+1),numel(w2)/ry(i+1)]);
-     w=w1*w2; w=reshape(w,[ry(i),n(i),N,n(i+1),ry(i+2)]);
-     w=permute(w,[3,1,2,4,5]); 
+     w=w1*w2; 
+     %w=reshape(w,[ry(i),n(i),N,n(i+1),ry(i+2)]);
+     w=reshape(w,[ry(i),n(i),n(i+1),N,ry(i+2)]);
+     w=permute(w,[4,1,2,3,5]); 
+     
+     %w=permute(w,[3,1,2,4,5]); 
    end
+   %if ( i == 7 ) 
+   %  keyboard;
+   %end
    er1=norm(w(:)-solB(:))/norm(w(:));
-  fprintf('sweep=%d block=%d error=%3.2e \n',swp,i,er1);
-
+   if ( verb )
+  fprintf('sweep=%d block=%d  error=%3.2e \n',swp,i,er1);
+   end
    %And now add the splitting of solB part + recomputation of phi & phif
    %Memory stuff
-   if ( strcmp(dir,'lr') ) %Implant the auxiliary core from the left block to the right block
+   if ( strcmp(dir,'lr') ) %Implant the auxiliary core from the left block to the right block 
+       %solB is Nxry(i)*n(i)xn(i+1)*ry(i+2) %ry(i+1)*N*n(i+1)*ry(i+2)
        solB=permute(solB,[2,3,1,4,5]); solB=reshape(solB,[ry(i)*n(i),N*n(i+1)*ry(i+2)]);
        [u,s,v]=svd(solB,'econ');
        s=diag(s);
@@ -297,7 +334,8 @@ while ( swp <= nswp && not_converged )
          %That is all, folks!
        
     elseif ( strcmp(dir,'rl') ) %Implant the auxiliary core into the i-th core
-      
+      %solB is [Nxry(i)xn(i)xn(i+1)xry(i+2)] it was like
+      %ry(i)*n(i)*n(i+1)*N*ry(i+2) for implanting 
        solB=permute(solB,[2,3,1,4,5]); solB=reshape(solB,[ry(i)*n(i)*N,n(i+1)*ry(i+2)]);
       %Truncation block
       [u,s,v]=svd(solB,'econ');
@@ -344,6 +382,9 @@ while ( swp <= nswp && not_converged )
        dir='lr';
        %One block should go from cry_right to cry_left
        cry_left=cry_right(1:ry(1)*n(1)*ry(2)*N); %This seems correct
+       cry_left=reshape(cry_left,[ry(1),n(1),N,ry(2)]);
+       cry_left=permute(cry_left,[1,3,2,4]);
+       cry_left=cry_left(:);
        cry_right(1:ry(1)*n(1)*ry(2)*N)=[];
        swp=swp+1;
        
@@ -355,8 +396,10 @@ while ( swp <= nswp && not_converged )
        dir='rl';
        pos=numel(cry_left);
        cry_right=cry_left(pos-ry(d)*n(d)*ry(d+1)*N+1:pos); 
+       cry_right=reshape(cry_right,[ry(d),N,n(d),ry(d+1)]);
+       cry_right=permute(cry_right,[1,3,2,4]);
+       cry_right=cry_right(:);
        cry_left(pos-ry(d)*n(d)*ry(d+1)*N+1:pos)=[];
-       swp=swp+1;
        %One block should go from cry_left to cry_right (?) --- seems no :)
      end
    end
@@ -365,10 +408,11 @@ end
 cry=[cry_left(:);cry_right(:)];
 %We have to reshape it back to the old structure; 
 ry(1)=N; 
-psy=cumsum([1;y.n.*ry(1:d).*ry(2:d+1)]);
+psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
 cr1=cry(psy(1):psy(2)-1);
-cr1=reshape(cr1,[n(1),N,ry(2)]);
-cr1=permute(cr1,[2,1,3]);
+cr1=reshape(cr1,[N,n(1),ry(2)]);
+%cr1=permute(cr1,[2,1,3]);
+%cr1=reshape(cr1,[N,n(1),ry(2)]);
 cr1=reshape(cr1,[N,numel(cr1)/N]);
 [u,s,v]=svd(cr1,'econ');
 cry(psy(1):psy(2)-1)=[];
