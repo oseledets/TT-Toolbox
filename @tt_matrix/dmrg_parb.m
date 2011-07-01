@@ -97,7 +97,6 @@ phi=cell(d+1,1);
 phi{d+1}=1;
 phif=cell(d+1,1);
 phif{d+1}=1;
-nm=kron(mat,diag(a)); 
 
 %Right-to-left qr & maxvol
 for i=d+1:-1:2
@@ -257,9 +256,19 @@ while ( swp <= nswp && not_converged )
    py=ry(i)*n(i)*n(i+1)*ry(i+2);
    fB=reshape(fB,N,py);
    solB=zeros(N,py);
-   for j=1:py
-     solB(:,j)=reshape(B(:,:,j),N,N) \ fB(:,j); %Bug fixed
-   end
+   %tic;
+   %for j=1:py
+   %  solB(:,j)=reshape(B(:,:,j),N,N) \ fB(:,j); %Bug fixed
+   %end
+   %t1=toc;
+   %tic;
+   solB=parmldivide(B,fB);
+   %t2=toc;
+   %fprintf('save=%3.1f \n',t1/t2);
+   %toc;
+   %if ( py > 1000 )
+   %  keyboard
+   %end
    %solB is Nxry(i)*n(i)*n(i+1)*ry(i+2)
    solB=reshape(solB,[N,ry(i),n(i),n(i+1),ry(i+2)]);
    %Compute the previous solution

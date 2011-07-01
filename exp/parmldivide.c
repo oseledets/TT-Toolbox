@@ -38,7 +38,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
     is_complex=0;
   }
   
-  
   if (is_complex==1) {
     dims[0]=n; dims[1]=n;
     curMf[0] = mxCreateNumericArray(2, dims, mxDOUBLE_CLASS, mxCOMPLEX);
