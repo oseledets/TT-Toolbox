@@ -1,5 +1,5 @@
-function [x]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P, verb)
-%  function [x]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P],[verb])
+function [x, sweeps]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P, verb)
+%  function [x, sweps]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P], verb)
 % Solves the system P(k,n)*A(n,m)*x(m)=P(k,n)*y(n)
 % Default values:
 %   x0 = random rank-2
@@ -15,11 +15,12 @@ max_full_size=2500;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
+% verb=true;
 small_verb=true;
-use_self_prec=true;
+use_self_prec=false;
 nswp_def=10;
 nrestart=40;
-gmres_iters=5;
+gmres_iters=2;
 local_prec = 'als';
 % local_prec = 'selfprec';
 kickrank = 2;
@@ -147,6 +148,7 @@ for swp=1:nswp
     x{d}=permute(reshape(cre, rnewx, n1, rx2), [2 1 3]);
     
     % Now, start the d-to-1 DMRG iteration
+    dx_max = 0; max_res = 0;
     phAold=1; phyold=1;
     for i=d:-1:2
         a2=A{i}; a1=A{i-1}; ra1=size(a1,3); ra2=size(a1,4); ra3=size(a2,4);
@@ -255,13 +257,14 @@ for swp=1:nswp
         x2 = reshape(permute(x{i}, [2 1 3]), rxm2, m2*rxm3);
         sol_prev = sol_prev*x2;
         sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
-
+                
         if (strcmp(MatVec,'full'))
 
+            res_prev = norm(B*sol_prev - rhs)/norm(rhs);
             sol = B \ rhs;
             res=B*sol;
 
-            res_true = norm(res-rhs)/norm(rhs);
+            res_true = norm(res-rhs)/norm(rhs);            
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             [sol_new,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, 2, [], [], sol_prev);
@@ -291,10 +294,17 @@ for swp=1:nswp
             res_true = norm(res-rhs)/norm(rhs);
         end;
         
+        if (res_prev>max_res)
+            max_res = res_prev;
+        end;        
+        
         dx = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
-        if ( verb ) 
-        fprintf('==sweep %d, block %d, dx=%3.3e\n', swp, i, dx);
-        end
+        if (verb)
+        fprintf('==sweep %d, block %d, dx=%3.3e, res_prev = %3.3e\n', swp, i, dx, res_prev);
+        end;
+        if (dx>dx_max)
+            dx_max = dx;
+        end;
         
         sol=reshape(sol,[rxm1*m1,m2*rxm3]);
         [u,s,v]=svd(sol,'econ');
@@ -375,7 +385,15 @@ for swp=1:nswp
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]); 
         
     end;
-    
+  
+    if (verb)
+        fprintf('-=-=-=-=-= dx_max = %3.3e, res_max = %3.3e\n', dx_max, max_res);
+    end;
+%     if (dx_max<tol*2)
+    if (max_res<tol*2)
+        break;
+    end;
+%     keyboard;
 end;
 
 x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
@@ -383,6 +401,10 @@ x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 if (input_is_tt_tensor)
   x=tt_tensor(x);
 end
+
+if (nargout>1)
+    sweeps = swp;
+end;
 
 end
 
