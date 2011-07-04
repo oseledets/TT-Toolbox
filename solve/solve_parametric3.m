@@ -52,11 +52,11 @@ for iter=1:niter
     y=y0;
     %Multiply parametric parts
     %parp=diag(par)*x2;
-    parp=mvk2(diag(par),x2,1e-8);
-    parp=round(parp,1e-8);
+    parp=mvk2(diag(par),x2,eps);
+    parp=round(parp,eps);
     res=kron(y,parp); 
     res=res-rhs;
-    res=round(res,1e-8);
+    res=round(res,eps);
  
   er=norm(res)/norm(rhs);
  fprintf('it=%d error=%3.2e\n',iter,er);

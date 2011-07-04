@@ -29,7 +29,7 @@ y=z;
 
 %Parameters section
 kick_rank=5;
-
+verb=false;
 
 %Warmup is to orthogonalize Y from right-to-left and compute psi-matrices
 %for Ax
@@ -161,12 +161,13 @@ corey=corey(pos1:numel(corey)); %Truncate unused elements
          super_core_old=cr1*cr2; 
          er=norm(super_core_old(:)-super_core(:))/norm(super_core(:));
      
-        if ( er > eps/sqrt(d-1) ) 
+        if ( er > eps ) 
             converged=false;
         end
         ermax=max(er,ermax);
-     %fprintf('i=%d er=%3.2e \n',i,er);
-
+     %if ( verb )
+     %  fprintf('i=%d er=%3.2e \n',i,er);
+     %end 
      end
      [u,s,v]=svd(super_core,'econ');
      s=diag(s); 
@@ -213,7 +214,9 @@ y.core=corey;
 y.r=ry;
 y.ps=psy;
 swp=swp+1;
-%fprintf('er=%3.2e \n',ermax);
+if ( verb )
+fprintf('swp=%d er=%3.2e trunk=%3.2e \n',swp,ermax,eps/sqrt(d-1));
+end
 end
 if ( swp == nswp ) 
   fprintf('mvk2 warning: error is not fixed for maximal number of sweeps %d\n', swp); 
