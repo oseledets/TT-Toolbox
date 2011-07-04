@@ -1,0 +1,94 @@
+d0t = 14; % quantics dims for t
+d0x = 8; % quantics dims for x
+dpx = 2; % phys. dims for x
+
+a = 0;
+b = 1;
+h = (b-a)/(2^d0x+1);
+
+tol = 1e-6;
+eps = 1e-8;
+
+% tranges = [0, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 2, 4];
+tranges = [0,1];
+
+
+Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
+Ax = Ax/(h^2);
+
+Ix = tt_matrix(tt_eye(2, dpx*d0x));
+
+% u0 = zeros(2^d0x,2^d0x);
+% u0(2:2^d0x-1, 2:2^d0x-1)=1;
+% u0 = tt_tensor(full_to_qtt(u0, eps, d0x*dpx));
+u0 = tt_tensor(tt_ones(d0x*dpx,2));
+keyboard;
+
+spacial_rhs = u0;
+
+% Now letz init the combined timestep procedure
+ttimes = zeros(1, max(size(tranges))-1);
+resids = zeros(1, max(size(tranges))-1);
+for out_t=1:max(size(tranges))-1
+    tau = (tranges(out_t+1)-tranges(out_t))/(2^d0t);
+    
+    St = tt_shf(d0t); St = tt_matrix(St); St=St'; % lower shift matrix for gradient
+    It = tt_matrix(tt_eye(2,d0t));
+    Grad_t = (It-St)/tau; % for gradient
+    Grad_t = round(Grad_t, eps);
+    
+    KN_term = (It+St)*0.5; % Krank-Nikolson term
+    KN_term = round(KN_term, eps);
+    
+    e1t = cell(d0t,1);
+    for i=1:d0t
+        e1t{i}=[1;0];
+    end;
+    e1t = tt_tensor(e1t); % first identity vector for t - we need to put u0 into rhs
+    eet = tt_tensor(tt_ones(d0t,2));
+%     e2t = round(e2t, 1e-12);
+    
+    
+    % global matrix
+    M = kron(Ix, Grad_t) + kron(Ax, KN_term);
+    M = round(M, eps);
+    
+    % f1 = sin(pi*(1:1:2^d0x)'/(1+2^d0x));
+    % u0 = full_to_qtt(f1, 1e-12);
+    % u0 = tt_tensor(u0);
+    % u0 = kron(u0,u0);
+    
+    % u0 = tt_tensor(tt_ones(d0x*dpx, 2));
+    
+    
+    u0_rhs = u0/tau - (Ax*u0)*0.5; % stuff u0 to rhs of KN scheme
+    u0_rhs = round(u0_rhs, eps);
+    rhs = kron(u0_rhs, e1t) + kron(spacial_rhs, eet);
+    rhs = round(rhs, eps);
+    
+    % norm_rhs = mvk(M',rhs,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
+    
+    U = tt_random(2, rhs.d, 2);
+    
+    tic;
+    [U,swps] = dmrg_solve2(M, rhs, U, tol, [], [], 100, []);
+    ttimes(out_t) = toc;
+    
+    Mx = mvk(M,U,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
+    %     Mx = M*x;
+    resids(out_t) = norm(Mx-rhs)/norm(rhs);
+        
+
+    % prepare new start
+    last_indices = cell(1, d0t);
+    for i=1:d0t
+        last_indices{i}=2;
+    end;
+    u0 = core(U);
+    u0 = tt_elem3(u0, last_indices);
+    u0 = tt_squeeze(u0);
+    u0 = tt_tensor(u0);
+    
+    fprintf('Time range: [%g; %g], solve_time = %g, resid = %3.3e, swps: %d\n', tranges(out_t), tranges(out_t+1), ttimes(out_t), resids(out_t), swps);
+    keyboard;
+end;
