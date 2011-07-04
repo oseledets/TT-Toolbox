@@ -3,34 +3,40 @@ function [y]=mvk(a,x,eps,nswp,z,rmax)
 %Matrix-by-vector product of a TT-matrix A, by TT-tensor X,
 %with accuracy EPS, number of sweeps NSWP and initial approximation Y
 %Matrix a is n(i) x m(i), thus x is m(i) and y is n(i)
-%Would be replaced by (z  + beta*A*x)
+%MVK is a two-sided method
 n=a.n;
 m=a.m;
 att=a.tt;
 corea=att.core;
 psa=att.ps;
 ra=att.r;
-y=z;
 d=att.d;
 if ( nargin <= 5 || isempty(rmax) )
    rmax=1000;
 end
+if ( nargin <= 4 || isempty(z) )
+  z=tt_random(n,ndims(x),5);
+  z=tt_tensor(z);
+end
+if ( nargin <= 3 || isempty(nswp) )
+  nswp = 40;
+end
+y=z;
+
 %Warmup is to orthogonalize Y from right-to-left and compute psi-matrices
 %for Ax
 psi=cell(d+1,1); %Psi-matrices 
 psi{d+1}=1; psi{1}=1;
 
-%Here we will add convergence test
+
+%Parameters section
+
 %Warmup: right-to-left QR + computation of psi matrices 
 
   corex=x.core;
   psx=x.ps;
   rx=x.r;
 
-%for qq=1:6
-%Test convergence: generate random tensor and test for tt_mvdot
-%y0=tt_random(size(x),ndims(x),2); 
-%y=y+tt_tensor(y0);
     psy=y.ps;
   ry=y.r;
   corey=y.core;

@@ -1,5 +1,6 @@
 function [y]=mvk2(a,x,eps,nswp,z,rmax)
-%[Y]=MVK2(A,X,EPS,NSWP,Y,RMAX)
+%[Y]=MVK2(A,X,EPS,[NSWP],[Y],[RMAX])
+%Realization of the two-sided DMRG
 %Matrix-by-vector product of a TT-matrix A, by TT-tensor X,
 %with accuracy EPS, number of sweeps NSWP and initial approximation Y
 %Matrix a is n(i) x m(i), thus x is m(i) and y is n(i)
@@ -10,22 +11,32 @@ corea=att.core;
 psa=att.ps;
 ra=att.r;
 d=att.d;
-if ( nargin <=4 || isempty(nswp) )
-  nswp = 50;
-end
-if ( nargin <=4  || isempty(z) )
-  z=x;
-end
 if ( nargin <= 5 || isempty(rmax) )
    rmax=1000;
 end
+if ( nargin <= 4 || isempty(z) )
+    rz1=rank(a,1)*rank(x,1);
+    rzd=rank(a,d+1)*rank(x,d+1);
+    kf=5;
+    rz=[rz1;kf*ones(d-1,1);rzd];
+  %z=tt_random(n,ndims(x),rz);
+  z=tt_rand(n,ndims(x),rz);
+end
+if ( nargin <= 3 || isempty(nswp) )
+  nswp = 40;
+end
 y=z;
+
+%Parameters section
+kick_rank=5;
+
 
 %Warmup is to orthogonalize Y from right-to-left and compute psi-matrices
 %for Ax
 psi=cell(d+1,1); %Psi-matrices 
-psi{d+1}=1; psi{1}=1;
-
+%psi{d+1}=1; psi{1}=1;
+psi{d+1}=eye(rank(y,d+1)); 
+psi{1}=eye(rank(y,1));
 %Here we will add convergence test
 %Warmup: right-to-left QR + computation of psi matrices 
 
@@ -33,16 +44,9 @@ corex=x.core;
 psx=x.ps;
 rx=x.r;
 
-%for qq=1:6
-%Test convergence: generate random tensor and test for tt_mvdot
-%y0=tt_random(size(x),ndims(x),2); 
-%y=y+tt_tensor(y0);
 swp=1;
 converged=false;
 while (swp <= nswp && ~converged)  
-
-y0=tt_random(size(y),ndims(y),2);
-y=y+tt_tensor(y0);
 psy=y.ps;
   ry=y.r;
   corey=y.core;
@@ -168,6 +172,20 @@ corey=corey(pos1:numel(corey)); %Truncate unused elements
      s=diag(s); 
      r=my_chop2(s,eps/sqrt(d-1)*norm(s)); r=min(r,rmax);
      u=u(:,1:r); s=s(1:r); v=v(:,1:r); v=v*diag(s);
+     
+     %Kick rank
+     
+     ur=randn(size(u,1),kick_rank);
+     %Orthogonalize ur to u by Golub-Kahan reorth
+     u=reort(u,ur);
+     radd=size(u,2)-r; 
+     if ( radd > 0 )
+        vr=zeros(size(v,1),radd);
+        v=[v,vr];
+     end
+     r=size(u,2);
+     
+     
      ry(i+1)=r;
      %u is ry(i)*n(i)*ry(i+1)
      %core_new(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=u(:); 
@@ -198,7 +216,7 @@ swp=swp+1;
 %fprintf('er=%3.2e \n',ermax);
 end
 if ( swp == nswp ) 
-  fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d\n', swp); 
+  fprintf('mvk2 warning: error is not fixed for maximal number of sweeps %d\n', swp); 
 end%end
 %p1=tt_mvdot(core(a),core(x),y0);
 %p2=dot(y,tt_tensor(y0));

@@ -6,7 +6,7 @@ if (nargin==1)
   r=a.tt.r;
 else
   i=varargin{1};
-   r=a.tt.r(i);
+  r=rank(a.tt,i);
 end
 return
 end

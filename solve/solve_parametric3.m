@@ -51,7 +51,8 @@ for iter=1:niter
     end
     y=y0;
     %Multiply parametric parts
-    parp=diag(par)*x2;
+    %parp=diag(par)*x2;
+    parp=mvk2(diag(par),x2,1e-8);
     parp=round(parp,1e-8);
     res=kron(y,parp); 
     res=res-rhs;
