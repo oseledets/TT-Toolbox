@@ -287,23 +287,6 @@ while ( swp < nswp && not_converged )
     u=reshape(u,[ra1,n1,rnew]); u=permute(u,[2,1,3]);
     y{i}=u;
  end
-%Fix the first core (separatedly)
-%           vv=tt_to_full(y);
-% vv=vv(:);
-% %Test interpolation property
-% k=1;
-% for k=1:d-2
-%   for s1=1:size(ind_left{k},2);
-%      for s2=1:size(ind_right{k+1},2)  
-% p0=[ind_left{k}(:,s1)',1,ind_right{k+1}(:,s2)'];
-% vv=vv(:);
-% p1=tt_sub2ind(sz,p0);
-% full_arr=full_arr(:);
-% full_arr(p1)-vv(p1)
-%      end
-%   end
-% end
-% keyboard;
   
 if (isempty(yold) )
   yold=y;

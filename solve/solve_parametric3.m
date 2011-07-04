@@ -28,6 +28,7 @@ num_mat=numel(mat);
 n=size(mat{1},1); %This is the size of the first, "large" dimension
 
 for iter=1:niter
+<<<<<<< Updated upstream
  
     %We need to check the residue. Sorry.
     x1=chunk(x,1,1);
@@ -74,6 +75,20 @@ if ( strcmp(solver,'als') )
  for i=1:rm
    for j=1:rv
       blk(i,j)=dot(row(par,i),row(x1,j));
+=======
+tic; 
+ 
+ intr=x;
+ [~,~,~,~,ind_right]=tt_canform1(tt_compr2(core(intr),1e-8));
+ %ind_right{2} is used to compute interpolation points 
+ r=size(ind_right{1},2);
+ ind_points=zeros(M,r);
+ for s=1:r
+   ind=ind_right{1}(:,s);
+   for i=1:M
+       ind0=sub_to_ind(ind((i-1)*d0+1:i*d0),2*ones(1,d0));
+       ind_points(i,s)=ind0;
+>>>>>>> Stashed changes
    end
  end
  for i=1:rf
@@ -166,13 +181,44 @@ elseif ( strcmp(solver,'maxvol') )
  
 %Simple dmrg_solve2 solver for the stochastic part
  nm=kron(mat_small,diag(par));
- sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
+ sol_red=dmrg_parb(mat_small,par,rhs_small,eps/10,sol_prev,[],3,false);
  %keyboard;
  %return
  %sol_red=dmrg_ssolve2(nm,rhs_small,sol_prev,eps,eps,[],3,[],false);
  x=ttm(sol_red,1,sols_all');
  x=round(x,eps);
+ tf=toc;    
+%We need to check the residue. Sorry.
+    x1=chunk(x,1,1);
+   rx=x1.r; rx=rx(2); %Block size
+    x2=chunk(x,2,x.d);
+    x1=full(x1);
+    x1=reshape(x1,[numel(x1)/rx,rx]);
+    %y=zeros(n,rx,num_mat);
+    y=zeros(n,num_mat,rx);
+    %Multiply in the physical space
+    for i=1:num_mat
+       for j=1:rx
+          y(:,i,j)=mat{i}*x1(:,j);
+       end
+    end
+    y=reshape(y,[n,numel(y)/n]);
+    y0=[];
+    for i=1:size(y,2)
+      y0=[y0,tt_tensor(y(:,i))];
+    end
+    y=y0;
+    %Multiply parametric parts
+    parp=diag(par)*x2;
+    parp=round(parp,1e-8);
+    res=kron(y,parp); 
+    res=res-rhs;
+    res=round(res,1e-8);
+ 
+  er=norm(res)/norm(rhs);
+ fprintf('it=%d error=%3.2e time=%3.2f rank=%3.1f \n',iter,er,tf,mean(rank(x)));
+ 
 end
-fprintf('Total number of solves: %d Accuracy: %3.2e \n',nsolves,er);
+fprintf('Total number of solves: %d Accuracy: %3.2e rank=%3.1f \n',nsolves,er);
 return
 end

@@ -115,8 +115,12 @@ rhs0=tt_tensor(rhs0);
 eps=1e-5;
 %Simple iterative solver
 tic;
+<<<<<<< Updated upstream
 x=solve_parametric3(mat,par,rhs0,[],1e-5,9);
 
+=======
+x=solve_parametric3(mat,M,d0,p,par,rhs0,[],1e-6,9);
+>>>>>>> Stashed changes
 toc;
 return
 x=tt_tensor(x);
