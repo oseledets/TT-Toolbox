@@ -115,7 +115,7 @@ rhs0=tt_tensor(rhs0);
 eps=1e-5;
 %Simple iterative solver
 tic;
-x=solve_parametric3(mat,M,d0,p,par,rhs0,[],1e-5,9);
+x=solve_parametric3(mat,par,rhs0,[],1e-5,9);
 
 toc;
 return

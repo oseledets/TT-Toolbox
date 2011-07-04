@@ -1,4 +1,4 @@
-function [x,hst1,hst2,sols]=solve_parametric3(mat,M,d0,p,par,rhs0,x0,eps,niter)
+function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
 %[X] = SOLVE_PARAMETRIC3(MAT,PAR,RHS,EPS,NITER)
 % MAT, PAR --- define matrix, please look at examples
 % RHS --- right-hand side
@@ -8,8 +8,8 @@ function [x,hst1,hst2,sols]=solve_parametric3(mat,M,d0,p,par,rhs0,x0,eps,niter)
 %M & d0 & p are really not needed at all
 
 %Parameters
-%solver='maxvol';
-solver='als';
+solver='maxvol';
+%solver='als';
 %Initialization
 
 if ( isempty(x0) )
@@ -52,12 +52,12 @@ for iter=1:niter
     y=y0;
     %Multiply parametric parts
     %parp=diag(par)*x2;
-    parp=mvk2(diag(par),x2,eps);
-    parp=round(parp,eps);
-    res=kron(y,parp); 
-    res=res-rhs;
-    res=round(res,eps);
- 
+    %parp=mvk2(diag(par),x2,eps);
+    %parp=round(parp,eps);
+    %res=kron(y,parp); 
+    %res=res-rhs;
+    %res=round(res,eps);
+    res=rhs;
   er=norm(res)/norm(rhs);
  fprintf('it=%d error=%3.2e\n',iter,er);
 if ( strcmp(solver,'als') ) 
@@ -89,11 +89,11 @@ if ( strcmp(solver,'als') )
     for k=2:rm
        bm0=bm0+mat{k}*blk(k,s);
     end
-    rhs0=ff(:,1);
+    rhs1=ff(:,1);
     for k=2:rf
-       rhs0=rhs0+ff(:,k)*for_rhs(k,s);
+       rhs1=rhs1+ff(:,k)*for_rhs(k,s);
     end
-    sols_add(:,s)=bm0 \ rhs0;
+    sols_add(:,s)=bm0 \ rhs1;
     nsolves=nsolves+1;
  end
 
@@ -107,33 +107,42 @@ elseif ( strcmp(solver,'maxvol') )
   %simply kill the beast by "computing all elements". This would
   %be also helpfull for working with hanging matrices
   
-  intr=x;
-  [~,~,~,~,ind_right]=tt_canform1(tt_compr2(core(intr),1e-8));
-  %ind_right{2} is used to compute interpolation points 
-  r=size(ind_right{1},2);
-   
-  ind_points=zeros(M,r);
-  for s=1:r
-    ind=ind_right{1}(:,s);
-    for i=1:M
-        ind0=sub_to_ind(ind((i-1)*d0+1:i*d0),2*ones(1,d0));
-        ind_points(i,s)=ind0;
-    end
-  end
-  nx=x.n;
+  x1=chunk(x,2,ndims(x));
+  f1=chunk(rhs,2,ndims(rhs));
+  %Determine the ranks and the blocking matrix
+  rm=rank(par,1);
+  rv=rank(x1,1);
+  rf=rank(f1,1);
+ 
+  ff=chunk(rhs,1,1); ff=full(ff); ff=reshape(ff,[numel(ff)/rf,rf]);
+
+  
+
+  [~,~,~,~,ind_right]=tt_canform1(tt_compr2(core(x),1e-8));
+  %ind_right{2} is used to compute interpolation points in par & f1
+  ii=ind_right{1};  
+  r=size(ii,2);
+    nx=x.n;
   sols_add=zeros(nx(1),r);
+
   for s=1:r
-    bm0=mat{1};
-    for k=2:M+1
-      bm0=bm0+p(ind_points(k-1,s))*mat{k};
+    ind=ii(:,s);
+    %Compute the reduction coefficient
+    cm=par(ind);
+    cf=f1(ind);
+    bm0=cm(1)*mat{1};
+    for i=2:rm
+       bm0=bm0+cm(i)*mat{i};
     end
-    %Form right-hand sides for the equation at multiparameter point
-    rhs1=tt_elem2(core(rhs0),ind_right{1}(:,s));
+    rhs1=cf(1)*ff(:,1);
+    for i=2:rf
+        rhs1=rhs1+cf(i)*ff(:,i);
+    end
     sols_add(:,s)=bm0 \ rhs1;
     nsolves=nsolves +  1;
-    %keyboard;
+
   end
-end
+ end
   if ( isempty(sols_all) )
    [sols_all,~]=qr(sols_add,0);
  else
