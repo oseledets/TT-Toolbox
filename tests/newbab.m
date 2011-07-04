@@ -4,11 +4,10 @@
 
 M=4;
 mat=cell(M+1,1);
-n=128; n0=n;
+n=32; n0=n;
 a=0;
 b=1;
 h=(b-a)/(n+1);
-x=a+(1:n)*h;
 x1=a+(0:n+1)*h;
 a1=ones(n+2,n+2);
 mat{1}=Fd_mtx(2,a1,0);
@@ -60,7 +59,6 @@ while ( pos <= numel(ww1)-1 )
   pos=pos+1;
 end
 
-f=exp(-p);
 %e=ones(size(p));
 %fprintf('MEAN: %10.10f \n',dot(f,ww1));
 %return
@@ -117,7 +115,8 @@ rhs0=tt_tensor(rhs0);
 eps=1e-5;
 %Simple iterative solver
 tic;
-x=solve_parametric3(mat,M,d0,p,par,rhs0,[],1e-8,9);
+x=solve_parametric3(mat,M,d0,p,par,rhs0,[],1e-5,9);
+
 toc;
 return
 x=tt_tensor(x);

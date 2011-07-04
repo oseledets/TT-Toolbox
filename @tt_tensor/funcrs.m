@@ -122,15 +122,32 @@ pos1=1;
      
      v=v*diag(s);
 
-     %Kick rank
+     %Kick rank of u 
+     ur=randn(size(u,1),kick_rank);
+     %Orthogonalize ur to u by Golub-Kahan reorth
+     u=reort(u,ur);
+     radd=size(u,2)-r2; 
+     if ( radd > 0 )
+       vr=zeros(size(v,1),radd);
+       v=[v,vr];
+     end
 
      
-     uadd=randn(size(u,1),kick_rank);
-     vadd=zeros(size(v,1),kick_rank);
+     %vr=randn(size(v,1),kick_rank);   
+     %v=reort(v,vr);
+     %radd=size(v,2)-rnew; 
+     %if ( radd > 0 )
+     %    ur=zeros(size(u,1),radd);
+     %    u=[u,ur];
+     %end
+     %rnew=rnew+radd;
 
-     u=[u,uadd]; v=[v,vadd];
-     [u,ru]=qr(u,0); 
-     v=v*(ru.');
+     
+     
+     
+     %u=[u,uadd]; v=[v,vadd];
+     %[u,ru]=qr(u,0); 
+     %v=v*(ru.');
      r2=size(u,2);
      
      ind=maxvol2(u);
@@ -209,13 +226,17 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      
      
      %Kick rank
+          
+      vr=randn(size(v,1),kick_rank);   
+      v=reort(v,vr);
+      radd=size(v,2)-r2; 
+      if ( radd > 0 )
+         ur=zeros(size(u,1),radd);
+         u=[u,ur];
+      end
+
      
-     uadd=zeros(size(u,1),kick_rank);
-     vadd=rand(size(v,1),kick_rank);
      
-     u=[u,uadd]; v=[v,vadd];
-     [v,rv]=qr(v,0); 
-     u=u*(rv.');
      r2=size(v,2);
      ind=maxvol2(v);
      r1=v(ind,:); 

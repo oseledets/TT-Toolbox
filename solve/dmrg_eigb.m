@@ -27,7 +27,7 @@ else
    y=y0;
 end
 if ( nargin <= 4 || isempty(rmax) )
-  rmax=1000;
+  rmax=2500;
 end
 if ( nargin <= 5 || isempty(nswp) )
   nswp = 4;
@@ -54,8 +54,8 @@ y0=y;
 
 
 %Parameters section
-msize=100;
-max_l_steps=100;
+msize=1000;
+max_l_steps=200;
 kick_rank=5;
 verb=true;
 %We start from the orthogonalization of the y vector from left-to-right
@@ -239,7 +239,6 @@ while ( swp <= nswp && not_converged )
            wnew=reshape(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]);
            wnew=permute(wnew,[1,2,5,3,4]); wnew=reshape(wnew,[ry(i)*n(i)*k,n(i+1)*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s); 
-       
            %Truncation block
            %rnew=my_chop2(s,eps*norm(s)); 
            %u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
@@ -250,9 +249,23 @@ while ( swp <= nswp && not_converged )
            while ( (r ~= r0 || r ~= r1) && r0 <= r1)
             r=min(floor((r0+r1)/2),rmax);
             %er0=norm(s(r+1:numel(s)));
-            sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
+            u1=u(:,1:r)*diag(s(1:r)); 
+            %Sonate u1
+            u1=reshape(u1,[ry(i)*n(i),k,r]);
+            u1=permute(u1,[1,3,2]);
+            u1=reshape(u1,[numel(u1)/k,k]);
+            [u2,~,v2]=svd(u1,'econ');
+            u1=u2*v2';
+            u1=reshape(u1,[ry(i)*n(i),r,k]);
+            u1=permute(u1,[1,3,2]);
+            u1=reshape(u1,[numel(u1)/r,r]);
+            sol = u1*(v(:,1:r))';
+            
             sol = reshape(sol,[ry(i),n(i),k,n(i+1),ry(i+2)]);
             sol=permute(sol,[1,2,4,5,3]); sol=reshape(sol,[numel(sol)/k,k]);
+            %if ( norm(sol'*sol-eye(k))>1e-3 )
+            %  keyboard
+            %end
             if (strcmp(matvec,'full'))
                 resid = norm(fm*sol-rhs)/norm(rhs);
             else
@@ -269,9 +282,12 @@ while ( swp <= nswp && not_converged )
             
            end
            rnew=r;
-           u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
-           u=u*diag(s); %u has to be reshaped 
-
+           if ( norm(sol'*sol-eye(k)) > 1e-7 )
+             keyboard;
+           end
+           %u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
+           %u=u*diag(s); %u has to be reshaped 
+           u=u1; v=v(:,1:rnew);
            
            
            %Random restart block
@@ -354,7 +370,17 @@ while ( swp <= nswp && not_converged )
            while ( (r ~= r0 || r ~= r1) && r0 <= r1)
             r=min(floor((r0+r1)/2),rmax);
             %er0=norm(s(r+1:numel(s)));
-            sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
+            v1=v(:,1:r)*diag(s(1:r)); 
+            %Sonate v1
+            v1=reshape(v1,[n(i+1),k,ry(i+2),r]);
+            v1=permute(v1,[1,3,4,2]);
+            v1=reshape(v1,[numel(v1)/k,k]);
+            [u2,~,v2]=svd(v1,'econ');
+            v1=u2*v2';
+            v1=reshape(v1,[n(i+1),ry(i+2),r,k]);
+            v1=permute(v1,[1,4,2,3]);
+            v1=reshape(v1,[numel(v1)/r,r]);
+            sol=u(:,1:r)*v1';
             sol = reshape(sol,[ry(i),n(i),n(i+1),k,ry(i+2)]);
             sol=permute(sol,[1,2,3,5,4]); sol=reshape(sol,[numel(sol)/k,k]);
             if (strcmp(matvec,'full'))
@@ -377,7 +403,7 @@ while ( swp <= nswp && not_converged )
            
            %Truncation block
            %rnew=my_chop2(s,eps*norm(s));
-           u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew); v=v*diag(s); 
+           u=u(:,1:rnew); v=v1;
            
            %Random restart block
            radd=min(kick_rank,size(u,1)-rnew);

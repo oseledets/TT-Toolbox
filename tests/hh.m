@@ -51,7 +51,7 @@ er1=2*eps_loc;
 a=a0+a;
 %while(er1>eps_loc)
 %return
-v=dmrg_eigb(a,5,1e-7,[],[],6);%v=v/norm(v);
+v=dmrg_eigb(a,4,1e-7,[],[],6);%v=v/norm(v);
 %v1=a*v; ev1=dot(v1,v); 
 %  er1=norm(v1-ev1*v);
 %end

@@ -12,6 +12,7 @@ function [y]=funcrs2(tt,fun,eps,y,nswp)
 %PARAMETERS SECTION
 rmin=1; 
 verb=true;
+kick_rank=5;
 if (~isempty(y))
    yold=y;
 end
@@ -143,6 +144,19 @@ pos1=1;
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
      v=v*diag(s);
+     
+     %Kick rank of u 
+     ur=randn(size(u,1),kick_rank);
+     %Orthogonalize ur to u by Golub-Kahan reorth
+     u=reort(u,ur);
+     radd=size(u,2)-r2; 
+     if ( radd > 0 )
+       vr=zeros(size(v,1),radd);
+       v=[v,vr];
+     end
+     r2=size(u,2);
+     
+     
      %ind=maxvol2(u);
      %r1=u(ind,:); 
      %u=u/r1; v=v*r1'; v=v.';
@@ -226,7 +240,23 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
      %Make it standard
-     u=u*diag(s);v=v.';v0=v;
+     u=u*diag(s);
+     
+          
+     %Kick rank
+          
+      vr=randn(size(v,1),kick_rank);   
+      v=reort(v,vr);
+      radd=size(v,2)-r2; 
+      if ( radd > 0 )
+         ur=zeros(size(u,1),radd);
+         u=[u,ur];
+      end
+      r2=size(v,2);
+     
+     
+     
+     v=v.';v0=v;
      %Compute new phi;
      ry(i+1)=r2;
      u=u(:); u=u.'; v=v(:); v=v.';
