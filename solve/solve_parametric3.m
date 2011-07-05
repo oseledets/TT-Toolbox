@@ -10,6 +10,7 @@ function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
 %Parameters
 solver='maxvol';
 %solver='als';
+rescheck=false;
 %Initialization
 
 if ( isempty(x0) )
@@ -27,39 +28,10 @@ nsolves=0;
 num_mat=numel(mat);
 n=size(mat{1},1); %This is the size of the first, "large" dimension
 
+
+xold=[];
 for iter=1:niter
  
-    %We need to check the residue. Sorry.
-    x1=chunk(x,1,1);
-   rx=x1.r; rx=rx(2); %Block size
-    x2=chunk(x,2,x.d);
-    x1=full(x1);
-    x1=reshape(x1,[numel(x1)/rx,rx]);
-    %y=zeros(n,rx,num_mat);
-    y=zeros(n,num_mat,rx);
-    %Multiply in the physical space
-    for i=1:num_mat
-       for j=1:rx
-          %y(:,i,j)=mat{i}*x1(:,j);
-          y(:,i,j)=mat{i}*x1(:,j);
-       end
-    end
-    y=reshape(y,[n,numel(y)/n]);
-    y0=[];
-    for i=1:size(y,2)
-      y0=[y0,tt_tensor(y(:,i))];
-    end
-    y=y0;
-    %Multiply parametric parts
-    %parp=diag(par)*x2;
-    %parp=mvk2(diag(par),x2,eps);
-    %parp=round(parp,eps);
-    %res=kron(y,parp); 
-    %res=res-rhs;
-    %res=round(res,eps);
-    res=rhs;
-  er=norm(res)/norm(rhs);
- fprintf('it=%d error=%3.2e\n',iter,er);
 if ( strcmp(solver,'als') ) 
  x1=chunk(x,2,ndims(x));
  f1=chunk(rhs,2,ndims(rhs));
@@ -166,12 +138,48 @@ elseif ( strcmp(solver,'maxvol') )
  
 %Simple dmrg_solve2 solver for the stochastic part
  nm=kron(mat_small,diag(par));
- sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
+ %sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
  %keyboard;
  %return
- %sol_red=dmrg_ssolve2(nm,rhs_small,sol_prev,eps,eps,[],3,[],false);
+ sol_red=dmrg_solve2(nm,rhs_small,sol_prev,eps,eps,[],3,[],false);
  x=ttm(sol_red,1,sols_all');
  x=round(x,eps);
+    %We need to check the residue. Sorry.
+if ( rescheck ) 
+   x1=chunk(x,1,1);
+   rx=x1.r; rx=rx(2); %Block size
+    x2=chunk(x,2,x.d);
+    x1=full(x1);
+    x1=reshape(x1,[numel(x1)/rx,rx]);
+    %y=zeros(n,rx,num_mat);
+    y=zeros(n,num_mat,rx);
+    %Multiply in the physical space
+    for i=1:num_mat
+       for j=1:rx
+          %y(:,i,j)=mat{i}*x1(:,j);
+          y(:,i,j)=mat{i}*x1(:,j);
+       end
+    end
+    y=reshape(y,[n,numel(y)/n]);
+    y0=[];
+    for i=1:size(y,2)
+      y0=[y0,tt_tensor(y(:,i))];
+    end
+    y=y0;
+    %Multiply parametric parts
+    %parp=diag(par)*x2;
+    parp=mvk2(diag(par),x2,eps);
+    parp=round(parp,eps);
+    res=kron(y,parp); 
+    res=res-rhs;
+    res=round(res,eps);
+else
+ res=rhs;
+end
+  er=norm(res)/norm(rhs);
+ er1=norm(xold-x)/norm(x);
+ fprintf('it=%d error=%3.2e dx=%3.2e \n',iter,er,er1);
+ xold=x;
 end
 fprintf('Total number of solves: %d Accuracy: %3.2e \n',nsolves,er);
 return
