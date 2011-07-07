@@ -15,8 +15,9 @@ if ( nargin <= 5 || isempty(rmax) )
    rmax=1000;
 end
 if ( nargin <= 4 || isempty(z) )
-  z=tt_random(n,ndims(x),5);
-  z=tt_tensor(z);
+  %z=tt_random(n,ndims(x),5);
+  %z=tt_tensor(z);
+  z=x;
 end
 if ( nargin <= 3 || isempty(nswp) )
   nswp = 40;
@@ -158,7 +159,7 @@ psy=y.ps;
      cr2=reshape(cr2,[ry(i+1),n(i+1)*ry(i+2)]);
      super_core_old=cr1*cr2; 
      er=norm(super_core_old(:)-super_core(:))/norm(super_core(:));
-     if ( er > eps/sqrt(d-1)) 
+     if ( er > eps) 
         converged=false;
      end
      ermax=max(er,ermax);
@@ -261,7 +262,7 @@ corey=corey(psy(d):psy(d+1)-1); %Start--only two cores are left!
      cry2=reshape(cry2,[ry(i+1),n(i+1)*ry(i+2)]);
      super_core_old=cry1*cry2;
      er=norm(super_core_old(:)-super_core(:))/norm(super_core(:));
-     if ( er > eps/sqrt(d-1)) 
+     if ( er > eps) 
         converged=false;
      end
      er=max(er,ermax);
@@ -286,7 +287,7 @@ corey=corey(psy(d):psy(d+1)-1); %Start--only two cores are left!
   end  
   swp=swp+1;
   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
-  %fprintf('er=%3.2e \n',ermax);
+  %fprintf('swp=%d er=%3.2e \n',swp,ermax);
   y.core=corey;
   y.r=ry;
   y.ps=psy;

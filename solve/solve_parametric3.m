@@ -8,8 +8,8 @@ function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
 %M & d0 & p are really not needed at all
 
 %Parameters
-solver='maxvol';
-%solver='als';
+%solver='maxvol';
+solver='als';
 rescheck=false;
 %Initialization
 

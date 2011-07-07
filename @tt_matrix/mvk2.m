@@ -28,7 +28,7 @@ end
 y=z;
 
 %Parameters section
-kick_rank=5;
+kick_rank=10;
 verb=false;
 
 %Warmup is to orthogonalize Y from right-to-left and compute psi-matrices

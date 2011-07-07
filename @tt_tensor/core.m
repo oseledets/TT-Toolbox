@@ -33,6 +33,9 @@ else
   n=tt1.n;
   tt=cr(pos(i):pos(i+1)-1);
   tt=reshape(tt,[r(i),n(i),r(i+1)]); 
+  if ( i == 1 && r(i) == 1 )
+     tt=reshape(tt,[n(i),r(i+1)]);
+  end
 end
 return
 end

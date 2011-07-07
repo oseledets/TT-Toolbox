@@ -1,4 +1,4 @@
-function [ind]=maxvol2(a)
+function [ind]=maxvol2(a,ind)
 %[IND]=MAXVOL2(A)
 %Computes maximal volume submatrix in n x r matrix A
 %Returns rows indices that contain maximal volume submatrix
@@ -20,12 +20,14 @@ if ( n <= r )
 end
 
 %Initialize
+if ( nargin < 2 || isempty(ind) )
 [~,~,p]=lu(a,'vector');
 %p=randperm(n);
 ind=p(1:r);
 b=a(p,:);
 sbm=a(ind,:);
 z=b(r+1:n,:)/sbm;
+end
 %Start iterations
 niters=100;
 eps=5e-2; %Stopping accuracy
