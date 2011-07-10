@@ -237,22 +237,22 @@ while ( swp <= nswp && not_converged )
    %Now form the rhs. It it is somewhat more complicated. 
    %For simplicity, we will split the stuff as for the matrix 
    %in the same fashion
-   ph1=phif{i};
-   ph2=phif{i+2}; 
+   phf1=phif{i};
+   phf2=phif{i+2}; 
    crf1=crf(psf(i):psf(i+1)-1);
    crf2=crf(psf(i+1):psf(i+2)-1);
-   ph1=reshape(ph1,[kf*ry(i),rf(i)]); %
+   phf1=reshape(phf1,[kf*ry(i),rf(i)]); %
    crf1=reshape(crf1,[rf(i),n(i)*rf(i+1)]);
-   ph1=ph1*crf1;
-   bf1=ph1; %Save for phi calculations
+   phf1=phf1*crf1;
+   bf1=phf1; %Save for phi calculations
    bf1=reshape(bf1,[numel(bf1)/rf(i+1),rf(i+1)]);
    crf2=reshape(crf2,[rf(i+1)*n(i+1),rf(i+2)]);
-   ph2=reshape(ph2,[rf(i+2),ry(i+2)]);
-   bf2=crf2*ph2;
+   phf2=reshape(phf2,[rf(i+2),ry(i+2)]);
+   bf2=crf2*phf2;
    bf2=reshape(bf2,[rf(i+1),numel(bf2)/rf(i+1)]);
-   ph1=bf1*bf2;
-   ph1=reshape(ph1,[kf,numel(ph1)/kf]);
-   fB=fP*ph1; %fB is Nxry(i)*n(i)*n(i+1)*ry(i+2)
+   phf1=bf1*bf2;
+   phf1=reshape(phf1,[kf,numel(phf1)/kf]);
+   fB=fP*phf1; %fB is Nxry(i)*n(i)*n(i+1)*ry(i+2)
    py=ry(i)*n(i)*n(i+1)*ry(i+2);
    fB=reshape(fB,N,py);
    solB=zeros(N,py);
@@ -263,6 +263,7 @@ while ( swp <= nswp && not_converged )
    %t1=toc;
    %tic;
    solB=parmldivide(B,fB);
+  
    %t2=toc;
    %fprintf('save=%3.1f \n',t1/t2);
    %toc;

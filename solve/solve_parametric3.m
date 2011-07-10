@@ -5,12 +5,15 @@ function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
 % EPS --- accuracy parameter
 % NITER --- number of iterations
 
-%M & d0 & p are really not needed at all
 
 %Parameters
-%solver='maxvol';
-solver='als';
+solver='maxvol';
+%solver='als';
 rescheck=false;
+write_log=true;
+log_file='solve'; %This two parameters will save all 
+%local matrices that are obtained during the solve, if write_log 
+%is on then we will play with them a lot
 %Initialization
 
 if ( isempty(x0) )
@@ -31,7 +34,10 @@ n=size(mat{1},1); %This is the size of the first, "large" dimension
 
 xold=[];
 for iter=1:niter
- 
+ x=round(x,eps);
+ sols_all=chunk(x,1,1);sols_all=full(sols_all);sols_all=squeeze(sols_all);
+ [sols_all,~]=qr(sols_all,0);
+
 if ( strcmp(solver,'als') ) 
  x1=chunk(x,2,ndims(x));
  f1=chunk(rhs,2,ndims(rhs));
@@ -136,12 +142,21 @@ elseif ( strcmp(solver,'maxvol') )
  
  sol_prev=ttm(x,1,sols_all);
  
-%Simple dmrg_solve2 solver for the stochastic part
+%Simple dmrg_solve2 solver for the stochastic part or advanced
+%black-box type solver for it.
  nm=kron(mat_small,diag(par));
- %sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
- %keyboard;
+
+% sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
+% keyboard;
  %return
- sol_red=dmrg_solve2(nm,rhs_small,sol_prev,eps,eps,[],3,[],false);
+ tic;
+ sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,[],10,[],false);
+ t1=toc; 
+ if ( write_log ) 
+    str=sprintf('%s%d.mat',log_file,i);
+    save(str,'mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');
+    %Save all the information
+ end
  x=ttm(sol_red,1,sols_all');
  x=round(x,eps);
     %We need to check the residue. Sorry.

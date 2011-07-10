@@ -23,7 +23,7 @@ nrestart=40;
 gmres_iters=2;
 local_prec = 'als';
 % local_prec = 'selfprec';
-kickrank = 2;
+kickrank = 5;
 
 
 if ((nargin<7)||(isempty(nswp)))
@@ -63,7 +63,7 @@ if ( isa(y,'tt_tensor') )
   y=core(y);
   input_is_tt_tensor = 1;
 end
-
+%nrmF=sqrt(tt_dot(y,y)); 
 
 d=size(A,1);
 if ((nargin<8)||(isempty(P)))
@@ -222,7 +222,9 @@ for swp=1:nswp
         % Now, compress inner rank rp2*ra2 --- what is this ???
         %Modify it by random noise, since sometime MATLAB QR
         %fails
-        B2=B2+max(abs(B2(:)))*randn(size(B2))*1e-16;
+        %B2=B2+max(abs(B2(:)))*randn(size(B2))*1e-16; Kill all humans for
+        %such code
+        
         [Q,R]=qr(B2,0);
 
         rnew = min(k2*rxn3*m2*rxm3, rp2*ra2);
@@ -271,7 +273,6 @@ for swp=1:nswp
             res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             conv_factor=(res_new/res_prev);
             if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
-%                 keyboard;
                 if (strcmp(local_prec, 'selfprec'))
                     iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 
@@ -337,15 +338,25 @@ for swp=1:nswp
         u = u(:,1:r)*diag(s(1:r));
         
         % random kick %This is a production code, sir!
-        v = [v, randn(size(v,1), kickrank)];
-        u = [u, zeros(size(u,1), kickrank)];
-        [v,rv] = qr(v,0);
-        r = size(v,2);
-        u = u*(rv.');
+        %Replace by new stuff
+        
+       vr=randn(size(v,1),kickrank);   
+       v=reort(v,vr);
+       radd=size(v,2)-r; 
+       if ( radd > 0 )
+         ur=zeros(size(u,1),radd);
+         u=[u,ur];
+       end
+       r=r+radd;
+       
+        %v = [v, randn(size(v,1), kickrank)];
+        %u = [u, zeros(size(u,1), kickrank)];
+        %[v,rv] = qr(v,0);
+        %r = size(v,2);
+        %u = u*(rv.');
         
         x{i}=permute(reshape(v, m2, rxm3, r), [1 3 2]);
         x{i-1}=permute(reshape(u, rxm1, m1, r), [2 1 3]);
-%         rx2=r;
         rxm2=r; rxn2=r;
 
         

@@ -15,8 +15,12 @@ switch s(1).type
       end
       if ( mn == 1 ) %Special case
          ind=pp{1};
-         for i=1:d
-           pp{i}=ind(i);
+         if ( isa(ind,'double') )
+           for i=1:d
+             pp{i}=ind(i);
+           end
+         else
+            pp=ind; %Supposedly it was a cell array of index subsets  
          end
       end
       elem=tt_tensor;
