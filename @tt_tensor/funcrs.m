@@ -1,4 +1,4 @@
-function [y]=funcrs(tt,fun,eps,y,nswp)
+function [y]=funcrs(tt,fun,eps,y,nswp,vargin)
 %[Y]=FUNCRS(TT,FUN,EPS)
 %[Y]=FUNCRS(TT,FUN,EPS)
 %[Y]=FUNCRS(TT,FUN,EPS,Y)
@@ -11,8 +11,8 @@ function [y]=funcrs(tt,fun,eps,y,nswp)
 
 %PARAMETERS SECTION
 rmin=1; 
-verb=true;
-kick_rank=5;
+verb=false;
+kick_rank=1;
 if (~isempty(y))
    yold=y;
 end
@@ -279,8 +279,9 @@ else
    er_nrm=norm(yold-y)/norm(y);
    yold=y;
 end
+if ( verb )
  fprintf('sweep=%d, er=%3.2e er_nrm=%3.2e \n',swp,max_er,er_nrm);
-
+end
 swp=swp+1;
 end     
   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);

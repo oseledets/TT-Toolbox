@@ -11,7 +11,7 @@ solver='maxvol';
 %solver='als';
 rescheck=false;
 write_log=true;
-log_file='solve'; %This two parameters will save all 
+log_file='solve_d4dmrg1'; %This two parameters will save all 
 %local matrices that are obtained during the solve, if write_log 
 %is on then we will play with them a lot
 %Initialization
@@ -150,10 +150,10 @@ elseif ( strcmp(solver,'maxvol') )
 % keyboard;
  %return
  tic;
- sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,[],10,[],false);
+ sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,80,1,[],false);
  t1=toc; 
  if ( write_log ) 
-    str=sprintf('%s%d.mat',log_file,i);
+    str=sprintf('%s%d.mat',log_file,iter);
     save(str,'mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');
     %Save all the information
  end

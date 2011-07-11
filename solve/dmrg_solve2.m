@@ -1,4 +1,4 @@
-function [x, sweeps]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P, verb)
+function [x, sweeps]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P, verb,vargin)
 %  function [x, sweps]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P], verb)
 % Solves the system P(k,n)*A(n,m)*x(m)=P(k,n)*y(n)
 % Default values:
@@ -15,14 +15,15 @@ max_full_size=2500;
 prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
-% verb=true;
-small_verb=true;
+
 use_self_prec=false;
 nswp_def=10;
 nrestart=40;
 gmres_iters=2;
 local_prec = 'als';
 % local_prec = 'selfprec';
+
+
 kickrank = 5;
 
 
@@ -35,7 +36,7 @@ end;
 if ((nargin<5)||(isempty(tol)))
     tol=eps;
 end;
-if ( (nargin<8) || (isempty(verb)) )
+if ( (nargin<9) || (isempty(verb)) )
   verb=true;
 end
 
