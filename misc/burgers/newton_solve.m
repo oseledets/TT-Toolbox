@@ -1,70 +1,44 @@
-function [unew]=newton_solve(uold, rhs, tau, h, alpha, beta, gamma, Grad, Lapl, Mass)
-% Solve the Krank-Nicolson equation via Newton iterations
+function [u]=newton_solve(B, M, A, f, AMh, tol, u0)
 
-n = size(uold,1);
 maxit=20;
-unew=uold;
-e = ones(n,1);
-
-for it=1:maxit
-    % squared brackets in the functional
-    func_parts = (1/tau)*unew - alpha*0.5*Lapl*unew + beta*0.5*Grad*unew + ...
-        gamma*(Mass*0.5*uold).*(Grad*0.5*unew) + gamma*(Grad*0.5*uold).*(Mass*0.5*unew) + ...
-        gamma*(Mass*0.5*unew).*(Grad*0.5*unew) - rhs;
-    J = sum(func_parts.^2);
-    
-    Mold = Mass*uold;
-    Mnew = Mass*unew;
-    Gold = Grad*uold;
-    Gnew = Grad*unew;
-    
-    % brackets in gradient for i, i-1, i+1
-    fGrad_part_0 = (1/tau)*e + alpha/(h^2)*e + ...
-        gamma/12*(Gold+Gnew);
-    fGrad_part_m = -alpha*0.5/(h^2)*e + beta/(4*h)*e + ...
-        gamma/(8*h)*(Mold+Mnew) + gamma/12*(Gold+Gnew);
-    fGrad_part_p = -alpha*0.5/(h^2)*e - beta/(4*h)*e - ...
-        gamma/(8*h)*(Mold+Mnew) + gamma/12*(Gold+Gnew);
-    % Gradient itself
-    fGrad = func_parts.*fGrad_part_0 + [0; func_parts(1:n-1)].*fGrad_part_m +...
-        [func_parts(2:n); 0].*fGrad_part_p;
-    
-    % Diagonals of the Hessian
-    Hessdiags = zeros(n, 5);
-    % i-2,j
-    Hessdiags(:,1) = (-alpha*0.5/(h^2)*e - beta/(4*h)*e - gamma/(8*h)*(Mass*uold) +...
-        gamma/12*(Grad*uold) + gamma/12*(Grad*unew) - ...
-        gamma/(8*h)*(Mass*unew)).*[fGrad_part_m(3:n);0;0];
-    
-    Hessdiags(:,2) = (1/tau*e + alpha/(h^2)*e + gamma/12*(Grad*uold) + ...
-        gamma/12*(Grad*unew)).*[fGrad_part_m(2:n);0] + ...
-        (-alpha/(2*h^2)*e - beta/(4*h)*e - gamma/(8*h)*(Mass*(uold+unew)) + ...
-        gamma/12*(Grad*(uold+unew))).*[fGrad_part_0(2:n);0] - ...
-        gamma/(24*h)*[func_parts(2:n);0] + ...
-        (-gamma/(24*h)+gamma/(12*h))*[func_parts(1:n-1);0] + ...
-        (-gamma/(24*h)-gamma/(12*h))*[func_parts(3:n);0;0];
-    
-    Hessdiags(:,3) = (-alpha*0.5/(h^2)*e - beta/(4*h)*e - gamma/(8*h)*(Mass*(uold+unew)) +...
-        gamma/12*(Grad*(uold+unew))).*fGrad_part_p + ...
-        (-alpha*0.5/(h^2)*e + beta/(4*h)*e + gamma/(8*h)*(Mass*(uold+unew)) +...
-        gamma/12*(Grad*(uold+unew))).*fGrad_part_m + ...
-        (1/tau*e + alpha/(h^2)*e + gamma/12*(Grad*(uold+unew))).*fGrad_part_0 +...
-        gamma/(12*h)*[0;func_parts(1:n-1)] - gamma/(12*h)*[func_parts(2:n);0];
-    
-    Hessdiags(:,4) = (1/tau*e + alpha/(h^2)*e + gamma/12*(Grad*uold) + ...
-        gamma/12*(Grad*unew)).*[0;fGrad_part_p(1:n-1)] + ...
-        (-alpha/(2*h^2)*e + beta/(4*h)*e + gamma/(8*h)*(Mass*(uold+unew)) + ...
-        gamma/12*(Grad*(uold+unew))).*[0;fGrad_part_0(1:n-1)] + ...
-        gamma/(24*h)*[0;func_parts(1:n-1)] + ...
-        (gamma/(24*h)+gamma/(12*h))*[0;func_parts(1:n-1)] + ...
-        (gamma/(24*h)-gamma/(12*h))*[0;func_parts(2:n)];    
-    
-    Hess = spdiags(Hessdiags, [-2 -1 0 1 2], n, n);
-    
-    % new iteration (in the end)
-    u_new = u_new - (Hess \ fGrad);
-    
-    fprintf('iter %d, functional J = %3.3e', it-1, J);
+n = size(B,1);
+if (nargin<7)||(isempty(u0))
+    u0 = 1e-5*ones(n,1);
 end;
+
+u = u0;
+
+for i=1:maxit
+    Bu = B*u;
+    Mu = M*u;
+    Au = A*u;
+    
+    resid = Bu + Mu.*Au - f;
+    err_old = norm(resid);
+    
+    diag_Au = spdiags(Au, 0, n, n);
+    diag_Mu = spdiags(Mu, 0, n, n);
+    
+    grad_resid = B + diag_Mu*A + diag_Au*M; % [i,\hat{i}] - matrix
+    Grad = (grad_resid')*resid;
+    
+    Hess = AMh*resid; % size \tilde{i}*\hat{i},1
+    Hess = reshape(Hess, n, n);
+    Hess = Hess + Hess.'; % ((M.*A)*resid) part is ready
+    
+    Hess = Hess + (grad_resid')*grad_resid; % Hess is ready
+    
+    % new iteration    
+    du = Hess \ Grad;
+%     du = pcg(Hess, Grad,tol, 100);
+    du_norm = norm(du);
+    u = u-du;
+    
+    fprintf('iter: %d, err_old: %3.3e, du: %3.3e\n', i, err_old, du_norm);
+    if (err_old<tol)
+        break;
+    end;
+end;
+
 
 end
