@@ -1,47 +1,61 @@
-function [y,swp]=tt_mvk2(a,x,eps)
-%[A]=TT_MVK2(A,X,EPS)
-%Multiplies a TT matrix A by a TT vector X with relative accuracy EPS
-%Sometimes issues a warning --- this means the result can not be trusted
-%
-%
-% TT Toolbox 1.1, 2009-2010
-%
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva.
-%Institute of Numerical Mathematics, Moscow, Russia
-%webpage: http://spring.inm.ras.ru/osel
-%
-%For all questions, bugs and suggestions please mail
-%ivan.oseledets@gmail.com
-%---------------------------
-rmin=1; nswp=50;
+function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)
+%[A]=TT_MVK2(A,X,EPS, max_r, max_swp)
+%Matrix-by-vector product by Krylov-type Block algorithm,
+%which tries to compute everything fast, by increasing rank as far as
+%possible
+
+exists_max_r=1;
+if ((nargin<4)||(isempty(max_r)))
+    exists_max_r=0;
+end;
+
+nswp=50;
+if ((nargin>=5)&&(~isempty(max_swp)))
+    nswp = max_swp;
+end;
+
+rmin=1;
+kickrank = 2;
 radd=0;
 %verb=false;
 verb=false;
 d=size(a,1);
-%Init solution 
-y=x;
+%Init solution
+a_coarse = tt_mat_compr(a, eps, 1);
+% x_coarse = tt_compr2(x, eps, round(max(tt_ranks(x))/5));
+% y = tt_mv(a_coarse, x_coarse);
+y=tt_mv(a_coarse,x);
+% y = x;
 %y=tt_mv(a,x);
-%y=tt_random(tt_size(x),size(x,1),2);
+% y=tt_random(tt_size(a),d,2);
 ph=cell(d,1);
 yold=[];
-eps0=eps/sqrt(d-1);
 %ph will be rx * ra * ry 
 swp=1;
-not_converged=true;
-while ( swp < nswp && not_converged) 
+
+log_norms_ph = zeros(d,1);
+log_norms_y = zeros(d,1);
+
+while ( swp < nswp) 
  %power up by addition random rank-two term (it is magic)
- %if ( swp >= 1 )
- y0=tt_random(tt_size(y),size(y,1),2);
- y=tt_add(y,y0);
- %end
+%  y0=tt_random(tt_size(a),d,2);
+%  y=tt_add(y,y0);
+ 
+ for q=1:d
+     log_norms_y(q)=log(norm(reshape(y{q}, size(y{q},1)*size(y{q},2), size(y{q},3)), 'fro')+1e-308);
+     y{q}=y{q}./exp(log_norms_y(q));
+ end;
+ 
    % fprintf('swp=%d \n',swp);
-   not_converged=false;
+   err_max = 0;
     %Back reorthogonalization
   %Sweep starts from right-to-left orthogonalization of x
   %Compute right-to-left qr and phi matrices
   mat=y{d};
   [q,rv]=qr(mat,0);
+  log_norms_y(d)=log(norm(q,'fro')+1e-308);
   y{d}=q;
+  y{d}=y{d}./exp(log_norms_y(d));
   %A(n,m,ra))*x(m,rx)*y(n,ry) -> ph(rx,ra,ry)
   core=a{d}; n=size(core,1); m=size(core,2); ra=size(core,3);
   mat_x=x{d}; rx=size(mat_x,2);
@@ -53,6 +67,9 @@ while ( swp < nswp && not_converged)
   core=permute(core,[2,3,1]); %ra*rxm*n
   core=reshape(core,[ra*rx,n]);
   ph{d}=core*mat_y; % ra*rx*ry
+  log_norms_ph(d) = log(norm(ph{d}, 'fro')+1e-308); % preserve norms of phi to avoid Infs
+  ph{d}=ph{d}./exp(log_norms_ph(d)); % keep only normalized phi
+  log_norms_ph(d) = log_norms_ph(d) + log_norms_y(d);
   ph{d}=reshape(ph{d},[ra,rx,ry]);
   ph{d}=permute(ph{d},[2,1,3]);
 
@@ -66,6 +83,8 @@ for i=(d-1):-1:2
     core=permute(core,[1,3,2]);
     core=reshape(core,[ncur*r3,r2]);
     [y{i},rv]=qr(core,0);
+    log_norms_y(i)=log(norm(y{i}, 'fro')+1e-308);
+    y{i}=y{i}./exp(log_norms_y(i));    
     rnew=min(r2,ncur*r3);
     y{i}=reshape(y{i},[ncur,r3,rnew]);
     y{i}=permute(y{i},[1,3,2]);
@@ -95,10 +114,14 @@ for i=(d-1):-1:2
     y1=permute(y1,[1,3,2]);
     y1=reshape(y1,[n*ry2,ry1]);
     phi=y1'*phi;
+    log_norms_ph(i)=log(norm(phi, 'fro')+1e-308);
+    phi = phi./exp(log_norms_ph(i)); % keep normalized phi
+    log_norms_ph(i)=log_norms_ph(i)+log_norms_ph(i+1)+log_norms_y(i); % don't forget norm of previous phi
     %ph is ry1*ra1*rx1
     phi=reshape(phi,[ry1,ra1,rx1]);
     phi=permute(phi,[3,2,1]);
     ph{i}=phi;
+%     norm_phi=norm(reshape(phi,ry1*ra1*rx1,1), 'fro')
 end
 
 
@@ -109,7 +132,7 @@ end
 
 
 core1=a{1}; n1=size(core1,1); m1=size(core1,2); ra1=size(core1,3);
-core2=a{2}; n2=size(core2,2); m2=size(core2,2); ra2=size(core2,4);
+core2=a{2}; n2=size(core2,1); m2=size(core2,2); ra2=size(core2,4);
 x1=x{1}; rx1=size(x1,2); 
 x2=x{2}; rx2=size(x2,3);
 phi2=ph{3};
@@ -127,30 +150,49 @@ phi2=reshape(phi2,[ra1*rx1,n2*ry2]);
 %Here is multiplication by the first core (to be substituted by a 
 %sparse matrix-by-vector product)
 
+% fprintf('norm_phi2=%g\n', norm(phi2));
 core1=permute(core1,[1,3,2]);
 x1=reshape(core1,[n1*ra1,m1])*x1;
+% if ((max(max(isinf(x1)))==1))
+%     fprintf('inf in x1\n');
+% end;
+% if ((max(max(isinf(phi2)))==1)||(max(max(isnan(phi2)))==1))
+%     fprintf('inf in phi2\n');
+% end;
 mat=reshape(x1,[n1,ra1*rx1])*phi2;
 mat=reshape(mat,[n1,n2*ry2]);
-if ( numel(find(isnan(mat))==1 ) > 1 )
-  keyboard;
-end
-[u,s,v]=svd(mat,'econ');
+
+% if ((max(max(isinf(mat)))==1)||(max(max(isnan(mat)))==1))
+%     fprintf('inf in mat\n');
+% end;
+
+[u,s,v]=svd(mat,0);
 s=diag(s);
+nrm=norm(s);
 rold=size(y{1},2);
-nrm=norm(s); ea=nrm*eps0;
-%r=my_chop2(s,eps*norm(s));
-r=numel(find(abs(s)>ea));
- 
-r=max([rmin,r,rold+radd]);
-r=min(r,size(s,1));
+r=my_chop2(s,eps*nrm);
+% r=max([rmin,r,rold+radd]);
+% r=min(r,size(s,1));
+if (exists_max_r) r = min(r, max_r); end;
 if ( verb ) 
  fprintf('We can push rank %d to %d \n',1,r);
 end
 u=u(:,1:r);
-y{1}=u;
 v=v(:,1:r)*diag(s(1:r));
+% Power up by kickrank random addition
+u = [u, randn(size(u,1),kickrank)];
+v = [v, zeros(size(v,1),kickrank)];
+[u,rv]=qr(u,0);
+r = size(u,2);
+v = v*(rv.');
+y{1}=u;
+log_norms_y(1)=log(norm(u, 'fro')+1e-308);
+y{1}=y{1}./exp(log_norms_y(1));
+log_norms_y(2)=log(norm(v, 'fro')+1e-308);
 y{2}=reshape(v,[n2,ry2,r]);
 y{2}=permute(y{2},[1,3,2]);
+y{2}=y{2}./exp(log_norms_y(2));
+log_norms_y(2)=log_norms_y(2)+log_norms_ph(3); % v*s' was generated using ph{3}
 %Recalculate ph{1};
 %ph{1}=A(n,m,ra)*X(m,rx)*Y(n,ry) -> (ry,ra,rx)
 %Decipher sizes
@@ -160,6 +202,9 @@ y1=y{1}; ry=size(y1,2);
 core=permute(core,[1,3,2]); core=reshape(core,[n*ra,m]);
 phi1=core*x1; %phi is n*ra*rx
 phi1=y1'*reshape(phi1,[n,ra*rx]);
+log_norms_ph(1)=log(norm(phi1, 'fro')+1e-308);
+phi1 = phi1./exp(log_norms_ph(1));
+log_norms_ph(1) = log_norms_ph(1) + log_norms_y(1); % phi1=y1*core*x1
 ph{1}=reshape(phi1,[ry,ra,rx]);
  for i=2:d-2
      
@@ -213,12 +258,16 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
   y2=permute(y2,[2,1,3]);
   y1=reshape(y1,[ry1*n1,ry2]);
   y2=reshape(y2,[ry2,n2*ry3]);
-  app=y1*conj(y2);
+  app=y1*y2;
+  app = app.*exp(log_norms_y(i)+log_norms_y(i+1)-log_norms_ph(i-1)-log_norms_ph(i+2)); % normalize y1*y2 to mat
   er0=norm(mat-app,'fro')/norm(mat,'fro');
-  if ( er0 > eps )
-    %fprintf('rank %d\t does not converge,er0=%3.2e\t\n',i,er0);
-    not_converged=true;
-  end
+  if (er0>err_max)
+      err_max = er0;
+  end;
+%   if ( er0 > eps )
+% %     fprintf('rank %d\t does not converge,er0=%3.2e\t\n',i,er0);
+%     not_converged=true;
+%   end
   %fprintf('er0=%3.2e\n',er0);
   [u,s,v]=svd(mat,'econ');
    s=diag(s);
@@ -226,21 +275,31 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
   %fprintf('norm=%18f \n',norm(s));
   %fprintf('tensor norm=%3.2e \n',norm(s));
   rold=size(y{i},3);
-  nrm=norm(s); ea=nrm*eps0;
-  %r=my_chop2(s,eps*norm(s));
-  r=numel(find(abs(s)>ea));
-  r=max([r,rmin,rold+radd]);
-  r=min(r,size(s,1));
+  r=my_chop2(s,eps*norm(s));
+%   r=max([r,rmin,rold+radd]);
+%   r=min(r,size(s,1));
+  if (exists_max_r) r = min(r, max_r); end;  
   %if ( 
   if ( verb )
   fprintf('We can push rank %d to %d \n',i,r);
   end
   u=u(:,1:r);
   v=v(:,1:r)*diag(s(1:r));
+  % kick
+  u = [u, randn(size(u,1),kickrank)];
+  v = [v, zeros(size(v,1),kickrank)];
+  [u,rv]=qr(u,0);
+  r = size(u,2);
+  v = v*(rv.');
+  log_norms_y(i)=log(norm(u, 'fro')+1e-308);  
+  log_norms_y(i+1)=log(norm(v, 'fro')+1e-308);  
   u=reshape(u,[ry1,n1,r]);
   y{i}=permute(u,[2,1,3]);
+  y{i}=y{i}./exp(log_norms_y(i));
   v=reshape(v,[n2,ry3,r]);
   y{i+1}=permute(v,[1,3,2]);
+  y{i+1}=y{i+1}./exp(log_norms_y(i+1));
+  log_norms_y(i+1)=log_norms_y(i+1)+log_norms_ph(i-1)+log_norms_ph(i+2); % norm(mat) ~ norm(ph{i-1})*norm(ph{i+2})
   %Finally, need to recompute ph{i}
   %will have size ry
   %A(n1,m1,ra1,ra2)*X(m1,rx1,rx2)*Y(n1,ry1,ry2)*ph{i-1}(ry1,ra1,rx1)
@@ -249,6 +308,9 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
   ph_save=permute(ph_save,[4,2,3,1]);
   ph_save=reshape(ph_save,[n1*ry1,ra2*rx2]);  %HERE WE CAN HAVE A FAULT
   ph_save=reshape(y{i},[n1*ry1,r])'*ph_save;
+  log_norms_ph(i)=log(norm(ph_save, 'fro')+1e-308);
+  ph_save = ph_save./exp(log_norms_ph(i));
+  log_norms_ph(i)=log_norms_ph(i)+log_norms_y(i)+log_norms_ph(i-1);
   ph{i}=reshape(ph_save,[r,ra2,rx2]);
  end
  %Now the last mode 
@@ -281,37 +343,59 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
  %A2(n2,m2,ra2)*X2(m2,rx2) -> ph2(n2,ra2,x2)
  core2=permute(core2,[1,3,2]); core2=reshape(core2,[n2*ra2,m2]);
  ph2=core2*x2; %ph2 is n2*ra2*rx2
- ph_save=ph2; 
+ ph_save=ph2;
  ph2=reshape(ph2,[n2,ra2*rx2]);
  ph1=reshape(ph1,[rx2,ry1,ra2,n1]); %The needed result is ry1*n1*n2
  ph1=permute(ph1,[2,4,3,1]); ph1=reshape(ph1,[ry1*n1,ra2*rx2]);
  mat=ph1*ph2'; 
  [u,s,v]=svd(mat,'econ');
  s=diag(s);
-  nrm=norm(s); ea=nrm*eps0;
-  %r=my_chop2(s,eps*norm(s));
-  r=numel(find(abs(s)>ea));
- 
+ r=my_chop2(s,eps*norm(s));
  rold=size(y{d},2);
-r=max([r,rmin,rold]);
-r=min(r,size(s,1));
+% r=max([r,rmin,rold]);
+% r=min(r,size(s,1));
+ if (exists_max_r) r = min(r, max_r); end;
  %fprintf('We can push rank %d to %d \n',d-1,r);
  u=u(:,1:r);
- v=v(:,1:r); 
+ v=v(:,1:r)*diag(s(1:r)); 
+ % kick
+ u = [u, randn(size(u,1),kickrank)];
+ v = [v, zeros(size(v,1),kickrank)];
+ [u,rv]=qr(u,0);
+ r = size(u,2);
+ v = v*(rv.');
  %v=v;
- u=u*diag(s(1:r));
+ log_norms_y(d-1)=log(norm(u, 'fro')+1e-308);
+ log_norms_y(d)=log(norm(v, 'fro')+1e-308);
  u=reshape(u,[ry1,n1,r]);
  u=permute(u,[2,1,3]);
  y{d-1}=u;
+ y{d-1}=y{d-1}./exp(log_norms_y(d-1));
  y{d}=v;
+ y{d}=y{d}./exp(log_norms_y(d));
+ log_norms_y(d-1)=log_norms_y(d-1)+log_norms_ph(d-2);
  %Recalculate ph{d}
  %A2(n2,m2,ra2)*X(m2,rx2)*Y(n2,ry2} %ph_save is n2*ra2*x2, result
  %rx2*ra2*ry2
  ph_save=reshape(ph_save,[n2,ra2,rx2]);
  ph_save=permute(ph_save,[1,3,2]); ph_save=reshape(ph_save,[n2,rx2*ra2]);
  ph_save=ph_save'*v;
+ log_norms_ph(d)=log(norm(ph_save, 'fro')+1e-308);
+ ph_save = ph_save./exp(log_norms_ph(d));
  ph_save=reshape(ph_save,[rx2,ra2,r]);
  ph{d}=ph_save;
+
+%  norms_phi = exp(log_norms_ph')
+%  norms_y = exp(log_norms_y')
+ 
+ norm1_y = exp(sum(log_norms_y)/d);
+ for i=1:d
+     y{i}=y{i}.*norm1_y;
+ end;
+ 
+ if (err_max<=eps)
+     break;
+ end;
 %  if (~isempty(yold) )
 %    er=tt_dist2(y,yold)/sqrt(tt_dot(yold,yold));
 %    fprintf('er=%3.2e\n',er);
@@ -320,7 +404,7 @@ r=min(r,size(s,1));
   swp=swp+1;
 end
 if ( swp == nswp ) 
-  fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps \n'); 
+  fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, err_max); 
 end
  return
 end
