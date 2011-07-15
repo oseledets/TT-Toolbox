@@ -10,7 +10,7 @@ function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
 solver='maxvol';
 %solver='als';
 rescheck=false;
-write_log=true;
+write_log=false;
 log_file='solve_d4dmrg1'; %This two parameters will save all 
 %local matrices that are obtained during the solve, if write_log 
 %is on then we will play with them a lot
@@ -116,7 +116,8 @@ elseif ( strcmp(solver,'maxvol') )
     for i=2:rf
         rhs1=rhs1+cf(i)*ff(:,i);
     end
-    sols_add(:,s)=bm0 \ rhs1;
+    ss=bm0 \ rhs1;
+    sols_add(:,s)=ss;
     nsolves=nsolves +  1;
 
   end
@@ -146,12 +147,13 @@ elseif ( strcmp(solver,'maxvol') )
 %black-box type solver for it.
  nm=kron(mat_small,diag(par));
 
-% sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
-% keyboard;
+ %sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
+ %keyboard;
  %return
- tic;
- sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,80,1,[],false);
- t1=toc; 
+% tic;
+ sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,[],10,[],false);
+% toc;
+ %t1=toc; 
  if ( write_log ) 
     str=sprintf('%s%d.mat',log_file,iter);
     save(str,'mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');

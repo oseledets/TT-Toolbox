@@ -308,7 +308,7 @@ while ( swp <= nswp && not_converged )
        solB=permute(solB,[2,3,1,4,5]); solB=reshape(solB,[ry(i)*n(i),N*n(i+1)*ry(i+2)]);
        [u,s,v]=svd(solB,'econ');
        s=diag(s);
-       rnew=my_chop2(s,eps*norm(s));
+       rnew=my_chop2(s,eps*norm(s)); rnew=min(rnew,rmax); %Truncate at rmax
        u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew); v=v*diag(s);      
        ur=randn(size(u,1),kick_rank);
          %Orthogonalize ur to u by Golub-Kahan reorth
@@ -349,7 +349,7 @@ while ( swp <= nswp && not_converged )
        solB=permute(solB,[2,3,1,4,5]); solB=reshape(solB,[ry(i)*n(i)*N,n(i+1)*ry(i+2)]);
       %Truncation block
       [u,s,v]=svd(solB,'econ');
-      s=diag(s); rnew=my_chop2(s,norm(rnew)*eps);
+      s=diag(s); rnew=my_chop2(s,norm(rnew)*eps); rnew=min(rnew,rmax);
       
       u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
       u=u*diag(s); %u has to be reshaped 
