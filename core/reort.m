@@ -24,7 +24,7 @@ while ( ~reort_flag && j <= radd)
   end
   j=j+1;  
 end
-[unew,~]=qr(unew,0); %Here it is ok.
+[unew,rv_shit]=qr(unew,0); %Here it is ok.
 if (reort_flag)
   su=u'*unew;
   uadd=unew;

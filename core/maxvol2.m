@@ -21,7 +21,7 @@ end
 
 %Initialize
 if ( nargin < 2 || isempty(ind) )
-[~,~,p]=lu(a,'vector');
+[l_shit,u_shit,p]=lu(a,'vector');
 %p=randperm(n);
 ind=p(1:r);
 b=a(p,:);

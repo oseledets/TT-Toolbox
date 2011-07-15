@@ -25,7 +25,7 @@ z = reshape(x, nsa(1,2), N2);
 a1 = cra(psa(1):psa(2)-1);
 a1 = reshape(a1, [ra(1), nsa(1,1), nsa(1,2), nsa(1,3), ra(2)]);
 a1 = permute(a1, [2,5,4,1,3]);
-a1 = reshape(a1, nsa(1,1)*ra(2)*nsa(1,3), ra(1)*nsa(1,2));
+a1 = reshape(a1, nsa(1,1)*ra(2)*nsa(1,3)*ra(1), nsa(1,2));
 z = a1*z; % size n1*ra2*n3, N2
 z = reshape(z, nsa(1,1), ra(2), nsa(1,3), N2);
 z = permute(z, [1,4,2,3]);
@@ -65,5 +65,5 @@ a1 = permute(a1, [2,5,1,3,4]);
 a1 = reshape(a1, nsa(d,1)*ra(d+1), ra(d)*nsa(d,2)*nsa(d,3));
 
 z = a1*z; % size nsa(d,1),N1;
-z = reshape(z.', N1*nsa(d,1));
+z = reshape(z.', N1*nsa(d,1), 1);
 end

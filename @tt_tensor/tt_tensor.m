@@ -27,6 +27,12 @@ if ( nargin == 1 ) && isa(varargin{1},'tt_matrix');
   t=tm.tt;
   return;
 end
+%From tt_array (stack)
+if ( nargin == 1 ) && isa(varargin{1},'tt_array');
+  ta=varargin{1};
+  t=ta.tt;
+  return;
+end
 %From old format
 if ( nargin == 1 ) && isa(varargin{1},'cell') 
     %t = class(t, 'tt_tensor');

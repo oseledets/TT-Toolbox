@@ -12,7 +12,7 @@ if ( strcmp(op,'lr') || strcmp(op,'LR'))
   %Orthogonalization from left-to-tight
   for i=1:d-1
    pos1=1;
-   core0=cr(1:r(1)*n(1)*r(2));
+   core0=cr(1:r(i)*n(i)*r(i+1));
    core0=reshape(core0,[r(i)*n(i),r(i+1)]);
    [core0,ru]=qr(core0,0); %nrm(i+1)=norm(ru,'fro');
    %ru=ru;%./nrm(i+1);

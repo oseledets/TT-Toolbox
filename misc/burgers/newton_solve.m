@@ -3,7 +3,7 @@ function [u]=newton_solve(B, M, A, f, AMh, tol, u0)
 maxit=100;
 n = size(B,1);
 if (nargin<7)||(isempty(u0))
-    u0 = 1e-5*ones(n,1);
+    u0 = ones(n,1);
 end;
 
 u = u0;
