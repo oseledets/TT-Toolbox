@@ -163,7 +163,7 @@ while ( swp < nswp && not_converged )
      %end
      cry1=randn(ry(i),n(i),ry_add); 
      cry1=reshape(cry1,[ry(i)*n(i),ry_add]);
-     [cry1,~]=qr(cry1,0);
+     [cry1,no_rv]=qr(cry1,0);
      ry_add=size(cry1,2);
      %ttt=randn([ry(i),n(i),ry(i+1)+ry_old]);
      %ttt(:,:,1:ry(i+1))=reshape(cry1,ry(i),n(i),ry(i+1));

@@ -128,7 +128,7 @@ for out_t=1:max(size(start_T))
     results = zeros(maxit,6);
     for i=1:maxit
         tic;
-        U = dmrg_solve2(M, rhs, U, tol, [], [], 1, []);
+        U = dmrg_solve2(M, rhs, U, tol, [], [], 1, [], true);
         cur_time = toc;
         
         if (i==1)

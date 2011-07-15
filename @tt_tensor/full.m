@@ -17,6 +17,9 @@ else
 end
 
 if (nargin>1)&&(~isempty(sizes))
+    if (numel(sizes)==1)
+        sizes = [sizes,1];
+    end;
     a = reshape(a, sizes);
 end;
 
