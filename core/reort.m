@@ -7,10 +7,8 @@ if (size(u,1) == size(u,2) )
   return
 end
 if (size(u,2) + size(uadd,2) >= size(u,1) )
-  %y=eye(size(u,1)); %The simplest basis
   uadd=uadd(:,size(u,1)-size(u,2));
 end
-%Scale uadd
 radd=size(uadd,2);
 
 mvr=u'*uadd; unew=uadd-u*mvr; 
@@ -18,24 +16,18 @@ reort_flag=true;
 while (reort_flag )
     reort_flag=false;
     j=1;
-while ( ~reort_flag && j <= radd)
-  if ( norm(unew(:,j)) <= 0.5*norm(uadd(:,j)))
-          reort_flag=true;
-  end
-  j=j+1;  
-end
-[unew,rv_shit]=qr(unew,0); %Here it is ok.
+%Nice vectorization!
+norm_unew=sum(unew.^2,1); 
+norm_uadd=sum(uadd.^2,1);
+reort_flag=isempty(norm_unew <= 0.25*norm_uadd);
+[unew,rv_not_used]=qr(unew,0); %Here it is ok.
 if (reort_flag)
   su=u'*unew;
   uadd=unew;
   unew=unew-u*su; 
-  %[unew,~]=qr(unew,0);
 end
   
 end
 y=[u,unew];
-%if ( norm(y'*y-eye(size(y,2))) > 1e-13 )
-%  keyboard
-%end
 return
 end

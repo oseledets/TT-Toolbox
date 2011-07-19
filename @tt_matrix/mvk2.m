@@ -1,5 +1,5 @@
-function [y]=mvk2(a,x,eps,nswp,z,rmax)
-%[Y]=MVK2(A,X,EPS,[NSWP],[Y],[RMAX])
+function [y,swp]=mvk2(a,x,eps,nswp,z,rmax,varargin)
+%[Y,SWP]=MVK2(A,X,EPS,[NSWP],[Y],[RMAX],[OPTIONS])
 %Realization of the two-sided DMRG
 %Matrix-by-vector product of a TT-matrix A, by TT-tensor X,
 %with accuracy EPS, number of sweeps NSWP and initial approximation Y
@@ -11,16 +11,35 @@ corea=att.core;
 psa=att.ps;
 ra=att.r;
 d=att.d;
+%start_val='fast_mv'; 
+start_val='rough_mv';
+%start_val='random';
+rmax_loc=8; %For the "rough" matrix-by-vector product
 if ( nargin <= 5 || isempty(rmax) )
    rmax=1000;
 end
 if ( nargin <= 4 || isempty(z) )
+    
+    if ( strcmp(start_val,'random') )
     rz1=rank(a,1)*rank(x,1);
     rzd=rank(a,d+1)*rank(x,d+1);
     kf=5;
     rz=[rz1;kf*ones(d-1,1);rzd];
-  %z=tt_random(n,ndims(x),rz);
-  z=tt_rand(n,ndims(x),rz);
+    z=tt_rand(n,ndims(x),rz);
+    elseif (strcmp(start_val,'rough_mv'))
+        rmax_loc=8; % 
+        xloc=round(x,0,rmax_loc);
+        aloc=round(a,0,rmax_loc);
+        z=round(aloc*xloc,eps); 
+        %z=aloc*xloc;
+    elseif (strcmp(start_val,'fast_mv') )
+         rz1=rank(a,1)*rank(x,1);
+      rzd=rank(a,d+1)*rank(x,d+1);
+      kf=5;
+      rz=[rz1;kf*ones(d-1,1);rzd];
+      z=tt_rand(n,ndims(x),rz);
+       z=mvk2(a,x,max(eps,1e-2),10,z,rmax); %First, do it with bad accuracy
+    end
 end
 if ( nargin <= 3 || isempty(nswp) )
   nswp = 40;
@@ -28,7 +47,7 @@ end
 y=z;
 
 %Parameters section
-kick_rank=10;
+kick_rank=6;
 verb=false;
 
 %Warmup is to orthogonalize Y from right-to-left and compute psi-matrices

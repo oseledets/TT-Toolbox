@@ -1,12 +1,13 @@
-function [y]=tt_crs5(arr,eps,nswp,y)
-%[A]=TT_CRS5(ARR,EPS,NSWP,Y)
+function [y]=tt_crs5(arr,tt_cross_elem,eps,nswp,y)
+%[A]=TT_CRS5(ARR,TT_CROSS_ELEM, EPS,NSWP,Y)
 %Cross approximation method for array ARR, 
 %which tries to compute everything by
 %increasing rank as far as possible
 %In future will need the handler to the function
 %NSWP - optional parameter, number of sweeps
 %Difference to TT_CRS4: vectorized computation of subtensors added
-
+%TT_CROSS_ELEM is a function handle than computes a set of elements 
+%of array A
 
 %PARAMETERS SECTION
 rmin=1; 
