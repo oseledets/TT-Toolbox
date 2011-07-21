@@ -1,5 +1,5 @@
-function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
-%[X] = SOLVE_PARAMETRIC3(MAT,PAR,RHS,EPS,NITER)
+function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter,write_log,log_file)
+%[X] = SOLVE_PARAMETRIC3(MAT,PAR,RHS,EPS,NITER,[write_log],[log_file])
 % MAT, PAR --- define matrix, please look at examples
 % RHS --- right-hand side
 % EPS --- accuracy parameter
@@ -10,12 +10,22 @@ function [x,hst1,hst2,sols]=solve_parametric3(mat,par,rhs0,x0,eps,niter)
 solver='maxvol';
 %solver='als';
 rescheck=false;
-write_log=false;
-log_file='solve_d4dmrg1'; %This two parameters will save all 
+%This two parameters will save all 
 %local matrices that are obtained during the solve, if write_log 
 %is on then we will play with them a lot
 %Initialization
+x=[];
+if ( nargin < 7 || isempty(write_log) )
 
+  write_log=false;
+  verb=false;
+else
+ write_log=true;
+ verb=true;
+end
+if ( nargin < 8 || isempty(log_file) )
+   log_file='TMP_SOLVE_PARAMETRIC';
+end
 if ( isempty(x0) )
    sols_all=[];
    x=rhs0;
@@ -150,13 +160,13 @@ elseif ( strcmp(solver,'maxvol') )
  %sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
  %keyboard;
  %return
-% tic;
- sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,[],10,[],false);
- 
+ tic;
+ sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,120,10,[],verb);
 % toc;
- %t1=toc; 
+ t1=toc; 
  x=ttm(sol_red,1,sols_all');
  x=round(x,eps);
+
  if ( write_log ) 
     str=sprintf('%s%d.mat',log_file,iter);
     save(str,'x','mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');
