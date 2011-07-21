@@ -152,16 +152,18 @@ elseif ( strcmp(solver,'maxvol') )
  %return
 % tic;
  sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,[],10,[],false);
+ 
 % toc;
  %t1=toc; 
- if ( write_log ) 
-    str=sprintf('%s%d.mat',log_file,iter);
-    save(str,'mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');
-    %Save all the information
- end
  x=ttm(sol_red,1,sols_all');
  x=round(x,eps);
-    %We need to check the residue. Sorry.
+ if ( write_log ) 
+    str=sprintf('%s%d.mat',log_file,iter);
+    save(str,'x','mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');
+    %Save all the information
+ end
+
+ %We need to check the residue. Sorry.
 if ( rescheck ) 
    x1=chunk(x,1,1);
    rx=x1.r; rx=rx(2); %Block size

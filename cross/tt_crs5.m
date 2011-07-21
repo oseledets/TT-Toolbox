@@ -5,6 +5,7 @@ function [y]=tt_crs5(arr,tt_cross_elem,eps,nswp,y)
 %increasing rank as far as possible
 %In future will need the handler to the function
 %NSWP - optional parameter, number of sweeps
+
 %Difference to TT_CRS4: vectorized computation of subtensors added
 %TT_CROSS_ELEM is a function handle than computes a set of elements 
 %of array A
