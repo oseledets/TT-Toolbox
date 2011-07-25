@@ -37,8 +37,8 @@ rmax=1000;
 tol=eps;
 verb=true;
 kickrank = 5;
-P = tt_eye(tt_size(y), d);
 x0=[];
+P=[];
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -107,7 +107,9 @@ end
 
 d=size(A,1);
 
-
+if ( isempty(P) )
+P = tt_eye(tt_size(y), d);
+end
 x=x0;
 
 x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
