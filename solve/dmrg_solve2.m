@@ -1,14 +1,25 @@
-function [x, sweeps]=dmrg_solve2(A, y, x0, eps, tol, rmax, nswp, P, verb,vargin)
-%  function [x, sweps]=dmrg_solve2(A, y, [x0], eps, [tol], [rmax], [nswp], [P], verb)
+function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)
+%  function [x, sweeps]=dmrg_solve2(A, y, eps, options)
 % Solves the system P(k,n)*A(n,m)*x(m)=P(k,n)*y(n)
-% Default values:
-%   x0 = random rank-2
-%   tol = eps
-%   rmax=1000
-%   nswp=15
-%   P = I
+% options include (default values are given to the right)
+% x0 --- initial value, default: random rank-2
+% tol --- local solution tolerance, default: eps
+% rmax --- maximal solution rank, default: 1000
+% nswp --- number of dmrg sweeps, default: 10
+% P --- preconditioner, default: identity matrix
+% verb --- verbosity (true/valse), default: true
+% max_full_size --- maximal size of the local matrix to full solver, 
+% default: 2500
+% local_prec: which local preconditioner to use,
+% two options: 'als' (for the ALS-Richardson iteration) and
+% 'selfprec' (for the Saad selfpreconditioner). Default is 'als'
+% prec_compr --- for local precs, default: 1e-3
+% prec_tol --- for local precs,   default: 1e-1
+% prec_iters --- for local precs, default: 15  
+% use_self_prec --- use (or not) self-prec, default: false
+% gmres_iters --- number of gmres restarts, default: 2
+% nrestart --- dimension of the local GMRES, default: 40
 
- 
 
 % Inner parameters
 max_full_size=2500;
@@ -17,42 +28,70 @@ prec_tol=1e-1;
 prec_iters=15;
 
 use_self_prec=false;
-nswp_def=10;
+nswp=10;
 nrestart=40;
 gmres_iters=2;
 local_prec = 'als';
 % local_prec = 'selfprec';
-
-
+rmax=1000;
+tol=eps;
+verb=true;
 kickrank = 5;
-
-
-if ((nargin<7)||(isempty(nswp)))
-    nswp=nswp_def;
-end;
-if ((nargin<6)||(isempty(rmax)))
-    rmax=1000;
-end;
-if ((nargin<5)||(isempty(tol)))
-    tol=eps;
-end;
-if ( (nargin<9) || (isempty(verb)) )
-  verb=true;
+P = tt_eye(tt_size(y), d);
+x0=[];
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'nswp'
+            nswp=varargin{i+1};
+        case 'rmax'
+            rmax=lower(varargin{i+1});
+        case 'x0'
+            x0=varargin{i+1};
+        case 'verb'
+            verb=varargin{i+1};
+        case 'p'
+            P=varargin{i+1};
+        case 'tol'
+            tol=varargin{i+1};
+        case 'local_prec'
+            local_prec=varargin{i+1};
+        case 'nrestart'
+            nrestart=varargin{i+1};
+        case 'gmres_iters'
+            gmres_iters=varargin{i+1};
+        case 'kickrank'
+            kickrank=varargin{i+1};
+        case  'max_full_size'
+            max_full_size=varargin{i+1};
+        case 'prec_compr'
+            prec_compr=varargin{i+1};
+        case 'prec_tol'
+            prec_tol=varargin{i+1};
+        case 'prec_iters'
+            prec_iters=varargin{i+1};
+        case 'use_self_prec'
+            use_self_prec=varargin{i+1};
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+    end
 end
+
+
+
 
 input_is_tt_tensor = 0;
 if ( isa(A,'tt_matrix') )
   A=core(A);
   input_is_tt_tensor = 1;
-  if ((nargin<3)||(isempty(x0)))
+  if (isempty(x0))
       x0=tt_random(tt_size(y), A.tt.d, 2);
   end;
 else
-    if ((nargin<3)||(isempty(x0)))
+    if (nargin<3)
         x0=tt_random(tt_size(y), max(size(A)), 2);
     end;
 end
-if ( nargin >= 8  && isa(P,'tt_matrix') )
+if ( isa(P,'tt_matrix') )
   P=core(P);
   input_is_tt_tensor = 1;
 end
@@ -67,9 +106,6 @@ end
 %nrmF=sqrt(tt_dot(y,y)); 
 
 d=size(A,1);
-if ((nargin<8)||(isempty(P)))
-    P = tt_eye(tt_size(y), d);
-end;
 
 
 x=x0;
