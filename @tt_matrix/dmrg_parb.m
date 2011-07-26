@@ -1,4 +1,4 @@
-function [y,swp,converged]=dmrg_parb(mat,a,f,eps,y0,rmax,nswp,verb)
+function [y]=dmrg_parb(mat,a,f,eps,y0,rmax,nswp,verb)
 %[y]=dmrg_parb(mat,a,rhs,eps,[y0],[rmax],[nswp],[ver])
 %This is not an east stuff.
 %It solve parameter-dependent problem A(y)u(y) = rhs(y)
@@ -16,6 +16,7 @@ function [y,swp,converged]=dmrg_parb(mat,a,f,eps,y0,rmax,nswp,verb)
 kick_rank=5;
 
 %This is the "physical dimension" size
+
 n=a.n;
 d=a.d; %And this is for the parametric part
 %We seek for the solution as JxY1xQ1xQ1xY2xQ2
@@ -205,7 +206,7 @@ phi{1}=eye(k); %Heh, this seems ok now :) Maybe the bug is
 phif{1}=eye(kf); %The same
 %phif{1}=diag(phif{1}(:));
 %B(I,J,Q)*Z(Q)*CA(Q,P1,RA2)*CA(RA2,P2,RA3)*CA(RA3,S)
-ermax=0;
+
 while ( swp <= nswp && not_converged )
    %Gather the local matrix.( The left phi matrix always includes
    %the  "matrix" rank)
@@ -298,9 +299,8 @@ while ( swp <= nswp && not_converged )
    %end
    er1=norm(w(:)-solB(:))/norm(w(:));
    if ( verb )
-     fprintf('sweep=%d block=%d  error=%3.2e \n',swp,i,er1);
+  fprintf('sweep=%d block=%d  error=%3.2e \n',swp,i,er1);
    end
-   ermax=max(ermax,er1);
    %And now add the splitting of solB part + recomputation of phi & phif
    %Memory stuff
    if ( strcmp(dir,'lr') ) %Implant the auxiliary core from the left block to the right block 
@@ -396,14 +396,8 @@ while ( swp <= nswp && not_converged )
        cry_left=permute(cry_left,[1,3,2,4]);
        cry_left=cry_left(:);
        cry_right(1:ry(1)*n(1)*ry(2)*N)=[];
-              fprintf('%3.1f \n',ermax/eps);
-
        swp=swp+1;
-       if ( ermax<3*eps)
-          not_converged=false;
-       end
-
-       ermax=0;
+       
      end
    else
     if ( i < d-1 )
@@ -416,14 +410,8 @@ while ( swp <= nswp && not_converged )
        cry_right=permute(cry_right,[1,3,2,4]);
        cry_right=cry_right(:);
        cry_left(pos-ry(d)*n(d)*ry(d+1)*N+1:pos)=[];
-              fprintf('%3.1f \n',ermax/eps);
- 
        %One block should go from cry_left to cry_right (?) --- seems no :)
-
-       ermax=0;
-       
-    end
-     
+     end
    end
 end
 %All we have to do is to join cry_left and cry_right
@@ -450,6 +438,5 @@ y.r=ry;
 y.n=n;
 y.d=d;
 y.core=cry;
-converged=~not_converged;
 return
 end

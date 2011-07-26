@@ -1,5 +1,5 @@
-d0t = 7; % quantics dims for t
-d0x = 8; % quantics dims for x
+% d0t = 7; % quantics dims for t
+% d0x = 8; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -50,7 +50,7 @@ eexp = kron(kron(eexp1, eexp1), eexp1);
 
 r2 = x1.*x1 + x2.*x2 + x3.*x3;
 % r2 = round(r2, eps);
-eexp = funcross(r2, @(r)exp(-0.5*r/(ddd^2)), eps, r2, 10);
+eexp = funcrs(r2, @(r)exp(-0.5*r/(ddd^2)), eps, r2, 10);
 % eexp = funcross(x2.*x2, @(r)exp(-0.5*r/(ddd^2)), eps, x2, 10);
 
 
@@ -68,7 +68,7 @@ vv3 = diag(v3);
 
 phi = r2*0.5 + 0.5*zzz/(ddd^3)*eexp; % + x2.*x2.*x2.*x2/4;
 phi = round(phi, eps);
-x_ex = funcross(phi, @(r)exp(-r), eps, phi, 10);
+x_ex = funcrs(phi, @(r)exp(-r), eps, phi, 10);
 
 Ax = Ax*0.5 + Cx1*vv1 + Cx2*vv2 + Cx3*vv3;
 Ax = round(Ax, eps);
@@ -126,9 +126,10 @@ for out_t=1:max(size(start_T))
     U = tt_random(2, rhs.d, 2);
     
     results = zeros(maxit,6);
+    resid_old = 1e15;
     for i=1:maxit
         tic;
-        U = dmrg_solve2(M, rhs, U, tol, [], [], 1, [], true);
+        U = dmrg_solve2(M, rhs, U, tol, [], [], 1, [], false);
         cur_time = toc;
         
         if (i==1)
@@ -161,6 +162,10 @@ for out_t=1:max(size(start_T))
         if (resid_true<5*tol)
             break;
         end;
+	if ((resid_true/resid_old>1-1e-2)&&(resid_true<tol*1000))
+	    break;
+	end;
+	resid_old = resid_true;
     end;
     
     results(:,6)=cumsum(results(:,5));
@@ -184,5 +189,24 @@ for out_t=1:max(size(start_T))
     
     norm_Au0 = norm(Ax*u0)/norm(u0)
     norms_Au{out_t} = norm_Au0;
-    keyboard;
+%   keyboard;
 end;
+
+    ons = tt_tensor(tt_ones(eexp.d, 2));
+    nrm_u = dot(u0,ons);
+    tt = zeros(dpx,dpx);
+    tt(1,1)=dot(x1.*v1, u0);
+    tt(2,1)=dot(x2.*v1, u0);
+    tt(3,1)=dot(x3.*v1, u0);
+    tt(1,2)=dot(x1.*v2, u0);
+    tt(2,2)=dot(x2.*v2, u0);
+    tt(3,2)=dot(x3.*v2, u0);
+    tt(1,3)=dot(x1.*v3, u0);
+    tt(2,3)=dot(x2.*v3, u0);
+    tt(3,3)=dot(x3.*v3, u0);
+    tt = tt*2/nrm_u; % 2 because we multiplied V by 0.5, buttheads
+
+    eta = -tt(1,2)/beta
+    psi = -(tt(1,1)-tt(2,2))/(beta^2)
+
+

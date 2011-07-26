@@ -1,4 +1,4 @@
-d0t = 9; % quantics dims for t
+d0t = 8; % quantics dims for t
 d0x = 8; % quantics dims for x
 dpx = 3; % phys. dims for x
 
@@ -11,7 +11,7 @@ tol = 1e-6;
 eps = 1e-8;
 maxit = 20;
 
-T = 1;
+T = 10;
 tau = T/(2^d0t);
 
 Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
@@ -46,7 +46,7 @@ eexp = kron(kron(eexp1, eexp1), eexp1);
 
 r2 = x1.*x1 + x2.*x2 + x3.*x3;
 % r2 = round(r2, eps);
-eexp = funcross(r2, @(r)exp(-0.5*r/(ddd^2)), eps, r2, 10);
+eexp = funcrs(r2, @(r)exp(-0.5*r/(ddd^2)), eps, r2, 10);
 % eexp = funcross(x2.*x2, @(r)exp(-0.5*r/(ddd^2)), eps, x2, 10);
 
 
@@ -64,7 +64,7 @@ vv3 = diag(v3);
 
 phi = r2*0.5 + 0.5*zzz/(ddd^3)*eexp; % + x2.*x2.*x2.*x2/4;
 phi = round(phi, eps);
-x_ex = funcross(phi, @(r)exp(-r), eps, phi, 10);
+x_ex = funcrs(phi, @(r)exp(-r), eps, phi, 10);
 
 Ax = Ax*0.5 + Cx1*vv1 + Cx2*vv2 + Cx3*vv3;
 Ax = round(Ax, eps);
@@ -90,7 +90,7 @@ Euler = round(Euler, eps);
 ons = tt_tensor(tt_ones(eexp.d, 2));
 
 results = zeros(2^d0t,1);
-angles = zeros(2^d0t,1);
+% angles = zeros(2^d0t,1);
 eta = zeros(2^d0t,1);
 psi = zeros(2^d0t,1);
 ttimes = zeros(2^d0t, 1);
@@ -106,7 +106,7 @@ for t=1:1:2^d0t
 %     u = u_new;
     for i=1:maxit
         curtime_0 = tic;
-        u = dmrg_solve2(KNp, u_new, u, tol, [], [], 1, []);
+        u = dmrg_solve2(KNp, u_new, u, tol, [], [], 1, [], false);
         cur_time = toc(curtime_0);
     
         Mx = mvk(KNp,u,tol,20,u,1000);
@@ -123,7 +123,7 @@ for t=1:1:2^d0t
 
     ttimes(t)=toc(times_0);
     
-    angles(t)=acos(dot(u,x_ex)/(norm(u)*norm(x_ex)));
+%     angles(t)=acos(dot(u,x_ex)/(norm(u)*norm(x_ex)));
     nrm_u = dot(u,ons);
     tt = zeros(dpx,dpx);
     tt(1,1)=dot(x1.*v1, u);
@@ -139,9 +139,10 @@ for t=1:1:2^d0t
     
     eta(t) = -tt(1,2)/beta;
     psi(t) = -(tt(1,1)-tt(2,2))/(beta^2);
-    
-    fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e. ttimes: %3.5f\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t), ttimes(t));
+
     results(t) = norm(Ax*u)/norm(u);
+%     fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. Angle(u,x_ex): %3.3e. \n eta: %3.5e. Psi: %3.5e. ttimes: %3.5f\n', t, t*tau, norm(Ax*u)/norm(u), angles(t), eta(t), psi(t), ttimes(t));
+    fprintf('\nTime step %d (%3.5e) done. Au/u: %3.3e. \n eta: %3.5e. Psi: %3.5e. ttimes: %3.5f\n', t, t*tau, results(t), eta(t), psi(t), ttimes(t));   
 %     pause(1);
 %     keyboard;
 end;

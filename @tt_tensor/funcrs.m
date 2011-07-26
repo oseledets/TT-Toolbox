@@ -11,7 +11,7 @@ function [y]=funcrs(tt,fun,eps,y,nswp,vargin)
 
 %PARAMETERS SECTION
 rmin=1; 
-verb=false;
+verb=true;
 kick_rank=1;
 if (~isempty(y))
    yold=y;
