@@ -2,7 +2,7 @@ function [X]=tt_minres_selfprec(A, tol, eps, maxit, prec_type)
 
 % matvec='mmk2';
 matvec='mm+compr';
-max_rank=15;
+max_rank=10;
 
 d=max(size(A));
 ns=tt_size(A);

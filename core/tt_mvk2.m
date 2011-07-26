@@ -9,7 +9,7 @@ if ((nargin<4)||(isempty(max_r)))
     exists_max_r=0;
 end;
 
-nswp=50;
+nswp=15;
 if ((nargin>=5)&&(~isempty(max_swp)))
     nswp = max_swp;
 end;
@@ -20,14 +20,18 @@ radd=0;
 %verb=false;
 verb=false;
 d=size(a,1);
+
+% It does matter for really high-dimensional tensors
+eps = eps/sqrt(d-1);
+
 %Init solution
-a_coarse = tt_mat_compr(a, eps, 1);
+% a_coarse = tt_mat_compr(a, eps, 1);
 % x_coarse = tt_compr2(x, eps, round(max(tt_ranks(x))/5));
 % y = tt_mv(a_coarse, x_coarse);
-y=tt_mv(a_coarse,x);
+% y=tt_mv(a_coarse,x);
 % y = x;
 %y=tt_mv(a,x);
-% y=tt_random(tt_size(a),d,2);
+y=tt_random(tt_size(a),d,2);
 ph=cell(d,1);
 yold=[];
 %ph will be rx * ra * ry 
