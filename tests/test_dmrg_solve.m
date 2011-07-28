@@ -1,24 +1,32 @@
 % Uses Ag, Pg, fg - matrix, Prec and rhs, solution is ug
 
 maxit = 50;
-eps = 1e-5;
+eps = 1e-6;
 tol = eps;
 maxrank=[];
 
-ug=fg;
+% ug=fg;
 % ug = tt_tensor(tt_random(fg.n, fg.d, 2));
 
-normfg = norm(Pg*fg);
+if (~isempty(Pg))
+    Pfg = mvk2(Pg, fg, eps, 10);
+else
+    Pfg = fg;
+end;
+normfg = norm(Pfg);
 
 ds_results = zeros(maxit,5);
 for i=1:maxit
     tstart = tic;
-    ug = dmrg_solve2(Ag,fg,ug,eps,tol,maxrank,1,Pg,false);
+%     ug = dmrg_solve2(Ag,fg,ug,eps,tol,maxrank,1,Pg,false);
+    ug = dmrg_solve2(Ag,fg,eps,'x0',ug,'nswp',1,'P',Pg,'verb',false);
     cur_time = toc(tstart);
     
     resg = mvk2(Ag,ug,eps,10);
-    resg = mvk2(Pg, resg, eps, 10);
-    resid = norm(resg-Pg*fg)/normfg;
+    if (~isempty(Pg))
+        resg = mvk2(Pg, resg, eps, 10);
+    end;
+    resid = norm(resg-Pfg)/normfg;
     
     ds_results(i,1)=i;
     ds_results(i,2)=resid;

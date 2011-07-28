@@ -27,6 +27,13 @@ prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
 
+% if (isa(y, 'tt_tensor')==1)
+%     d = y.d;
+% else
+%     d = max(size(y));
+% end;
+% eps = eps/sqrt(d-1); % Stupid things happen without it for really high-dim problems
+
 use_self_prec=false;
 nswp=10;
 nrestart=40;
@@ -87,7 +94,7 @@ if ( isa(A,'tt_matrix') )
       x0=tt_random(tt_size(y), A.tt.d, 2);
   end;
 else
-    if (nargin<3)
+    if (isempty(x0))
         x0=tt_random(tt_size(y), max(size(A)), 2);
     end;
 end
