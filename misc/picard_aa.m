@@ -19,6 +19,7 @@ m=100;
 verb=true;
 draw=false;
 fixed_iter=false;
+condtol=1e12;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'maxiters'
@@ -34,6 +35,8 @@ for i=1:2:length(varargin)-1
         case 'process_fun'
            draw=true;
            process_fun=varargin{i+1}; 
+        case 'condtol'
+           condtol=varargin{i+1};
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -53,7 +56,7 @@ while ( k < niters && er  > eps )
   er=norm(fx-x);
   x=fx;
   if ( verb )  
-     fprintf('it=%d er=%3.2e \n',k,er);
+     fprintf('it=%d er=%3.2e  \n',k,er);
   end
 end
 sol=x;
@@ -66,9 +69,11 @@ res=[f(x0)-x0,f(x)-x];
 while ( k < niters && er > eps )
     er=norm(res(:,end));
     if ( verb ) 
-       fprintf('it=%d  er=%3.2e\n',k,er);
+              x1=xc(:,end); x0=xc(:,end-1);
+       er_loc=norm(x1-x0)/norm(x1);
+       fprintf('it=%d  er=%3.2e er_loc=%3.2e \n',k,er,er_loc);
     end
-    if ( size(res,2) > m ) %Too much memory
+    if ( size(res,2) > m || cond(res) > condtol) %Too much memory
       res(:,1)=[];
       xc(:,1)=[];
     end
@@ -94,6 +99,6 @@ while ( k < niters && er > eps )
     res=[res,f(xnew)-xnew];
     k=k+1;
 end
-sol=xc(end);
+sol=xc(:,end);
 return
 end
