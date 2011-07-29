@@ -7,7 +7,7 @@ function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)
 % rmax --- maximal solution rank, default: 1000
 % nswp --- number of dmrg sweeps, default: 10
 % P --- preconditioner, default: identity matrix
-% verb --- verbosity (true/valse), default: true
+% verb --- verbosity (0,1,2), default: 1
 % max_full_size --- maximal size of the local matrix to full solver, 
 % default: 2500
 % local_prec: which local preconditioner to use,
@@ -27,13 +27,8 @@ prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
 
-% if (isa(y, 'tt_tensor')==1)
-%     d = y.d;
-% else
-%     d = max(size(y));
-% end;
-% eps = eps/sqrt(d-1); % Stupid things happen without it for really high-dim problems
-
+chksweeps=4;
+dropsweeps=10;
 use_self_prec=false;
 nswp=10;
 nrestart=40;
@@ -42,8 +37,8 @@ local_prec = 'als';
 % local_prec = 'selfprec';
 rmax=1000;
 tol=eps;
-verb=true;
-kickrank = 5;
+verb=1;
+kickrank = 1;
 x0=[];
 P=[];
 for i=1:2:length(varargin)-1
@@ -119,6 +114,8 @@ P = tt_eye(tt_size(y), d);
 end
 x=x0;
 
+x_prev = x;
+
 x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
 y{1}=reshape(y{1}, size(y{1},1), 1, size(y{1},2));
 A{1}=reshape(A{1}, size(A{1},1),size(A{1},2), 1, size(A{1},3)); %Bydlocode (@)
@@ -127,6 +124,7 @@ P{1}=reshape(P{1}, size(P{1},1),size(P{1},2), 1, size(P{1},3));
 phA = cell(d,1);
 phy = cell(d,1);
 
+chkres = 1; dropflag = 0;
 for swp=1:nswp
 %     z = x;
     % 1-to-d orthogonalization
@@ -204,6 +202,7 @@ for swp=1:nswp
         
         y1=y{i-1}; y2=y{i}; ry1=size(y1,2); ry2=size(y1,3); ry3=size(y2,3);
         x1=x{i-1}; x2=x{i}; rx1=size(x1,2); rx2=size(x1,3); rx3=size(x2,3);
+        ryold = ry2;
         
         % Compute RHS: phy{i-2}*P1*y1*y2*P2*phyold
         if (i>2)
@@ -271,20 +270,20 @@ for swp=1:nswp
         %B2=B2+max(abs(B2(:)))*randn(size(B2))*1e-16; Kill all humans for
         %such code
         
-        [Q,R]=qr(B2,0);
-
-        rnew = min(k2*rxn3*m2*rxm3, rp2*ra2);
-        B2 = reshape(Q, k2*rxn3*m2*rxm3, rnew);
-        B = B*(R.'); % size rxn1*rxm1*k1*m1*rnew
-   
-        B = reshape(B, rxn1*k1*rxm1*m1, rnew);
-        [U,S,V]=svd(B, 'econ');
-        S = diag(S);
-        rB = my_chop2(S, 1e-12*norm(S)); % We don't know the cond(B), so let's obtain almost exact compression
-        B = U(:,1:rB);
-        V = V(:,1:rB)*diag(S(1:rB)); % size rnew*rB        
-        B2 = B2*conj(V); % size k2*rxn3*m2*rxm3*rB        
-%         rB=rp2*ra2;
+%         [Q,R]=qr(B2,0);
+% 
+%         rnew = min(k2*rxn3*m2*rxm3, rp2*ra2);
+%         B2 = reshape(Q, k2*rxn3*m2*rxm3, rnew);
+%         B = B*(R.'); % size rxn1*rxm1*k1*m1*rnew
+%    
+%         B = reshape(B, rxn1*k1*rxm1*m1, rnew);
+%         [U,S,V]=svd(B, 'econ');
+%         S = diag(S);
+%         rB = my_chop2(S, 1e-12*norm(S)); % We don't know the cond(B), so let's obtain almost exact compression
+%         B = U(:,1:rB);
+%         V = V(:,1:rB)*diag(S(1:rB)); % size rnew*rB        
+%         B2 = B2*conj(V); % size k2*rxn3*m2*rxm3*rB        
+        rB=rp2*ra2;
         MatVec='bfun2';
         if ((rxn1*k1*k2*rxn3<max_full_size)) % (rB>max(rxn1, rxn3))||
             MatVec='full';
@@ -346,7 +345,7 @@ for swp=1:nswp
         end;        
         
         dx = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
-        if (verb)
+        if (verb>1)
         fprintf('==sweep %d, block %d, dx=%3.3e, res_prev = %3.3e\n', swp, i, dx, res_prev);
         end;
         if (dx>dx_max)
@@ -370,7 +369,7 @@ for swp=1:nswp
             else
                 resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             end;
-            if ( verb )
+            if ( verb>1 )
             fprintf('sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
             end
             if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
@@ -379,6 +378,18 @@ for swp=1:nswp
               r0=min(r+1,rmax);
             end;
         end
+        
+        % Keep rank increasing for several iterations
+        % It helps for problems with hundred dimensions
+        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)
+            r = max(r, ryold);
+        end;
+%         if (verb>1)
+%             fprintf('sweep %d, block %d, rank: %d, drop: %d\n', swp, i, r, dropflag);
+%         end;
+        if (dropflag==1)&&(i==2)
+            dropflag=0;
+        end;        
      
         v = conj(v(:,1:r));
         u = u(:,1:r)*diag(s(1:r));
@@ -439,17 +450,32 @@ for swp=1:nswp
         phyold = reshape(phyold, rp2*ry2, rxn3*k2);       
         x2 = reshape(permute(x{i}, [3 1 2]), rxn3*k2, rxn2);
         phyold = phyold*conj(x2); % size rp2*ry2*rxn2 <-- cplx conjugate!
-        phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]); 
-        
+        phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);         
     end;
   
-    if (verb)
-        fprintf('-=-=-=-=-= dx_max = %3.3e, res_max = %3.3e\n', dx_max, max_res);
-    end;
-%     if (dx_max<tol*2)
     if (max_res<tol*2)
+        dropflag = 1;
+    end;
+    if (mod(swp,chksweeps)==0)||(swp==1)
+        x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+        reschk = norm(tt_tensor(x)-tt_tensor(x_prev))/sqrt(tt_dot(x,x));
+        x_prev = x;
+        x{1}=reshape(x{1}, size(x{1},1),1, size(x{1},2));
+    end;    
+    if (verb>0)
+        fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,reschk, dropflag, dx_max, max_res);
+    end;
+    if (reschk<eps)
         break;
     end;
+    
+%     if (verb>0)
+%         fprintf('-=-=-=-=-= dx_max = %3.3e, res_max = %3.3e\n', dx_max, max_res);
+%     end;    
+%     if (dx_max<tol*2)
+%     if (max_res<tol*2)
+%         break;
+%     end;
 %     keyboard;
 end;
 
