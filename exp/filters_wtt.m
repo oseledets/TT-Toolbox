@@ -1,7 +1,9 @@
-function [u,rks] = filters_wtt (a,rmax,eps,sz)
-%[U,RKS]=FILTERS_WTT(A,RMAX,EPS,SZ)
+function [wtt_transform] = filters_wtt (a,rmax,eps,sz)
+%[wtt_transform]=FILTERS_WTT(A,RMAX,EPS,SZ)
 %Computes the set of filters for transform of A, A should be given 
 %either as d-dimensional array, or as by size-vector sz
+%wtt_transform is a structure with two fields: 
+%u and rks
 if ( nargin == 3 )
 sz=size(a); d = numel(sz);
 else
@@ -51,6 +53,9 @@ for k=1:d-1
    a=a(1:r,:); a=reshape(a,[r*sz(k+1),N/(r*sz(k+1))]);
    u{k}=u1;
 end
-
+wtt_transform=struct;
+wtt_transform.u=u;
+wtt_transform.rks=rks;
+wtt_transform.sz=sz;
 return
 end

@@ -1,8 +1,20 @@
-function [w]=wtt(v,u,r,sz)
-%[W]=WTT(V,U,R,SZ)
+function [w]=wtt(v,wtt_transform)
+%[W]=WTT(V,WTT_TRANSFORM,[SZ])
 %Applies WTT transform to vector V with linear filters U 
 %and ranks R
-%SZ is optional
+u=wtt_transform.u;
+r=wtt_transform.rks;
+sz=wtt_transform.sz;
+%if ( nargin == 2 )
+%  sz=size(v); %d=numel(sz);
+%end
+
+w=wtt_loc(v,u,r,sz);
+
+return
+end
+
+function [w]=wtt_loc(v,u,r,sz)
 if ( nargin == 3 )
   sz=size(v); %d=numel(sz);
 else
@@ -19,8 +31,9 @@ else
   w=u{1}'*v;
   w0=w(1:r(2),:);
   unew=u(2:numel(u)); rnew=r(2:numel(r)); sznew=[sz(2),sz(3:numel(sz))];
-  w0=wtt(w0,unew,rnew,sznew);
+  w0=wtt_loc(w0,unew,rnew,sznew);
   w(1:r(2),:)=w0;
   w=reshape(w,[r(1),N/r(1)]);
+end
 return
 end
