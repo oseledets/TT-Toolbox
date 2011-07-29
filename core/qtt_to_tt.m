@@ -78,9 +78,11 @@ if (type==0)
     end;
     
 else
+    n1 = tt_size(qtt);
+    n2 = tt_size(tt_transp(qtt));
     
     if (new_d(1)>1)
-        tt{1}=zeros(2^(new_d(1)), 2^(new_d(1)), phys_ranks(1));
+        tt{1}=zeros(prod(n1(1:new_d(1))), prod(n2(1:new_d(1))), phys_ranks(1));
         cur_qtt = cell(new_d(1), 1);
         for p=1:new_d(1)-1
             cur_qtt{p}=qtt{p};
@@ -90,12 +92,13 @@ else
             tt{1}(:,:,k)=nd_to_full(cur_qtt);
         end;
     else
-        tt{q}=qtt{q};
+        tt{1}=qtt{1};
     end;
     
     for q=2:d_phys-1
         if (new_d(q)>1)
-            tt{q}=zeros(2^(new_d(q)),2^(new_d(q)), phys_ranks(q-1), phys_ranks(q));
+            tt{q}=zeros(prod(n1(sum(new_d(1:q-1))+1:sum(new_d(1:q)))),prod(n2(sum(new_d(1:q-1))+1:sum(new_d(1:q)))), phys_ranks(q-1), phys_ranks(q));
+%             tt{q}=zeros(2^(new_d(q)),2^(new_d(q)), phys_ranks(q-1), phys_ranks(q));
             cur_qtt = cell(new_d(q), 1);
             for k1=1:phys_ranks(q-1)
                 for k2=1:phys_ranks(q)
@@ -113,7 +116,7 @@ else
     end;
     
     if (new_d(d_phys)>1)
-        tt{d_phys}=zeros(2^(new_d(d_phys)),2^(new_d(d_phys)), phys_ranks(d_phys-1));
+        tt{d_phys}=zeros(prod(n1(end-new_d(d_phys)+1:end)), prod(n2(end-new_d(d_phys)+1:end)), phys_ranks(d_phys-1));
         cur_qtt = cell(new_d(d_phys), 1);
         for p=2:new_d(d_phys)
             cur_qtt{p}=qtt{positions(d_phys-1)+p};

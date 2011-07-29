@@ -5,7 +5,9 @@ function [y,swp]=tt_wround(W, x, eps, y0, rmax, nswp)
 % If W is not specified, it is assumed to be I, i.e. the simple 
 % L_2-norm truncation is performed
 
-kickrank = 2;
+kickrank = 5;
+chksweeps = 4;
+dropsweeps = 5;
 verb = 1;
 
 d = size(x,1);
@@ -29,6 +31,7 @@ end;
 % if (isempty(W))
 %     W = tt_eye(tt_size(x),d);
 % end;
+y_prev = y;
 
 x{1}=reshape(x{1}, size(x{1},1),1,size(x{1},2));
 y{1}=reshape(y{1}, size(y{1},1),1,size(y{1},2));
@@ -42,6 +45,7 @@ if (~isempty(W))
 end;
 phiyx = cell(d+1,1); phiyx{1}=1; phiyx{d+1}=1;
 
+reschk = 1; dropflag = 0;
 for swp=1:nswp
     % QR and Phi
     for i=d:-1:2
@@ -108,6 +112,7 @@ for swp=1:nswp
         end;
         y1 = y{i}; ry1 = size(y1,2); ry2 = size(y1,3);
         y2 = y{i+1}; ry3 = size(y2,3);          
+        ryold = ry2;
         
         x1 = permute(x1, [2 1 3]);
         x1 = reshape(x1, rx1, n1*rx2);
@@ -185,7 +190,7 @@ for swp=1:nswp
                 cur_sol = reshape(u(:,1:r)*s(1:r,1:r)*v(:,1:r)', ry1*n1*n2*ry3, 1);
                 cur_res = norm(bfun2(mtx,cur_sol,ry1,n1,n2,ry3,ry1,n1,n2,ry3) - rhs)/norm(rhs);
                 if (verb>1)
-                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e\n', swp, i, r, cur_res, cur_err);
+                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e, drop: %d\n', swp, i, r, cur_res, cur_err, dropflag);
                 end;
                 if (cur_res<eps)
                     rM = r-1;
@@ -202,7 +207,7 @@ for swp=1:nswp
                 cur_err = norm(s(r+1:end,r+1:end), 'fro')/norm(s,'fro');
                 cur_res = norm(bfun2(mtx,cur_sol,ry1,n1,n2,ry3,ry1,n1,n2,ry3) - rhs)/norm(rhs);
                 if (verb>1)
-                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e\n', swp, i, r, cur_res, cur_err);
+                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e, drop: %d\n', swp, i, r, cur_res, cur_err, dropflag);
                 end;
                 if (cur_res<eps) && (cur_err<eps)
                     break;
@@ -211,16 +216,28 @@ for swp=1:nswp
         else
             r = my_chop2(diag(s), eps*norm(diag(s)));
         end;
+        % Keep rank increasing in "inner" iterations
+        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)
+            r = max(r, ryold);
+        end;
+        if (verb>1)
+            fprintf('sweep %d, block %d, rank: %d, drop: %d\n', swp, i, r, dropflag);
+        end;
+        if (dropflag==1)&&(i==d-1)
+            dropflag=0;
+        end;
         
         u = u(:,1:r);
         v = v(:,1:r)*s(1:r,1:r);
         % kick
-        u = [u, randn(size(u,1),kickrank)];
-        v = [v, zeros(size(v,1),kickrank)];
-        
-        [u,rv]=qr(u,0);        
+        u = reort(u, randn(size(u,1),kickrank));
         r = size(u,2);
-        v = v*(rv.');
+%         u = [u, newu];
+        v = [v, zeros(size(v,1),r-size(v,2))];
+        
+%         [u,rv]=qr(u,0);        
+%         r = size(u,2);
+%         v = v*(rv.');
         u = reshape(u, ry1*n1,r);
         v = reshape(v, n2,ry3, r);
         y{i}=permute(reshape(u, ry1, n1, r), [2 1 3]);
@@ -263,15 +280,25 @@ for swp=1:nswp
             phiywy{i+1}=reshape(phiywy{i+1}, ry2, rw2, ry2);
         end;
     end;
-    if (verb>0)
-        fprintf('===Sweep %d, dy_max: %3.3e\n', swp, dy_max);
+    if (dy_max<eps)
+        dropflag = 1;
     end;
-    if (dy_max<2*eps)
+    if (mod(swp,chksweeps)==0)||(swp==1)
+        y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
+        reschk = norm(tt_tensor(y)-tt_tensor(y_prev))/sqrt(tt_dot(y,y));
+        y_prev = y;
+        y{1}=reshape(y{1}, size(y{1},1),1, size(y{1},2));
+    end;    
+    if (verb>0)
+        fprintf('===Sweep %d, dy_max: %3.3e, res_%d: %3.3e, drop_next: %d\n', swp, dy_max, chksweeps,reschk, dropflag);
+    end;
+    if (reschk<2*eps)
         break;
     end;
 end;
 
 y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
+y = tt_compr2(y, eps*sqrt(d-1));
 if (swp==nswp)&&(dy_max>eps)
     fprintf('tt_wround warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, dy_max); 
 end;
