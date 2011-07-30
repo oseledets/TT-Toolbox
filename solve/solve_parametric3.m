@@ -160,17 +160,14 @@ elseif ( strcmp(solver,'maxvol') )
  %sol_red=dmrg_parb(mat_small,par,rhs_small,eps,sol_prev,[],3,false);
  %keyboard;
  %return
- tic;
  %sol_red=dmrg_solve2(round(nm,eps),rhs_small,sol_prev,eps,eps,120,10,[],verb);
  sol_red=dmrg_solve2(round(nm,eps),rhs_small,eps,'x0',sol_prev,'rmax',120,'nswp',10,'verb',verb);
-% toc;
- t1=toc; 
  x=ttm(sol_red,1,sols_all');
  x=round(x,eps);
 
  if ( write_log ) 
     str=sprintf('%s%d.mat',log_file,iter);
-    save(str,'x','mat_small','par','sol_prev','rhs_small','eps','sol_red','t1');
+    save(str,'x','mat_small','par','sol_prev','rhs_small','eps','sol_red');
     %Save all the information
  end
 
