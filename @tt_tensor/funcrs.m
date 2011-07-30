@@ -12,7 +12,7 @@ function [y]=funcrs(tt,fun,eps,y,nswp,vargin)
 %PARAMETERS SECTION
 rmin=1; 
 verb=true;
-kick_rank=1;
+kick_rank=10;
 if (~isempty(y))
    yold=y;
 end
