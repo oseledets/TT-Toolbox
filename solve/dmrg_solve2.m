@@ -28,7 +28,7 @@ prec_tol=1e-1;
 prec_iters=15;
 
 chksweeps=4;
-dropsweeps=10;
+dropsweeps=3;
 use_self_prec=false;
 nswp=10;
 nrestart=40;
@@ -78,9 +78,6 @@ for i=1:2:length(varargin)-1
     end
 end
 
-
-
-
 input_is_tt_tensor = 0;
 if ( isa(A,'tt_matrix') )
   A=core(A);
@@ -114,6 +111,9 @@ P = tt_eye(tt_size(y), d);
 end
 x=x0;
 
+eps = eps/sqrt(d-1);
+tol = tol/sqrt(d-1);
+
 x_prev = x;
 
 x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
@@ -125,6 +125,7 @@ phA = cell(d,1);
 phy = cell(d,1);
 
 chkres = 1; dropflag = 0;
+last_sweep = false;
 for swp=1:nswp
 %     z = x;
     % 1-to-d orthogonalization
@@ -300,9 +301,9 @@ for swp=1:nswp
         end;
         
         % Form previous solution
-        sol_prev = reshape(permute(x{i-1}, [2 1 3]), rxm1*m1, rxm2);
-        x2 = reshape(permute(x{i}, [2 1 3]), rxm2, m2*rxm3);
-        sol_prev = sol_prev*x2;
+        x1 = reshape(permute(x{i-1}, [2 1 3]), rxm1*m1, rxm2);
+        x2 = reshape(permute(x{i}, [2 1 3]), rxm2, m2*rxm3);        
+        sol_prev = x1*x2;
         sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
                 
         if (strcmp(MatVec,'full'))
@@ -353,7 +354,11 @@ for swp=1:nswp
         end;
         
         sol=reshape(sol,[rxm1*m1,m2*rxm3]);
-        [u,s,v]=svd(sol,'econ');
+        if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+            [u,s,v]=svd(sol-reshape(sol_prev,[rxm1*m1,m2*rxm3]),'econ');
+        else
+            [u,s,v]=svd(sol,'econ');
+        end;
         s = diag(s);
         flm=norm(s);
         %Truncation block. We have to make it smarter by binary search
@@ -362,8 +367,11 @@ for swp=1:nswp
         while ( r ~= r0 || r ~= r1 )
             r=min(floor((r0+r1)/2),rmax);
             er0=norm(s(r+1:numel(s)));
-            sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r))';
-            sol = reshape(sol, rxm1*m1*m2*rxm3, 1);
+            if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+                sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
+            else                
+                sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
+            end;
             if (strcmp(MatVec,'full'))
                 resid = norm(B*sol-rhs)/norm(rhs);
             else
@@ -381,30 +389,40 @@ for swp=1:nswp
         
         % Keep rank increasing for several iterations
         % It helps for problems with hundred dimensions
-        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)
-            r = max(r, ryold);
-        end;
+%         if (mod(swp,dropsweeps)~=0)&&(dropflag==0)
+%             r = max(r, ryold);
+%         end;
 %         if (verb>1)
 %             fprintf('sweep %d, block %d, rank: %d, drop: %d\n', swp, i, r, dropflag);
 %         end;
-        if (dropflag==1)&&(i==2)
-            dropflag=0;
-        end;        
+%         if (dropflag==1)&&(i==2)
+%             dropflag=0;
+%         end;        
      
         v = conj(v(:,1:r));
         u = u(:,1:r)*diag(s(1:r));
         
         % random kick %This is a production code, sir!
         %Replace by new stuff
-        
-       vr=randn(size(v,1),kickrank);   
-       v=reort(v,vr);
-       radd=size(v,2)-r; 
-       if ( radd > 0 )
-         ur=zeros(size(u,1),radd);
-         u=[u,ur];
-       end
-       r=r+radd;
+       
+        if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+            u = [x1, u];
+            v = [x2.', v];
+            [v,rv]=qr(v,0);
+            u = u*(rv.');
+            r = size(v,2);
+        else
+%             if (~last_sweep)
+%                 vr=randn(size(v,1),kickrank);
+%                 v=reort(v,vr);
+%                 radd=size(v,2)-r;
+%                 if ( radd > 0 )
+%                     ur=zeros(size(u,1),radd);
+%                     u=[u,ur];
+%                 end
+%                 r=r+radd;
+%             end;
+        end;
        
         %v = [v, randn(size(v,1), kickrank)];
         %u = [u, zeros(size(u,1), kickrank)];
@@ -453,20 +471,24 @@ for swp=1:nswp
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);         
     end;
   
-    if (max_res<tol*2)
+    if (max_res<tol*2*sqrt(d-1))
         dropflag = 1;
     end;
-    if (mod(swp,chksweeps)==0)||(swp==1)
-        x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
-        reschk = norm(tt_tensor(x)-tt_tensor(x_prev))/sqrt(tt_dot(x,x));
-        x_prev = x;
-        x{1}=reshape(x{1}, size(x{1},1),1, size(x{1},2));
-    end;    
+%     if (mod(swp,chksweeps)==0)||(swp==1)
+%         x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+%         reschk = norm(tt_tensor(x)-tt_tensor(x_prev))/sqrt(tt_dot(x,x));
+%         x_prev = x;
+%         x{1}=reshape(x{1}, size(x{1},1),1, size(x{1},2));
+%     end;    
     if (verb>0)
-        fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,reschk, dropflag, dx_max, max_res);
+%         fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,0, dropflag, dx_max, max_res);
+        fprintf('===Sweep %d, dx_max: %3.3e, res_max: %3.3e\n', swp, dx_max, max_res);
     end;
-    if (reschk<eps)
+    if (last_sweep)
         break;
+    end;
+    if (max_res<tol*2*sqrt(d-1))||(swp==nswp-1)
+        last_sweep=true;
     end;
     
 %     if (verb>0)

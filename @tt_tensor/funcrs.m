@@ -11,8 +11,9 @@ function [y]=funcrs(tt,fun,eps,y,nswp,vargin)
 
 %PARAMETERS SECTION
 rmin=1; 
-verb=true;
+dropsweeps = 4;
 kick_rank=10;
+verb=true;
 if (~isempty(y))
    yold=y;
 end
@@ -77,6 +78,7 @@ swp=1;
 yold=[];
 not_converged = true;
 pos1=1;
+last_sweep = false;
 while ( swp < nswp && not_converged )
     max_er=0;
 cry_old=cry;
@@ -115,23 +117,35 @@ pos1=1;
      max_er=max(er,max_er);
      %Compute SVD of cr
 
-     [u,s,v]=svd(cr,'econ'); 
+     if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+         [u,s,v]=svd(cr-appr,'econ');
+     else
+         [u,s,v]=svd(cr,'econ');
+     end;
      s=diag(s);
-     r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
+     r2=my_chop2(s,eps*norm(cr,'fro')/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
      
-     v=v*diag(s);
+     v=conj(v)*diag(s);
 
-     %Kick rank of u 
-     ur=randn(size(u,1),kick_rank);
-     %Orthogonalize ur to u by Golub-Kahan reorth
-     u=reort(u,ur);
-     radd=size(u,2)-r2; 
-     if ( radd > 0 )
-       vr=zeros(size(v,1),radd);
-       v=[v,vr];
-     end
-
+     if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+         u = [cry1, u];
+         v = [cry2.', v];
+         [u,rv]=qr(u,0);
+         v = v*(rv.');         
+     else
+         if (~last_sweep)
+             %Kick rank of u
+             ur=randn(size(u,1),kick_rank);
+             %Orthogonalize ur to u by Golub-Kahan reorth
+             u=reort(u,ur);
+             radd=size(u,2)-r2;
+             if ( radd > 0 )
+                 vr=zeros(size(v,1),radd);
+                 v=[v,vr];
+             end
+         end;
+     end;
      
      %vr=randn(size(v,1),kick_rank);   
      %v=reort(v,vr);
@@ -214,26 +228,38 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      appr=cry1*cry2;
      er=norm(appr-cr,'fro')/norm(cr,'fro');
      %er
-          max_er=max(er,max_er);
-
-     %Compute SVD of cr
-     [u,s,v]=svd(cr,'econ'); 
+     max_er=max(er,max_er);
+          
+     if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+         [u,s,v]=svd(cr-appr,'econ');
+     else
+         %Compute SVD of cr
+         [u,s,v]=svd(cr,'econ');
+     end;
      s=diag(s);
-     r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
-     s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+     r2=my_chop2(s,eps*norm(cr,'fro')/sqrt(d-1));
+     s=s(1:r2); u=u(:,1:r2); v=conj(v(:,1:r2));
      %Make it standard
      u=u*diag(s);
      
      
-     %Kick rank
-          
-      vr=randn(size(v,1),kick_rank);   
-      v=reort(v,vr);
-      radd=size(v,2)-r2; 
-      if ( radd > 0 )
-         ur=zeros(size(u,1),radd);
-         u=[u,ur];
-      end
+     if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+         u = [cry1, u];
+         v = [cry2.', v];
+         [v,rv]=qr(v,0);
+         u = u*(rv.');
+     else
+         if (~last_sweep)
+             %Kick rank
+             vr=randn(size(v,1),kick_rank);
+             v=reort(v,vr);
+             radd=size(v,2)-r2;
+             if ( radd > 0 )
+                 ur=zeros(size(u,1),radd);
+                 u=[u,ur];
+             end
+         end;
+     end;
 
      
      
@@ -282,6 +308,12 @@ end
 if ( verb )
  fprintf('sweep=%d, er=%3.2e er_nrm=%3.2e \n',swp,max_er,er_nrm);
 end
+if (last_sweep)
+    break;
+end;
+if (er_nrm<eps)
+    last_sweep=true;
+end;
 swp=swp+1;
 end     
   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);

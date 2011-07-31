@@ -5,18 +5,19 @@ function [y,swp]=tt_wround(W, x, eps, y0, rmax, nswp)
 % If W is not specified, it is assumed to be I, i.e. the simple 
 % L_2-norm truncation is performed
 
-kickrank = 5;
-chksweeps = 4;
-dropsweeps = 5;
+kickrank = 4;
+chksweeps = 1;
+dropsweeps = 4;
 verb = 1;
 
 d = size(x,1);
 
 % It does matter for really high-dimensional tensors
-eps = eps/sqrt(d-1);
+eps = eps/d;
 
 if (nargin<4)||(isempty(y0))
-    y = tt_random(tt_size(x),d,2);
+    y = tt_ones(d, tt_size(x));
+    y = tt_scal2(y, -tt_dot2(y,y)/2, 1);
 else
     y = y0;
 end;
@@ -45,6 +46,7 @@ if (~isempty(W))
 end;
 phiyx = cell(d+1,1); phiyx{1}=1; phiyx{d+1}=1;
 
+last_sweep = false;
 reschk = 1; dropflag = 0;
 for swp=1:nswp
     % QR and Phi
@@ -176,12 +178,22 @@ for swp=1:nswp
         y2 = reshape(y2, ry2, n2*ry3);        
         yprev = y1*y2; % ry1*n1, n2*ry3
         
-        dy = norm(ynew-yprev, 'fro')/norm(ynew, 'fro');
+        dy = ynew-yprev;
+        if (~isempty(W))
+            dy = bfun2(W, dy, ry1, n1, n2, ry3, ry1, n1, n2, ry3);
+        else
+            rhs = ynew;
+        end;
+        dy = norm(dy, 'fro')/norm(rhs, 'fro');
         if (dy>dy_max)
             dy_max=dy;
         end;
         
-        [u,s,v]=svd(ynew, 'econ');
+        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(swp>1)&&(~last_sweep)
+            [u,s,v]=svd(ynew-yprev,'econ');
+        else
+            [u,s,v]=svd(ynew, 'econ');
+        end;
         if (~isempty(W))
             % Bin search
             r0 = 1; rM = min(size(s,1),rmax); r = round((r0+rM)/2);            
@@ -214,10 +226,11 @@ for swp=1:nswp
                 end;
             end;
         else
-            r = my_chop2(diag(s), eps*norm(diag(s)));
+            r = my_chop2(diag(s), eps*norm(ynew,'fro'));
+%             r = min(r,5);
         end;
-        % Keep rank increasing in "inner" iterations
-        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)
+%         % Keep rank increasing in "inner" iterations
+        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(~last_sweep)
             r = max(r, ryold);
         end;
         if (verb>1)
@@ -228,21 +241,31 @@ for swp=1:nswp
         end;
         
         u = u(:,1:r);
-        v = v(:,1:r)*s(1:r,1:r);
-        % kick
-        u = reort(u, randn(size(u,1),kickrank));
-        r = size(u,2);
-%         u = [u, newu];
-        v = [v, zeros(size(v,1),r-size(v,2))];
+        v = conj(v(:,1:r))*s(1:r,1:r);
+        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(swp>1)&&(~last_sweep)
+            % Add new vectors to a basis
+            u = [y1, u]; % ry1*n1, ry2+r
+            v = [y2.', v]; % n2*ry3, ry2+r
+            [u,rv]=qr(u,0);
+            ry2 = size(u,2);
+            v = v*(rv.');          
+        else
+            % kick
+            if (~last_sweep)
+                u = reort(u, randn(size(u,1),kickrank));
+                r = size(u,2);
+                v = [v, zeros(size(v,1),r-size(v,2))];
+            end;
+            ry2 = size(u,2);
+        end;
         
 %         [u,rv]=qr(u,0);        
 %         r = size(u,2);
 %         v = v*(rv.');
-        u = reshape(u, ry1*n1,r);
-        v = reshape(v, n2,ry3, r);
-        y{i}=permute(reshape(u, ry1, n1, r), [2 1 3]);
-        y{i+1}=permute(v, [1 3 2]);
-        ry2 = r;
+%         u = reshape(u, ry1*n1,r);
+%         v = reshape(v, n2,ry3, r);
+        y{i}=permute(reshape(u, ry1, n1, ry2), [2 1 3]);
+        y{i+1}=permute(reshape(v, n2, ry3, ry2), [1 3 2]);
 
         % Update phi. phiywy = y^T W y, phiywx = y^T W x, phiyx = y^T x
         x1 = x{i}; rx1 = size(x1,2); rx2 = size(x1,3);
@@ -283,22 +306,26 @@ for swp=1:nswp
     if (dy_max<eps)
         dropflag = 1;
     end;
-    if (mod(swp,chksweeps)==0)||(swp==1)
-        y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
-        reschk = norm(tt_tensor(y)-tt_tensor(y_prev))/sqrt(tt_dot(y,y));
-        y_prev = y;
-        y{1}=reshape(y{1}, size(y{1},1),1, size(y{1},2));
-    end;    
+%     if (mod(swp,chksweeps)==0)||(swp==1)
+%         y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
+%         reschk = norm(tt_tensor(y)-tt_tensor(y_prev))/sqrt(tt_dot(y,y));
+%         y_prev = y;
+%         y{1}=reshape(y{1}, size(y{1},1),1, size(y{1},2));
+%     end;    
     if (verb>0)
-        fprintf('===Sweep %d, dy_max: %3.3e, res_%d: %3.3e, drop_next: %d\n', swp, dy_max, chksweeps,reschk, dropflag);
+        fprintf('===Sweep %d, dy_max: %3.3e, res_%d: %3.3e, drop_next: %d\n', swp, dy_max, chksweeps,0, dropflag);
     end;
-    if (reschk<2*eps)
+    if (last_sweep)
         break;
+    end;
+%     if (reschk<eps*sqrt(d))
+    if (dy_max<eps*d)
+        last_sweep = true;
     end;
 end;
 
 y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
-y = tt_compr2(y, eps*sqrt(d-1));
+% y = tt_compr2(y, eps*sqrt(d-1));
 if (swp==nswp)&&(dy_max>eps)
     fprintf('tt_wround warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, dy_max); 
 end;

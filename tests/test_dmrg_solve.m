@@ -5,7 +5,7 @@ eps = 1e-6;
 tol = eps;
 maxrank=[];
 
-% ug=fg;
+ug=fg;
 % ug = tt_tensor(tt_random(fg.n, fg.d, 2));
 
 if (~isempty(Pg))
@@ -19,7 +19,7 @@ ds_results = zeros(maxit,5);
 for i=1:maxit
     tstart = tic;
 %     ug = dmrg_solve2(Ag,fg,ug,eps,tol,maxrank,1,Pg,false);
-    ug = dmrg_solve2(Ag,fg,eps,'x0',ug,'nswp',1,'P',Pg,'verb',false);
+    ug = dmrg_solve2(Ag,fg,eps,'x0',ug,'nswp',4,'P',Pg,'verb',1);
     cur_time = toc(tstart);
     
     resg = mvk2(Ag,ug,eps,10);
