@@ -27,8 +27,9 @@ prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
 
-chksweeps=4;
 dropsweeps=3;
+d_pow = 0.8;
+
 use_self_prec=false;
 nswp=10;
 nrestart=40;
@@ -38,7 +39,7 @@ local_prec = 'als';
 rmax=1000;
 tol=eps;
 verb=1;
-kickrank = 1;
+kickrank = 2;
 x0=[];
 P=[];
 for i=1:2:length(varargin)-1
@@ -111,8 +112,8 @@ P = tt_eye(tt_size(y), d);
 end
 x=x0;
 
-eps = eps/sqrt(d-1);
-tol = tol/sqrt(d-1);
+eps = eps/(d^d_pow);
+tol = tol/(d^d_pow);
 
 x_prev = x;
 
@@ -412,16 +413,16 @@ for swp=1:nswp
             u = u*(rv.');
             r = size(v,2);
         else
-%             if (~last_sweep)
-%                 vr=randn(size(v,1),kickrank);
-%                 v=reort(v,vr);
-%                 radd=size(v,2)-r;
-%                 if ( radd > 0 )
-%                     ur=zeros(size(u,1),radd);
-%                     u=[u,ur];
-%                 end
-%                 r=r+radd;
-%             end;
+            if (~last_sweep)
+                vr=randn(size(v,1),kickrank);
+                v=reort(v,vr);
+                radd=size(v,2)-r;
+                if ( radd > 0 )
+                    ur=zeros(size(u,1),radd);
+                    u=[u,ur];
+                end
+                r=r+radd;
+            end;
         end;
        
         %v = [v, randn(size(v,1), kickrank)];
@@ -471,9 +472,9 @@ for swp=1:nswp
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);         
     end;
   
-    if (max_res<tol*2*sqrt(d-1))
-        dropflag = 1;
-    end;
+%     if (max_res<tol*2*sqrt(d-1))
+%         dropflag = 1;
+%     end;
 %     if (mod(swp,chksweeps)==0)||(swp==1)
 %         x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
 %         reschk = norm(tt_tensor(x)-tt_tensor(x_prev))/sqrt(tt_dot(x,x));
@@ -487,7 +488,7 @@ for swp=1:nswp
     if (last_sweep)
         break;
     end;
-    if (max_res<tol*2*sqrt(d-1))||(swp==nswp-1)
+    if (max_res<tol*1.2*(d^d_pow))||(swp==nswp-1)
         last_sweep=true;
     end;
     

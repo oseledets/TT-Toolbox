@@ -14,15 +14,16 @@ if ((nargin>=5)&&(~isempty(max_swp)))
     nswp = max_swp;
 end;
 
-rmin=1;
-kickrank = 2;
-radd=0;
-%verb=false;
-verb=false;
-d=size(a,1);
+kickrank = 5;
+dropsweeps = 1; % garbage - for quasi-wedderburn
+ddpow = 0.1; % stepsize for d-power in truncations
+ddrank = 1; % stepsize for additional rank
+d_pow_check = 0; % d-power for checking the convergence
+bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
+top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
+verb = 1; % 0 - silent, 1 - sweep information, 2 - block information
 
-% It does matter for really high-dimensional tensors
-eps = eps/sqrt(d-1);
+d=size(a,1);
 
 %Init solution
 % a_coarse = tt_mat_compr(a, eps, 1);
@@ -39,6 +40,14 @@ swp=1;
 
 log_norms_ph = zeros(d,1);
 log_norms_y = zeros(d,1);
+last_sweep = false;
+
+dy_old = ones(d-1,1);
+dy = zeros(d-1,1);
+% artificial rank additions
+drank = ones(d-1,1);
+% d-power for stronger compression eps./(d.^dpows)
+dpows = ones(d-1,1);
 
 while ( swp < nswp) 
  %power up by addition random rank-two term (it is magic)
@@ -174,11 +183,11 @@ mat=reshape(mat,[n1,n2*ry2]);
 s=diag(s);
 nrm=norm(s);
 rold=size(y{1},2);
-r=my_chop2(s,eps*nrm);
+r=my_chop2(s,eps/sqrt(d)*nrm);
 % r=max([rmin,r,rold+radd]);
 % r=min(r,size(s,1));
 if (exists_max_r) r = min(r, max_r); end;
-if ( verb ) 
+if ( verb>1 ) 
  fprintf('We can push rank %d to %d \n',1,r);
 end
 u=u(:,1:r);
@@ -262,39 +271,71 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
   y2=permute(y2,[2,1,3]);
   y1=reshape(y1,[ry1*n1,ry2]);
   y2=reshape(y2,[ry2,n2*ry3]);
+  y2 = y2*exp(log_norms_y(i)+log_norms_y(i+1)-log_norms_ph(i-1)-log_norms_ph(i+2)); % recover the true norm of y2
   app=y1*y2;
-  app = app.*exp(log_norms_y(i)+log_norms_y(i+1)-log_norms_ph(i-1)-log_norms_ph(i+2)); % normalize y1*y2 to mat
-  er0=norm(mat-app,'fro')/norm(mat,'fro');
-  if (er0>err_max)
-      err_max = er0;
+  dy(i)=norm(mat-app,'fro')/norm(mat,'fro');
+  if (swp==1)
+      dy_old(i)=dy(i);
   end;
+  
+  % The new core does not converge - increase rank
+  if (dy(i)/dy_old(i)>top_conv)&&(dy(i)>eps/(d^d_pow_check))
+      drank(i)=drank(i)+ddrank;
+      dpows(i)=dpows(i)+ddpow;
+  end;
+  % The new core converges well - try to decrease rank
+  if (dy(i)/dy_old(i)<bot_conv)||(dy(i)<eps/(d^d_pow_check))
+      drank(i)=max(drank(i)-ddrank, 1);
+      dpows(i)=max(dpows(i)-ddpow, 1);
+  end;
+  % perform simple compression for the last sweep
+  if (last_sweep)
+      dpows(i)=0.5;
+  end;
+  
 %   if ( er0 > eps )
 % %     fprintf('rank %d\t does not converge,er0=%3.2e\t\n',i,er0);
 %     not_converged=true;
 %   end
   %fprintf('er0=%3.2e\n',er0);
-  [u,s,v]=svd(mat,'econ');
+  if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+      [u,s,v]=svd(mat-app,'econ');
+  else
+      [u,s,v]=svd(mat,'econ');
+  end;
    s=diag(s);
   
   %fprintf('norm=%18f \n',norm(s));
   %fprintf('tensor norm=%3.2e \n',norm(s));
-  rold=size(y{i},3);
-  r=my_chop2(s,eps*norm(s));
-%   r=max([r,rmin,rold+radd]);
-%   r=min(r,size(s,1));
+
+  r=my_chop2(s,eps/(d^dpows(i))*norm(mat, 'fro'));
+  if (~last_sweep)
+      r = r+drank(i); % we want even larger ranks
+  end;
+  r = min(r, max(size(s))); % but not too large
   if (exists_max_r) r = min(r, max_r); end;  
   %if ( 
-  if ( verb )
+  if ( verb>1 )
   fprintf('We can push rank %d to %d \n',i,r);
   end
   u=u(:,1:r);
-  v=v(:,1:r)*diag(s(1:r));
-  % kick
-  u = [u, randn(size(u,1),kickrank)];
-  v = [v, zeros(size(v,1),kickrank)];
-  [u,rv]=qr(u,0);
-  r = size(u,2);
-  v = v*(rv.');
+  v=conj(v(:,1:r))*diag(s(1:r));
+  if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+      u = [y1, u];
+      v = [y2.', v];
+      [u,rv]=qr(u,0);
+      v = v*(rv.');
+      r = size(u,2);
+  else
+      if (~last_sweep)
+          % kick
+          u = [u, randn(size(u,1),kickrank)];
+          v = [v, zeros(size(v,1),kickrank)];
+          [u,rv]=qr(u,0);
+          r = size(u,2);
+          v = v*(rv.');
+      end;
+  end;
   log_norms_y(i)=log(norm(u, 'fro')+1e-308);  
   log_norms_y(i+1)=log(norm(v, 'fro')+1e-308);  
   u=reshape(u,[ry1,n1,r]);
@@ -354,7 +395,7 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
  mat=ph1*ph2'; 
  [u,s,v]=svd(mat,'econ');
  s=diag(s);
- r=my_chop2(s,eps*norm(s));
+ r=my_chop2(s,eps/sqrt(d)*norm(s));
  rold=size(y{d},2);
 % r=max([r,rmin,rold]);
 % r=min(r,size(s,1));
@@ -397,17 +438,29 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
      y{i}=y{i}.*norm1_y;
  end;
  
- if (err_max<=eps)
+ if (verb>0)
+     fprintf('tt_mvk2: sweep %d, err_max = %3.3e\n', swp, max(dy));
+ end; 
+ if (last_sweep)
+     swp=swp+1;
      break;
  end;
+ if (max(dy)<=eps/(d^d_pow_check))
+     last_sweep=true;
+ end;
+ 
+ dy_old = dy;
 %  if (~isempty(yold) )
 %    er=tt_dist2(y,yold)/sqrt(tt_dot(yold,yold));
 %    fprintf('er=%3.2e\n',er);
 %  end
 %  yold=y;
   swp=swp+1;
+  if (swp==nswp-1)
+      last_sweep=true;
+  end;
 end
-if ( swp == nswp ) 
+if ( swp == nswp )&&(max(dy)>eps/(d^d_pow_check)) 
   fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, err_max); 
 end
  return

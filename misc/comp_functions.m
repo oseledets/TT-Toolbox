@@ -1,6 +1,6 @@
 %Compute Karhunen-Loeve expansion for the function exp(-|x1-x2|  - |y1-y2|)
 
-p=4; %The number of 1d parameters
+p=M/2; %The number of 1d parameters
 a0=1; %Interval is [-a0,a0]
 c0=1; %Inverse correlation length
 [w1,w2]=compute_omega(a0,c0,p);
@@ -10,7 +10,11 @@ lam1=2*c0./(w1.^2+c0.^2);
 lam2=2*c0./(w2.^2+c0.^2);
 
 
-L=6; n=2^L-1; m=(n+1)/p; %Step size
+% nold = n;
+n = n-1;
+% L=8; 
+% n=2^L-1;
+m=(n+1)/p; %Step size
 a=-a0;
 b=a0;
 %The coefficient has to be specified in the middle points
@@ -28,3 +32,4 @@ lam(2*i-1)=lam1(i);
 lam(2*i)=lam2(i);
 end
 
+% n = nold;

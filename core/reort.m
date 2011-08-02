@@ -2,6 +2,10 @@ function [y]=reort(u,uadd)
 %[Y]=REORT(U,UADD)
 %Faster (?) QR-decomposition of the matrix [u,v] by Golub-Kahan
 %reorthogonalization
+if (size(uadd,2)==0)
+    y = u;
+    return;
+end;
 if (size(u,1) == size(u,2) )
   y=u;
   return

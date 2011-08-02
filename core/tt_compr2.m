@@ -26,17 +26,17 @@ if ((nargin<3)||(isempty(max_r)))
     exists_max_r=0;
 end;
 
-% if ( nrm_full < log(1e-200) ) %Something really small
-%   n=size(tt{1},1);
-%   tt{1}=zeros(n,0);
-%   n=size(tt{d},1);
-%   tt{d}=zeros(n,0);
-%   for i=2:d-1
-%   n=size(tt{i},1);
-%   tt{i}=zeros(n,0,0);
-%   end
-%   return
-% end
+if ( nrm_full < log(1e-200) ) %Something really small
+  n=size(tt{1},1);
+  tt{1}=zeros(n,1);
+  n=size(tt{d},1);
+  tt{d}=ones(n,1);
+  for i=2:d-1
+  n=size(tt{i},1);
+  tt{i}=ones(n,1,1);
+  end
+  return
+end
 %nrmf=zeros(d,1); %Place to store the norms of QR-factors
 %first, we orthogonalize the tensor from right to left until the first mode
 mat=tt{d};

@@ -1,38 +1,61 @@
-function [y,swp]=tt_wround(W, x, eps, y0, rmax, nswp)
+function [y,swp]=tt_wround(W, x, eps, varargin)
 % function [y,swp]=tt_wround([W], x, eps, [y0], [rmax], [nswp])
 % Approximates the tt vector X in the norm ||W(y-x)|| via
 % the DMRG iterations.
 % If W is not specified, it is assumed to be I, i.e. the simple 
 % L_2-norm truncation is performed
 
-kickrank = 4;
-chksweeps = 1;
-dropsweeps = 4;
-verb = 1;
+% @bydlocode parameters
+kickrank = 5;
+dropsweeps = 1; % garbage - for quasi-wedderburn
+% dropsweeps2 = 10; % garbage
+% d_pow_trunc = 1.5; % garbage
+ddpow = 0.1; % stepsize for d-power in truncations
+ddrank = 1; % stepsize for additional rank
+d_pow_check = 0.2; % d-power for checking the convergence
+bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
+top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
+verb = 1; % 0 - silent, 1 - sweep information, 2 - block information
 
 d = size(x,1);
 
-% It does matter for really high-dimensional tensors
-eps = eps/d;
 
-if (nargin<4)||(isempty(y0))
-    y = tt_ones(d, tt_size(x));
-    y = tt_scal2(y, -tt_dot2(y,y)/2, 1);
-else
-    y = y0;
-end;
+y = tt_ones(d, tt_size(x));
+y = tt_scal2(y, -tt_dot2(y,y)/2, 1);
 
-if (nargin<5)||(isempty(rmax))
-    rmax=1000;
-end;
-if (nargin<6)||(isempty(nswp))
-    nswp=25;
-end;
+rmax=1000;
+nswp=25;
+
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'nswp'
+            nswp=varargin{i+1};
+        case 'rmax'
+            rmax=lower(varargin{i+1});
+        case 'y0'
+            y=varargin{i+1};
+        case 'verb'
+            verb=varargin{i+1};
+        case 'kickrank'
+            kickrank=varargin{i+1};
+        case 'ddpow'
+            ddpow=varargin{i+1};          
+        case 'ddrank'
+            ddrank=varargin{i+1};       
+        case 'd_pow_check'
+            d_pow_check=varargin{i+1};  
+        case 'bot_conv'
+            bot_conv=varargin{i+1};  
+        case 'top_conv'
+            top_conv=varargin{i+1};              
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+    end
+end
 
 % if (isempty(W))
 %     W = tt_eye(tt_size(x),d);
 % end;
-y_prev = y;
 
 x{1}=reshape(x{1}, size(x{1},1),1,size(x{1},2));
 y{1}=reshape(y{1}, size(y{1},1),1,size(y{1},2));
@@ -47,7 +70,13 @@ end;
 phiyx = cell(d+1,1); phiyx{1}=1; phiyx{d+1}=1;
 
 last_sweep = false;
-reschk = 1; dropflag = 0;
+dy_old = ones(d-1,1);
+dy = zeros(d-1,1);
+% artificial rank additions
+drank = ones(d-1,1);
+% d-power for stronger compression eps./(d.^dpows)
+dpows = ones(d-1,1);
+
 for swp=1:nswp
     % QR and Phi
     for i=d:-1:2
@@ -104,7 +133,6 @@ for swp=1:nswp
     end;
     
     % DMRG sweep
-    dy_max = 0;
     for i=1:d-1
         x1 = x{i}; n1 = size(x1,1); rx1 = size(x1,2); rx2 = size(x1,3);
         x2 = x{i+1}; n2 = size(x2,1); rx3 = size(x2,3);
@@ -178,18 +206,34 @@ for swp=1:nswp
         y2 = reshape(y2, ry2, n2*ry3);        
         yprev = y1*y2; % ry1*n1, n2*ry3
         
-        dy = ynew-yprev;
+        vdy = ynew-yprev;
         if (~isempty(W))
-            dy = bfun2(W, dy, ry1, n1, n2, ry3, ry1, n1, n2, ry3);
+            vdy = bfun2(W, vdy, ry1, n1, n2, ry3, ry1, n1, n2, ry3);
         else
             rhs = ynew;
         end;
-        dy = norm(dy, 'fro')/norm(rhs, 'fro');
-        if (dy>dy_max)
-            dy_max=dy;
+        dy(i) = norm(vdy, 'fro')/norm(rhs, 'fro');
+        if (swp==1)
+            dy_old(i)=dy(i);
+        end;
+                
+        % The new core does not converge - increase rank
+        if (dy(i)/dy_old(i)>top_conv)&&(dy(i)>eps/(d^d_pow_check))
+            drank(i)=drank(i)+ddrank;
+            dpows(i)=dpows(i)+ddpow;
+        end;
+        % The new core converges well - try to decrease rank
+        if (dy(i)/dy_old(i)<bot_conv)||(dy(i)<eps/(d^d_pow_check))
+            drank(i)=max(drank(i)-ddrank, 1);
+            dpows(i)=max(dpows(i)-ddpow, 1);
+        end;
+        % perform simple compression for the last sweep
+        if (last_sweep)
+            dpows(i)=0.5;
         end;
         
-        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(swp>1)&&(~last_sweep)
+        if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+            % for quasi-wedderburn
             [u,s,v]=svd(ynew-yprev,'econ');
         else
             [u,s,v]=svd(ynew, 'econ');
@@ -202,9 +246,9 @@ for swp=1:nswp
                 cur_sol = reshape(u(:,1:r)*s(1:r,1:r)*v(:,1:r)', ry1*n1*n2*ry3, 1);
                 cur_res = norm(bfun2(mtx,cur_sol,ry1,n1,n2,ry3,ry1,n1,n2,ry3) - rhs)/norm(rhs);
                 if (verb>1)
-                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e, drop: %d\n', swp, i, r, cur_res, cur_err, dropflag);
+                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e\n', swp, i, r, cur_res, cur_err);
                 end;
-                if (cur_res<eps)
+                if (cur_res<eps/(d^dpows(i)))
                     rM = r-1;
                     r = round((r0+rM)/2);
                 else
@@ -219,30 +263,33 @@ for swp=1:nswp
                 cur_err = norm(s(r+1:end,r+1:end), 'fro')/norm(s,'fro');
                 cur_res = norm(bfun2(mtx,cur_sol,ry1,n1,n2,ry3,ry1,n1,n2,ry3) - rhs)/norm(rhs);
                 if (verb>1)
-                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e, drop: %d\n', swp, i, r, cur_res, cur_err, dropflag);
+                    fprintf('sweep %d, block %d, rank: %d, resid: %3.3e, L2-err: %3.3e\n', swp, i, r, cur_res, cur_err);
                 end;
-                if (cur_res<eps) && (cur_err<eps)
+                if (cur_res<eps/(d^dpows(i))) % && (cur_err<eps)
                     break;
                 end;
             end;
         else
-            r = my_chop2(diag(s), eps*norm(ynew,'fro'));
-%             r = min(r,5);
+            r = my_chop2(diag(s), eps/(d^dpows(i))*norm(ynew,'fro'));
         end;
+        if (~last_sweep)
+            r = r+drank(i); % we want even larger ranks
+        end;
+        r = min(r, max(size(s))); % but not too large
 %         % Keep rank increasing in "inner" iterations
-        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(~last_sweep)
-            r = max(r, ryold);
-        end;
+%         if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(~last_sweep)
+%             r = max(r, ryold);
+%         end;
         if (verb>1)
-            fprintf('sweep %d, block %d, rank: %d, drop: %d\n', swp, i, r, dropflag);
+            fprintf('sweep %d, block %d, rank: %d, dy: %3.3e, dy_old: %3.3e, drank: %g, dpow: %g\n', swp, i, r, dy(i), dy_old(i), drank(i), dpows(i));
         end;
-        if (dropflag==1)&&(i==d-1)
-            dropflag=0;
-        end;
+%         if (dropflag==1)&&(i==d-1)
+%             dropflag=0;
+%         end;
         
         u = u(:,1:r);
         v = conj(v(:,1:r))*s(1:r,1:r);
-        if (mod(swp,dropsweeps)~=0)&&(dropflag==0)&&(swp>1)&&(~last_sweep)
+        if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
             % Add new vectors to a basis
             u = [y1, u]; % ry1*n1, ry2+r
             v = [y2.', v]; % n2*ry3, ry2+r
@@ -303,9 +350,6 @@ for swp=1:nswp
             phiywy{i+1}=reshape(phiywy{i+1}, ry2, rw2, ry2);
         end;
     end;
-    if (dy_max<eps)
-        dropflag = 1;
-    end;
 %     if (mod(swp,chksweeps)==0)||(swp==1)
 %         y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
 %         reschk = norm(tt_tensor(y)-tt_tensor(y_prev))/sqrt(tt_dot(y,y));
@@ -313,21 +357,22 @@ for swp=1:nswp
 %         y{1}=reshape(y{1}, size(y{1},1),1, size(y{1},2));
 %     end;    
     if (verb>0)
-        fprintf('===Sweep %d, dy_max: %3.3e, res_%d: %3.3e, drop_next: %d\n', swp, dy_max, chksweeps,0, dropflag);
+        fprintf('===Sweep %d, dy_max: %3.3e, conv_max: %1.5f\n', swp, max(dy), max(dy)/max(dy_old));
     end;
     if (last_sweep)
         break;
     end;
 %     if (reschk<eps*sqrt(d))
-    if (dy_max<eps*d)
+    if (max(dy)<eps/(d^d_pow_check))
         last_sweep = true;
     end;
+    dy_old = dy;
 end;
 
 y{1}=reshape(y{1}, size(y{1},1), size(y{1},3));
-% y = tt_compr2(y, eps*sqrt(d-1));
-if (swp==nswp)&&(dy_max>eps)
-    fprintf('tt_wround warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, dy_max); 
+% y = tt_compr2(y, eps);
+if (swp==nswp)&&(max(dy)>eps/(d^d_pow_check))
+    fprintf('tt_wround warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, max(dy)); 
 end;
 
 end
