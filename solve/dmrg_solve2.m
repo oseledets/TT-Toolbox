@@ -27,8 +27,14 @@ prec_compr=1e-3;
 prec_tol=1e-1;
 prec_iters=15;
 
-dropsweeps=3;
-d_pow = 0.8;
+dropsweeps=1;
+ddpow = 0.1; % stepsize for d-power in truncations
+min_dpow = 1; % Minimal d-power for truncation
+ddrank = 1; % stepsize for additional rank
+min_drank = 1; % Minimal additional rank
+d_pow_check = 0; % d-power for checking the convergence
+bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
+top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
 
 use_self_prec=false;
 nswp=10;
@@ -74,6 +80,20 @@ for i=1:2:length(varargin)-1
             prec_iters=varargin{i+1};
         case 'use_self_prec'
             use_self_prec=varargin{i+1};
+        case 'ddpow'
+            ddpow=varargin{i+1};
+        case 'ddrank'
+            ddrank=varargin{i+1};
+        case 'd_pow_check'
+            d_pow_check=varargin{i+1};
+        case 'bot_conv'
+            bot_conv=varargin{i+1};
+        case 'top_conv'
+            top_conv=varargin{i+1};
+        case 'min_dpow'
+            min_dpow=varargin{i+1};            
+        case 'min_drank'
+            min_drank=varargin{i+1};                         
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -112,11 +132,6 @@ P = tt_eye(tt_size(y), d);
 end
 x=x0;
 
-eps = eps/(d^d_pow);
-tol = tol/(d^d_pow);
-
-x_prev = x;
-
 x{1}=reshape(x{1}, size(x{1},1), 1, size(x{1},2));
 y{1}=reshape(y{1}, size(y{1},1), 1, size(y{1},2));
 A{1}=reshape(A{1}, size(A{1},1),size(A{1},2), 1, size(A{1},3)); %Bydlocode (@)
@@ -124,8 +139,13 @@ P{1}=reshape(P{1}, size(P{1},1),size(P{1},2), 1, size(P{1},3));
 
 phA = cell(d,1);
 phy = cell(d,1);
+dx_old = ones(d,1);
+dx = zeros(d,1);
+% artificial rank additions
+drank = ones(d,1)*min_drank;
+% d-power for stronger compression eps./(d.^dpows)
+dpows = ones(d,1)*min_dpow;
 
-chkres = 1; dropflag = 0;
 last_sweep = false;
 for swp=1:nswp
 %     z = x;
@@ -194,7 +214,7 @@ for swp=1:nswp
     x{d}=permute(reshape(cre, rnewx, n1, rx2), [2 1 3]);
     
     % Now, start the d-to-1 DMRG iteration
-    dx_max = 0; max_res = 0;
+    max_res = 0;
     phAold=1; phyold=1;
     for i=d:-1:2
         a2=A{i}; a1=A{i-1}; ra1=size(a1,3); ra2=size(a1,4); ra3=size(a2,4);
@@ -204,7 +224,6 @@ for swp=1:nswp
         
         y1=y{i-1}; y2=y{i}; ry1=size(y1,2); ry2=size(y1,3); ry3=size(y2,3);
         x1=x{i-1}; x2=x{i}; rx1=size(x1,2); rx2=size(x1,3); rx3=size(x2,3);
-        ryold = ry2;
         
         % Compute RHS: phy{i-2}*P1*y1*y2*P2*phyold
         if (i>2)
@@ -306,7 +325,9 @@ for swp=1:nswp
         x2 = reshape(permute(x{i}, [2 1 3]), rxm2, m2*rxm3);        
         sol_prev = x1*x2;
         sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
-                
+        
+        real_tol = tol/(d^dpows(i));
+        
         if (strcmp(MatVec,'full'))
 
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
@@ -316,26 +337,26 @@ for swp=1:nswp
             res_true = norm(res-rhs)/norm(rhs);            
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            [sol_new,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, tol, 2, [], [], sol_prev);
+            [sol_new,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, real_tol, 2, [], [], sol_prev);
             res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             conv_factor=(res_new/res_prev);
-            if (res_new*(conv_factor)>eps && use_self_prec) % we need a prec.
+            if (res_new*(conv_factor)>real_tol && use_self_prec) % we need a prec.
                 if (strcmp(local_prec, 'selfprec'))
                     iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 
                     resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
                     [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
-                        rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, tol/res_new, gmres_iters);
+                        rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, real_tol/res_new, gmres_iters);
                     dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
                     sol = sol_new+dsol;
                     
                 end;
                 if (strcmp(local_prec, 'als'))
-                    sol = als_solve_rx_2(B, rhs, tol, [], sol_new);
+                    sol = als_solve_rx_2(B, rhs, real_tol, [], sol_new);
                 end;
             else
                 [sol,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
-                    rhs, nrestart, tol, gmres_iters, [], [], sol_new);
+                    rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
             end;
 
             res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
@@ -346,12 +367,30 @@ for swp=1:nswp
             max_res = res_prev;
         end;        
         
-        dx = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
+        dx(i) = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
         if (verb>1)
-        fprintf('==sweep %d, block %d, dx=%3.3e, res_prev = %3.3e\n', swp, i, dx, res_prev);
+        fprintf('=dmrg_solve2= Sweep %d, block %d, dx=%3.3e, res_prev = %3.3e\n', swp, i, dx(i), res_prev);
         end;
-        if (dx>dx_max)
-            dx_max = dx;
+        if (norm(sol, 'fro')==0)
+            dx(i)=0;
+        end;
+        if (swp==1)
+            dx_old(i)=dx(i);
+        end;
+                
+        % The new core does not converge - increase rank
+        if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>eps/(d^d_pow_check))
+            drank(i)=drank(i)+ddrank;
+            dpows(i)=dpows(i)+ddpow;
+        end;
+        % The new core converges well - try to decrease rank
+        if (dx(i)/dx_old(i)<bot_conv)||(dx(i)<eps/(d^d_pow_check))
+            drank(i)=max(drank(i)-ddrank, min_drank);
+            dpows(i)=max(dpows(i)-ddpow, min_dpow);
+        end;
+        % perform simple compression for the last sweep
+        if (last_sweep)
+            dpows(i)=min(0.5, min_dpow);
         end;
         
         sol=reshape(sol,[rxm1*m1,m2*rxm3]);
@@ -379,14 +418,20 @@ for swp=1:nswp
                 resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
             end;
             if ( verb>1 )
-            fprintf('sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
+            fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
             end
-            if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
+            if ((resid<max(res_true*1.2, eps/(d^dpows(i)))) ) %Value of the rank is OK
               r1=r;
             else %Is not OK.
               r0=min(r+1,rmax);
             end;
         end
+        
+        if (~last_sweep)
+            r = r+drank(i); % we want even larger ranks
+        end;
+        r = min(r, max(size(s))); % but not too large
+        r = min(r,rmax);
         
         % Keep rank increasing for several iterations
         % It helps for problems with hundred dimensions
@@ -483,15 +528,16 @@ for swp=1:nswp
 %     end;    
     if (verb>0)
 %         fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,0, dropflag, dx_max, max_res);
-        fprintf('===Sweep %d, dx_max: %3.3e, res_max: %3.3e\n', swp, dx_max, max_res);
+        fprintf('=dmrg_solve2= Sweep %d, dx_max: %3.3e, res_max: %3.3e\n', swp, max(dx), max_res);
     end;
     if (last_sweep)
         break;
     end;
-    if (max_res<tol*1.2*(d^d_pow))||(swp==nswp-1)
+    if (max_res<tol*1.2/(d^d_pow_check))||(swp==nswp-1)
         last_sweep=true;
     end;
     
+    dx_old = dx;
 %     if (verb>0)
 %         fprintf('-=-=-=-=-= dx_max = %3.3e, res_max = %3.3e\n', dx_max, max_res);
 %     end;    

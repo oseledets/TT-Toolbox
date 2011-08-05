@@ -68,7 +68,7 @@ if (type==0)
         qsize = 2*ones(1,new_d(q));
         tt{q}=reshape(tt{q}, [r1 qsize r2]);
         
-        cur_qtt = full_to_tt(tt{q}, eps, max_r);        
+        cur_qtt = full_to_tt(tt{q}, eps/sqrt(d_phys-1), max_r);        
         if (size(cur_qtt,1)<(new_d(q)+2)) 
             dumme_kuh=cell(new_d(q)+2,1);
             for s=1:new_d(q)+1
@@ -128,7 +128,7 @@ else
         sz1(new_d(q)+2)=r2;
         tt{q}=reshape(tt{q},sz1);
         
-        cur_qtt=full_to_tt(tt{q},eps, max_r);
+        cur_qtt=full_to_tt(tt{q},eps/sqrt(d_phys-1), max_r);
         if (size(cur_qtt,1)<(new_d(q)+2)) 
             dumme_kuh=cell(new_d(q)+2,1);
             for s=1:new_d(q)+1

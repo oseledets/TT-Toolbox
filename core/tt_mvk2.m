@@ -21,7 +21,7 @@ ddrank = 1; % stepsize for additional rank
 d_pow_check = 0; % d-power for checking the convergence
 bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
-verb = 1; % 0 - silent, 1 - sweep information, 2 - block information
+verb = 2; % 0 - silent, 1 - sweep information, 2 - block information
 
 d=size(a,1);
 

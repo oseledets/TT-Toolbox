@@ -1,7 +1,7 @@
 % Uses Ag, Pg, fg - matrix, Prec and rhs, solution is ug
 
-maxit = 50;
-eps = 1e-6;
+maxit = 20;
+eps = eps_hi;
 tol = eps;
 maxrank=[];
 
@@ -18,8 +18,10 @@ normfg = norm(Pfg);
 ds_results = zeros(maxit,5);
 for i=1:maxit
     tstart = tic;
-%     ug = dmrg_solve2(Ag,fg,ug,eps,tol,maxrank,1,Pg,false);
-    ug = dmrg_solve2(Ag,fg,eps,'x0',ug,'nswp',4,'P',Pg,'verb',1);
+    % old truncation
+%     ug = dmrg_solve2(Ag,fg,eps,'x0',ug,'nswp',1,'P',Pg,'verb',1, 'ddrank',0,'ddpow',0,'min_drank',0,'min_dpow',0);
+    % new truncation
+    ug = dmrg_solve2(Ag,fg,eps,'x0',ug,'nswp',1,'P',Pg,'verb',1);
     cur_time = toc(tstart);
     
     resg = mvk2(Ag,ug,eps,10);
