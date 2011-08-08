@@ -7,10 +7,10 @@ function [tt]=tt_rand(n,d,r)
 %Either a number, or an array of dimension d+1
 
 if ( numel(n) == 1 ) 
- n = n * ones(1,d);
+ n = n * ones(d,1);
 end
 if ( numel(r) == 1 )
- r = r * ones(1,d+1); 
+ r = r * ones(d+1,1); 
  r(1) = 1;
  r(d+1)=1;
 end

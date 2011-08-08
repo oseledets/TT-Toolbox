@@ -205,7 +205,12 @@ else
 end
   er=norm(res)/norm(rhs);
  er1=norm(xold-x)/norm(x);
- fprintf('it=%d error=%3.2e dx=%3.2e \n',iter,er,er1);
+ if (rescheck) 
+   fprintf('it=%d error=%3.2e dx=%3.2e \n',iter,er,er1);
+ else
+  fprintf('it=%d dx=%3.2e \n',iter,er1);
+     
+ end
  xold=x;
 end
 fprintf('Total number of solves: %d Accuracy: %3.2e \n',nsolves,er);
