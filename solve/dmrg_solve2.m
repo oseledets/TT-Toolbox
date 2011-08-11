@@ -402,10 +402,12 @@ for swp=1:nswp
         s = diag(s);
         flm=norm(s);
         %Truncation block. We have to make it smarter by binary search
-        r0=1; r1=min(size(s,1),rmax);
-        r=1;
-        while ( r ~= r0 || r ~= r1 )
-            r=min(floor((r0+r1)/2),rmax);
+        r0 = 1; rM = min(size(s,1),rmax); r = round((r0+rM)/2);
+        while (rM-r0>1)        
+%         r0=1; r1=min(size(s,1),rmax);
+%         r=1;
+%         while ( r ~= r0 || r ~= r1 )
+%             r=min(floor((r0+r1)/2),rmax);
             er0=norm(s(r+1:numel(s)));
             if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
                 sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
@@ -421,11 +423,36 @@ for swp=1:nswp
             fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
             end
             if ((resid<max(res_true*1.2, eps/(d^dpows(i)))) ) %Value of the rank is OK
-              r1=r;
+%               r1=r;
+                rM = r-1;
+                r = round((r0+rM)/2);
             else %Is not OK.
-              r0=min(r+1,rmax);
+                r0 = r;
+                r = round((r0+rM)/2);
+%               r0=min(r+1,rmax);
             end;
         end
+        % Line search - if the rank is underestimated
+        while (r<min(size(s,1), rmax))
+            r=r+1;
+            er0=norm(s(r+1:numel(s)));
+            if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+                sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
+            else                
+                sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
+            end;
+            if (strcmp(MatVec,'full'))
+                resid = norm(B*sol-rhs)/norm(rhs);
+            else
+                resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+            end;
+            if ( verb>1 )
+                fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
+            end
+            if ((resid<max(res_true*1.2, eps/(d^dpows(i)))) ) %Value of the rank is OK
+                break;
+            end;
+        end;
         
         if (~last_sweep)
             r = r+drank(i); % we want even larger ranks
