@@ -1,5 +1,11 @@
 function [rmax]=tt_maxrank(tt,s)
 
+% May 26, 2011
+% Vladimir Kazeev
+% vladimir.kazeev@gmail.com
+% INM RAS
+% Moscow, Russia
+
 d=size(tt,1);
 r=zeros(d,2);
 for k=1:d

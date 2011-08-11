@@ -1,5 +1,11 @@
 function [reff]=tt_effrank(tt,s)
 
+% May 26, 2011
+% Vladimir Kazeev
+% vladimir.kazeev@gmail.com
+% INM RAS
+% Moscow, Russia
+
 d=size(tt,1);
 sz=tt_qsize(tt,s);
 n=prod(sz,2);
