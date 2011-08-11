@@ -182,7 +182,10 @@ for i=1:d
 end
 psy=cumsum([1;(n).*ry(1:y.d).*ry(2:y.d+1)]);
 
-%After that, the main TT-RC cross iteration starts
+%After that, the main TT-RC cross iteration starts (which also 
+%allows to increase/decrease the rank). 
+
+
 
 
 
