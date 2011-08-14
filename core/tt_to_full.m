@@ -33,7 +33,7 @@ for i=d-1:-1:2
     f=reshape(f,[r2,ncur*bs]);
     bs=ncur*bs;    
 end
-f=tt{1}*f;
+f=squeeze(tt{1})*f;
 sz=zeros(1,d);
 for i=1:d
     sz(i)=size(tt{i},1);
