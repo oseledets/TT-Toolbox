@@ -51,7 +51,9 @@ elseif ( isa(a,'tt_tensor') && isa(b,'tt_matrix') && nargin == 2)
 elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
     %TT-matrix by full vector product
     n=a.n; m=a.m; tt=a.tt; cra=tt.core; d=tt.d; ps=tt.ps; r=tt.r;
-    b=reshape(b,m'); c=b;
+    rb=size(b,2);
+    c=reshape(b,[m',rb]);
+    
     for k=1:d
       %c is rk*jk...jd*(i1..ik-1) tensor, conv over  
       %core is r(i)*n(i)*r(i+1)
@@ -63,7 +65,8 @@ elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
       c=cr*c; c=reshape(c,[n(k),numel(c)/n(k)]);
       c=permute(c,[2,1]);
     end
-    c=c(:); c=reshape(c,[numel(c),1]);
+    c=c(:); c=reshape(c,[rb,numel(c)/rb]);
+    c=c.';
     elseif ( isa(a,'tt_matrix') && isa(b,'tt_matrix') && nargin == 2)
     %fprintf('matrix-by-matrix not implemented yet \n');
     c=tt_matrix(tt_mm(core(a),core(b)));
