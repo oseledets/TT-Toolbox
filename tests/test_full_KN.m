@@ -1,5 +1,5 @@
-% d0t = 7; % quantics dims for t
-% d0x = 8; % quantics dims for x
+d0t = 7; % quantics dims for t
+d0x = 8; % quantics dims for x
 dpx = 3; % phys. dims for x
 
 a = -10;
@@ -129,7 +129,7 @@ for out_t=1:max(size(start_T))
     resid_old = 1e15;
     for i=1:maxit
         tic;
-        U = dmrg_solve2(M, rhs, U, tol, [], [], 1, [], false);
+        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 1, 'verb', 0);
         cur_time = toc;
         
         if (i==1)

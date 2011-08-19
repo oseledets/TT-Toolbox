@@ -12,16 +12,24 @@ while (max(ind<2*ones(1,d0t))==1)
     u0 = tt_squeeze(u0);
     u0 = tt_tensor(u0);
     
-    mesh(full(u0, [2^d0x,2^d0x]));
+    if (dphys==1)
+        plot(x,full(u0,2^d0x));
+    else
+%         mesh(full(u0, [2^d0x, 2^d0x]));
+        scatter3(x,y,full(u0,4^d0x),5,full(u0,4^d0x));
+        colorbar;
+        view(2);
+    end;
     t = 0;
     for j=1:d0t
         t=t+(ind(j)-1)*(2^(j-1));
     end;
     t=t+1;
-    titl = sprintf('time: %g (t=%d)', tranges(out_t)+t*tau, t);
+    titl = sprintf('time: %g (t=%d)', t*tau, t);
+%     titl = sprintf('time: %g (t=%d)', tranges(out_t)+t*tau, t);
     title([' ' titl]);
 %     keyboard;
-    pause(0.1);
+    pause(0.01);
     
     ind(1)=ind(1)+1;
     for j=1:d0t-1
