@@ -100,17 +100,28 @@ for i=1:2:length(varargin)-1
 end
 
 input_is_tt_tensor = 0;
+
+if ( isa(y,'tt_tensor') )
+  y=core(y);
+  input_is_tt_tensor = 1;
+end
+
 if ( isa(A,'tt_matrix') )
+  ttA=A.tt; 
+  dA=ttA.d;
   A=core(A);
   input_is_tt_tensor = 1;
-  if (isempty(x0))
-      x0=tt_random(tt_size(y), A.tt.d, 2);
-  end;
+  %if (isempty(x0))
+  %    x0=tt_random(tt_size(y), A.tt.d, 2);
+  %end;
 else
-    if (isempty(x0))
-        x0=tt_random(tt_size(y), max(size(A)), 2);
-    end;
+   dA=numel(A); 
+   % if (isempty(x0))
+   %     x0=tt_random(tt_size(y), max(size(A)), 2);
+   % end;
 end
+  x0=tt_random(tt_size(y),dA,2);
+
 if ( isa(P,'tt_matrix') )
   P=core(P);
   input_is_tt_tensor = 1;
@@ -119,13 +130,10 @@ if ( isa(x0,'tt_tensor') )
   x0=core(x0);
   input_is_tt_tensor = 1;
 end
-if ( isa(y,'tt_tensor') )
-  y=core(y);
-  input_is_tt_tensor = 1;
-end
 %nrmF=sqrt(tt_dot(y,y)); 
 
 d=size(A,1);
+tau=0*ones(d+1,1);
 
 if ( isempty(P) )
 P = tt_eye(tt_size(y), d);
@@ -337,14 +345,25 @@ for swp=1:nswp
             res_true = norm(res-rhs)/norm(rhs);            
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            [sol_new,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), rhs, nrestart, real_tol, 2, [], [], sol_prev);
-            res_new=norm(bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+            mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+            mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+            %Ax_{k+1}+tau*x_k=rhs+tau*x_k
+            %(Ax_{k+1}+tau*I)x_{k+1}=rhs+tau*x_k
+            [sol_new,flg] = gmres(mv1, rhs+tau(i)*sol_prev, nrestart, real_tol, 2, [], [], sol_prev);
+            if( flg == 0)
+              tau(i)=tau(i)/10;
+            else
+              tau(i)=tau(i)*4;
+            end
+            %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
+            %sol_new=sol_prev+dsol;
+            res_new=norm(mv(sol_new)-rhs)/norm(rhs);
             conv_factor=(res_new/res_prev);
             if (res_new*(conv_factor)>real_tol && use_self_prec) % we need a prec.
                 if (strcmp(local_prec, 'selfprec'))
                     iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
 
-                    resid = rhs-bfun2(B,sol_new,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                    resid = rhs-mv(sol_new);
                     [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
                         rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, real_tol/res_new, gmres_iters);
                     dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
@@ -359,7 +378,7 @@ for swp=1:nswp
                     rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
             end;
 
-            res=bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+            res=mv(sol);
             res_true = norm(res-rhs)/norm(rhs);
         end;
         

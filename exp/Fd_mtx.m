@@ -72,6 +72,7 @@ end;
 if (d==3)
     if (bound==0)
         bar_a = zeros(n^3, 7);
+        wa=a;
         for i=1:n
             for j=1:n
                 for k=1:n

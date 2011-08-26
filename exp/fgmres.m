@@ -22,7 +22,7 @@ function [sol,res,its] = fgmres (A,precfun,rhs,sol,im,maxits,tolIts)
       if (its  == 0) 
 	tol1=tolIts*ro  ;
       end  ; 
-      if (ro <= tol1 | its >= maxits)  
+      if (ro <= tol1 || its >= maxits)  
 	return
       end
       t = 1.0/ ro   ;
@@ -36,7 +36,7 @@ function [sol,res,its] = fgmres (A,precfun,rhs,sol,im,maxits,tolIts)
 
       i = 0  ;
 %
-   while (i < im  &  (ro  >  tol1)  &  its < maxits)
+   while (i < im  &&  (ro  >  tol1)  &&  its < maxits)
       i=i+1  ;
       its = its + 1  ;
       i1 = i + 1 ; 
@@ -47,7 +47,7 @@ function [sol,res,its] = fgmres (A,precfun,rhs,sol,im,maxits,tolIts)
       for j=1:i
            t = vv(1:n,j)'*vv(1:n,i1)  ;
            hh(j,i) = t  ;
-	   vv(1:n,i1) = vv(1:n,i1) - t*vv(1:n,j)  ;
+	       vv(1:n,i1) = vv(1:n,i1) - t*vv(1:n,j)  ;
       end  ;
       t = norm(vv(1:n,i1),2)  ;
       hh(i1,i) = t  ;
@@ -58,7 +58,7 @@ function [sol,res,its] = fgmres (A,precfun,rhs,sol,im,maxits,tolIts)
 %% 
     if (i ~= 1) 
 %
-%       perfrom previous transformations  on i-th column of h  ;
+%       perform previous transformations  on i-th column of h  ;
 %
       for k=2:i 
          k1 = k-1  ;
@@ -108,7 +108,7 @@ function [sol,res,its] = fgmres (A,precfun,rhs,sol,im,maxits,tolIts)
       for j=1:i 
          sol = sol +rs(j)* Z(1:n,j)   ;
       end  ;
-      if ((ro  <=  tol1) | (its >= maxits)) return; end; 
+      if ((ro  <=  tol1) || (its >= maxits)) return; end; 
    end;  %% end while -- restart 
 
 

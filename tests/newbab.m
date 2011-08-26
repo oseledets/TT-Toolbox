@@ -37,7 +37,7 @@ mat=mat'; %It should be a ROW MATRIX
 %Parameter grid
 %d0=8; np=2^d0;
 %a0=-0.99; b0=0; h0=(b0-a0)/(np-1); p=a0+(0:np-1)*h0;
-d0=8; np=2^d0; % This is more than enough for a ChebGrid
+d0=2; np=2^d0; % This is more than enough for a ChebGrid
 %a0=-1; b0=1; 
 a0=-0.99; b0=0;
 %a0=0.499; b0=0.5;
