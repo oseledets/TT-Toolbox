@@ -60,9 +60,12 @@ i_right=cell(d,1);
 r_left=cell(d,1);
 r_right=cell(d,1);
 ry=ones(d+1,1); %Initial ranks
+%Find fiber maximum
+ind=ones(d,1);
+ind=find_fiber_maximum(elem_fun,ind);
 for i=1:d
-  i_left{i}=1;
-  i_right{i}=1;
+  i_left{i}=ind(i);
+  i_right{i}=ind(i);
   r_left{i}=1;
   r_right{i}=1;
 end
@@ -114,14 +117,17 @@ end
 %Now to the main iteration
 
 %Through all the s-u-p-e-r-c-o-r-e-s
-
-for i=1:d-1
+swp=1;
+dir='lr';
+i=1;
+while ( swp <= nswp )
    %The method acts as follows.
    %1) Test if the current supercore is well approximated by the
    %current cross
    %2) If yes, do nothing. 
    %3) If no, add the required indices to the cross and perform
    %modifications of the s-u-p-e-r-c-o-r-e-s
+   
    %Nikrena ne soobrajau
    %Bilo: (i1,i2,i3,i4,i5) 
    %Pofiksili (i1,i2), uvelichili r2. Rashirilos' mnojestvo (i2,i3,i4,i5)
@@ -160,12 +166,26 @@ for i=1:d-1
          super_core{i+1}=compute_supercore(i+1,elem_fun,d,n,ry,ind_left,ind_right,vec);
          %Recompute supercore{i+1}; 
        end
-       keyboard;
    end
    %Convert iadd1 to i_left and i_right format; compute new
    %ind_left{i+1},ind_right{i+1}
+   if ( strcmp(dir,'lr') )
+     if ( i == d-1 )
+        dir='rl';
+     else
+        i=i+1;
+     end
+   else
+     if ( i == 1 )
+        dir ='lr';
+        swp=swp+1;
+     else
+        i=i-1;
+     end
+   end
+   fprintf('Step %d sweep %d rank=%3.1f \n',i,swp,mean(ry));
 end
-
+keyboard;
 
 
 
@@ -222,11 +242,11 @@ function [iadd1,iadd2]=enlarge_cross(mat,i1,i2,eps)
 %Compute the column basis; compute the row basis; 
 cbas=mat(:,i2);
 rbas=mat(i1,:); 
+%rbas=rbas.';
 %[cbas,~]=qr(cbas,0);
 %[rbas,~]=qr(rbas,0);
 %phi=cbas'*mat*rbas;
-%phi=cbas \ mat / rbas;
-%appr=cbas*phi*rbas;
+%appr=cbas*phi*rbas';
 sbm=mat(i1,i2);
 appr=cbas / sbm * rbas;
 iadd1=[];
@@ -238,14 +258,17 @@ else
    desirata=eps*norm(mat,'fro');
    er=norm(mat-appr,'fro');
    mat=mat-appr;
-   n1=size(mat,1); m1=size(mat,2);
    while ( er > desirata )
       %Find maximal element in mat
-      [pv,ind]=max(abs(mat(:)));
+      [~,ind]=max(abs(mat(:)));
       ind=tt_ind2sub(size(mat),ind);
       i=ind(1); j=ind(2);
-      iadd1=[iadd1,i];
-      iadd2=[iadd2,j];
+      %if ( ~any(i1==i) ) 
+        iadd1=[iadd1;i];
+      %end
+      %if ( ~any(i2==j) )
+        iadd2=[iadd2;j];
+      %end
       u1=mat(:,j); u2=mat(i,:);
       u1=u1/mat(i,j);
       mat=mat-u1*u2;
@@ -288,16 +311,24 @@ function [ind_right]=get_multi_right(i_right,r_right,ry)
   for i=d-1:-1:1
       %ind_cur=zeros(
       %ind_cur is an array of size ry(i) x i
-      ind_cur=zeros(ry(i+1),d-i+1);
-      r_prev=r_right{i+1};
+      ind_cur=zeros(ry(i),d-i+1);
+      r_prev=r_right{i};
       ind_prev=ind_right{i+1};
-      i_prev=i_right{i+1};
-      for s=1:ry(i+1)
-          %ind_prev(p1(s
+      i_prev=i_right{i};
+      for s=1:ry(i)
          ind_cur(s,:)=[i_prev(s), ind_prev(r_prev(s),:)];
       end
       ind_right{i}=ind_cur;
   end
+
+return
+end
+
+function [ind]=find_fiber_maximum(elem_fun,ind)
+%[ind]=find_fiber_maximum(elem_fun,ind)
+%Simple ALS method to compute (approximate) maximum in a tensor
+%In fact, need some non-zero
+%fact=2; %If the new one <= fact times larger than the previous, stop
 
 return
 end
