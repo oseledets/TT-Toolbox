@@ -9,7 +9,7 @@ function [y]=tt_rc(d,n,elem_fun,eps,varargin)
 % 'x0', x0
 %The elem function has syntax elem_fun(ind); all other additional
 %information
-%has to be pass as "anonymous" arguments
+%has to be passed as "anonymous" arguments
 
 %The algorithm. It needs left & right index sets to be initialized.
 %It needs supecores to be precomputed
@@ -61,7 +61,7 @@ r_left=cell(d,1);
 r_right=cell(d,1);
 ry=ones(d+1,1); %Initial ranks
 %Find fiber maximum
-ind=ones(d,1);
+ind=2*ones(d,1);
 ind=find_fiber_maximum(elem_fun,ind);
 for i=1:d
   i_left{i}=ind(i);
@@ -142,21 +142,37 @@ while ( swp <= nswp )
    %i1=get_full_ind(i_left{i},r_left{i});
    %i2=get_full_ind(i_right{i+1},r_right{i+1});
     %ry(i)*n(i)
-    i1=i_left{i}+(r_left{i}-1)*n(i); 
-    i2=r_right{i+1}+(i_right{i+1}-1)*ry(i+2);
-   [iadd1,iadd2]=enlarge_cross(cur_core,i1,i2,eps); 
+    
+    i1=r_left{i}+(i_left{i}-1)*ry(i); 
+    i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
+  % if ( numel(i1)==2)
+  %     if ( i1(1) == 2 && i1(2) == 2 )
+  %   keyboard;
+  %     end
+  % end
+  [iadd1,iadd2]=enlarge_cross(cur_core,i1,i2,eps); 
    if ( ~isempty(iadd1) ) %There will be new elements in supercore{i+1} and supercore{i-1}!
        %Increase i_left{i} & i_right{i+1}
-       [radd_left,iadd_left]=ind2sub([ry(i),n(i)],iadd1);
-       [iadd_right,radd_right]=ind2sub([n(i+1),ry(i+2)],iadd2);
+       [radd_left,iadd_left]=ind2sub([ry(i);n(i)],iadd1);
+       [iadd_right,radd_right]=ind2sub([n(i+1);ry(i+2)],iadd2);
        i_left{i}=[i_left{i};iadd_left];
        r_left{i}=[r_left{i};radd_left];
+       %if ( i == 8 )
+       %    keyboard
+       %end
        i_right{i+1}=[i_right{i+1};iadd_right];
        r_right{i+1}=[r_right{i+1};radd_right];
        ry(i+1)=ry(i+1)+numel(iadd1);
        %Zaglushka
        ind_left=get_multi_left(i_left,r_left,ry);
+       
        ind_right=get_multi_right(i_right,r_right,ry);
+       
+      %   fprintf('Index set in question: \n');
+      %   ind_left{3}
+      % if ( i == 3 && swp == 2 )
+      %   keyboard;
+      % end
        %keyboard;
        if ( i > 1 ) 
          %Recompute supercore{i-1}  
@@ -185,6 +201,7 @@ while ( swp <= nswp )
    end
    fprintf('Step %d sweep %d rank=%3.1f \n',i,swp,mean(ry));
 end
+fprintf('Done! \n');
 keyboard;
 
 
@@ -234,14 +251,23 @@ function [super_core]=compute_supercore(i,elem_fun,d,n,ry,ind_left,ind_right,vec
 return
 end
 
-function [iadd1,iadd2]=enlarge_cross(mat,i1,i2,eps)
+function [iadd1,iadd2,i1,i2]=enlarge_cross(mat,i1,i2,eps)
 %[iadd1,iadd2,rnew]=enlarge_cross(mat,i1,i2,eps) 
 %Tests whether the current index set gives a reasonable approximation
 %to the matrix, and enlarges the basis if necessary.
 %The method acts as follows. 
-%Compute the column basis; compute the row basis; 
+
+%A-C*A11^{-1} R
+
+%sbm=mat(i1,i2); 
+%[u,s,v]=svd(sbm,'econ');
+%nrm=norm(mat);s=diag(s); 
+%r=numel(find(
+mat_save=mat;
 cbas=mat(:,i2);
 rbas=mat(i1,:); 
+
+
 %rbas=rbas.';
 %[cbas,~]=qr(cbas,0);
 %[rbas,~]=qr(rbas,0);
@@ -249,6 +275,9 @@ rbas=mat(i1,:);
 %appr=cbas*phi*rbas';
 sbm=mat(i1,i2);
 appr=cbas / sbm * rbas;
+if ( cond(sbm) > 1e10 )
+  keyboard;
+end
 iadd1=[];
 iadd2=[];
 
@@ -275,7 +304,14 @@ else
       er=norm(mat,'fro');
    end
 end
-
+% i0=[i1;iadd1]; j0=[i2;iadd2];
+% sbm=mat_save(i0,j0);
+% ss=svd(sbm);
+% fprintf('%10.10e \n',ss)
+% sbm=mat_save(i1,i2);
+% fprintf('AND PREVIOUS \n');
+% ss=svd(sbm);
+% fprintf('%10.10e \n',ss)
 
 return
 end
