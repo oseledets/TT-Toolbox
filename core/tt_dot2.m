@@ -45,6 +45,9 @@ factors(d) = abs(g0*gd');
 %res=g0*gd';
 %res=prod(factors(1:d));
 res=sum(log(abs(factors)));
+if (max(factors)==0)
+    res = -inf;
+end;
 sgn=prod(sign(factors));
 
 return

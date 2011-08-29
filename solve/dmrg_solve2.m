@@ -40,8 +40,8 @@ use_self_prec=false;
 nswp=10;
 nrestart=40;
 gmres_iters=2;
-local_prec = 'als';
-% local_prec = 'selfprec';
+% local_prec = 'als';
+local_prec = 'selfprec';
 rmax=1000;
 tol=eps;
 verb=1;
@@ -106,6 +106,10 @@ if ( isa(y,'tt_tensor') )
   input_is_tt_tensor = 1;
 end
 
+if (isa(y, 'tt_tensor'))
+    y=core(y);
+    input_is_tt_tensor = 1;
+end;
 if ( isa(A,'tt_matrix') )
   ttA=A.tt; 
   dA=ttA.d;
@@ -122,14 +126,20 @@ else
 end
   x0=tt_random(tt_size(y),dA,2);
 
+end;
+if (isempty(x0))
+    x0=tt_random(tt_size(y), max(size(y)), 2);
+end;
 if ( isa(P,'tt_matrix') )
   P=core(P);
   input_is_tt_tensor = 1;
-end
+end;
 if ( isa(x0,'tt_tensor') )
   x0=core(x0);
   input_is_tt_tensor = 1;
 end
+end;
+
 %nrmF=sqrt(tt_dot(y,y)); 
 
 d=size(A,1);
@@ -339,7 +349,8 @@ for swp=1:nswp
         if (strcmp(MatVec,'full'))
 
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
-            sol = B \ rhs;
+%             sol = pinv(B)*rhs;
+            sol = B\rhs;
             res=B*sol;
 
             res_true = norm(res-rhs)/norm(rhs);            
@@ -525,6 +536,24 @@ for swp=1:nswp
         x{i}=permute(reshape(v, m2, rxm3, r), [1 3 2]);
         x{i-1}=permute(reshape(u, rxm1, m1, r), [2 1 3]);
         rxm2=r; rxn2=r;
+        
+        if (verb>2)
+            % check the residual
+            n1 = size(A{1},1);
+            ra1 = size(A{1},4);            
+            rx1 = size(x{1},3);
+            ry1 = size(y{1},3);
+            A{1}=squeeze(A{1});
+            x{1}=squeeze(x{1});
+            y{1}=squeeze(y{1});
+            true_resid = tt_mv(A,x);
+            true_resid = tt_dist3(true_resid, y)/sqrt(tt_dot(y,y));
+            fprintf('=dmrg_solve2= Sweep %d, block %d, true_resid: %3.3e\n', swp, i, true_resid);
+            A{1}=reshape(A{1}, n1, n1, 1, ra1);
+            x{1}=reshape(x{1}, n1, 1, rx1);
+            y{1}=reshape(y{1}, n1, 1, ry1);
+        end;
+            
 
         
         phAold = reshape(phAold, rxn3*rp3*ra3, rxm3);
