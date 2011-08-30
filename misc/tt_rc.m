@@ -23,7 +23,7 @@ function [y]=tt_rc(d,n,elem_fun,eps,varargin)
 
 %Default parameters
 if ( numel(n) == 1 )
-  n=n*ones(1,d);
+  n=n*ones(d,1);
 end
 nswp=10;
 rmax=1000;
@@ -146,13 +146,7 @@ while ( swp <= nswp )
     
     i1=r_left{i}+(i_left{i}-1)*ry(i); 
     i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
-  % if ( numel(i1)==2)
-  % if ( i1(1) == 2 && i1(2) == 2 )
-  %   keyboard;
-  %     end
-  % end
-  %if ( swp == 2 && i == 10 )
-  %  keyboard;
+ 
   %end
   [iadd1,iadd2]=enlarge_cross(cur_core,i1,i2,eps); 
    if ( ~isempty(iadd1) ) %There will be new elements in supercore{i+1} and supercore{i-1}!
@@ -173,12 +167,6 @@ while ( swp <= nswp )
        
        ind_right=get_multi_right(i_right,r_right,ry);
        
-      %   fprintf('Index set in question: \n');
-      %   ind_left{3}
-      % if ( i == 3 && swp == 2 )
-      %   keyboard;
-      % end
-       %keyboard;
        if ( i > 1 ) 
          %Recompute supercore{i-1};
          %supercore{i-1}=zeros(ry(i-1),n(i-1),n(i),ry(i+1))
@@ -207,8 +195,6 @@ while ( swp <= nswp )
          new_core(1:rold,:,:,:)=super_core{i+1};
          new_core(rold+1:end,:,:,:)=core_add;
          super_core{i+1}=new_core;
-         %         p1=compute_supercore(i+1,elem_fun,d,n,ry,ind_left,ind_right,vec);
-         %keyboard;
          %Recompute supercore{i+1}; 
        end
    end
@@ -231,10 +217,42 @@ while ( swp <= nswp )
    fprintf('Step %d sweep %d rank=%3.1f \n',i,swp,mean(ry));
 end
 fprintf('Done! \n');
-keyboard;
+%Now compute the approximation itself. Will it be easy?
+%Simple idea: compute cores out of the supercores; they-are-the-same
 
+ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+cr=zeros(ps(d+1)-1,1);
+for i=1:d-1
+  score=super_core{i};
+  score=reshape(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+  i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
+  i1=r_left{i}+(i_left{i}-1)*ry(i); 
 
+  score=score(:,i2);
+  
+  
+  score=reshape(score,[ry(i)*n(i),ry(i+1)]);
+  [score,dmp]=qr(score,0);
+  sbm=score(i1,:);
+  score=score / sbm;
+  
+  cr(ps(i):ps(i+1)-1)=score(:);
+ 
+end
+%The last one 
+score=super_core{d-1};
+ score=reshape(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+ i1=r_left{d-1}+(i_left{d-1}-1)*ry(d-1); 
+score=score(i1,:);
+score=reshape(score,[ry(d),n(d),ry(d+1)]);
+cr(ps(d):ps(d+1)-1)=score(:);
 
+y=tt_tensor;
+y.core=cr;
+y.ps=ps;
+y.r=ry;
+y.n=n;
+y.d=d;
 
 
 
@@ -387,7 +405,7 @@ function [ind_right]=get_multi_right(i_right,r_right,ry)
       end
       ind_right{i}=ind_cur;
   end
-
+  
 return
 end
 
