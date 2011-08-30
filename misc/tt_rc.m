@@ -61,8 +61,9 @@ r_left=cell(d,1);
 r_right=cell(d,1);
 ry=ones(d+1,1); %Initial ranks
 %Find fiber maximum
-ind=2*ones(d,1);
-ind=find_fiber_maximum(elem_fun,ind);
+%ind=2*ones(d,1);
+%ind=find_fiber_maximum(elem_fun,ind);
+ind=randi([1,2],[d,1]);
 for i=1:d
   i_left{i}=ind(i);
   i_right{i}=ind(i);
@@ -146,10 +147,13 @@ while ( swp <= nswp )
     i1=r_left{i}+(i_left{i}-1)*ry(i); 
     i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
   % if ( numel(i1)==2)
-  %     if ( i1(1) == 2 && i1(2) == 2 )
+  % if ( i1(1) == 2 && i1(2) == 2 )
   %   keyboard;
   %     end
   % end
+  %if ( swp == 2 && i == 10 )
+  %  keyboard;
+  %end
   [iadd1,iadd2]=enlarge_cross(cur_core,i1,i2,eps); 
    if ( ~isempty(iadd1) ) %There will be new elements in supercore{i+1} and supercore{i-1}!
        %Increase i_left{i} & i_right{i+1}
@@ -162,6 +166,7 @@ while ( swp <= nswp )
        %end
        i_right{i+1}=[i_right{i+1};iadd_right];
        r_right{i+1}=[r_right{i+1};radd_right];
+       rold=ry(i+1);
        ry(i+1)=ry(i+1)+numel(iadd1);
        %Zaglushka
        ind_left=get_multi_left(i_left,r_left,ry);
@@ -175,11 +180,35 @@ while ( swp <= nswp )
       % end
        %keyboard;
        if ( i > 1 ) 
-         %Recompute supercore{i-1}  
-         super_core{i-1}=compute_supercore(i-1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+         %Recompute supercore{i-1};
+         %supercore{i-1}=zeros(ry(i-1),n(i-1),n(i),ry(i+1))
+         radd=numel(iadd1);
+         rtmp=ry;  rtmp(i+1)=radd;
+         %tmp1=ind_left;
+         %tmp1{i}(:,end-radd+1:end)=[];
+         tmp2=ind_right;
+         tmp2{i+1}(1:rold,:)=[];
+         core_add=compute_supercore(i-1,elem_fun,d,n,rtmp,ind_left,tmp2,vec);
+         new_core=zeros(ry(i-1),n(i-1),n(i),ry(i+1));
+         new_core(:,:,:,1:rold)=super_core{i-1};
+         new_core(:,:,:,rold+1:end)=core_add;
+         super_core{i-1}=new_core;
+         %p1=compute_supercore(i-1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+         %keyboard;
        end
        if ( i < d - 1)
-         super_core{i+1}=compute_supercore(i+1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+         %super_core{i+1}=compute_supercore(i+1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+         radd=numel(iadd1);
+         rtmp=ry;  rtmp(i+1)=radd;
+         tmp1=ind_left;
+         tmp1{i}(1:rold,:)=[];
+                  core_add=compute_supercore(i+1,elem_fun,d,n,rtmp,tmp1,ind_right,vec);
+         new_core=zeros(ry(i+1),n(i),n(i+1),ry(i+3));
+         new_core(1:rold,:,:,:)=super_core{i+1};
+         new_core(rold+1:end,:,:,:)=core_add;
+         super_core{i+1}=new_core;
+         %         p1=compute_supercore(i+1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+         %keyboard;
          %Recompute supercore{i+1}; 
        end
    end
@@ -263,7 +292,7 @@ function [iadd1,iadd2,i1,i2]=enlarge_cross(mat,i1,i2,eps)
 %[u,s,v]=svd(sbm,'econ');
 %nrm=norm(mat);s=diag(s); 
 %r=numel(find(
-mat_save=mat;
+%mat_save=mat;
 cbas=mat(:,i2);
 rbas=mat(i1,:); 
 
@@ -274,8 +303,10 @@ rbas=mat(i1,:);
 %phi=cbas'*mat*rbas;
 %appr=cbas*phi*rbas';
 sbm=mat(i1,i2);
-appr=cbas / sbm * rbas;
-if ( cond(sbm) > 1e10 )
+[cbas,~]=qr(cbas,0);
+qsbm=cbas(i1,:);
+appr=cbas / qsbm * rbas;
+if ( cond(qsbm) > 1e14 )
   keyboard;
 end
 iadd1=[];

@@ -1,8 +1,8 @@
 %Simple function to test the cross method
-d=20;
+d=8;
 %elem_fun=@(x) sum(x); %Just sum of everything 
 p=0:d-1; p = 2.^p; 
-a=0;b=1;
+a=-5;b=5;
 n=2^d;
 h=(b-a)/(n-1);
 %mv=@(x) x.^3;
@@ -12,11 +12,19 @@ mv=@(x) sqrt(x)+abs(x);
 
 %Compare functions of TT-tensors
 x=tt_x(d,2); x=tt_tensor(x); 
-e=tt_ones(d,2);e=tt_ones(e);
+e=tt_ones(d,2);e=tt_tensor(e);
+x=a*e+h*x; x=round(x,1e-13);
+x1=kron(e,x); x2=kron(x,e);
+rs=x1.^2+x2.^2; rs=round(rs,1e-13);
+%fun=@(x) 1.0./sqrt(x);
+fun=@(x) 1.0./sqrt(x);
+elem_fun = @(ind) fun(rs(ind));
 %elem_fun=@(x) sqrt(x(1))+x(2);
 
 eps=1e-6;
-y=tt_rc(d,2,elem_fun,eps);
+%y=tt_rc2(2*d,2,elem_fun,1e-12);
+y=tt_rc(2*d,2,elem_fun,1e-12);
 
+z=funcrs2(rs,fun,1e-6,rs,20);
 
 
