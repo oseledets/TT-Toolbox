@@ -3,32 +3,21 @@ function [y]=tt_rc(d,n,elem_fun,eps,varargin)
 %The TT-Renormalization-Cross algorithm
 %input is: the dimension of the array d, the 
 %size vector n, the function that computes the prescribed element
-%of an array, accuracy parameter eps
-%and also additional arguments specified as 'rmax',10,'nswp',10
-%'verb',true and so on
-% 'x0', x0
-%The elem function has syntax elem_fun(ind); all other additional
-%information
-%has to be passed as "anonymous" arguments
-
-%The algorithm. It needs left & right index sets to be initialized.
-%It needs supecores to be precomputed
-%It is a good idea to store also the supercores (there will be d-1,
-%i think) & update them; also certain indices maybe removed from the
-%index set?? we will not do that; 
-%Two possibilities: current index contains maxvol submatrix;
-%If not, increase, increase & increase (maybe even beyond the rank!)
-%rank one subtraction can be made very stable
-
-
+%elem_fum
 %Default parameters
+%nswp=10 (number of DMRG sweeps )
+%rmax=1000 (maximal rank of the solution)
+%x0=[];  (initial approximation)
+%verb = [0,1,2] (verbosity level)
+%vec=false (vectorization of the element function)
+
 if ( numel(n) == 1 )
   n=n*ones(d,1);
 end
 nswp=10;
 rmax=1000;
 x0=[];
-verb=true;
+verb=1;
 vec=false; %If there is a vectorization in options, i.e. if elem_fun
 %supports vectorized computations of many elements at once
 for i=1:2:length(varargin)-1
@@ -61,9 +50,10 @@ r_left=cell(d,1);
 r_right=cell(d,1);
 ry=ones(d+1,1); %Initial ranks
 %Find fiber maximum
-%ind=2*ones(d,1);
+ind=2*ones(d,1);
 %ind=find_fiber_maximum(elem_fun,ind);
-ind=randi([1,2],[d,1]);
+%ind=randi([1,2],[d,1]);
+ind=find_fiber_maximum(elem_fun,n,ind);
 for i=1:d
   i_left{i}=ind(i);
   i_right{i}=ind(i);
@@ -121,7 +111,9 @@ end
 swp=1;
 dir='lr';
 i=1;
-while ( swp <= nswp )
+converged=false;
+rank_increase=false;
+while ( swp <= nswp && ~converged)
    %The method acts as follows.
    %1) Test if the current supercore is well approximated by the
    %current cross
@@ -148,8 +140,13 @@ while ( swp <= nswp )
     i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
  
   %end
-  [iadd1,iadd2]=enlarge_cross(cur_core,i1,i2,eps); 
+  %if ( swp == 3 && i == 9 )
+  %  keyboard;
+  %end
+      [iadd1,iadd2]=enlarge_cross(cur_core,i1,i2,eps); 
+  
    if ( ~isempty(iadd1) ) %There will be new elements in supercore{i+1} and supercore{i-1}!
+       rank_increase=true;
        %Increase i_left{i} & i_right{i+1}
        [radd_left,iadd_left]=ind2sub([ry(i);n(i)],iadd1);
        [iadd_right,radd_right]=ind2sub([n(i+1);ry(i+2)],iadd2);
@@ -200,6 +197,10 @@ while ( swp <= nswp )
    end
    %Convert iadd1 to i_left and i_right format; compute new
    %ind_left{i+1},ind_right{i+1}
+   
+   if ( verb >= 1 ) 
+     fprintf('Step %d sweep %d ry(%d): %d -> %d mean rank=%3.1f \n',i+1,swp,i+1,ry(i+1)-numel(iadd1),ry(i+1),mean(ry));
+   end
    if ( strcmp(dir,'lr') )
      if ( i == d-1 )
         dir='rl';
@@ -210,13 +211,19 @@ while ( swp <= nswp )
      if ( i == 1 )
         dir ='lr';
         swp=swp+1;
+        if ( rank_increase ) 
+          rank_increase=false;
+        else
+          converged=true;
+        end
      else
         i=i-1;
      end
    end
-   fprintf('Step %d sweep %d rank=%3.1f \n',i,swp,mean(ry));
 end
-fprintf('Done! \n');
+if ( verb >= 1 ) 
+fprintf('Converged in %d sweeps  \n',swp);
+end
 %Now compute the approximation itself. Will it be easy?
 %Simple idea: compute cores out of the supercores; they-are-the-same
 
@@ -409,11 +416,28 @@ function [ind_right]=get_multi_right(i_right,r_right,ry)
 return
 end
 
-function [ind]=find_fiber_maximum(elem_fun,ind)
-%[ind]=find_fiber_maximum(elem_fun,ind)
+function [ind]=find_fiber_maximum(elem_fun,n,ind)
+%[ind]=find_fiber_maximum(elem_fun,n,ind)
 %Simple ALS method to compute (approximate) maximum in a tensor
 %In fact, need some non-zero
 %fact=2; %If the new one <= fact times larger than the previous, stop
-
+%Compute the fibers; find maximum along them; 
+d=numel(n);
+mx=elem_fun(ind); mx=abs(mx);
+git=2;
+for s=1:git
+for k=1:d
+  ind_tmp=ind;
+  for i=1:n(k)
+    ind_tmp(k)=i;
+    val=abs(elem_fun(ind_tmp));
+    if ( val > mx ) 
+       ind(k)=i;
+       mx=val;
+       fprintf('mx=%f \n',mx);
+    end
+  end
+end
+end
 return
 end
