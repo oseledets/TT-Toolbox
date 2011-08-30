@@ -337,11 +337,11 @@ end
 iadd1=[];
 iadd2=[];
 
-if ( norm(mat-appr,'fro') < eps*norm(mat,'fro') )
+if ( norm(mat(:)-appr(:),'inf') < eps*norm(mat(:),'inf') )
    rnew=numel(i1);
 else
-   desirata=eps*norm(mat,'fro');
-   er=norm(mat-appr,'fro');
+   desirata=eps*norm(mat(:),'inf');
+   er=norm(mat(:)-appr(:),'inf');
    mat=mat-appr;
    while ( er > desirata )
       %Find maximal element in mat
@@ -357,7 +357,7 @@ else
       u1=mat(:,j); u2=mat(i,:);
       u1=u1/mat(i,j);
       mat=mat-u1*u2;
-      er=norm(mat,'fro');
+      er=norm(mat(:),'inf');
    end
 end
 % i0=[i1;iadd1]; j0=[i2;iadd2];

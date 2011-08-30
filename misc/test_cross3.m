@@ -1,4 +1,4 @@
-p=4;
+p=2;
 
 L=6; n=2^L-1; m=(n+1)/p; %Step size
 a=0;
@@ -34,11 +34,11 @@ for i=1:p
   end
 end
 
-smin=1;
-smax=2;
-d=3;
+smin=1e-3;
+smax=1;
+d=6;
 h=(smax-smin)/(2^d-1);
 rhs=ones(n*n,1);
 
 fun = @(ind) lars(p,ind,mat,rhs,n,d,smin,h,(n+1)/2,(n+1)/2);
-y=tt_rc(p*p*d,2,fun,1e-3,'nswp',40);
+y=tt_rc(p*p*d,2,fun,1e-9,'nswp',40);
