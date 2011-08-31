@@ -18,15 +18,23 @@ x1=kron(e,x); x2=kron(x,e);
 rs=x1.^2+x2.^2; rs=round(rs,1e-13);
 %fun=@(x) 1.0./sqrt(x);
 %fun=@(x) 1.0./x;
-fun=@(x) exp(-x.^2);
-elem_fun = @(ind) fun(rs(ind));
+fun=@(x) exp(-x.^4);
+%fun = @(x) x.^2;
+rs=x;
+%elem_fun = @(ind) fun(rs(ind));
 %elem_fun=@(ind) rs(ind);
 %elem_fun=@(x) sqrt(x(1))+x(2);
-
+elem_fun = @(ind) fun(rs(ind));
 eps=1e-6;
+D=ndims(rs);
 %y=tt_rc2(2*d,2,elem_fun,1e-12);
-y=tt_rc(2*d,2,elem_fun,1e-13,'nswp',40);
+y=tt_rc(D,2,elem_fun,1e-6,'nswp',40);
+%v=tt_rand(size(y),ndims(y),2);
+%y=y+v; y=round(y,1e-12);
+%y1=tt_rc(D,2,elem_fun,1e-8,'nswp',40,'x0',y);
 
 z=funcrs2(rs,fun,1e-6,rs,20);
+z=round(z,1e-12);
+z1=tt_rc(D,2,elem_fun,1e-8,'nswp',40,'x0',z);
 
 

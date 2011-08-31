@@ -41,4 +41,4 @@ h=(smax-smin)/(2^d-1);
 rhs=ones(n*n,1);
 
 fun = @(ind) lars(p,ind,mat,rhs,n,d,smin,h,(n+1)/2,(n+1)/2);
-y=tt_rc(p*p*d,2,fun,1e-9,'nswp',40);
+y=tt_rc(p*p*d,2,fun,1e-5,'nswp',40,'change_dir_on',true);
