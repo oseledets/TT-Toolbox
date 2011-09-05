@@ -341,26 +341,54 @@ end
 %Simple idea: compute cores out of the supercores; they-are-the-same
 
 
-%% Computation of the approximation supercores->cores
+%% Computation of the approximation 
+%Supercore->submatrix->SVD (?) -> new core
 ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
 cr=zeros(ps(d+1)-1,1);
+
 for i=1:d-1
   score=super_core{i};
   score=reshape(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
   i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
   i1=r_left{i}+(i_left{i}-1)*ry(i); 
 
-  score=score(:,i2);
+  %Now do just ordinary check
+  r=0; 
+  er=2*eps;
+  %sbm=score(i1,i2);
+  %score=score(:,i2); 
+    %We have to solve (approximattttely) the equation
+   %Newcore*sbm=score
+   %sbm can be rank-deficient
+   
+  %Try and test the rank
+  sbm=score(i1,i2);
+  [u,s,v]=svd(sbm,'econ'); s=diag(s);
+  %
+  maxr=max(size(sbm));
+  while ( r < maxr && er > eps )
+     r=r+1;
+      u0=u(:,1:r); s0=s(1:r); v0=v(:,1:r);
+     iu=maxvol2(u0); iv=maxvol2(v0);
+     iu1=i1(iu); iv1=i2(iv); 
+     w1=score(:,iv1); [w1,dmp]=qr(w1,0);
+     w1=w1 / w1(iu1,:);
+     appr=w1*score(iu1,:);
+     er=norm(score-appr,'fro')/norm(score,'fro');
+  end
+  %Now the most delicate part: correctly form the core
+  
+  %cr(pos:pos+ry(i)*n(i)*ry(i+1)-1)=w1(:);
+  w2=zeros(ry(i)*n(i),ry(i+1));
+  w2(:,iu)=w1;
+  cr(ps(i):ps(i+1)-1)=w2(:);
+  %norm(w2*score(i1,:)-score,'fro')
+  %keyboard;
+  %pos=pos+ry(i)*n(i)*ry(i+1);
+  %And fix the (i+1)-th supercore 
+  %iv provides the truncation ry(i+1)->r 
   
   
-  score=reshape(score,[ry(i)*n(i),ry(i+1)]);
-  [score,dmp]=qr(score,0);
-  sbm=score(i1,:);
-  score=score / sbm;
-  %if ( verb >= 1 ) 
-  %   fprintf('factor: %3.2e \n',max(abs(score(:))));
-  %end
-  cr(ps(i):ps(i+1)-1)=score(:);
  
 end
 %The last one 
