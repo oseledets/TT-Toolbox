@@ -340,6 +340,8 @@ end
 %Now compute the approximation itself. Will it be easy?
 %Simple idea: compute cores out of the supercores; they-are-the-same
 
+
+%% Computation of the approximation supercores->cores
 ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
 cr=zeros(ps(d+1)-1,1);
 for i=1:d-1
@@ -375,7 +377,7 @@ y.ps=ps;
 y.r=ry;
 y.n=n;
 y.d=d;
-
+%% RANDOMIZED CHECK
 %Now perform a randomized check of the approximation
 tmp_fun = @(ind) elem_fun(ind) - y(ind); 
 %s=100;
