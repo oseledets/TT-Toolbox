@@ -1,6 +1,7 @@
 dphys = 1;
+dconf = 2;
 
-N = 128;
+N = 64;
 d0t = 10;
 
 T = 5;
@@ -16,12 +17,12 @@ d0ts =   [  5,    6,    6,    7,   8,   9,  10, 11,11,12];
 scheme = 'euler';
 % scheme = 'CN';
 
-% solv = 'ts';
-solv = 'global';
+solv = 'ts';
+% solv = 'global';
 
 plt = 1;
 
-gamma = 4/b;
+gamma = 1;
 
 tau = T/(2^d0t);
 d0x = log2(N);
@@ -38,26 +39,98 @@ if (dphys==1)
 %     W = max(W, 1e-6);
     V = -1*sqrt(2).*x; % Velocity
 %     V = 0;
-    u = W.^(b/2-2);
+    u = W.^(b/2-gamma);
+    
+%     ttu1 = tt_tensor(u);
+    ttu1 = tt_tensor(full_to_qtt(u, tol));
     
 %     Mass = lagrange_bilin(x, cw, W.^gamma, eye(N), eye(N));
 %     G2 = lagrange_bilin(x, cw, W, D1, D1*diag(W.^(gamma-1)));
 %     S1 = lagrange_bilin(x, cw, (W.^gamma).*V, D1, eye(N));    
 %     Mass = diag(W.^2);
-    Mass = lagrange_bilin(x, cw, W.^2, eye(N), eye(N));
-    G2 = lagrange_bilin(x, cw, ones(N,1), D1, D1*diag(W.^2));    
+    Mass1 = lagrange_bilin(x, cw, W.^gamma, eye(N), eye(N));
+%     G21 = lagrange_bilin(x, cw, ones(N,1), D1, D1*diag(W.^gamma))*alpha;    
 %     G2 = -D1^2*diag(W.^2);
-    S1 = lagrange_bilin(x, cw, V.*(W.^2)+alpha*x.*W, D1, eye(N));    
-%     S1 = D1*diag(-V.*(W.^2)-alpha*x.*W);
-    
-    Stiff = G2*alpha + S1;    
+%     S11 = lagrange_bilin(x, cw, V.*(W.^gamma)+alpha*x.*(W.^(gamma-1)), D1, eye(N)); 
+%     S11 = lagrange_bilin(x, cw, V.*(W.^gamma)+alpha*x.*(W.^(gamma-1)), D1, eye(N));    
+%     S1 = D1*diag(-V.*(W.^2)-alpha*x.*W);    
 
-    tt_Stiff = full_to_nd(Stiff, eps);
-    tt_Stiff = tt_matrix(tt_Stiff);
-    tt_Mass = full_to_nd(Mass, eps);
-    tt_Mass = tt_matrix(tt_Mass);
+    ttMass1 = tt_matrix(full_to_nd(Mass1, eps));
+%     ttMass1 = tt_matrix(Mass1);
+%     ttG21 = tt_matrix(full_to_nd(G21, eps));
+%     ttS11 = tt_matrix(full_to_nd(S11, eps));
 
-    ttu = full_to_qtt(u, tol);
+    Arouse = diag(1*ones(dconf,1),0)+diag(-0.5*ones(dconf-1,1),-1)+diag(-0.5*ones(dconf-1,1),1);
+
+    tt_Mass = ttMass1;        
+    ttu = ttu1;
+    tt_Stiff = tt_matrix(tt_eye(2,log2(N)*dconf))*0;
+    for i=1:dconf
+        if (i>1)
+            tt_Mass = kron(ttMass1, tt_Mass);
+            ttu = kron(ttu1,ttu);
+        end;
+        for j=1:dconf
+            for k=1:dconf
+                if (k==i)&&(k==j)
+                    G21 = lagrange_bilin(x, cw, ones(N,1), D1, D1*diag(W.^gamma));
+                    G21 = tt_matrix(full_to_nd(G21,eps));
+%                     G21 = tt_matrix(G21);
+                    S1v = lagrange_bilin(x, cw, V.*(W.^gamma), D1, eye(N)); 
+                    S1v = tt_matrix(full_to_nd(S1v,eps));
+%                     S1v = tt_matrix(S1v);
+                    S1f = lagrange_bilin(x, cw, alpha*Arouse(i,j)*x.*(W.^(gamma-1)), D1, eye(N));
+                    S1f = tt_matrix(full_to_nd(S1f,eps));                    
+%                     S1f = tt_matrix(S1f);                    
+                end;
+                if (k==i)&&(k~=j)
+                    G21 = lagrange_bilin(x, cw, ones(N,1), D1, diag(W.^gamma));
+                    G21 = tt_matrix(full_to_nd(G21,eps));   
+%                     G21 = tt_matrix(G21);  
+                    S1v = ttMass1; 
+                    S1f = lagrange_bilin(x, cw, (W.^(gamma)), D1, eye(N));
+                    S1f = tt_matrix(full_to_nd(S1f,eps));                                        
+%                     S1f = tt_matrix(S1f);                                        
+                end;
+                if (k~=i)&&(k==j)
+                    G21 = lagrange_bilin(x, cw, ones(N,1), eye(N), D1*diag(W.^gamma));
+                    G21 = tt_matrix(full_to_nd(G21,eps));
+%                     G21 = tt_matrix(G21);
+                    S1v = ttMass1; 
+                    S1f = lagrange_bilin(x, cw, alpha*Arouse(i,j)*x.*(W.^(gamma-1)), eye(N), eye(N));
+                    S1f = tt_matrix(full_to_nd(S1f,eps));
+%                     S1f = tt_matrix(S1f);
+                end;                
+                if (k~=i)&&(k~=j)
+                    G21 = ttMass1;
+                    S1v = ttMass1; 
+                    S1f = ttMass1;
+                end;                
+                if (k==1)
+                    curG2 = G21;
+                    curS1v = S1v;
+                    curS1f = S1f;
+                else
+                    curG2 = kron(G21,curG2);
+                    curS1v = kron(S1v, curS1v);
+                    curS1f = kron(S1f, curS1f);
+                end;
+            end;
+            tt_Stiff = tt_Stiff + curG2*alpha*Arouse(i,j);
+            if (i==j)
+                tt_Stiff = tt_Stiff + curS1v;
+            end;
+            tt_Stiff = tt_Stiff + curS1f;
+            tt_Stiff = round(tt_Stiff, eps);
+        end;
+    end;
+
+%     Stiff = G2 + S1;    
+
+%     tt_Stiff = full_to_nd(Stiff, eps);
+%     tt_Stiff = tt_matrix(tt_Stiff);
+%     tt_Mass = full_to_nd(Mass, eps);
+%     tt_Mass = tt_matrix(tt_Mass);
 end;
 
 if (dphys==2)
@@ -141,19 +214,23 @@ if (strcmp(solv, 'ts'))
         tt_tmm = core(round(tt_tmm, eps));
         tt_tmp = core(round(tt_tmp, eps));
     end;       
+    ttu = core(ttu);
 %     tt_tmp2 = tt_mat_compr(tt_mm(tt_transp(tt_tmp),tt_tmp), eps);
        
     results = zeros(2^d0t, 2);
     solt0 = tic;
     for t=1:2^d0t
+%         ushf = Mass*u;
         ushf = tt_mvk3(tt_tmm, ttu, tol, 'verb', 0);
-%         ushf = tt_mvk3(tt_transp(tt_tmp), ushf, tol, 'verb', 0);
-        ttu = dmrg_solve2(tt_tmp, ushf, tol, 'verb', 1, 'x0', ttu, 'max_full_size', 1, 'nswp', 10);
+%         u = (Mass+Stiff*tau)\ushf;
+        ttu = dmrg_solve2(tt_tmp, ushf, tol, 'verb', 1, 'x0', ttu, 'max_full_size', 5000, 'nswp', 25);
         results(t,1)=toc(solt0);
         results(t,2)=erank(tt_tensor(ttu));
         fprintf('TimeStep: %d (%g) done. Cum. CPU time: %g. Erank: %g\n', t, tau*t, results(t,1), results(t,2));
         if (plt==1)
-            plot(x, qtt_to_full(ttu))
+%             plot(x, qtt_to_full(ttu))
+            mesh(qtt_to_full(ttu, [N,N]));
+%             plot(x,u);
             str = sprintf('t: %d (%g). Erank: %g\n', t, tau*t, results(t,2));
             title(str);
             pause(0.01);
@@ -171,6 +248,7 @@ if (strcmp(solv, 'ts'))
 else
     % Global
     results = zeros(max(size(Tsplit))-1, 2);
+    ttu = core(ttu);
     
     for trange=1:max(size(Tsplit))-1
         d0t = d0ts(trange);
@@ -204,7 +282,7 @@ else
         glM = round(glM, eps);
         
         solt0 = tic;
-        U = dmrg_solve2(glM, rhs, tol, 'nswp', 20, 'max_full_size', 2500, 'use_self_prec', false, 'nrestart', 50);
+        U = dmrg_solve2(glM, rhs, tol, 'nswp', 20, 'max_full_size', 5000, 'use_self_prec', false, 'nrestart', 50, 'verb', 1);
         ttime = toc(solt0)
         results(trange, 1)=ttime;
         results(trange, 2)=erank(U);
@@ -214,7 +292,8 @@ else
         ttu = tt_squeeze(ttu);
         
         if (plt==1)
-            plot(x, qtt_to_full(ttu))
+%             plot(x, qtt_to_full(ttu))
+            mesh(qtt_to_full(ttu, [N,N]));
             str = sprintf('trange: %d (%g). Erank: %g\n', trange, Tsplit(trange+1), results(trange,2));
             title(str);
             pause(0.01);

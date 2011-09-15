@@ -346,11 +346,12 @@ for swp=1:nswp
         
         real_tol = tol/(d^dpows(i));
         
+        if (~last_sweep)
         if (strcmp(MatVec,'full'))
 
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
 %             sol = pinv(B)*rhs;
-            sol = B\rhs;
+            sol = (B'*B)\(B'*rhs);
             res=B*sol;
 
             res_true = norm(res-rhs)/norm(rhs);            
@@ -391,6 +392,24 @@ for swp=1:nswp
 
             res=mv(sol);
             res_true = norm(res-rhs)/norm(rhs);
+        end;
+        else
+        sol = sol_prev;
+        if (strcmp(MatVec,'full'))
+            res_prev = norm(B*sol_prev - rhs)/norm(rhs);
+        else
+            res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+        end;
+        res_true = 0;
+        end;
+        
+        if (verb>1)
+            fprintf('=dmrg_solve2= Sweep %d, block %d, res_true = %3.3e\n', swp, i, res_true);
+        end;
+        if ((res_true>res_prev)&&(res_true>real_tol))
+%             keyboard;
+            sol = sol_prev;
+            res_true = res_prev;
         end;
         
         if (res_prev>max_res)
@@ -610,6 +629,7 @@ for swp=1:nswp
     end;
     if (max_res<tol*1.2/(d^d_pow_check))||(swp==nswp-1)
         last_sweep=true;
+%         break;
     end;
     
     dx_old = dx;
@@ -624,6 +644,8 @@ for swp=1:nswp
 end;
 
 x{1}=reshape(x{1}, size(x{1},1), size(x{1},3));
+
+% x = tt_compr2(x, eps, rmax);
 
 if (input_is_tt_tensor)
   x=tt_tensor(x);
