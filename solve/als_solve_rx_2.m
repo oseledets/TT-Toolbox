@@ -16,7 +16,7 @@ if (nargin<6)||(isempty(drx))
     drx=1;
 end;
 if (nargin<7)||(isempty(nswp))
-    nswp=8;
+    nswp=4;
 end;
 
 

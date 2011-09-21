@@ -111,22 +111,20 @@ if (isa(y, 'tt_tensor'))
     input_is_tt_tensor = 1;
 end;
 if ( isa(A,'tt_matrix') )
-  ttA=A.tt; 
-  dA=ttA.d;
+%   ttA=A.tt; 
+%   dA=ttA.d;
   A=core(A);
   input_is_tt_tensor = 1;
   %if (isempty(x0))
   %    x0=tt_random(tt_size(y), A.tt.d, 2);
   %end;
-else
-   dA=numel(A); 
+% else
+%    dA=numel(A); 
    % if (isempty(x0))
    %     x0=tt_random(tt_size(y), max(size(A)), 2);
    % end;
 end
-  x0=tt_random(tt_size(y),dA,2);
-
-end;
+%   x0=tt_random(tt_size(y),dA,2);
 if (isempty(x0))
     x0=tt_random(tt_size(y), max(size(y)), 2);
 end;
@@ -138,7 +136,6 @@ if ( isa(x0,'tt_tensor') )
   x0=core(x0);
   input_is_tt_tensor = 1;
 end
-end;
 
 %nrmF=sqrt(tt_dot(y,y)); 
 
@@ -164,6 +161,9 @@ drank = ones(d,1)*min_drank;
 % d-power for stronger compression eps./(d.^dpows)
 dpows = ones(d,1)*min_dpow;
 
+sol_hist = cell(3,1);
+sol_hist{1}=x;
+max_res_old = Inf;
 last_sweep = false;
 for swp=1:nswp
 %     z = x;
@@ -351,7 +351,7 @@ for swp=1:nswp
 
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
 %             sol = pinv(B)*rhs;
-            sol = (B'*B)\(B'*rhs);
+            sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
             res=B*sol;
 
             res_true = norm(res-rhs)/norm(rhs);            
@@ -609,6 +609,16 @@ for swp=1:nswp
         x2 = reshape(permute(x{i}, [3 1 2]), rxn3*k2, rxn2);
         phyold = phyold*conj(x2); % size rp2*ry2*rxn2 <-- cplx conjugate!
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);         
+    end;
+    
+    sol_hist{3}=sol_hist{2};
+    sol_hist{2}=sol_hist{1};
+    sol_hist{1}=x;
+    
+    if (max_res>max_res_old)
+        x = sol_hist{3};
+    else
+        max_res_old = max_res;
     end;
   
 %     if (max_res<tol*2*sqrt(d-1))

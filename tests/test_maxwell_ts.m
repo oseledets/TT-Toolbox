@@ -2,20 +2,21 @@ dphys = 1;
 dconf = 2;
 
 N = 64;
-d0t = 10;
+d0t = 12;
 
-T = 5;
+T = 10;
 b = 10;
 alpha = 0.5;
 
 eps = 1e-12;
-tol = 1e-8;
+tol = 1e-7;
 
-Tsplit = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10];
-d0ts =   [  5,    6,    6,    7,   8,   9,  10, 11,11,12];
+% Tsplit = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10];
+Tsplit = [0,  0.1,  0.15, 0.2, 0.3, 0.4,0.5,0.7,1,2,5];
+d0ts =   [  10,    10,   5,    5,   5,   6,  7, 8,10,12];
 
-scheme = 'euler';
-% scheme = 'CN';
+% scheme = 'euler';
+scheme = 'CN';
 
 solv = 'ts';
 % solv = 'global';
@@ -124,7 +125,27 @@ if (dphys==1)
             tt_Stiff = round(tt_Stiff, eps);
         end;
     end;
-
+    
+    tt_Stiff = core(tt_Stiff);
+    for i=1:dconf*2
+        stiffranks = tt_ranks(tt_mat_to_vec(tt_Stiff));
+        [shit,mr] = max(stiffranks);
+        new_d = log2(tt_size(tt_Stiff));
+        new_d(mr)=new_d(mr)+new_d(mr+1);
+        new_d(mr+1:end-1) = new_d(mr+2:end);
+        new_d = new_d(1:end-1);
+        tt_Stiff = tt_to_qtt3(tt_Stiff, 1, eps);
+        tt_Stiff = qtt_to_tt(tt_Stiff, new_d, 1);
+    end;
+    
+    tt_Stiff = tt_matrix(tt_Stiff);
+    tt_Mass = core(tt_Mass);
+    tt_Mass = qtt_to_tt(tt_Mass, new_d, 1);
+    tt_Mass = tt_matrix(tt_Mass);
+    ttu = core(ttu);
+    ttu = qtt_to_tt(ttu, new_d, 0);
+    ttu = tt_tensor(ttu);
+    
 %     Stiff = G2 + S1;    
 
 %     tt_Stiff = full_to_nd(Stiff, eps);
@@ -223,7 +244,7 @@ if (strcmp(solv, 'ts'))
 %         ushf = Mass*u;
         ushf = tt_mvk3(tt_tmm, ttu, tol, 'verb', 0);
 %         u = (Mass+Stiff*tau)\ushf;
-        ttu = dmrg_solve2(tt_tmp, ushf, tol, 'verb', 1, 'x0', ttu, 'max_full_size', 5000, 'nswp', 25);
+        ttu = dmrg_solve2(tt_tmp, ushf, tol, 'verb', 1, 'x0', ttu, 'max_full_size', 2500, 'nswp', 8);
         results(t,1)=toc(solt0);
         results(t,2)=erank(tt_tensor(ttu));
         fprintf('TimeStep: %d (%g) done. Cum. CPU time: %g. Erank: %g\n', t, tau*t, results(t,1), results(t,2));
@@ -282,7 +303,7 @@ else
         glM = round(glM, eps);
         
         solt0 = tic;
-        U = dmrg_solve2(glM, rhs, tol, 'nswp', 20, 'max_full_size', 5000, 'use_self_prec', false, 'nrestart', 50, 'verb', 1);
+        U = dmrg_solve2(glM, rhs, tol, 'nswp', 20, 'max_full_size', 3000, 'use_self_prec', false, 'local_prec', 'als', 'nrestart', 50, 'verb', 1);
         ttime = toc(solt0)
         results(trange, 1)=ttime;
         results(trange, 2)=erank(U);
