@@ -110,7 +110,7 @@ r(6)=1
 \end{lstlisting}
 For matrices in the TT-format situation is analogous, for example,
 \begin{lstlisting}
->> e=tt_eye(d,2); %Generate §\mcommentfont{$2^d \times 2^d$}§ identity matrix 
+>> e=tt_eye(2,d); %Generate §\mcommentfont{$2^d \times 2^d$}§ identity matrix 
                   %in TT-format
 >> C=tt_matrix(e)
 C is a 5-dimensional TT-matrix, ranks and mode sizes: 
@@ -413,7 +413,7 @@ following code:
  %for computing functions of TT-tensors
  d=70; n=2^d; h=1.0./(n-1); 
  x=tt_x(d,2); %QTT-representation of x with ranks 2
- x=tt_tensor(x); %Make it TT-tensor
+ x=tt_tensor(x)*h; %Make it TT-tensor
  fun = @(x) sqrt(x);
  tic;
  tt=funcrs(x,fun,1e-12,x,8);
@@ -445,7 +445,7 @@ $$\int_{0}^1 \sqrt{x} dx \approx h \sum_{k=1}^n f(x_k).$$
 This can be realized via a scalar product of the TT-tensor with tensor of all ones.
 It should be compared with analytical value $\frac{2}{3}$:
 \begin{lstlisting}
->> p=tt_ones(d,2); p=tt_tensor(p); dot(p,tt)*h-2/3
+>> p=tt_ones(2,d); p=tt_tensor(p); dot(p,tt)*h-2/3
 ans =
   -2.3648e-14
 \end{lstlisting}
