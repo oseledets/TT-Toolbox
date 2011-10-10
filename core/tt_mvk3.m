@@ -70,6 +70,10 @@ end
 % if (isempty(W))
 %     W = tt_eye(tt_size(x),d);
 % end;
+if ( isa(y,'tt_tensor') )
+  y=core(y);
+end 
+
 
 x{1}=reshape(x{1}, size(x{1},1),1,size(x{1},2));
 y{1}=reshape(y{1}, size(y{1},1),1,size(y{1},2));

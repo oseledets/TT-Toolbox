@@ -16,5 +16,5 @@ function [y,swp]=mvk3(a,x,eps,varargin)
 %   nswp=25; % maximal number of sweep
 % wrapper for the tt_mvk3!
 
-[y,swp]=tt_mvk3(core(a),core(x),eps,varargin);
+[y,swp]=tt_mvk3(core(a),core(x),eps,varargin{:});
 y=tt_tensor(y);

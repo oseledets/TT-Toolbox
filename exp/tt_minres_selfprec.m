@@ -129,7 +129,7 @@ for iout=1:maxit
 %     resid=tt_mat_to_vec(resid);
 %     
 %     err_real=sqrt(tt_dot(resid,resid))/normf;    
-    err_real=6.66;
+    err_real=0;
     fprintf('iter [%d], res_real=%3.3e, x_rank=%d, Xr_rank=%d, w_rank=%d, err=%3.3e\n', iout, err_real, max_xrank, max_xrrank, max_wrank, err);    
     if (err<tol)||(sp>0)
         break;
