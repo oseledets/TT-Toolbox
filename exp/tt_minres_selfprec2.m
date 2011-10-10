@@ -80,7 +80,6 @@ for iout=1:maxit
             %w=tt_mm(X,w);
 %             w=tt_mat_compr(w, eps);            
         end;
-        w=tt_tensor(w);
         %w = tt_mat_to_vec(w);        
         %beta=sqrt(tt_dot(tt_mat_to_vec(Xresid),tt_mat_to_vec(Xresid)));
         beta=norm(Xresid);
