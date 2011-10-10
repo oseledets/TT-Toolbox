@@ -1,8 +1,7 @@
 function [nrm] = norm(tt)
 %[NRM]=NORM(TT)
-%Frobenius norm of the tt_tensor
-%Zatycka
+%Frobenius norm of the tt_matrix
 
-nrm=sqrt(abs(dot(tt,tt)));
+nrm=norm(tt.tt);
 return
 end
