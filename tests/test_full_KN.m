@@ -1,4 +1,4 @@
-d0t = 7; % quantics dims for t
+d0t = 10; % quantics dims for t
 d0x = 8; % quantics dims for x
 dpx = 3; % phys. dims for x
 
@@ -22,20 +22,24 @@ Ax = tt_matrix(tt_qlaplace_dd(d0x*ones(1,dpx)));
 Ax = Ax/(h^2);
 
 % For Fokker-Plank
-beta = 1;
+beta = 0;
 ddd = 0.5;
 zzz = 0.1*2;
 
 Sx = tt_matrix(tt_shf(d0x));
 Grad_x = (Sx - Sx')/(2*h);
 Grad_x = round(Grad_x, eps);
+% Grad_x = tt_matrix(IpaS(d0x,-1));
+% Grad_x = Grad_x/h;
 Ix = tt_matrix(tt_eye(2, d0x));
 
 Cx1 = kron(Ix, kron(Ix, Grad_x));
 Cx2 = kron(Ix, kron(Grad_x, Ix));
 Cx3 = kron(Grad_x, kron(Ix, Ix));
 
-x = a + (0:1:2^d0x-1)'*h;
+% Ax = Cx1'*Cx1+Cx2'*Cx2+Cx3'*Cx3;
+
+x = a + (0.5:1:2^d0x-0.5)'*h;
 eexp1 = exp(-0.5*(x.^2)/(ddd^2));
 eexp1 = full_to_qtt(eexp1, eps);
 eexp1 = tt_tensor(eexp1);
@@ -76,7 +80,7 @@ Ax = round(Ax, eps);
 norm_Ax = norm(Ax*x_ex)/norm(x_ex)
 
 % prepare first u0
-u0 = x_ex.*x_ex;
+u0 = x_ex;
 u0 = round(u0, eps);
 
 norm_Au0 = norm(Ax*u0)/norm(u0)
@@ -129,7 +133,7 @@ for out_t=1:max(size(start_T))
     resid_old = 1e15;
     for i=1:maxit
         tic;
-        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 1, 'verb', 0);
+        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 10, 'verb', 1);
         cur_time = toc;
         
         if (i==1)
@@ -186,6 +190,18 @@ for out_t=1:max(size(start_T))
     u0 = tt_elem3(u0, last_indices);
     u0 = tt_squeeze(u0);
     u0 = tt_tensor(u0);
+    
+    u0f = full(u0, 2^d0x*ones(1,dpx));
+    
+%     figure(1);
+%     mesh(u0f(:,:,1*2^d0x/4));
+%     figure(2);
+    mesh(u0f(:,:,2*2^d0x/4));
+%     figure(3);
+%     mesh(u0f(:,:,3*2^d0x/4));
+%     figure(4);
+%     mesh(u0f(:,:,4*2^d0x/4));
+    
     
     norm_Au0 = norm(Ax*u0)/norm(u0)
     norms_Au{out_t} = norm_Au0;

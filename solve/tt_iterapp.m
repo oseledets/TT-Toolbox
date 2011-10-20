@@ -22,14 +22,15 @@ function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)
 
 
 % matvec_alg='mv+compr';   % produce matvec via tt_mv, and then tt_compr2
-% matvec_alg='mvk2';         % produce matvec via tt_mvk2 
-matvec_alg='smv+compr'; % produce matvec via SparseMatVec
+matvec_alg='mvk3';         % produce matvec via tt_mvk2 
+% matvec_alg='smv+compr'; % produce matvec via SparseMatVec
+% matvec_alg='mv'; % Just a tt_mv (I guess we have to do a compression by ourselves)
 
 if strcmp(atype,'matrix')
     switch lower(op)
         case 'mtimes'
-            if (strcmp(matvec_alg,'mvk2'))
-                y = tt_mvk2(afun, x, eps, max_rank, max_swp);                
+            if (strcmp(matvec_alg,'mvk3'))
+                y = tt_mvk3(afun, x, eps, 'rmax', max_rank, 'nswp', max_swp, 'verb', 0);                
             end;
             if (strcmp(matvec_alg,'mv+compr'))
                 y = tt_mv(afun, x);
@@ -39,9 +40,12 @@ if strcmp(atype,'matrix')
                 y = tt_smv(afun, x);
                 y = tt_compr2(y, eps, max_rank);
             end;
+            if (strcmp(matvec_alg,'mv'))
+                y = tt_mv(afun, x);
+            end;            
         case 'mldivide'
-            if (strcmp(matvec_alg,'mvk2'))
-                y = tt_mvk2(afun, x, eps, max_rank, max_swp);                
+            if (strcmp(matvec_alg,'mvk3'))
+                y = tt_mvk3(afun, x, eps, 'rmax', max_rank, 'nswp', max_swp);                
             end;
             if (strcmp(matvec_alg,'mv+compr'))
                 y = tt_mv(afun, x);
@@ -51,12 +55,15 @@ if strcmp(atype,'matrix')
                 y = tt_smv(afun, x);
                 y = tt_compr2(y, eps, max_rank);
             end;
+            if (strcmp(matvec_alg,'mv'))
+                y = tt_mv(afun, x);
+            end;                        
         otherwise
             error('MATLAB:iterapp:InvalidOp', 'Invalid operation.')
     end
 else
     try
-            y = afun(x,max_rank,varargin{:});
+            y = afun(x,eps,max_rank,varargin{:});
     catch ME
         error('MATLAB:InvalidInput', ['user supplied %s ==> %s\n' ...
             'failed with the following error:\n\n%s'], ...
