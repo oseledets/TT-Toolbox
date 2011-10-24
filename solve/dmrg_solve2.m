@@ -352,7 +352,8 @@ for swp=1:nswp
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
 %             sol = pinv(B)*rhs;
 %             sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
-            sol = (B'*B)\(B'*rhs);
+            sol = B \ rhs;
+%             sol = (B'*B)\(B'*rhs);
             res=B*sol;
 
             res_true = norm(res-rhs)/norm(rhs);            
@@ -401,7 +402,7 @@ for swp=1:nswp
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
         end;
-        res_true = 0;
+        res_true = res_prev;
         end;
         
         if (verb>1)
@@ -651,8 +652,14 @@ for swp=1:nswp
 %         x{1}=reshape(x{1}, size(x{1},1),1, size(x{1},2));
 %     end;    
     if (verb>0)
+        erank=0; sumn=0;
+        for i=1:d
+            erank = erank+size(x{i},1)*size(x{i},2)*size(x{i},3);
+            sumn = sumn+size(x{i},1);
+        end;
+        erank = sqrt(erank/sumn);
 %         fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,0, dropflag, dx_max, max_res);
-        fprintf('=dmrg_solve2= Sweep %d, dx_max: %3.3e, res_max: %3.3e\n', swp, max(dx), max_res);
+        fprintf('=dmrg_solve2= Sweep %d, dx_max: %3.3e, res_max: %3.3e, erank: %g\n', swp, max(dx), max_res, erank);
     end;
     if (last_sweep)
         break;

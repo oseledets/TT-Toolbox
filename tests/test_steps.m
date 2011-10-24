@@ -1,39 +1,57 @@
-d0t = 6; % quantics dims for t
-d0x = 8; % quantics dims for x
+d0t = 9; % quantics dims for t
+d0x = 9; % quantics dims for x
 dpx = 3; % phys. dims for x
-dconf = 3;
+dconf = 4;
 
 a = -20;
 b = 20;
 % a=0; b=1;
 h = (b-a)/(2^d0x+1);
 
-tol = 1e-3;
-eps = 1e-5;
-maxit = 20;
+tol = 1e-5;
+eps = 1e-8;
+maxit = 5;
 
-T = 5;
+T = 20;
 tau = T/(2^d0t);
 
 Arouse = spdiags(ones(dconf,1)*[-1,2,-1], [-1,0,1], dconf,dconf);
 Arouse = full(Arouse);
 
-Z = cell(dpx,1);
-iZ = cell(dpx,1);
-Z{1}=eye(dconf);
+% Z = eye(dconf*dpx);
+% for i=1:dconf
+%     Z(:,i)=zeros(dconf*dpx,1);
+% %     for j=1:dpx
+%         Z((1-1)*dconf+i,i)=1;
+%         Z((2-1)*dconf+i,i)=1;
+% %     end;
+% end;
+% [Z,rv]=qr(Z);
+% Z = eye(dconf*dpx);
+% Z = cell(dpx,1);
+% iZ = cell(dpx,1);
+% Z{1}=eye(dconf);
+% Z{1}(:,1)=[1.974460611288290; 2.193029490616621; 2.000000000000000];
+% Z{1}=[-0.491545316295007,  -0.703122019335240,  -0.513811860464874;
+%    0.709191616987219,   0.019215831067080,  -0.704753859323562;
+%   -0.505401278612842,   0.710809522841623,  -0.489202790071938];
 % Z{1}=[ones(dconf,1), [eye(dconf-1); zeros(1,dconf-1)]];
 % [Z{1},rv]=qr(Z{1});
 % G2 = [1,1;-1,1]/sqrt(2);
 % G3 = [0.406473364091040, 0.913662631546520; -0.913662631546520, 0.406473364091040];
 % Z{1}=[eye(1),zeros(1,3);zeros(2,1),G3,zeros(2,1);zeros(1,3),eye(1)]*[G2,zeros(2,2);zeros(2,2),eye(2)]; % *[eye(2),zeros(2,2);zeros(2,2),G2];
-iZ{1} = inv(Z{1});
-for i=2:dpx
-    Z{i} = eye(dconf);
-    iZ{i} = eye(dconf);
-end;
+% iZ{1} = inv(Z{1});
+% for i=2:dpx
+%     Z{i} = eye(dconf);
+%     iZ{i} = eye(dconf);
+% end;
 % [V,L]=eig(Arouse);
 % Z = V*L^(-0.5)*2;
 % iZ = inv(Z);
+
+iZ = inv(Z');
+Z = reshape(Z, dconf, dpx, dconf, dpx);
+iZ = reshape(iZ, dconf, dpx, dconf, dpx);
 
 lp1 = tt_matrix(tt_qlaplace_dd(d0x));
 lp1 = lp1/(h^2);
@@ -41,7 +59,7 @@ lp1 = lp1/(h^2);
 % For Fokker-Plank
 beta = 0.5;
 ddd = 1;
-zzz = 0;
+zzz = 0.1;
 
 
 Sx = tt_matrix(tt_shf(d0x));
@@ -76,7 +94,7 @@ ex3 = tt_tensor(tt_ones(d0x*dpx,2));
 % eexp = funcross(x2.*x2, @(r)exp(-0.5*r/(ddd^2)), eps, x2, 10);
 
 Gradsst = cell(dconf, dpx);
-% Gradient matrices
+% Gradient matrices in normal coordinates
 for j=1:dpx
     for i=1:dconf
         for j2=1:dpx
@@ -90,18 +108,20 @@ for j=1:dpx
         end;
     end;
 end;
-Grads = cell(dconf,dpx); % real coordinates
+Grads = cell(dconf,dpx); % real gradients
 for j=1:dpx
     for i=1:dconf
-        for i2=1:dconf
-            Grads{i,j}=Grads{i,j}+Z{j}(i,i2)*Gradsst{i2,j}; % G=Z*Gst
+        for j2=1:dpx
+            for i2=1:dconf
+                Grads{i,j}=Grads{i,j}+Z(i,j,i2,j2)*Gradsst{i2,j2}; % G=Z*Gst
+            end;
         end;
         Grads{i,j}=round(Grads{i,j}, eps);
     end;
 end;
 
 % Q_i
-Xst = cell(dconf,dpx); % eigen coordinates for A
+Xst = cell(dconf,dpx); % normal coordinates
 for j=1:dpx
     for i=1:dconf
         for j2=1:dpx
@@ -118,8 +138,10 @@ end;
 X = cell(dconf,dpx); % real coordinates
 for j=1:dpx
     for i=1:dconf
-        for i2=1:dconf
-            X{i,j}=X{i,j}+iZ{j}(i2,i)*Xst{i2,j}; % X = inv(Z')*Xst
+        for j2=1:dpx
+            for i2=1:dconf
+                X{i,j}=X{i,j}+iZ(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
+            end;
         end;
         X{i,j}=round(X{i,j}, eps);
     end;
@@ -176,9 +198,9 @@ for i=1:dconf
 %         end;  
 
         for j=1:dpx
-            V{i,j}=X{i,j};
+            V{i,j}=X{i,j}*2;
 %             Here we have 0.5*2, two occurences of diag. term
-%             V{i,j}=V{i,j} - (zzz/ddd^5)*(diageexp{i}.*X{i,j});
+%             V{i,j}=V{i,j} - (zzz/ddd^5)*(diageexp{i}.*Xst{i,j});
 %             V{i,j}=round(V{i,j}, eps);
         end;
 %     end;
@@ -194,7 +216,7 @@ for i=1:dconf
             Veq{i,j}=tt_tensor(tt_compr2(core(Veq{i,j}), eps));
         end;
         if (j==1)
-            Veq{i,j}=Veq{i,j} + beta*X{i,1};
+            Veq{i,j}=Veq{i,j} + beta*X{i,2};
             Veq{i,j}=round(Veq{i,j}, eps);
         end;
     end;
@@ -233,11 +255,11 @@ Ax = 0*tt_matrix(tt_eye(2,d0x*dpx*dconf));
 for i=1:dconf
     for k=1:dconf
 %         Ax = Ax + diaglp{i};
-%         if (i==k)
-%             Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
-%         else
+        if (i==k)
+            Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
+        else
             Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,1}*Grads{k,1}'+Grads{i,2}*Grads{k,2}'+Grads{i,3}*Grads{k,3}');
-%         end;
+        end;
         Ax = round(Ax, eps);
     end;    
     Ax = Ax + Grads{i,1}*diag(Veq{i,1}) + Grads{i,2}*diag(Veq{i,2}) + Grads{i,3}*diag(Veq{i,3});
@@ -287,7 +309,7 @@ for t=1:1:2^d0t
     times_0 = tic;
 
 %     u_new = mvk(KNm, u, tol, 20, u, 1000); % 1\tI - A/2
-    u_new = tt_mvk3(KNm, core(u), tol, 'verb', 1, 'nswp', 25, 'y0', core(u));
+    u_new = tt_mvk3(KNm, core(u), tol, 'verb', 1, 'nswp', 25, 'y0', core(u), 'kickrank', 1);
     u_new = tt_tensor(u_new);
 
 %     u = mvk(Euler, u, tol, 20, u, 1000);
@@ -297,7 +319,7 @@ for t=1:1:2^d0t
 %     u = u_new;
     for i=1:maxit
         curtime_0 = tic;
-        u = dmrg_solve2(KNp, u_new, tol, 'x0', u, 'nswp', 1, 'verb', 2, 'max_full_size', 1000, 'min_dpow', 0.75);
+        u = dmrg_solve2(KNp, u_new, tol, 'x0', u, 'nswp', 10, 'verb', 1, 'max_full_size', 1000, 'min_dpow', 1, 'kickrank', 1);
 %         u = tt_gmres(KNp, core(u_new), tol, 10,20, tol, tol, [], [], [], core(u));
 %         u = tt_tensor(u);
 %         u = tt_tensor(u);
@@ -369,18 +391,18 @@ for t=1:1:2^d0t
 
 %     results(t) = norm(Ax*u)/norm(u);
 
-%     u2 = qtt_to_tt(core(u), d0x*ones(1,dpx*dconf),0);
-%     u2 = tt_tensor(u2);
+    u2 = qtt_to_tt(core(u), d0x*ones(1,dpx*dconf),0);
+    u2 = tt_tensor(u2);
 %     ind = cell(dpx*dconf-2, 1);
 %     for i=1:dpx*dconf-2
 %         ind{i}=2^(d0x-1);
 %     end;
 %     u2 = tt_elem3(u2, ind);
-%     figure(1)
-%     mesh(full(u2(:,:,2^(d0x-1),2^(d0x-1), 2^(d0x-1),2^(d0x-1),2^(d0x-1),2^(d0x-1), 2^(d0x-1),2^(d0x-1),2^(d0x-1),2^(d0x-1)), 2^d0x*[1,1]));
+    figure(1)
+    contour(full(u2(2^(d0x-1),2^(d0x-1),2^(d0x-1),2^(d0x-1), 2^(d0x-1),2^(d0x-1),2^(d0x-1),2^(d0x-1), 2^(d0x-1),2^(d0x-1),:,:), 2^d0x*[1,1]));
 %     view(2);
 %     figure(2)
-%     mesh(full(u2(:,2^(d0x-1),2^(d0x-1),2^(d0x-1), :,2^(d0x-1),2^(d0x-1),2^(d0x-1), 2^(d0x-1),2^(d0x-1),2^(d0x-1),2^(d0x-1)), 2^d0x*[1,1]));
+%     contour(full(u2(:,2^(d0x-1),2^(d0x-1),2^(d0x-1), :,2^(d0x-1),2^(d0x-1),2^(d0x-1), 2^(d0x-1),2^(d0x-1),2^(d0x-1),2^(d0x-1)), 2^d0x*[1,1]));
 %     view(2);
     
     

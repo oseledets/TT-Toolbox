@@ -1,5 +1,5 @@
 function [res]=full_to_nd(mat,eps,d1,d2) 
-%[RES]=FULL_TO_ND(MAT,EPS,D)
+%[RES]=FULL_TO_ND(MAT,EPS,D1,D2)
 %Converts 2^D1 x 2^D2 matrix into QTT format with accuracy EPS 
 % TT Toolbox 1.0, 2009
 %

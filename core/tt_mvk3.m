@@ -182,6 +182,10 @@ for swp=1:nswp
         if (swp==1)
             dy_old(i)=dy(i);
         end;
+        
+        if (last_sweep)
+            rhs=yprev;
+        end;
                 
         % The new core does not converge - increase rank
         if (dy(i)/dy_old(i)>top_conv)&&(dy(i)>eps/(d^d_pow_check))
@@ -281,6 +285,7 @@ for swp=1:nswp
 %     if (reschk<eps*sqrt(d))
     if (max(dy)<eps/(d^d_pow_check))
         last_sweep = true;
+%         break;
     end;
     dy_old = dy;
 end;
