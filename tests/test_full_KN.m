@@ -19,7 +19,7 @@ maxit = 1;
 Trange = [0, 0.5, 1, 2, 5, 10, 20, 50, 80, 100];
 
 % For Fokker-Plank
-beta = 0.25;
+beta = 0.15;
 ddd = 0.5;
 zzz = 0.1;
 
@@ -56,9 +56,6 @@ ex = tt_tensor(tt_ones(d0x,2));
 % x2 = kron(kron(ex,ttx), ex);
 % x3 = kron(kron(ttx,ex), ex);
 
-Z = reshape(Z, dconf, dpx, dconf, dpx);
-
-
 Gradsst = cell(dconf, dpx);
 % Gradient matrices in normal coordinates
 for j=1:dpx
@@ -72,17 +69,6 @@ for j=1:dpx
                 end;
             end;
         end;
-    end;
-end;
-Grads = cell(dconf,dpx); % real gradients
-for j=1:dpx
-    for i=1:dconf
-        for j2=1:dpx
-            for i2=1:dconf
-                Grads{i,j}=Grads{i,j}+Z(i,j,i2,j2)*Gradsst{i2,j2}; % G=Z*Gst
-            end;
-        end;
-        Grads{i,j}=round(Grads{i,j}, eps);
     end;
 end;
 
@@ -99,17 +85,6 @@ for j=1:dpx
                 end;
             end;
         end;
-    end;
-end;
-X = cell(dconf,dpx); % real coordinates
-for j=1:dpx
-    for i=1:dconf
-        for j2=1:dpx
-            for i2=1:dconf
-                X{i,j}=X{i,j}+Z(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
-            end;
-        end;
-        X{i,j}=round(X{i,j}, eps);
     end;
 end;
 
@@ -144,46 +119,6 @@ for i=1:dconf
             end;
         end;
     end;
-end;
-
-% Velocities : d\phi / d Qst_i
-V = cell(dconf,dpx);
-for i=1:dconf
-    for j=1:dpx
-        V{i,j}=X{i,j};
-%         Here we have 0.5*2, two occurences of diag. term
-%         V{i,j}=V{i,j} - (zzz/ddd^5)*(diageexp{i}.*Xst{i,j});
-%         V{i,j}=round(V{i,j}, eps);
-    end;
-end;
-
-% Velocities to stuff into equation %%% (Rouse matrix, flow included)
-Veq = cell(dconf,dpx);
-for i=1:dconf
-    for j=1:dpx
-        for k=1:dconf            
-            Veq{i,j} = Veq{i,j} - 0.25*Arouse(i,k)*V{k,j};            
-        end;
-        if (j==1)
-            Veq{i,j}=Veq{i,j} + beta*X{i,2};
-        end;
-        Veq{i,j}=round(Veq{i,j}, eps);
-    end;
-end;
-
-% Stiffness matrix
-Ax = [];
-for i=1:dconf
-    for k=1:dconf
-        if (i==k)
-            Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
-        else
-            Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,1}*Grads{k,1}'+Grads{i,2}*Grads{k,2}'+Grads{i,3}*Grads{k,3}');
-        end;
-        Ax = round(Ax, eps);
-    end;    
-    Ax = Ax + Grads{i,1}*diag(Veq{i,1}) + Grads{i,2}*diag(Veq{i,2}) + Grads{i,3}*diag(Veq{i,3});
-    Ax = round(Ax, eps);
 end;
 
 
@@ -227,7 +162,7 @@ end;
 % u0 = x_ex;
 % u0 = round(u0, eps);
 
-norm_Au0 = norm(Ax*u0)/norm(u0)
+% norm_Au0 = norm(Ax*u0)/norm(u0)
 % keyboard;
 
 
@@ -239,6 +174,78 @@ etas = zeros(Nt+1,1);
 psis = zeros(Nt+1,1);
 for out_t=1:Nt
     tau = (Trange(out_t+1)-Trange(out_t))/(2^d0t);
+    
+    Z = reshape(Z, dconf, dpx, dconf, dpx);
+    
+    Grads = cell(dconf,dpx); % real gradients
+    for j=1:dpx
+        for i=1:dconf
+            for j2=1:dpx
+                for i2=1:dconf
+                    Grads{i,j}=Grads{i,j}+Z(i,j,i2,j2)*Gradsst{i2,j2}; % G=Z*Gst
+                end;
+            end;
+            Grads{i,j}=round(Grads{i,j}, eps);
+        end;
+    end;
+    
+    X = cell(dconf,dpx); % real coordinates
+    for j=1:dpx
+        for i=1:dconf
+            for j2=1:dpx
+                for i2=1:dconf
+                    X{i,j}=X{i,j}+Z(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
+                end;
+            end;
+            X{i,j}=round(X{i,j}, eps);
+        end;
+    end;
+    
+    % Velocities : d\phi / d Qst_i
+    V = cell(dconf,dpx);
+    for i=1:dconf
+        for j=1:dpx
+            V{i,j}=X{i,j};
+            %         Here we have 0.5*2, two occurences of diag. term
+            %         V{i,j}=V{i,j} - (zzz/ddd^5)*(diageexp{i}.*Xst{i,j});
+            %         V{i,j}=round(V{i,j}, eps);
+        end;
+    end;
+    
+    % Velocities to stuff into equation %%% (Rouse matrix, flow included)
+    Veq = cell(dconf,dpx);
+    for i=1:dconf
+        for j=1:dpx
+            for k=1:dconf
+                Veq{i,j} = Veq{i,j} - 0.25*Arouse(i,k)*V{k,j};
+            end;
+            if (j==1)
+                Veq{i,j}=Veq{i,j} + beta*X{i,2};
+            end;
+            Veq{i,j}=round(Veq{i,j}, eps);
+        end;
+    end;
+    
+    % Stiffness matrix
+    Ax = [];
+    for i=1:dconf
+        for k=1:dconf
+            if (i==k)
+                Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
+            else
+                for j=1:dpx
+                    Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,j}*Grads{k,j}');
+                end;
+            end;
+            Ax = round(Ax, eps);
+        end;
+        for j=1:dpx
+            Ax = Ax + Grads{i,j}*diag(Veq{i,j});
+        end;
+        Ax = round(Ax, eps);
+    end;
+    
+    Z0 = reshape(Z, dconf*dpx, dconf*dpx);
     
     St = tt_shf(d0t); St = tt_matrix(St); St=St'; % lower shift matrix for gradient
     It = tt_matrix(tt_eye(2,d0t));
@@ -278,7 +285,7 @@ for out_t=1:Nt
     resid_old = 1e15;
     for i=1:maxit
         tic;
-        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 30, 'verb', 1, 'nrestart', 50, 'max_full_size', 1000);
+        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 30, 'verb', 1, 'nrestart', 50, 'max_full_size', 1000, 'min_dpow', 0.5);
         cur_time = toc;
         
         if (i==1)
@@ -363,11 +370,30 @@ for out_t=1:Nt
     u2 = qtt_to_tt(core(u0), d0x*ones(1,dpx*dconf),0);
     u2 = tt_tensor(u2);
     n=2^d0x/2+1;
-    contour(full(u2(:,n,n,n, :,n,n,n, n,n,n,n), 2^d0x*[1,1]));
+    contour(full(u2(:,n,n,n, n,n,n,n, n,n,n,:), 2^d0x*[1,1]));   
     
-%     Z0 = reshape(Z, dconf*dpx, dconf*dpx);
-%     [Z2,x]=normcoords(core(u2), 'x', n*ones(dpx*dconf, 1));
-%     Z = Z0*Z2;
+    [Z2,x]=normcoords(core(u2), 'x', n*ones(dpx*dconf, 1));
+    Z = Z0*Z2;
+    
+    gridold = cell(dpx*dconf,1);
+    for i=1:dpx*dconf
+        gridold{i}=x;
+    end;
+    Z2 = reshape(Z2, dconf, dpx, dconf, dpx);
+    X = cell(dconf,dpx); % new coordinates
+    for j=1:dpx
+        for i=1:dconf
+            for j2=1:dpx
+                for i2=1:dconf
+                    X{i,j}=X{i,j}+Z2(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
+                end;
+            end;
+            X{i,j}=round(X{i,j}, eps);
+            X{i,j}=core(X{i,j});
+        end;
+    end;    
+    u2 = core(u2);
+    u0 = tt_rc(d0x*dpx*dconf, 2, @(ind)interp_u(ind,u2,X,gridold,dpx,dconf), tol);
     
 %     u0f = full(u0, 2^d0x*ones(1,dpx));
     
