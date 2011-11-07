@@ -27,15 +27,22 @@ mat=permute(mat,[2,1]);
 tt{d}=mat;
 else
   i=varargin{1};
-  cr=tt1.core;
-  pos=tt1.ps;
-  r=tt1.r;
-  n=tt1.n;
-  tt=cr(pos(i):pos(i+1)-1);
-  tt=reshape(tt,[r(i),n(i),r(i+1)]); 
-  if ( i == 1 && r(i) == 1 )
-     tt=reshape(tt,[n(i),r(i+1)]);
-  end
+%   cr=tt1.core;
+%   pos=tt1.ps;
+%   r=tt1.r;
+%   n=tt1.n;
+%   tto=cr(pos(i):pos(i+1)-1);
+%   tto=reshape(tto,[r(i),n(i),r(i+1)]); 
+  
+  % New version with normal address references
+  % We don't have to extract the whole core and other vars.
+  
+  tt = tt1.core(tt1.ps(i):tt1.ps(i+1)-1);
+  tt = reshape(tt,[tt1.r(i),tt1.n(i),tt1.r(i+1)]); 
+
+%   if ( i == 1 && r(i) == 1 )
+%      tt=reshape(tt,[n(i),r(i+1)]);
+%   end
 end
 return
 end

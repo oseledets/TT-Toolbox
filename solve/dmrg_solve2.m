@@ -36,6 +36,9 @@ d_pow_check = 0; % d-power for checking the convergence
 bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
 
+bs_treshold = 0.0001*0; % Treshold from the previous residual to consider a local system as "bad"
+trunc_to_true = 2; % Truncation error to true residual treshold
+
 use_self_prec=false;
 nswp=10;
 nrestart=40;
@@ -163,7 +166,7 @@ dpows = ones(d,1)*min_dpow;
 
 sol_hist = cell(3,1);
 sol_hist{1}=x;
-max_res_old = Inf;
+max_res_old = 0;
 last_sweep = false;
 for swp=1:nswp
 %     z = x;
@@ -233,7 +236,8 @@ for swp=1:nswp
     
     % Now, start the d-to-1 DMRG iteration
     max_res = 0;
-    phAold=1; phyold=1;
+    phAold=1; phyold=1;     
+    
     for i=d:-1:2
         a2=A{i}; a1=A{i-1}; ra1=size(a1,3); ra2=size(a1,4); ra3=size(a2,4);
         n1 = size(a1,1); m1=size(a1,2); n2=size(a2,1); m2=size(a2,2);
@@ -345,70 +349,73 @@ for swp=1:nswp
         sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
         
         real_tol = tol/(d^dpows(i));
-        
-        if (~last_sweep)
+
+        % Check the previous residual
         if (strcmp(MatVec,'full'))
-
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
-%             sol = pinv(B)*rhs;
-%             sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
-            sol = B \ rhs;
-%             sol = (B'*B)\(B'*rhs);
-            res=B*sol;
-
-            res_true = norm(res-rhs)/norm(rhs);            
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-            mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
-            %Ax_{k+1}+tau*x_k=rhs+tau*x_k
-            %(Ax_{k+1}+tau*I)x_{k+1}=rhs+tau*x_k
-            [sol_new,flg] = gmres(mv1, rhs+tau(i)*sol_prev, nrestart, real_tol, 2, [], [], sol_prev);
-            if( flg == 0)
-              tau(i)=tau(i)/10;
-            else
-              tau(i)=tau(i)*4;
-            end
-            %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
-            %sol_new=sol_prev+dsol;
-            res_new=norm(mv(sol_new)-rhs)/norm(rhs);
-            conv_factor=(res_new/res_prev);
-            if (res_new*(conv_factor)>real_tol && use_self_prec) % we need a prec.
-                if (strcmp(local_prec, 'selfprec'))
-                    iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
+        end;
 
-                    resid = rhs-mv(sol_new);
-                    [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
-                        rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, real_tol/res_new, gmres_iters);
-                    dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                    sol = sol_new+dsol;
-                    
-                end;
-                if (strcmp(local_prec, 'als'))
-                    sol = als_solve_rx_2(B, rhs, real_tol, [], sol_new);
-                end;
+        % We will solve the system only if res_prev>0.1*max_res_prev
+        if (~last_sweep)&&(res_prev>bs_treshold*max_res_old)
+            if (strcmp(MatVec,'full'))
+                %             sol = pinv(B)*rhs;
+                %             sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
+                sol = B \ rhs;
+                %             sol = (B'*B)\(B'*rhs);
+                res=B*sol;
+                
+                res_true = norm(res-rhs)/norm(rhs);
             else
-                [sol,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
-                    rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
+                mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+                %Ax_{k+1}+tau*x_k=rhs+tau*x_k
+                %(Ax_{k+1}+tau*I)x_{k+1}=rhs+tau*x_k
+                [sol_new,flg] = gmres(mv1, rhs+tau(i)*sol_prev, nrestart, real_tol, 2, [], [], sol_prev);
+                if( flg == 0)
+                    tau(i)=tau(i)/10;
+                else
+                    tau(i)=tau(i)*4;
+                end
+                %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
+                %sol_new=sol_prev+dsol;
+                res_new=norm(mv(sol_new)-rhs)/norm(rhs);
+                conv_factor=(res_new/res_prev);
+                if (res_new*(conv_factor)>real_tol && use_self_prec) % we need a prec.
+                    if (strcmp(local_prec, 'selfprec'))
+                        iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
+                        
+                        resid = rhs-mv(sol_new);
+                        [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
+                            rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, real_tol/res_new, gmres_iters);
+                        dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                        sol = sol_new+dsol;
+                        
+                    end;
+                    if (strcmp(local_prec, 'als'))
+                        sol = als_solve_rx_2(B, rhs, real_tol, [], sol_new);
+                    end;
+                else
+                    [sol,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
+                        rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
+                end;
+                
+                res=mv(sol);
+                res_true = norm(res-rhs)/norm(rhs);
             end;
-
-            res=mv(sol);
-            res_true = norm(res-rhs)/norm(rhs);
-        end;
+            
+            dx(i) = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
         else
-        sol = sol_prev;
-        if (strcmp(MatVec,'full'))
-            res_prev = norm(B*sol_prev - rhs)/norm(rhs);
-        else
-            res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-        end;
-        res_true = res_prev;
+            res_true = res_prev;
+            dx(i)=0;
+%             sol = sol_prev;
         end;
         
         if (verb>1)
             fprintf('=dmrg_solve2= Sweep %d, block %d, res_true = %3.3e\n', swp, i, res_true);
         end;
-        if ((res_true>res_prev)&&(res_true>real_tol))
+        if ((res_true>res_prev*1.1))   % &&(res_true>real_tol)
 %             keyboard;
             sol = sol_prev;
             res_true = res_prev;
@@ -418,7 +425,6 @@ for swp=1:nswp
             max_res = res_prev;
         end;        
         
-        dx(i) = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
         if (verb>1)
         fprintf('=dmrg_solve2= Sweep %d, block %d, dx=%3.3e, res_prev = %3.3e\n', swp, i, dx(i), res_prev);
         end;
@@ -444,91 +450,151 @@ for swp=1:nswp
             dpows(i)=min(0.5, min_dpow);
         end;
         
-        sol=reshape(sol,[rxm1*m1,m2*rxm3]);
-        if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
-            [u,s,v]=svd(sol-reshape(sol_prev,[rxm1*m1,m2*rxm3]),'econ');
-        else
-            [u,s,v]=svd(sol,'econ');
-        end;
-        s = diag(s);
-        flm=norm(s);
-        %Truncation block. We have to make it smarter by binary search
-        r0 = 1; rM = min(size(s,1),rmax); r = round((r0+rM)/2);
-        while (rM-r0>2)        
-%         r0=1; r1=min(size(s,1),rmax);
-%         r=1;
-%         while ( r ~= r0 || r ~= r1 )
-%             r=min(floor((r0+r1)/2),rmax);
-            er0=norm(s(r+1:numel(s)));
+        if (res_prev>bs_treshold*max_res_old)            
             if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
-                sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
-            else                
-                sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
-            end;
-            if (strcmp(MatVec,'full'))
-                resid = norm(B*sol-rhs)/norm(rhs);
+                [u,s,v]=svd(sol-reshape(sol_prev,[rxm1*m1,m2*rxm3]),'econ');
             else
-                resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+                if (~last_sweep)             
+                    sol=reshape(sol,[rxm1*m1,m2*rxm3]);
+                    [u,s,v]=svd(sol,'econ');
+                else
+                    [x2,rv]=qr(x2.', 0);
+                    x1 = x1*(rv.');
+                    [u,s,v]=svd(x1, 'econ');
+                    v = x2*v;
+                end;
             end;
-%             if ( verb>1 )
-%             fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
-%             end
-            if ((resid<max(res_true*1.2, eps/(d^dpows(i)))) ) %Value of the rank is OK
-%               r1=r;
-                rM = r-1;
-                r = round((r0+rM)/2);
-            else %Is not OK.
-                r0 = r;
-                r = round((r0+rM)/2);
-%               r0=min(r+1,rmax);
+            s = diag(s);
+            flm=norm(s);
+            %Truncation block. We have to make it smarter by binary search
+            r0 = 1; rM = min(size(s,1),rmax); r = round((r0+rM)/2);
+            while (rM-r0>2)
+                er0=norm(s(r+1:numel(s)));
+                if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+                    sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
+                else
+                    sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
+                end;
+                if (strcmp(MatVec,'full'))
+                    resid = norm(B*sol-rhs)/norm(rhs);
+                else
+                    resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+                end;
+                %             if ( verb>1 )
+                %             fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, resid, er0/flm, MatVec, rB);
+                %             end
+                if ((resid<max(res_true*trunc_to_true, eps/(d^dpows(i)))) ) %Value of the rank is OK
+                    rM = r-1;
+                    r = round((r0+rM)/2);
+                else %Is not OK.
+                    r0 = r;
+                    r = round((r0+rM)/2);
+                end;
+            end
+            r = r0;
+            % Line search - if the rank is underestimated
+            cursol = cell(2,1);
+            cursol{1}=u(:,1:r);
+            cursol{2}=conj(v(:,1:r))*diag(s(1:r));
+            if (strcmp(MatVec,'full'))
+                resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
+            else
+                resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
             end;
-        end
-        r = r0;
-        % Line search - if the rank is underestimated
-%         r = 0;
-        cursol = cell(2,1);
-        cursol{1}=u(:,1:r);
-        cursol{2}=conj(v(:,1:r))*diag(s(1:r));
-        if (strcmp(MatVec,'full'))
-            resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
+            while (r<min(size(s,1), rmax))
+                r=r+1;
+                er0=norm(s(r+1:numel(s)));
+                cursol{1}=u(:,r);
+                cursol{2}=conj(v(:,r))*s(r);
+                if (strcmp(MatVec,'full'))
+                    resid = resid + B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1);
+                else
+                    resid = resid + reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1);
+                end;
+                normres = norm(resid)/norm(rhs);
+                %             if ( verb>1 )
+                %                 fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, normres, er0/flm, MatVec, rB);
+                %             end
+                if ((normres<max(res_true*trunc_to_true, eps/(d^dpows(i)))) ) %Value of the rank is OK
+                    break;
+                end;
+            end;
+            
+            if (~last_sweep)
+                r = r+drank(i); % we want even larger ranks
+            end;
+            
+            v = conj(v);
         else
-            resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
-        end;
-%         resid = -rhs;
-        while (r<min(size(s,1), rmax))
-            r=r+1;
-            er0=norm(s(r+1:numel(s)));
-%             if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
-%                 sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
-%             else                
-%                 sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
-%             end;
-            cursol{1}=u(:,r);
-            cursol{2}=conj(v(:,r))*s(r);
-            if (strcmp(MatVec,'full'))
-                resid = resid + B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1);
-%                 resid = norm(B*sol-rhs)/norm(rhs);
-            else
-                resid = resid + reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1);
-%                 resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
-            end;
-            normres = norm(resid)/norm(rhs);
-%             if ( verb>1 )
-%                 fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, normres, er0/flm, MatVec, rB);
+            % We do not have to decimate the whole supercore,
+            % only one of factors, as we have the previous solution
+            [v,rv]=qr(x2.',0); % size m2*rxm3, rxm2' - rxm2',rxm2            
+            r = size(v,2);
+% %             rxm2 = size(x2,2);
+            u = x1*rv.';
+            s = ones(r,1);
+%             
+%             [u,s,v]=svd(x1, 'econ');
+%             v = x2*conj(v);
+%             s = diag(s);
+%             flm=norm(s);  
+%             %Truncation block. We have to make it smarter by binary search
+%             r0 = 1; rM = min(size(s,1),rmax); r = round((r0+rM)/2);
+%             while (rM-r0>2)
+%                 er0=norm(s(r+1:numel(s)));
+%                 if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
+%                     sol = sol_prev+reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r)).',rxm1*m1*m2*rxm3, 1);
+%                 else
+%                     sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r)).',rxm1*m1*m2*rxm3, 1);
+%                 end;
+%                 if (strcmp(MatVec,'full'))
+%                     resid = norm(B*sol-rhs)/norm(rhs);
+%                 else
+%                     resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+%                 end;
+%                 if ((resid<max(res_true*trunc_to_true, eps/(d^dpows(i)))) ) %Value of the rank is OK
+%                     rM = r-1;
+%                     r = round((r0+rM)/2);
+%                 else %Is not OK.
+%                     r0 = r;
+%                     r = round((r0+rM)/2);
+%                 end;
 %             end
-            if ((normres<max(res_true*1.2, eps/(d^dpows(i)))) ) %Value of the rank is OK
-                break;
-            end;
-        end;
-            if ( verb>1 )
-                fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, normres, er0/flm, MatVec, rB);
-            end        
-        
-        if (~last_sweep)
-            r = r+drank(i); % we want even larger ranks
+%             r = r0;
+%             % Line search - if the rank is underestimated
+%             cursol = cell(2,1);
+%             cursol{1}=u(:,1:r);
+%             cursol{2}=v(:,1:r)*diag(s(1:r));
+%             if (strcmp(MatVec,'full'))
+%                 resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
+%             else
+%                 resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
+%             end;
+%             while (r<min(size(s,1), rmax))
+%                 r=r+1;
+%                 er0=norm(s(r+1:numel(s)));
+%                 cursol{1}=u(:,r);
+%                 cursol{2}=v(:,r)*s(r);
+%                 if (strcmp(MatVec,'full'))
+%                     resid = resid + B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1);
+%                 else
+%                     resid = resid + reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1);
+%                 end;
+%                 normres = norm(resid)/norm(rhs);
+%                 if ((normres<max(res_true*trunc_to_true, eps/(d^dpows(i)))) ) %Value of the rank is OK
+%                     break;
+%                 end;
+%             end;            
         end;
         r = min(r, max(size(s))); % but not too large
         r = min(r,rmax);
+        
+        v = v(:,1:r);
+        u = u(:,1:r)*diag(s(1:r));
+        
+        if ( verb>1 )
+            fprintf('=dmrg_solve2= sweep %d, block %d, r=%d, resid=%g, er0=%g, MatVec=%s, rB=%d\n', swp, i, r, normres, er0/flm, MatVec, rB);
+        end
         
         % Keep rank increasing for several iterations
         % It helps for problems with hundred dimensions
@@ -541,9 +607,6 @@ for swp=1:nswp
 %         if (dropflag==1)&&(i==2)
 %             dropflag=0;
 %         end;        
-     
-        v = conj(v(:,1:r));
-        u = u(:,1:r)*diag(s(1:r));
         
         % random kick %This is a production code, sir!
         %Replace by new stuff
@@ -632,15 +695,20 @@ for swp=1:nswp
         phyold = permute(reshape(phyold, rp2, ry2, rxn2), [3 1 2]);         
     end;
     
-    sol_hist{3}=sol_hist{2};
-    sol_hist{2}=sol_hist{1};
-    sol_hist{1}=x;
+%     sol_hist{3}=sol_hist{2};
+%     sol_hist{2}=sol_hist{1};
+%     sol_hist{1}=x;
     
-    if (max_res>max_res_old)
-        x = sol_hist{3};
-    else
-        max_res_old = max_res;
+    max_res_old = max_res;
+    if (mod(swp,100)==0)
+        max_res_old = 0;
     end;
+    
+%     if (max_res>max_res_old)
+%         x = sol_hist{3};
+%     else
+%         max_res_old = max_res;
+%     end;
   
 %     if (max_res<tol*2*sqrt(d-1))
 %         dropflag = 1;
@@ -664,7 +732,7 @@ for swp=1:nswp
     if (last_sweep)
         break;
     end;
-    if (max_res<tol*1.2/(d^d_pow_check))||(swp==nswp-1)
+    if (max_res<tol*trunc_to_true/(d^d_pow_check))||(swp==nswp-1)
         last_sweep=true;
 %         break;
     end;

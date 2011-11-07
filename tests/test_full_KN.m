@@ -1,13 +1,13 @@
 d0t = 12; % quantics dims for t
-d0x = 8; % quantics dims for x
-dpx = 3; % phys. dims for x
-dconf = 4;
+d0x = 10; % quantics dims for x
+dpx = 2; % phys. dims for x
+dconf = 7;
 
-a = -10;
-b = 10;
+a = -20;
+b = 20;
 h = (b-a)/(2^d0x);
 
-tol = 1e-3;
+tol = 1e-4;
 eps = 1e-8;
 maxit = 1;
 
@@ -16,10 +16,10 @@ maxit = 1;
 % end_T =   [0.5, 1, 2, 5, 10];
 
 % Trange = [0, 0.5, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0];
-Trange = [0, 0.5, 1, 2, 5, 10, 20, 50, 80, 100];
+Trange = [0, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
 
 % For Fokker-Plank
-beta = 0.15;
+beta = 1;
 ddd = 0.5;
 zzz = 0.1;
 
@@ -27,6 +27,11 @@ Arouse = spdiags(ones(dconf,1)*[-1,2,-1], [-1,0,1], dconf,dconf);
 Arouse = full(Arouse);
 
 % Z = eye(dpx*dconf);
+[Z,L]=eig(Arouse);
+% Z2 = [1,1;-1,1]/sqrt(2);
+Z2 = [ -0.607142393387428  -0.794593049398109
+        0.794593049398109  -0.607142393387428];
+Z = kron(Z2, Z);
 
 lp1 = tt_matrix(tt_qlaplace_dd(d0x));
 lp1 = lp1/(h^2);
@@ -56,70 +61,150 @@ ex = tt_tensor(tt_ones(d0x,2));
 % x2 = kron(kron(ex,ttx), ex);
 % x3 = kron(kron(ttx,ex), ex);
 
+% We need x and y to be in the matrix permutation
+ttx2 = kron2(ttx,ex);
+tty2 = kron2(ex,ttx);
+ex2 = kron2(ex,ex);
+Gradx2 = kron2(Grad_x, Ix);
+Grady2 = kron2(Ix, Grad_x);
+Ix2 = kron2(Ix,Ix);
+
 Gradsst = cell(dconf, dpx);
 % Gradient matrices in normal coordinates
-for j=1:dpx
-    for i=1:dconf
-        for j2=1:dpx
-            for i2=1:dconf
+for i=1:dconf
+    for j=1:dpx
+        for i2=1:dconf
+            j2=1;
+            while (j2<=dpx)
+%                 if (i2==i)
+%                     if (dpx>1)
+%                         if (j==1)&&(j2==1)
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Gradx2);
+%                         end;
+%                         if (j==2)&&(j2==1)
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Grady2);
+%                         end;                        
+%                         if (j>2)&&(j2==1)
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Ix2);
+%                         end;
+%                         if (j>2)&&(j2==j)
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Grad_x);
+%                         end;
+%                         if (j2>2)&&(j~=j2)
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Ix);
+%                         end;
+%                     else
+%                         if (j2==j)
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Grad_x);
+%                         else
+%                             Gradsst{i,j}=kron(Gradsst{i,j}, Ix);
+%                         end;
+%                     end;
+%                 else
+%                     if (dpx>1)&&(j2==1)
+%                         Gradsst{i,j}=kron(Gradsst{i,j}, Ix2);
+%                     else
+%                         Gradsst{i,j}=kron(Gradsst{i,j}, Ix);
+%                     end;
+%                 end;
                 if (i2==i)&&(j2==j)
                     Gradsst{i,j}=kron(Gradsst{i,j}, Grad_x);
                 else
                     Gradsst{i,j}=kron(Gradsst{i,j}, Ix);
                 end;
+                j2 = j2+1;
             end;
+%             if (dpx>1)&&(j2==1)
+%                 j2=2;
+%             end;
         end;
     end;
 end;
 
 % Q_i
 Xst = cell(dconf,dpx); % normal coordinates
-for j=1:dpx
-    for i=1:dconf
-        for j2=1:dpx
-            for i2=1:dconf
+for i=1:dconf
+    for j=1:dpx
+        for i2=1:dconf
+            j2=1;
+            while (j2<=dpx)
+%                 if (i2==i)
+%                     if (dpx>1)
+%                         if (j==1)&&(j2==1)
+%                             Xst{i,j}=kron(Xst{i,j}, ttx2);
+%                         end;
+%                         if (j==2)&&(j2==1)
+%                             Xst{i,j}=kron(Xst{i,j}, tty2);
+%                         end;                        
+%                         if (j>2)&&(j2==1)
+%                             Xst{i,j}=kron(Xst{i,j}, ex2);
+%                         end;
+%                         if (j>2)&&(j2==j)
+%                             Xst{i,j}=kron(Xst{i,j}, ttx);
+%                         end;
+%                         if (j2>2)&&(j~=j2)
+%                             Xst{i,j}=kron(Xst{i,j}, ex);
+%                         end;
+%                     else
+%                         if (j2==j)
+%                             Xst{i,j}=kron(Xst{i,j}, ttx);
+%                         else
+%                             Xst{i,j}=kron(Xst{i,j}, ex);
+%                         end;
+%                     end;
+%                 else
+%                     if (dpx>1)&&(j2==1)
+%                         Xst{i,j}=kron(Xst{i,j}, ex2);
+%                     else
+%                         Xst{i,j}=kron(Xst{i,j}, ex);
+%                     end;
+%                 end;
                 if (i2==i)&&(j2==j)
                     Xst{i,j}=kron(Xst{i,j}, ttx);
                 else
                     Xst{i,j}=kron(Xst{i,j}, ex);
                 end;
+                j2 = j2+1;
             end;
+%             if (dpx>1)&&(j2==1)
+%                 j2=2;
+%             end;
         end;
     end;
 end;
 
 % Laplacen
-diaglp = cell(1,dconf);
-for i=1:dconf
-    for j=1:dpx
-        curlp = [];
-        for j2=1:dpx
-            for i2=1:dconf
-                if (i2==i)&&(j2==j)
-                    curlp=kron(curlp, lp1);
-                else
-                    curlp=kron(curlp, Ix);
-                end;
-            end;
-        end;
-        diaglp{i}=diaglp{i}+curlp;
-        diaglp{i}=round(diaglp{i},eps);
-    end;
-end;
+% diaglp = cell(1,dconf);
+% for i=1:dconf
+%     for j=1:dpx
+%         curlp = [];
+%         for j2=1:dpx
+%             for i2=1:dconf
+%                 if (i2==i)&&(j2==j)
+%                     curlp=kron(curlp, lp1);
+%                 else
+%                     curlp=kron(curlp, Ix);
+%                 end;
+%             end;
+%         end;
+%         diaglp{i}=diaglp{i}+curlp;
+%         diaglp{i}=round(diaglp{i},eps);
+%     end;
+% end;
 
 % diagonal repulsions
-diageexp = cell(1,dconf);
-for i=1:dconf
-    for j=1:dpx
-        for i2=1:dconf
-            if (i2==i)
-                diageexp{i}=kron(diageexp{i}, eexp1);
-            else
-                diageexp{i}=kron(diageexp{i}, ex);
-            end;
-        end;
-    end;
-end;
+% diageexp = cell(1,dconf);
+% for i=1:dconf
+%     for j=1:dpx
+%         for i2=1:dconf
+%             if (i2==i)
+%                 diageexp{i}=kron(diageexp{i}, eexp1);
+%             else
+%                 diageexp{i}=kron(diageexp{i}, ex);
+%             end;
+%         end;
+%     end;
+% end;
 
 
 % eexp = kron(kron(eexp1, eexp1), eexp1);
@@ -153,11 +238,22 @@ end;
 
 % prepare first u0
 uSN = tt_tensor(full_to_qtt(exp(-0.5*(x.^2)), eps));
-% uDD = tt_tensor(full_to_qtt([zeros(2^(d0x-1),1); 1; zeros(2^(d0x-1)-1,1)], eps));
-u0=uSN;
-for i=2:dpx*dconf
-    u0 = kron(u0,uSN);
-end;
+% if (dpx>1)
+%     uSN2 = funcrs(ttx2.*ttx2+tty2.*tty2, @(x)exp(-0.5*x), eps, ttx2, 20);
+%     % uDD = tt_tensor(full_to_qtt([zeros(2^(d0x-1),1); 1; zeros(2^(d0x-1)-1,1)], eps));
+%     u0=uSN2;
+%     for i=2:dconf
+%         u0 = kron(u0, uSN2);
+%     end;
+%     for i=1:(dpx-2)*dconf
+%         u0 = kron(u0,uSN);
+%     end;
+% else
+    u0 = uSN;
+    for i=2:dconf*dpx
+        u0 = kron(u0,uSN);
+    end;
+% end;
 
 % u0 = x_ex;
 % u0 = round(u0, eps);
@@ -172,6 +268,7 @@ global_results = cell(Nt+1,1);
 norms_Au = zeros(Nt+1,1);
 etas = zeros(Nt+1,1);
 psis = zeros(Nt+1,1);
+Us = cell(Nt,1);
 for out_t=1:Nt
     tau = (Trange(out_t+1)-Trange(out_t))/(2^d0t);
     
@@ -230,13 +327,13 @@ for out_t=1:Nt
     Ax = [];
     for i=1:dconf
         for k=1:dconf
-            if (i==k)
-                Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
-            else
+%             if (i==k)
+%                 Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
+%             else
                 for j=1:dpx
                     Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,j}*Grads{k,j}');
                 end;
-            end;
+%             end;
             Ax = round(Ax, eps);
         end;
         for j=1:dpx
@@ -262,7 +359,7 @@ for out_t=1:Nt
     e1t = tt_tensor(e1t); % first identity vector for t - we need to put u0 into rhs   
     
     % global matrix
-    M = kron(tt_matrix(tt_eye(2,d0x*dpx*dconf)), Grad_t) + kron(Ax, KN_term);
+    M = kron(tt_matrix(tt_eye(Ax.n,Ax.d)), Grad_t) + kron(Ax, KN_term);
     M = round(M, eps);
     
     % f1 = sin(pi*(1:1:2^d0x)'/(1+2^d0x));
@@ -271,28 +368,30 @@ for out_t=1:Nt
     % u0 = kron(u0,u0);
     
     % u0 = tt_tensor(tt_ones(d0x*dpx, 2));
+    KNm = tt_matrix(tt_eye(Ax.n,Ax.d))/tau - Ax*0.5;
         
-    u0_rhs = u0/tau - (Ax*u0)*0.5; % stuff u0 into rhs of KN scheme
-    u0_rhs = round(u0_rhs, tol);
+    u0_rhs = mvk3(KNm, u0, tol, 'nswp', 20); % stuff u0 into rhs of KN scheme
+%     u0_rhs = u0/tau - (Au0)*0.5; 
+%     u0_rhs = round(u0_rhs, tol);
     rhs = kron(u0_rhs, e1t);
     
     % norm_rhs = mvk(M',rhs,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
     
-    U = tt_random(2, rhs.d, 2);
-%     U = kron(u0, tt_tensor(tt_ones(d0t,2)));
+%     U = tt_random(2, rhs.d, 2);
+    U = kron(u0, tt_tensor(tt_ones(d0t,2)));
     
     results = zeros(maxit,6);
     resid_old = 1e15;
     for i=1:maxit
         tic;
-        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 30, 'verb', 1, 'nrestart', 50, 'max_full_size', 1000, 'min_dpow', 0.5);
+        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 1, 'nrestart', 50, 'max_full_size', 1000);
         cur_time = toc;
         
         if (i==1)
             U_best = U;
         end;
         
-        Mx = mvk(M,U,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
+        Mx = mvk3(M,U,tol,'nswp',20); % tt_tensor(tt_random(2,rhs.d,2)),1000
         %     Mx = M*x;
         resid_true = norm(Mx-rhs)/norm(rhs);
         %     MMx = mvk(M',Mx,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
@@ -324,6 +423,8 @@ for out_t=1:Nt
 	resid_old = resid_true;
     end;
     
+    Us{out_t}=U;
+    
     results(:,6)=cumsum(results(:,5));
     
     fprintf('sweep\t true resid\t norm. resid \t erank  \t sw. time \t full time\n');
@@ -343,7 +444,7 @@ for out_t=1:Nt
     u0 = tt_squeeze(u0);
     u0 = tt_tensor(u0);    
     
-    ons = tt_tensor(tt_ones(u0.d, 2));
+    ons = tt_tensor(tt_ones(u0.d, u0.n));
     nrm_u = dot(u0,ons);
     tt = zeros(dpx,dpx);
     for i=1:dconf
@@ -364,36 +465,43 @@ for out_t=1:Nt
 %     tt(3,3)=dot(x3.*v3, u0);
     tt = tt/nrm_u;
 
+%     etas(out_t+1)=tt(1,1);
     etas(out_t+1) = -tt(1,2)/beta;
     psis(out_t+1) = -(tt(1,1)-tt(2,2))/(beta^2);
         
-    u2 = qtt_to_tt(core(u0), d0x*ones(1,dpx*dconf),0);
-    u2 = tt_tensor(u2);
+%     u2 = qtt_to_tt(core(u0), d0x*ones(1,dpx*dconf),0);
+%     u2 = tt_tensor(u2);
     n=2^d0x/2+1;
-    contour(full(u2(:,n,n,n, n,n,n,n, n,n,n,:), 2^d0x*[1,1]));   
+%     contour(full(u2(:,n,n,n, n,n,n,n, n,n,n,:), 2^d0x*[1,1]));   
+%     plotind = 1:max(2^(d0x-7),1):2^d0x;
+%     figure(1);
+%     contour(full(u2(plotind,plotind,n,n,n,n,n), 2^7*[1,1]));   
+%     figure(2);
+%     contour(full(u2(plotind,n,n,plotind), 2^7*[1,1]));   
     
-    [Z2,x]=normcoords(core(u2), 'x', n*ones(dpx*dconf, 1));
-    Z = Z0*Z2;
     
-    gridold = cell(dpx*dconf,1);
-    for i=1:dpx*dconf
-        gridold{i}=x;
-    end;
-    Z2 = reshape(Z2, dconf, dpx, dconf, dpx);
-    X = cell(dconf,dpx); % new coordinates
-    for j=1:dpx
-        for i=1:dconf
-            for j2=1:dpx
-                for i2=1:dconf
-                    X{i,j}=X{i,j}+Z2(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
-                end;
-            end;
-            X{i,j}=round(X{i,j}, eps);
-            X{i,j}=core(X{i,j});
-        end;
-    end;    
-    u2 = core(u2);
-    u0 = tt_rc(d0x*dpx*dconf, 2, @(ind)interp_u(ind,u2,X,gridold,dpx,dconf), tol);
+%     [Z2,x]=normcoords(core(u2), 'x', n*ones(dpx*dconf, 1));
+%     Z = Z0*Z2;
+%     
+%     gridold = cell(dpx*dconf,1);
+%     for i=1:dpx*dconf
+%         gridold{i}=x;
+%     end;
+%     Z2 = reshape(Z2, dconf, dpx, dconf, dpx);
+%     X = cell(dconf,dpx); % new coordinates
+%     for j=1:dpx
+%         for i=1:dconf
+%             for j2=1:dpx
+%                 for i2=1:dconf
+%                     X{i,j}=X{i,j}+Z2(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
+%                 end;
+%             end;
+%             X{i,j}=round(X{i,j}, eps);
+%             X{i,j}=core(X{i,j});
+%         end;
+%     end;    
+%     u2 = core(u2);
+%     u0 = tt_rc(d0x*dpx*dconf, 2, @(ind)interp_u(ind,u2,X,gridold,dpx,dconf), tol);
     
 %     u0f = full(u0, 2^d0x*ones(1,dpx));
     

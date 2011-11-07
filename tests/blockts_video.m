@@ -1,10 +1,14 @@
+rng = 4;
+
+tau = (Trange(rng+1)-Trange(rng))/(2^d0t);
+
 last_indices = cell(1, d0t);
 
-% u2 = qtt_to_tt(core(U), [d0x*ones(dpx*dconf,1); ones(d0t,1)], 0);
+u2 = qtt_to_tt(core(Us{rng}), [d0x*ones(dpx*dconf,1); ones(d0t,1)], 0);
 % u2 = tt_compr2(u2, tol);
 
 ind = ones(1,d0t);
-ind(1:5)=2;
+ind(1:7)=2;
 while (max(ind<2*ones(1,d0t))==1) 
     
     for i=1:d0t
@@ -15,8 +19,11 @@ while (max(ind<2*ones(1,d0t))==1)
     u0 = tt_squeeze(u0);
     u0 = tt_tensor(u0);
     
-    n=2^d0x/2;
-    contour(full(u0(n,n,n,n, :,n,n,:, n,n,n,n), 2^d0x*[1,1]));
+    n=2^d0x/2+1;
+    plin = (2^(d0x-1)-2^(d0x-2)):2^(d0x-9):(2^(d0x-1)+2^(d0x-2));
+%     plin = 1:max(2^(d0x-7),1):2^d0x;
+    contour(full(u0(plin,n, n,n, n,n, n,n, n,n, n,n, n,plin), max(size(plin))*[1,1]));
+    view(2);
 %     if (dphys==1)
 %         plot(x,full(u0,2^d0x));
 %     else
@@ -30,13 +37,13 @@ while (max(ind<2*ones(1,d0t))==1)
         t=t+(ind(j)-1)*(2^(j-1));
     end;
     t=t+1;
-    titl = sprintf('time: %g (t=%d)', t*tau, t);
+    titl = sprintf('time: %g (t=%d)', Trange(rng)+t*tau, t);
 %     titl = sprintf('time: %g (t=%d)', tranges(out_t)+t*tau, t);
     title([' ' titl]);
 %     keyboard;
     pause(0.01);
     
-    ind(6)=ind(6)+1;
+    ind(8)=ind(8)+1;
     for j=1:d0t-1
         if (ind(j)>2)
             ind(j+1)=ind(j+1)+1;
