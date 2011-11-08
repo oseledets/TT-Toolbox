@@ -80,6 +80,7 @@ function t = subsasgn(t,s,b)
 %          end;
          % Update the current core
          cr(psnew(i):psnew(i+1)-1)=b(:);
+         cr = cr(1:psnew(d+1)-1);
          % Stuff evrthg back
          n(i)=n1;
          r(i)=r1;

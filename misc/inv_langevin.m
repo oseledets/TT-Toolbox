@@ -33,7 +33,10 @@ end
 
 for i=1:maxit
     t = t-(coth(t)-1./t-l)./(-(sinh(t)).^(-2)+t.^(-2));
-    normF = norm(coth(t)-1./t-l);
+    t(l==0)=0;
+    resid = coth(t)-1./t-l;
+    resid(l==0)=0;
+    normF = norm(resid, 'fro');
     if (verb>1)
         fprintf('iters: %d, |F|=%3.3e\n', i, normF);
     end;
