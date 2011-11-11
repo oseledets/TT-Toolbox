@@ -1,8 +1,8 @@
 function [v]=tt_interp(u, grid, x)
 % function [v]=tt_interp(u, grid, x)
 
-d = max(size(u));
 ns = tt_size(u);
+d = numel(ns);
 v = u;
 
 hs = cell(d,1);

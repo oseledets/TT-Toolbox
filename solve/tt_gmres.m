@@ -16,7 +16,7 @@ max_zrank_factor = 4; % maximum rank of Krylov vectors with respect to the rank 
 derr_tol_for_sp = 1.0; % minimal jump of residual at one iteration, which is considered as
                        % a stagnation.
 use_err_trunc = 1; % use compression accuracy eps_z/err for Krylov vectors 
-err_trunc_power = 1; % theoretical estimate - 1 - sometimes sucks
+err_trunc_power = 0.8; % theoretical estimate - 1 - sometimes sucks
 compute_real_res = 0; % Compute the real residual on each step (expensive!)
 % extra param in tt_iterapp.m: matvec_alg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,13 +170,13 @@ for nitout=1:maxout
 %         wnew = w;
         for i=1:j
             H(i,j)=tt_dot(w, v{i});
-            w = tt_axpy2(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, min(eps_z/err_for_trunc, 0.5), max_rank);
+%             w = tt_axpy2(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, min(eps_z/err_for_trunc, 0.5), max_rank);
             max_w_rank = max([max_w_rank; tt_ranks(w)]);
 %             w = tt_axpy2(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, eps_z, max_rank);
             % Orthogonality muss sein!
-%             w = tt_axpy3(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i});
+            w = tt_axpy3(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i});
         end;
-%         w = tt_wround([], w, min(eps_z/err_for_trunc,0.5), 'rmax', max_rank, 'nswp', max_swp, 'verb', 0);
+        w = tt_wround([], w, min(eps_z/err_for_trunc,0.5), 'rmax', max_rank, 'nswp', max_swp, 'verb', 1);
 %         for i=1:j
 %             wv = abs(tt_dot(w, v{i}));
 %             if (wv>eps_z)
@@ -233,14 +233,15 @@ for nitout=1:maxout
         for i=1:j
 %             dx = tt_add(dx, tt_scal2(v{i}, log(abs(y(i))+1e-308)+order_beta, sign(y(i))));
 %             dx = tt_axpy2(0,1, dx, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);
-            x_new = tt_axpy2(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);
-            max_x_rank = max([max_x_rank; tt_ranks(x_new)]);
-%             x_new = tt_axpy3(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i});
+%             x_new = tt_axpy2(0,1, x_new,
+%             log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);
+            x_new = tt_axpy3(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i});
+            max_x_rank = max([max_x_rank; tt_ranks(x_new)]);            
         end;
         if (nargout>3)
             rx(nitout,j)=max_x_rank;
         end;
-%         x_new = tt_wround([], x_new, eps_x, 'verb', 0);
+        x_new = tt_wround([], x_new, eps_x, 'verb', 1);
 %         x_new = tt_add(x, dx);
 %         x_new = tt_compr2(x_new, eps_x);
 %         x_new = tt_axpy2(0,1,x,0,1,dx,eps_x);

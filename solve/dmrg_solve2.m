@@ -25,7 +25,7 @@ function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)
 max_full_size=2500;
 prec_compr=1e-3;
 prec_tol=1e-1;
-prec_iters=15;
+prec_iters=10;
 
 dropsweeps=1;
 ddpow = 0.1; % stepsize for d-power in truncations
@@ -143,7 +143,7 @@ end
 %nrmF=sqrt(tt_dot(y,y)); 
 
 d=size(A,1);
-tau=0*ones(d+1,1);
+tau=1*ones(d+1,1);
 
 if ( isempty(P) )
 P = tt_eye(tt_size(y), d);
@@ -328,8 +328,11 @@ for swp=1:nswp
 %         B2 = B2*conj(V); % size k2*rxn3*m2*rxm3*rB        
         rB=rp2*ra2;
         MatVec='bfun2';
-        if ((rxn1*k1*k2*rxn3<max_full_size)) % (rB>max(rxn1, rxn3))||
+        if ((rxn1*k1*k2*rxn3<max_full_size))||(rB>max(rxn1*k1, rxn3*k2))
             MatVec='full';
+            if (rxn1*k1*k2*rxn3>max_full_size)
+                MatVec='half-full';
+            end;
             B = B*(B2.'); % size rxn1*k1*rxm1*m1*k2*rxn3*m2*rxm3
             B = reshape(B, rxn1,k1,rxm1,m1,k2,rxn3,m2,rxm3);
             B = permute(B, [1 2 5 6 3 4 7 8]);
@@ -339,7 +342,7 @@ for swp=1:nswp
             B2 = reshape(B2, k2*rxn3, m2*rxm3, rB);
             B=cell(2,1);
             B{1}=B1;
-            B{2}=B2;         
+            B{2}=B2;                     
         end;
         
         % Form previous solution
@@ -348,10 +351,10 @@ for swp=1:nswp
         sol_prev = x1*x2;
         sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
         
-        real_tol = tol/(d^dpows(i));
+        real_tol = (tol/(d^dpows(i)))/trunc_to_true;
 
         % Check the previous residual
-        if (strcmp(MatVec,'full'))
+        if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
             res_prev = norm(B*sol_prev - rhs)/norm(rhs);
         else
             res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
@@ -368,8 +371,13 @@ for swp=1:nswp
                 
                 res_true = norm(res-rhs)/norm(rhs);
             else
-                mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+                if (strcmp(MatVec, 'bfun2'))
+                    mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                    mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+                else
+                    mv = @(vec)(B*vec);
+                    mv1 = @(vec)(B*vec+tau(i)*vec);
+                end;
                 %Ax_{k+1}+tau*x_k=rhs+tau*x_k
                 %(Ax_{k+1}+tau*I)x_{k+1}=rhs+tau*x_k
                 [sol_new,flg] = gmres(mv1, rhs+tau(i)*sol_prev, nrestart, real_tol, 2, [], [], sol_prev);
@@ -382,7 +390,7 @@ for swp=1:nswp
                 %sol_new=sol_prev+dsol;
                 res_new=norm(mv(sol_new)-rhs)/norm(rhs);
                 conv_factor=(res_new/res_prev);
-                if (res_new*(conv_factor)>real_tol && use_self_prec) % we need a prec.
+                if (res_new*(conv_factor)>real_tol && use_self_prec && strcmp(MatVec, 'bfun2')) % we need a prec.
                     if (strcmp(local_prec, 'selfprec'))
                         iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
                         
@@ -397,7 +405,7 @@ for swp=1:nswp
                         sol = als_solve_rx_2(B, rhs, real_tol, [], sol_new);
                     end;
                 else
-                    [sol,flg] = gmres(@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
+                    [sol,flg] = gmres(mv,...
                         rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
                 end;
                 
@@ -475,7 +483,7 @@ for swp=1:nswp
                 else
                     sol = reshape(u(:,1:r)*diag(s(1:r))*(v(:,1:r))',rxm1*m1*m2*rxm3, 1);
                 end;
-                if (strcmp(MatVec,'full'))
+                if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
                     resid = norm(B*sol-rhs)/norm(rhs);
                 else
                     resid = norm(bfun2(B,sol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
@@ -496,7 +504,7 @@ for swp=1:nswp
             cursol = cell(2,1);
             cursol{1}=u(:,1:r);
             cursol{2}=conj(v(:,1:r))*diag(s(1:r));
-            if (strcmp(MatVec,'full'))
+            if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
                 resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
             else
                 resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
@@ -506,7 +514,7 @@ for swp=1:nswp
                 er0=norm(s(r+1:numel(s)));
                 cursol{1}=u(:,r);
                 cursol{2}=conj(v(:,r))*s(r);
-                if (strcmp(MatVec,'full'))
+                if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
                     resid = resid + B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1);
                 else
                     resid = resid + reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1);
@@ -732,7 +740,7 @@ for swp=1:nswp
     if (last_sweep)
         break;
     end;
-    if (max_res<tol*trunc_to_true/(d^d_pow_check))||(swp==nswp-1)
+    if (max_res<tol/(d^d_pow_check))||(swp==nswp-1)
         last_sweep=true;
 %         break;
     end;

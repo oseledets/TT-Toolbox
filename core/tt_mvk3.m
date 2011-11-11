@@ -277,7 +277,13 @@ for swp=1:nswp
 %         y{1}=reshape(y{1}, size(y{1},1),1, size(y{1},2));
 %     end;    
     if (verb>0)
-        fprintf('=mvk3= Sweep %d, dy_max: %3.3e, conv_max: %1.5f\n', swp, max(dy), max(dy)/max(dy_old));
+        erank=0; sumn=0;
+        for i=1:d
+            erank = erank+size(y{i},1)*size(y{i},2)*size(y{i},3);
+            sumn = sumn+size(y{i},1);
+        end;
+        erank = sqrt(erank/sumn);        
+        fprintf('=mvk3= Sweep %d, dy_max: %3.3e, conv_max: %1.5f, erank: %g\n', swp, max(dy), max(dy)/max(dy_old), erank);
     end;
     if (last_sweep)
         break;

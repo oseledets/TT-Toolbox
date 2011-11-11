@@ -12,6 +12,9 @@ function [tt]=tt_squeeze(tt)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
+% 
+% If a singleton dimension is in the middle of a train - everything breakes
+% Use tt_reshape instead!
 
 d=size(tt,1);
 k=1;

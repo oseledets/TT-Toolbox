@@ -1,13 +1,14 @@
-d0t = 12; % quantics dims for t
+% d0t = 8; % quantics dims for t
 d0x = 10; % quantics dims for x
 dpx = 2; % phys. dims for x
-dconf = 7;
+dconf = 4;
 
-a = -20;
-b = 20;
-h = (b-a)/(2^d0x);
+a = 20; % Domain is [-a,a]^...
+b = 10; % For ILangevin scale only!
 
-tol = 1e-4;
+h = (2*a)/(2^d0x);
+
+tol = 1e-3;
 eps = 1e-8;
 maxit = 1;
 
@@ -16,7 +17,10 @@ maxit = 1;
 % end_T =   [0.5, 1, 2, 5, 10];
 
 % Trange = [0, 0.5, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0];
-Trange = [0, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
+Trange = 0:10:100;
+d0ts = 16*ones(1,numel(Trange)-1);
+% Trange = [0, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
+% d0ts =   [ 6,   6,  7, 8, 9, 10, 11, 11, 11,  12, 12, 13, 13];
 
 % For Fokker-Plank
 beta = 1;
@@ -28,10 +32,11 @@ Arouse = full(Arouse);
 
 % Z = eye(dpx*dconf);
 [Z,L]=eig(Arouse);
-% Z2 = [1,1;-1,1]/sqrt(2);
-Z2 = [ -0.607142393387428  -0.794593049398109
-        0.794593049398109  -0.607142393387428];
-Z = kron(Z2, Z);
+Z2 = [1,1;-1,1]/sqrt(2);
+% Z2 = eye(dpx);
+% Z2 = [ -0.607142393387428  -0.794593049398109
+%         0.794593049398109  -0.607142393387428];
+Z = kron(Z, Z2);
 
 lp1 = tt_matrix(tt_qlaplace_dd(d0x));
 lp1 = lp1/(h^2);
@@ -50,24 +55,25 @@ Ix = tt_matrix(tt_eye(2, d0x));
 
 % Ax = Cx1'*Cx1+Cx2'*Cx2+Cx3'*Cx3;
 
-x = a + (0:1:2^d0x-1)'*h;
+x = -a + (0:1:2^d0x-1)'*h;
 eexp1 = exp(-0.5*(x.^2)/(ddd^2));
 eexp1 = full_to_qtt(eexp1, eps);
 eexp1 = tt_tensor(eexp1);
 
-ttx = a*tt_tensor(tt_ones(d0x,2))+tt_tensor(tt_x(d0x,2))*h;
+ttx = tt_reshape(tt_tensor(x), 2*ones(d0x,1), 1e-10);
+% ttx = -a*tt_tensor(tt_ones(d0x,2))+tt_tensor(tt_x(d0x,2))*h;
 ex = tt_tensor(tt_ones(d0x,2));
 % x1 = kron(kron(ex,ex), ttx);
 % x2 = kron(kron(ex,ttx), ex);
 % x3 = kron(kron(ttx,ex), ex);
 
-% We need x and y to be in the matrix permutation
-ttx2 = kron2(ttx,ex);
-tty2 = kron2(ex,ttx);
-ex2 = kron2(ex,ex);
-Gradx2 = kron2(Grad_x, Ix);
-Grady2 = kron2(Ix, Grad_x);
-Ix2 = kron2(Ix,Ix);
+% % We need x and y to be in the matrix permutation
+% ttx2 = kron2(ttx,ex);
+% tty2 = kron2(ex,ttx);
+% ex2 = kron2(ex,ex);
+% Gradx2 = kron2(Grad_x, Ix);
+% Grady2 = kron2(Ix, Grad_x);
+% Ix2 = kron2(Ix,Ix);
 
 Gradsst = cell(dconf, dpx);
 % Gradient matrices in normal coordinates
@@ -261,7 +267,7 @@ uSN = tt_tensor(full_to_qtt(exp(-0.5*(x.^2)), eps));
 % norm_Au0 = norm(Ax*u0)/norm(u0)
 % keyboard;
 
-
+Z0 = zeros(dpx*dconf, dpx*dconf);
 % Now letz init the combined timestep procedure
 Nt = max(size(Trange))-1;
 global_results = cell(Nt+1,1);
@@ -270,87 +276,107 @@ etas = zeros(Nt+1,1);
 psis = zeros(Nt+1,1);
 Us = cell(Nt,1);
 for out_t=1:Nt
+    d0t = d0ts(out_t);
     tau = (Trange(out_t+1)-Trange(out_t))/(2^d0t);
     
-    Z = reshape(Z, dconf, dpx, dconf, dpx);
     
-    Grads = cell(dconf,dpx); % real gradients
-    for j=1:dpx
-        for i=1:dconf
-            for j2=1:dpx
-                for i2=1:dconf
-                    Grads{i,j}=Grads{i,j}+Z(i,j,i2,j2)*Gradsst{i2,j2}; % G=Z*Gst
-                end;
-            end;
-            Grads{i,j}=round(Grads{i,j}, eps);
-        end;
-    end;
-    
-    X = cell(dconf,dpx); % real coordinates
-    for j=1:dpx
-        for i=1:dconf
-            for j2=1:dpx
-                for i2=1:dconf
-                    X{i,j}=X{i,j}+Z(i,j,i2,j2)*Xst{i2,j2}; % X = inv(Z')*Xst
-                end;
-            end;
-            X{i,j}=round(X{i,j}, eps);
-        end;
-    end;
-    
-    % Velocities : d\phi / d Qst_i
-    V = cell(dconf,dpx);
-    for i=1:dconf
+    if (norm(Z(:)-Z0(:))>1e-7) % If Z was updated
+        Z = reshape(Z, dpx, dconf, dpx, dconf);
+        
+        Grads = cell(dconf,dpx); % real gradients
         for j=1:dpx
-            V{i,j}=X{i,j};
-            %         Here we have 0.5*2, two occurences of diag. term
-            %         V{i,j}=V{i,j} - (zzz/ddd^5)*(diageexp{i}.*Xst{i,j});
-            %         V{i,j}=round(V{i,j}, eps);
+            for i=1:dconf
+                for j2=1:dpx
+                    for i2=1:dconf
+                        Grads{i,j}=Grads{i,j}+Z(j,i,j2,i2)*Gradsst{i2,j2}; % G=Z*Gst
+                    end;
+                end;
+                Grads{i,j}=round(Grads{i,j}, eps);
+            end;
         end;
-    end;
-    
-    % Velocities to stuff into equation %%% (Rouse matrix, flow included)
-    Veq = cell(dconf,dpx);
-    for i=1:dconf
+        
+        X = cell(dconf,dpx); % real coordinates
         for j=1:dpx
+            for i=1:dconf
+                for j2=1:dpx
+                    for i2=1:dconf
+                        X{i,j}=X{i,j}+Z(j,i,j2,i2)*Xst{i2,j2}; % X = inv(Z')*Xst
+                    end;
+                end;
+                X{i,j}=round(X{i,j}, eps);
+            end;
+        end;
+        
+        % Velocities : d\phi / d Qst_i
+        V = cell(dconf,dpx);
+        for i=1:dconf
+            for j=1:dpx
+                cx = X{i,j}/b;
+                % 7-term Tailor expansion for the Inverse Langevin
+                V{i,j}=cx;
+                V{i,j}=V{i,j}+3/5*(cx.*cx.*cx); % +99/175*(cx.*cx.*cx.*cx.*cx);
+                V{i,j}=round(V{i,j}, eps);
+%                 V{i,j}=V{i,j} + 513/875*(cx.*cx.*cx.*cx.*cx.*cx.*cx);
+%                 V{i,j}=round(V{i,j}, eps);
+                V{i,j}=V{i,j}*b;
+                %             V{i,j}=X{i,j};
+                %         Here we have 0.5*2, two occurences of diag. term
+                %         V{i,j}=V{i,j} - (zzz/ddd^5)*(diageexp{i}.*Xst{i,j});
+                %         V{i,j}=round(V{i,j}, eps);
+            end;
+        end;
+        
+        % Velocities to stuff into equation %%% (Rouse matrix, flow included)
+        Veq = cell(dconf,dpx);
+        for i=1:dconf
+            for j=1:dpx
+                for k=1:dconf
+                    Veq{i,j} = Veq{i,j} - 0.25*Arouse(i,k)*V{k,j};
+                end;
+                if (j==1)
+                    Veq{i,j}=Veq{i,j} + beta*X{i,2};
+                end;
+                Veq{i,j}=round(Veq{i,j}, eps);
+            end;
+        end;
+        
+        % Stiffness matrix
+        Ax = [];
+        for i=1:dconf
             for k=1:dconf
-                Veq{i,j} = Veq{i,j} - 0.25*Arouse(i,k)*V{k,j};
-            end;
-            if (j==1)
-                Veq{i,j}=Veq{i,j} + beta*X{i,2};
-            end;
-            Veq{i,j}=round(Veq{i,j}, eps);
-        end;
-    end;
-    
-    % Stiffness matrix
-    Ax = [];
-    for i=1:dconf
-        for k=1:dconf
-%             if (i==k)
-%                 Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
-%             else
+                %             if (i==k)
+                %                 Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
+                %             else
                 for j=1:dpx
                     Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,j}*Grads{k,j}');
                 end;
-%             end;
+                %             end;
+                Ax = round(Ax, eps);
+            end;
+            for j=1:dpx
+                Ax = Ax + Grads{i,j}*diag(Veq{i,j});
+            end;
             Ax = round(Ax, eps);
         end;
-        for j=1:dpx
-            Ax = Ax + Grads{i,j}*diag(Veq{i,j});
-        end;
-        Ax = round(Ax, eps);
     end;
     
     Z0 = reshape(Z, dconf*dpx, dconf*dpx);
     
-    St = tt_shf(d0t); St = tt_matrix(St); St=St'; % lower shift matrix for gradient
+%     St = tt_shf(d0t); St = tt_matrix(St); St=St'; % lower shift matrix for gradient
+    Grad_t = IpaS(d0t,-1);
+    Grad_t = tt_matrix(Grad_t)/tau;
     It = tt_matrix(tt_eye(2,d0t));
-    Grad_t = (It-St)/tau; % for gradient
-    Grad_t = round(Grad_t, eps);
     
-    KN_term = (It+St)*0.5; % Krank-Nikolson term
-    KN_term = round(KN_term, eps);
+%     G2 = kron2(Grad_t, It);
+%     iGrad_t = dmrg_solve2(G2, It.tt, 1e-10, 'nswp', 50);
+%     iGrad_t = tt_matrix(iGrad_t, 2, 2);
+%     Prec = kron(tt_matrix(tt_eye(Ax.n,Ax.d)), iGrad_t);
+    
+%     It = tt_matrix(tt_eye(2,d0t));
+%     Grad_t = (It-St)/tau; % for gradient
+    
+    KN_term = IpaS(d0t,1);
+    KN_term = tt_matrix(KN_term)*0.5; % Krank-Nikolson term
     
     e1t = cell(d0t,1);
     for i=1:d0t
@@ -369,7 +395,7 @@ for out_t=1:Nt
     
     % u0 = tt_tensor(tt_ones(d0x*dpx, 2));
     KNm = tt_matrix(tt_eye(Ax.n,Ax.d))/tau - Ax*0.5;
-        
+            
     u0_rhs = mvk3(KNm, u0, tol, 'nswp', 20); % stuff u0 into rhs of KN scheme
 %     u0_rhs = u0/tau - (Au0)*0.5; 
 %     u0_rhs = round(u0_rhs, tol);
@@ -377,21 +403,30 @@ for out_t=1:Nt
     
     % norm_rhs = mvk(M',rhs,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
     
+    % Prepare Euler predictor
+%     xt = tt_reshape(tt_tensor((1:1:2^d0t)'), 2*ones(d0t,1), eps);
+%     et = tt_tensor(tt_ones(d0t,2));
+%     xt = tt_matrix(xt, 2,1)*tt_matrix(e1t, 1, 2);
+%     et = tt_matrix(et, 2,1)*tt_matrix(e1t, 1, 2);
+%     Euler = kron(tt_matrix(tt_eye(Ax.n,Ax.d)), et) - tau*kron(Ax, xt);
+%     U = kron(u0, tt_tensor(tt_ones(d0t,2)));
+%     U = mvk3(Euler, U, tol);
+    
 %     U = tt_random(2, rhs.d, 2);
     U = kron(u0, tt_tensor(tt_ones(d0t,2)));
     
     results = zeros(maxit,6);
     resid_old = 1e15;
     for i=1:maxit
-        tic;
-        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 1, 'nrestart', 50, 'max_full_size', 1000);
+        tic;        
+        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 2, 'nrestart', 25, 'max_full_size', 2500, 'min_dpow', 1);
         cur_time = toc;
         
         if (i==1)
             U_best = U;
         end;
         
-        Mx = mvk3(M,U,tol,'nswp',20); % tt_tensor(tt_random(2,rhs.d,2)),1000
+        Mx = mvk3(M,U,tol*5,'nswp',20); % tt_tensor(tt_random(2,rhs.d,2)),1000
         %     Mx = M*x;
         resid_true = norm(Mx-rhs)/norm(rhs);
         %     MMx = mvk(M',Mx,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
@@ -435,14 +470,10 @@ for out_t=1:Nt
     global_results{out_t+1}=results;
 
     % prepare new start
-    last_indices = cell(1, d0t);
-    for i=1:d0t
-        last_indices{i}=2;
-    end;
-    u0 = core(U);
-    u0 = tt_elem3(u0, last_indices);
-    u0 = tt_squeeze(u0);
-    u0 = tt_tensor(u0);    
+    ind = num2cell([1;2]*ones(1,d0x*dpx*dconf), 1);
+    ind(d0x*dpx*dconf+1:d0x*dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
+    u0 = U(ind);
+    u0 = tt_reshape(u0, 2*ones(d0x*dpx*dconf, 1));    
     
     ons = tt_tensor(tt_ones(u0.d, u0.n));
     nrm_u = dot(u0,ons);
@@ -469,11 +500,20 @@ for out_t=1:Nt
     etas(out_t+1) = -tt(1,2)/beta;
     psis(out_t+1) = -(tt(1,1)-tt(2,2))/(beta^2);
         
-%     u2 = qtt_to_tt(core(u0), d0x*ones(1,dpx*dconf),0);
-%     u2 = tt_tensor(u2);
+    u2 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));
     n=2^d0x/2+1;
-%     contour(full(u2(:,n,n,n, n,n,n,n, n,n,n,:), 2^d0x*[1,1]));   
-%     plotind = 1:max(2^(d0x-7),1):2^d0x;
+    plotind = 1:max(2^(d0x-7),1):2^d0x;    
+    ind = num2cell(n*ones(1, dpx*dconf), 1);
+    ind(1)={plotind};
+    ind(2)={plotind};
+    figure(1);
+    contour(full(u2(ind), numel(plotind)*[1,1]));
+%     ind(3)={plotind};
+%     ind(4)={plotind};
+%     ind(1)={n};
+%     ind(2)={n};
+%     figure(2);
+%     contour(full(u2(ind), numel(plotind)*[1,1]));    
 %     figure(1);
 %     contour(full(u2(plotind,plotind,n,n,n,n,n), 2^7*[1,1]));   
 %     figure(2);
@@ -482,10 +522,10 @@ for out_t=1:Nt
     
 %     [Z2,x]=normcoords(core(u2), 'x', n*ones(dpx*dconf, 1));
 %     Z = Z0*Z2;
-%     
+    
 %     gridold = cell(dpx*dconf,1);
 %     for i=1:dpx*dconf
-%         gridold{i}=x;
+%         gridold{i}=qtt_to_full(core(ttx));
 %     end;
 %     Z2 = reshape(Z2, dconf, dpx, dconf, dpx);
 %     X = cell(dconf,dpx); % new coordinates
@@ -514,7 +554,8 @@ for out_t=1:Nt
 %     figure(4);
 %     mesh(u0f(:,:,4*2^d0x/4));
     
-    norms_Au(out_t+1) = norm(Ax*u0)/norm(u0);
+    Au0 = mvk3(tt_matrix(tt_eye(Ax.n,Ax.d))/tau+Ax, u0, tol, 'nswp', 20);
+    norms_Au(out_t+1) = norm(Au0-u0/tau)/norm(u0);
     
     fprintf('TimeRange: %d [%g->%g], eta=%3.3e, psi=%3.3e, norm_Au=%3.3e\n', out_t, Trange(out_t), Trange(out_t+1), etas(out_t+1), psis(out_t+1), norms_Au(out_t+1));
     pause(0.5);

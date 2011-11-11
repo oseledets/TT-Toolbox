@@ -12,7 +12,8 @@ end;
 
 for j=1:dpx
     for i=1:dconf
-        curxnew = tt_to_full(tt_elem3(X{i,j},indcell));
+%         curxnew = tt_to_full(tt_elem3(X{i,j},indcell));
+        curxnew = full(X{i,j}(indcell));
         if (max(size(curxnew))>1)
             keyboard;
         end;
