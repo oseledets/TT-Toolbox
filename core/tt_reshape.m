@@ -67,8 +67,8 @@ last_ps2 = 1;
 curcr2 = 1;
 restn2 = sz;
 n2 = ones(d2,1);
-while (i1<=d1)   
-    curcr1 = tt1{i1};
+while (i1<=d1)
+    curcr1 = tt1{i1};    
     if (gcd(restn2(i2), n1(i1))==n1(i1))
         % The whole core1 fits to core2. Convolve it
         if (i1<d1)&&(needQRs) % QR to the next core - for safety
@@ -88,11 +88,16 @@ while (i1<=d1)
         n2(i2)=n2(i2)*n1(i1);
         restn2(i2)=restn2(i2)/n1(i1);
         curcr2 = reshape(curcr2, r2(i2)*n2(i2), r2(i2+1));
-        i1 = i1+1; % current core1 is over
+%         if (i1<d1)
+            i1 = i1+1; % current core1 is over
+%         end;
     else
         if (gcd(restn2(i2), n1(i1))~=1)||(restn2(i2)==1)
             % There exists a nontrivial divisor. Split it and convolve
             n12 = gcd(restn2(i2), n1(i1));
+            if (i2==11)
+                keyboard;
+            end;            
             curcr1 = reshape(curcr1, r1(i1)*n12, (n1(i1)/n12)*r1(i1+1));
             [u,s,v]=svd(curcr1, 'econ');
             s = diag(s);
@@ -144,10 +149,20 @@ while (i1<=d1)
     if (restn2(i2)==1)&&((i1>d1)||((i1<=d1)&&(n1(i1)~=1))) % The core of tt2 is finished
         core2(last_ps2:last_ps2+r2(i2)*n2(i2)*r2(i2+1)-1) = curcr2(:);
         last_ps2 = last_ps2 + r2(i2)*n2(i2)*r2(i2+1);
-        i2 = i2+1;
+%         if (i2<d2)
+            i2 = i2+1;
+%         end;
         % Start new core2
         curcr2 = 1;
     end;
+end;
+
+% If we've asked for singletons
+while (i2<=d2)
+    core2(last_ps2) = 1;
+    last_ps2 = last_ps2+1;
+    r2(i2)=1;
+    i2 = i2+1;
 end;
 
 tt2 = tt_tensor;

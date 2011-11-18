@@ -1,7 +1,7 @@
 function [ev,vec]=norm2(tt,varargin)
 %[ev,vec]=norm2(tt,options)
 %Computes and approximation to the 2-norm of a tt-matrix
-nswp=40;
+nswp=10;
 tol=0.1; %Relative norm change
 eps=1e-2; %Computations accuracy
 rmax=100; %Maximal rank
@@ -33,11 +33,12 @@ end
 er=2*tol;
 ev_old=inf;
 x=x0;
-while ( er > tol) 
+i=1;
+while ( er > tol || i < nswp) 
    x=x/norm(x);
    if ( strcmp(matvec,'full') )
      y=tt*x; 
-     y=round(y,eps); 
+     y=round(y,eps,rmax); 
      ev=dot(y,x);
      er=abs(ev-ev_old)/abs(ev);
      ev_old=ev;
@@ -45,6 +46,7 @@ while ( er > tol)
    else
      error('Krylov-type method is not supported yet! \n');
    end
+   i=i+1;
 end
 return
 end

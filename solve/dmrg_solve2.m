@@ -45,6 +45,8 @@ nrestart=40;
 gmres_iters=2;
 % local_prec = 'als';
 local_prec = 'selfprec';
+local_format = 'full';
+% local_format = 'tt';
 rmax=1000;
 tol=eps;
 verb=1;
@@ -249,30 +251,40 @@ for swp=1:nswp
         
         % Compute RHS: phy{i-2}*P1*y1*y2*P2*phyold
         if (i>2)
-            rhs = phy{i-2};
+            rhs1 = phy{i-2};
         else
-            rhs=1;
+            rhs1=1;
         end;
-        rhs = reshape(rhs, rx1*rp1, ry1);
+        rhs1 = reshape(rhs1, rx1*rp1, ry1);
         y1 = reshape(permute(y1, [2 1 3]), ry1, n1*ry2);
-        rhs = rhs*y1; % size rx1*rp1*n1*ry2
-        rhs = reshape(rhs, rx1, rp1, n1, ry2);
-        rhs=reshape(permute(rhs, [1 4 3 2]), rx1*ry2, n1*rp1);
+        rhs1 = rhs1*y1; % size rx1*rp1*n1*ry2
+        rhs1 = reshape(rhs1, rx1, rp1, n1, ry2);
+        rhs1=reshape(permute(rhs1, [1 4 3 2]), rx1*ry2, n1*rp1);
         p1 = reshape(permute(p1, [2 3 1 4]), n1*rp1, k1*rp2);
-        rhs=rhs*p1; % size rx1*ry2*k1*rp2
-        rhs=reshape(rhs, rx1, ry2, k1, rp2);
-        rhs=reshape(permute(rhs, [1 4 3 2]), rx1*rp2*k1, ry2);
-        y2=reshape(permute(y2, [2 1 3]), ry2, n2*ry3);
-        rhs = rhs*y2; % size rx1*rp2*k1*n2*ry3
-        rhs = reshape(rhs, rx1, rp2, k1, n2, ry3);
-        rhs = reshape(permute(rhs, [1 3 5 4 2]), rx1*k1*ry3, n2*rp2);
-        p2 = reshape(permute(p2, [2 3 1 4]), n2*rp2, k2*rp3);
-        rhs = rhs*p2; % size rx1*k1*ry3*k2*rp3
-        rhs = reshape(rhs, rx1, k1, ry3, k2, rp3);
-        rhs = reshape(permute(rhs, [1 2 4 5 3]), rx1*k1*k2, rp3*ry3);
-        phyold2 = reshape(phyold, rx3, rp3*ry3);
-        rhs = rhs*(phyold2.'); % size rx1*k1*k2*rx3
-        rhs = reshape(rhs, rx1*k1*k2*rx3, 1);
+        rhs1=rhs1*p1; % size rx1*ry2*k1*rp2
+        rhs1=reshape(rhs1, rx1, ry2, k1, rp2);
+        rhs1=reshape(permute(rhs1, [1 3 4 2]), rx1*k1, rp2*ry2);
+                
+        y2=reshape(permute(y2, [2 1 3]), ry2*n2, ry3);
+        phyold2 = reshape(phyold, rx3*rp3, ry3);
+        rhs2 = y2*(phyold2.'); % size ry2*n2, rx3*rp3
+        rhs2 = reshape(rhs2, ry2, n2, rx3, rp3);
+        rhs2 = permute(rhs2, [1 3 2 4]);
+        rhs2 = reshape(rhs2, ry2*rx3, n2*rp3);
+        p2 = reshape(permute(p2, [2 4 1 3]), n2*rp3, k2*rp2);
+        rhs2 = rhs2*p2; % size ry2*rx3, k2*rp2
+        rhs2 = reshape(rhs2, ry2, rx3, k2, rp2);
+        rhs2 = permute(rhs2, [4 1 3 2]);
+        rhs2 = reshape(rhs2, rp2*ry2, k2*rx3);
+        
+        if (strcmp(local_format, 'full'))
+            rhs = rhs1*rhs2;
+            rhs = reshape(rhs, rx1*k1*k2*rx3, 1);
+        else
+            rhs = cell(2,1);
+            rhs{1} = rhs1;
+            rhs{2} = rhs2.';
+        end;
         
         rxn1=rx1; rxn3=rx3;
         rxm1=rx1; rxm2=rx2; rxm3=rx3;
@@ -328,7 +340,7 @@ for swp=1:nswp
 %         B2 = B2*conj(V); % size k2*rxn3*m2*rxm3*rB        
         rB=rp2*ra2;
         MatVec='bfun2';
-        if ((rxn1*k1*k2*rxn3<max_full_size))||(rB>max(rxn1*k1, rxn3*k2))
+        if (((rxn1*k1*k2*rxn3<max_full_size))||(rB>max(rxn1*k1, rxn3*k2)))&&(strcmp(local_format, 'full'))
             MatVec='full';
             if (rxn1*k1*k2*rxn3>max_full_size)
                 MatVec='half-full';
@@ -348,16 +360,38 @@ for swp=1:nswp
         % Form previous solution
         x1 = reshape(permute(x{i-1}, [2 1 3]), rxm1*m1, rxm2);
         x2 = reshape(permute(x{i}, [2 1 3]), rxm2, m2*rxm3);        
-        sol_prev = x1*x2;
-        sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
-        
-        real_tol = (tol/(d^dpows(i)))/trunc_to_true;
-
-        % Check the previous residual
-        if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-            res_prev = norm(B*sol_prev - rhs)/norm(rhs);
+        if (strcmp(local_format, 'full'))
+            sol_prev = x1*x2;
+            sol_prev = reshape(sol_prev, rxm1*m1*m2*rxm3, 1);
         else
-            res_prev=norm(bfun2(B,sol_prev,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)-rhs)/norm(rhs);
+            sol_prev = cell(2,1);
+            sol_prev{1} = x1;
+            sol_prev{2} = x2.';
+        end;
+        
+        real_tol = (tol/(d^dpows(i))); % /trunc_to_true;
+        
+        if (strcmp(local_format, 'tt'))
+            mv = @(vec,eps,mr)bfun3(B,vec,eps,mr);
+        else
+            if (strcmp(MatVec, 'bfun2'))
+                mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+            else
+                mv = @(vec)(B*vec);
+                mv1 = @(vec)(B*vec+tau(i)*vec);
+            end;
+        end;
+
+        % Check the previous residual        
+        if (strcmp(local_format, 'tt'))
+            res_prev = mv(sol_prev, [], []);
+            normf = exp(0.5*tt_dot2(rhs, rhs));
+            res_prev = tt_dist3(res_prev, rhs)/normf;
+        else
+            res_prev = mv(sol_prev);
+            normf = norm(rhs);
+            res_prev = norm(res_prev - rhs)/normf;
         end;
 
         % We will solve the system only if res_prev>0.1*max_res_prev
@@ -367,53 +401,72 @@ for swp=1:nswp
                 %             sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
                 sol = B \ rhs;
                 %             sol = (B'*B)\(B'*rhs);
-                res=B*sol;
-                
+                res=B*sol;                
                 res_true = norm(res-rhs)/norm(rhs);
             else
-                if (strcmp(MatVec, 'bfun2'))
-                    mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                    mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
-                else
-                    mv = @(vec)(B*vec);
-                    mv1 = @(vec)(B*vec+tau(i)*vec);
-                end;
                 %Ax_{k+1}+tau*x_k=rhs+tau*x_k
                 %(Ax_{k+1}+tau*I)x_{k+1}=rhs+tau*x_k
-                [sol_new,flg] = gmres(mv1, rhs+tau(i)*sol_prev, nrestart, real_tol, 2, [], [], sol_prev);
-                if( flg == 0)
-                    tau(i)=tau(i)/10;
-                else
-                    tau(i)=tau(i)*4;
-                end
-                %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
-                %sol_new=sol_prev+dsol;
-                res_new=norm(mv(sol_new)-rhs)/norm(rhs);
-                conv_factor=(res_new/res_prev);
-                if (res_new*(conv_factor)>real_tol && use_self_prec && strcmp(MatVec, 'bfun2')) % we need a prec.
-                    if (strcmp(local_prec, 'selfprec'))
-                        iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
-                        
-                        resid = rhs-mv(sol_new);
-                        [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
-                            rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, real_tol/res_new, gmres_iters);
-                        dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                        sol = sol_new+dsol;
-                        
+%                 [sol_new,flg] = gmres(mv1, rhs+tau(i)*sol_prev, nrestart, real_tol, 2, [], [], sol_prev);
+%                 if( flg == 0)
+%                     tau(i)=tau(i)/10;
+%                 else
+%                     tau(i)=tau(i)*4;
+%                 end
+                if (strcmp(local_format, 'full'))
+                    [sol_new,fgl] = gmres(mv, rhs, nrestart, real_tol, 2, [], [], sol_prev);
+                    %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
+                    %sol_new=sol_prev+dsol;
+                    res_new=norm(mv(sol_new)-rhs)/normf;
+                    conv_factor=(res_new/res_prev);
+                    if (res_new*(conv_factor)>real_tol && use_self_prec && strcmp(MatVec, 'bfun2')) % we need a prec.
+                        if (strcmp(local_prec, 'selfprec'))
+                            iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
+
+                            resid = rhs-mv(sol_new);
+                            [dsol,flg] = gmres(@(vec)bfun2(B, bfun2(iB,vec,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3),...
+                                rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3), resid, nrestart, real_tol/res_new, gmres_iters);
+                            dsol = bfun2(iB,dsol,rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                            sol = sol_new+dsol;
+
+                        end;
+                        if (strcmp(local_prec, 'als'))
+                            sol = als_solve_rx_2(B, rhs, real_tol, [], sol_new);
+                        end;
+                    else
+                        [sol,flg] = gmres(mv, rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
                     end;
-                    if (strcmp(local_prec, 'als'))
-                        sol = als_solve_rx_2(B, rhs, real_tol, [], sol_new);
-                    end;
+
+                    res=mv(sol);
+                    res_true = norm(res-rhs)/normf;
                 else
-                    [sol,flg] = gmres(mv,...
-                        rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
+                    sol_new = tt_gmres(mv, rhs, real_tol, 2, nrestart, real_tol, real_tol, [], [], [], sol_prev);
+                    res_new=tt_dist3(mv(sol_new,[],[]),rhs)/normf;
+                    conv_factor=(res_new/res_prev);
+                    if (res_new*conv_factor>real_tol && use_self_prec && strcmp(MatVec, 'bfun2')) % we need a prec.
+%                         if (strcmp(local_prec, 'selfprec'))
+                            iB=tt_minres_selfprec(B, prec_tol, prec_compr, prec_iters, 'right');
+                            
+%                             resid = tt_add(rhs, tt_scal(mv(sol_new,[],[]), -1));
+%                             resid = tt_compr2(resid, real_tol);
+                            
+                            sol = tt_gmres(@(vec,eps,mr)bfun3(B, vec, eps, mr), rhs, real_tol, gmres_iters, nrestart, real_tol, real_tol, @(vec,eps,mr)bfun3(iB, vec, eps, mr), [], [], sol_new);
+%                             dsol = bfun3(iB,dsol,real_tol);
+%                             sol = tt_add(sol_new,dsol);
+%                             sol = tt_compr2(sol, real_tol);
+%                         end;
+                    else
+                        sol = tt_gmres(mv, rhs, real_tol, gmres_iters, nrestart, real_tol, real_tol, [], [], [], sol_new);
+                    end;
+                    res=mv(sol,[],[]);
+                    res_true = tt_dist3(res,rhs)/normf;                    
                 end;
-                
-                res=mv(sol);
-                res_true = norm(res-rhs)/norm(rhs);
             end;
             
-            dx(i) = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
+            if (strcmp(local_format, 'full'))
+                dx(i) = norm(sol-sol_prev,'fro')/norm(sol_prev,'fro');
+            else
+                dx(i) = tt_dist3(sol, sol_prev)/exp(0.5*tt_dot2(sol,sol));
+            end;
         else
             res_true = res_prev;
             dx(i)=0;
@@ -436,9 +489,15 @@ for swp=1:nswp
         if (verb>1)
         fprintf('=dmrg_solve2= Sweep %d, block %d, dx=%3.3e, res_prev = %3.3e\n', swp, i, dx(i), res_prev);
         end;
-        if (norm(sol, 'fro')==0)
+        if (strcmp(local_format, 'full'))
+            nrmsol = norm(sol, 'fro');
+        else
+            nrmsol = exp(0.5*tt_dot2(sol,sol));
+        end
+        if (nrmsol==0)
             dx(i)=0;
         end;
+        
         if (swp==1)
             dx_old(i)=dx(i);
         end;
@@ -458,7 +517,7 @@ for swp=1:nswp
             dpows(i)=min(0.5, min_dpow);
         end;
         
-        if (res_prev>bs_treshold*max_res_old)            
+        if (res_prev>bs_treshold*max_res_old)&&(strcmp(local_format, 'full')) 
             if (mod(swp,dropsweeps)~=0)&&(swp>1)&&(~last_sweep)
                 [u,s,v]=svd(sol-reshape(sol_prev,[rxm1*m1,m2*rxm3]),'econ');
             else
@@ -534,6 +593,10 @@ for swp=1:nswp
             
             v = conj(v);
         else
+            if (strcmp(local_format, 'tt'))
+                x1 = sol{1};
+                x2 = sol{2}.';
+            end;
             % We do not have to decimate the whole supercore,
             % only one of factors, as we have the previous solution
             [v,rv]=qr(x2.',0); % size m2*rxm3, rxm2' - rxm2',rxm2            
@@ -785,5 +848,18 @@ y = reshape(y, m2*rxm3*rB, rxn1*k1);
 B2 = reshape(B{2}, k2*rxn3, m2*rxm3*rB);
 y = B2*y; % size k2*rxn3,rxn1*k1
 y = reshape(y.', rxn1*k1*k2*rxn3, 1);
+end
+
+
+function [y] = bfun3(A, x, eps, mr)
+% For the 2d--TT MatVec
+y = tt_mv(A, x);
+if (nargin<4)
+    mr = [];
+end;
+if (nargin>2)&&(~isempty(eps))
+    y = tt_compr2(y, eps, mr);
+end;
+
 end
 

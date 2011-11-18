@@ -1,5 +1,5 @@
-function [tt]=qr(tt,op)
-%[TT]=QR(TT,OP)
+function [tt,rm]=qr(tt,op)
+%[TT,RM]=QR(TT,OP)
 %Implements the TT-QR algorithm for the orthogonalization of the
 %TT-representation. OP can be 'LR' (for the left-right orthogonalization)
 %and 'RL' for the right-left orthogonalization
@@ -10,9 +10,9 @@ ps=tt.ps;
 n=tt.n;
 if ( strcmp(op,'lr') || strcmp(op,'LR')) 
   %Orthogonalization from left-to-tight
-  for i=1:d-1
-   pos1=1;
-   core0=cr(1:r(i)*n(i)*r(i+1));
+  core0=cr(ps(1):ps(2)-1);
+  pos1=1;
+  for i=1:d-1 
    core0=reshape(core0,[r(i)*n(i),r(i+1)]);
    [core0,ru]=qr(core0,0); %nrm(i+1)=norm(ru,'fro');
    %ru=ru;%./nrm(i+1);
@@ -25,6 +25,12 @@ if ( strcmp(op,'lr') || strcmp(op,'LR'))
    core0=core1;
    pos1=pos1+r(i)*n(i)*r(i+1);
   end
+  %pos1 points to the d-th core
+  core0=cr(pos1:pos1-1+r(d)*n(d)*r(d+1));
+  core0=reshape(core0,[r(d)*n(d),r(d+1)]);
+  [core0,rm]=qr(core0,0);
+  r(d+1)=size(core0,2);
+  cr(pos1:pos1+r(d)*n(d)*r(d+1)-1)=core0(:);
  pos1=pos1+r(d)*n(d)*r(d+1)-1;
  cr=cr(1:pos1); %Truncate storage if required
  tt.core=cr; tt.r=r; 

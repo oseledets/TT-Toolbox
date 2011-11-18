@@ -21,8 +21,8 @@ function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)
 %   $Revision: 1.7.4.4 $ $Date: 2008/06/20 08:01:27 $
 
 
-% matvec_alg='mv+compr';   % produce matvec via tt_mv, and then tt_compr2
-matvec_alg='mvk3';         % produce matvec via tt_mvk2 
+matvec_alg='mv+compr';   % produce matvec via tt_mv, and then tt_compr2
+% matvec_alg='mvk3';         % produce matvec via tt_mvk2 
 % matvec_alg='smv+compr'; % produce matvec via SparseMatVec
 % matvec_alg='mv'; % Just a tt_mv (I guess we have to do a compression by ourselves)
 
