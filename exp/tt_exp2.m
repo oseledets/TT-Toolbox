@@ -26,7 +26,7 @@ function [tt]=tt_exp2(mat,eps,N,rmax)
 %xs=tt_vec_to_mat(xs,n,n);
 nrm=abs(norm2(mat));
 
-n0=floor(max(floor(log2(nrm)),0))+1;
+n0=floor(max(floor(log2(10*nrm)),0))+1;
 w0=mat*(1.0/2^n0);
 sz=size(mat); sz=sz(:,1);
 e=tt_eye(sz,ndims(mat)); e=tt_matrix(e);

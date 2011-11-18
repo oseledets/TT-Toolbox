@@ -1,6 +1,7 @@
 % d0t = 8; % quantics dims for t
 d0x = 10; % quantics dims for x
-dpx = 2; % phys. dims for x
+nx = 21;
+dpx = 3; % phys. dims for x
 dconf = 4;
 
 a = 20; % Domain is [-a,a]^...
@@ -8,7 +9,7 @@ b = 10; % For ILangevin scale only!
 
 h = (2*a)/(2^d0x);
 
-tol = 1e-3;
+tol = 1e-4;
 eps = 1e-8;
 maxit = 1;
 
@@ -17,36 +18,63 @@ maxit = 1;
 % end_T =   [0.5, 1, 2, 5, 10];
 
 % Trange = [0, 0.5, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0];
-Trange = 0:10:100;
-d0ts = 16*ones(1,numel(Trange)-1);
-% Trange = [0, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
-% d0ts =   [ 6,   6,  7, 8, 9, 10, 11, 11, 11,  12, 12, 13, 13];
+% Trange = [0,0.2, 0.5, 1:1:100];
+% d0ts = 10*ones(1,numel(Trange)-1);
+Trange = [0, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
+d0ts =   [ 8,   8,   8,  9, 10, 11, 12, 13, 13, 13,  14, 14, 15, 15];
 
 % For Fokker-Plank
-beta = 1;
+beta = 0.08;
 ddd = 0.5;
 zzz = 0.1;
 
 Arouse = spdiags(ones(dconf,1)*[-1,2,-1], [-1,0,1], dconf,dconf);
 Arouse = full(Arouse);
 
-% Z = eye(dpx*dconf);
-[Z,L]=eig(Arouse);
-Z2 = [1,1;-1,1]/sqrt(2);
+K = zeros(dpx,dpx);
+K(1,2)=beta;
+A = kron(eye(dconf), K)-0.25*kron(Arouse, eye(dpx));
+A2 = kron(A, eye(dconf*dpx))+kron(eye(dconf*dpx),A);
+% f = -2*reshape(eye(dconf*dpx), (dconf*dpx)^2, 1);
+f = -reshape(kron(Arouse,eye(dpx)), (dconf*dpx)^2, 1);
+P = A2 \ f;
+P = reshape(P, dconf*dpx, dconf*dpx);
+P = inv(P);
+
+% Z = P^(0.5);
+[Z,L]=eig((P+P')/2);
+L = diag(L);
+L = L.^(-0.5);
+L = reshape(L, dpx, dconf);
+
+Z = eye(dpx*dconf);
+% [Z,L]=eig(Arouse);
+% Z2 = [1,1;-1,1]/sqrt(2);
 % Z2 = eye(dpx);
 % Z2 = [ -0.607142393387428  -0.794593049398109
 %         0.794593049398109  -0.607142393387428];
-Z = kron(Z, Z2);
+% Z = kron(Z, Z2);
+% 
+% lp1 = tt_matrix(tt_qlaplace_dd(d0x));
+% lp1 = lp1/(h^2);
 
-lp1 = tt_matrix(tt_qlaplace_dd(d0x));
-lp1 = lp1/(h^2);
+% [x,cw]=lgwt(nx, -a, a);
+% cw1 = tt_tensor(cw);
+% cw = cw1;
+% for i=1:dpx*dconf
+%     cw = kron(cw, cw1);
+% end;
+% Grad_x = lagr_diff(x);
 
+% Sx = nd_to_full(tt_shf(d0x));
 Sx = tt_matrix(tt_shf(d0x));
 Grad_x = (Sx - Sx')/(2*h);
+% Grad_x = tt_matrix(Grad_x);
 Grad_x = round(Grad_x, eps);
 % Grad_x = tt_matrix(IpaS(d0x,-1));
 % Grad_x = Grad_x/h;
 Ix = tt_matrix(tt_eye(2, d0x));
+% Ix = tt_matrix(tt_eye(nx, 1));
 % Ix3 = kron(Ix, kron(Ix, Ix));
 
 % Cx1 = kron(Ix, kron(Ix, Grad_x));
@@ -56,13 +84,15 @@ Ix = tt_matrix(tt_eye(2, d0x));
 % Ax = Cx1'*Cx1+Cx2'*Cx2+Cx3'*Cx3;
 
 x = -a + (0:1:2^d0x-1)'*h;
-eexp1 = exp(-0.5*(x.^2)/(ddd^2));
-eexp1 = full_to_qtt(eexp1, eps);
-eexp1 = tt_tensor(eexp1);
+% eexp1 = exp(-0.5*(x.^2)/(ddd^2));
+% eexp1 = full_to_qtt(eexp1, eps);
+% eexp1 = tt_tensor(eexp1);
 
+% ttx = tt_tensor(x);
 ttx = tt_reshape(tt_tensor(x), 2*ones(d0x,1), 1e-10);
 % ttx = -a*tt_tensor(tt_ones(d0x,2))+tt_tensor(tt_x(d0x,2))*h;
 ex = tt_tensor(tt_ones(d0x,2));
+% ex = tt_tensor(tt_ones(1, nx));
 % x1 = kron(kron(ex,ex), ttx);
 % x2 = kron(kron(ex,ttx), ex);
 % x3 = kron(kron(ttx,ex), ex);
@@ -244,6 +274,7 @@ end;
 
 % prepare first u0
 uSN = tt_tensor(full_to_qtt(exp(-0.5*(x.^2)), eps));
+% uSN = tt_tensor(exp(-0.5*(x.^2)));
 % if (dpx>1)
 %     uSN2 = funcrs(ttx2.*ttx2+tty2.*tty2, @(x)exp(-0.5*x), eps, ttx2, 20);
 %     % uDD = tt_tensor(full_to_qtt([zeros(2^(d0x-1),1); 1; zeros(2^(d0x-1)-1,1)], eps));
@@ -314,8 +345,8 @@ for out_t=1:Nt
                 cx = X{i,j}/b;
                 % 7-term Tailor expansion for the Inverse Langevin
                 V{i,j}=cx;
-                V{i,j}=V{i,j}+3/5*(cx.*cx.*cx); % +99/175*(cx.*cx.*cx.*cx.*cx);
-                V{i,j}=round(V{i,j}, eps);
+%                 V{i,j}=V{i,j}+3/5*(cx.*cx.*cx); % +99/175*(cx.*cx.*cx.*cx.*cx);
+%                 V{i,j}=round(V{i,j}, eps);
 %                 V{i,j}=V{i,j} + 513/875*(cx.*cx.*cx.*cx.*cx.*cx.*cx);
 %                 V{i,j}=round(V{i,j}, eps);
                 V{i,j}=V{i,j}*b;
@@ -348,6 +379,7 @@ for out_t=1:Nt
                 %                 Ax = Ax + 0.25*Arouse(i,k)*diaglp{i};
                 %             else
                 for j=1:dpx
+%                     Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,j}*Grads{k,j}');
                     Ax = Ax + 0.25*Arouse(i,k)*(Grads{i,j}*Grads{k,j}');
                 end;
                 %             end;
@@ -358,8 +390,27 @@ for out_t=1:Nt
             end;
             Ax = round(Ax, eps);
         end;
+        
+        % Lyapunov function
+        Vl = [];
+        for i=1:dconf
+            for j=1:dpx
+                for i2=1:dconf
+                    for j2=1:dpx
+                        Vl = Vl+(X{i,j}.*X{i2,j2})*P(j+(i-1)*dpx, j2+(i2-1)*dpx);
+                        Vl = round(Vl, eps);
+                    end;
+                end;
+            end;
+        end;
+        u_ex = funcrs2(Vl, @(x)(exp(-x)), tol*0.1, Vl, 25);
+%         u_ex = tt_rc(Vl.d, Vl.n, @(ind)(exp(-Vl(ind))), tol, 'x0', u0);
+        while (abs(dot(Ax*u_ex, u_ex)/dot(u_ex,u_ex))>1)
+            u_ex = funcrs2(Vl, @(x)(exp(-x)), eps, Vl, 25);        
+        end;
+%         u0 = u_ex;
     end;
-    
+        
     Z0 = reshape(Z, dconf*dpx, dconf*dpx);
     
 %     St = tt_shf(d0t); St = tt_matrix(St); St=St'; % lower shift matrix for gradient
@@ -419,7 +470,7 @@ for out_t=1:Nt
     resid_old = 1e15;
     for i=1:maxit
         tic;        
-        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 2, 'nrestart', 25, 'max_full_size', 2500, 'min_dpow', 1);
+        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 1, 'nrestart', 25, 'max_full_size', 1500, 'min_dpow', 1);
         cur_time = toc;
         
         if (i==1)
@@ -471,17 +522,22 @@ for out_t=1:Nt
 
     % prepare new start
     ind = num2cell([1;2]*ones(1,d0x*dpx*dconf), 1);
+%     ind = num2cell([1:2^d0x]'*ones(1,dpx*dconf), 1);
+%     ind(dpx*dconf+1:dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
     ind(d0x*dpx*dconf+1:d0x*dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
     u0 = U(ind);
+%     u0 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));    
     u0 = tt_reshape(u0, 2*ones(d0x*dpx*dconf, 1));    
     
     ons = tt_tensor(tt_ones(u0.d, u0.n));
     nrm_u = dot(u0,ons);
+%     nrm_u = dot(u0,cw);
     tt = zeros(dpx,dpx);
     for i=1:dconf
         for j=1:dpx
             for k=1:dpx
                 tt(j,k)=tt(j,k)-dot(X{i,j}.*V{i,k}, u0);
+%                 tt(j,k)=tt(j,k)-dot(cw.*X{i,j}.*V{i,k}, u0);
             end;
         end;
     end;
@@ -501,6 +557,7 @@ for out_t=1:Nt
     psis(out_t+1) = -(tt(1,1)-tt(2,2))/(beta^2);
         
     u2 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));
+%     u2 = u0;
     n=2^d0x/2+1;
     plotind = 1:max(2^(d0x-7),1):2^d0x;    
     ind = num2cell(n*ones(1, dpx*dconf), 1);
@@ -554,8 +611,8 @@ for out_t=1:Nt
 %     figure(4);
 %     mesh(u0f(:,:,4*2^d0x/4));
     
-    Au0 = mvk3(tt_matrix(tt_eye(Ax.n,Ax.d))/tau+Ax, u0, tol, 'nswp', 20);
-    norms_Au(out_t+1) = norm(Au0-u0/tau)/norm(u0);
+    Au0 = mvk3(tt_matrix(tt_eye(Ax.n,Ax.d))+Ax, u0, tol, 'nswp', 20);
+    norms_Au(out_t+1) = norm(Au0-u0)/norm(u0);
     
     fprintf('TimeRange: %d [%g->%g], eta=%3.3e, psi=%3.3e, norm_Au=%3.3e\n', out_t, Trange(out_t), Trange(out_t+1), etas(out_t+1), psis(out_t+1), norms_Au(out_t+1));
     pause(0.5);
@@ -563,3 +620,14 @@ for out_t=1:Nt
 end;
 
 
+
+
+% 
+% for t=1:Nt
+% d0t = d0ts(out_t);
+% ind = num2cell([1;2]*ones(1,d0x*dpx*dconf), 1);
+% ind(d0x*dpx*dconf+1:d0x*dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
+% u0 = Us{t}(ind);
+% u0 = tt_reshape(u0, 2*ones(d0x*dpx*dconf, 1));
+% fprintf('%3.5e \t %g\n', dot(Ax*u0,u0)/dot(u0,u0), erank(round(u0, tol)));
+% end;

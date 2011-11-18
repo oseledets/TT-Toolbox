@@ -47,6 +47,9 @@ elseif isa(a,'double') && isa(b,'tt_tensor')
     c.ps=ps;
     c.core=crc;
     c.r=r;
+elseif isa(a,'tt_tensor') && isa(b,'double') 
+    c=tt_dum1(a,b);   
+    
 else
     error('Use mtimes(full(A),full(B)).');
 end

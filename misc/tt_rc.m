@@ -644,10 +644,10 @@ for k=1:d
   for i=1:n(k)
     ind_tmp(k)=i;
     val=abs(elem_fun(ind_tmp));
-    if ( val > mx ) 
+    if ( val >= mx ) 
        ind(k)=i;
        mx=val;
-      % fprintf('mx=%f \n',mx);
+       %fprintf('mx=%f \n',mx);
     end
   end
 end
