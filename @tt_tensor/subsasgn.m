@@ -73,7 +73,7 @@ function t = subsasgn(t,s,b)
          ps = t.ps;
          % Update the positions of the untouched cores
          psnew = ps;
-         psnew(i+1:end) = ps(i+1:end)-n(i)*r(i)*r(i+1)+n1*r1*r2;
+         psnew(i+1:end) = ps(i+1:end)-(ps(i+1)-ps(i))+n1*r1*r2;
          cr(psnew(i+1):psnew(d+1)-1) = cr(ps(i+1):ps(d+1)-1);
 %          if (i~=1)
 %              b = permute(b, [2, 1, 3]); % We have r1,n1,r2 in the new format
