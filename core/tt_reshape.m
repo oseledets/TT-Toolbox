@@ -9,7 +9,7 @@ d1=tt1.d;
 n1=tt1.n;
 d2 = numel(sz);
 if ( prod(sz) ~= prod(n1) )
- error('Reshape: incorrect sizes \n');
+ error('Reshape: incorrect sizes');
 end
 
 if (nargin<3)||(isempty(eps))

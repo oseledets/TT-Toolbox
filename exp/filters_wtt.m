@@ -4,7 +4,7 @@ function [wtt_transform] = filters_wtt (a,rmax,eps,sz)
 %either as d-dimensional array, or as by size-vector sz
 %wtt_transform is a structure with two fields: 
 %u and rks
-if ( nargin == 3 )
+if ( nargin == 1 )
 sz=size(a); d = numel(sz);
 else
    d = numel(sz);
@@ -53,6 +53,8 @@ for k=1:d-1
    a=a(1:r,:); a=reshape(a,[r*sz(k+1),N/(r*sz(k+1))]);
    u{k}=u1;
 end
+rks(d)=1;
+u{d}=v1;
 wtt_transform=struct;
 wtt_transform.u=u;
 wtt_transform.rks=rks;

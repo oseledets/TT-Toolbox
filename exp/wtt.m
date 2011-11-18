@@ -15,7 +15,7 @@ return
 end
 
 function [w]=wtt_loc(v,u,r,sz)
-if ( nargin == 3 )
+if ( nargin == 1 )
   sz=size(v); %d=numel(sz);
 else
   %d=numel(sz);
@@ -23,7 +23,6 @@ end
   N=numel(v);
   v=reshape(v,[r(1)*sz(1),N/(r(1)*sz(1))]);
 if ( numel(u) == 1 )
-   
     w=u{1}'*v;
     w=reshape(w,[r(1),N/(r(1))]);
 else
