@@ -1,0 +1,102 @@
+function [fc,core]=qtt_tucker(tt, tol)
+% function [fc,core]=qtt_tucker(tt, tol)
+% Computes the QTT-Tucker representation of TT
+% fc is the cell array of @tt_tensor with qtt approximations of tucker
+% factors.
+% core - @tt_tensor of the Tucker core in the TT format.
+% tol - approximation tolerance. Note that tol is divided by 
+% sqrt(d_phys-1)*sqrt(d_qtt-1) in each local SVD.
+
+d = tt.d;
+n = tt.n;
+rcr = tt.r;
+
+fc = cell(d,1);
+
+% Initial orthogonalization - 1->d
+for i=1:d-1
+    cr = tt{i};
+    cr = reshape(cr, rcr(i)*n(i), rcr(i+1));
+    [cr, rv]=qr(cr, 0);
+    cr2 = tt{i+1};
+    cr2 = rv*reshape(cr2, rcr(i+1), n(i+1)*rcr(i+2));
+    rcr(i+1) = size(cr,2);
+    tt{i} = reshape(cr, rcr(i), n(i), rcr(i+1));
+    tt{i+1} = reshape(cr2, rcr(i+1), n(i+1), rcr(i+2));
+end;
+
+% Split tucker factors from d->1
+core = tt;
+nextcr = core{d};
+rtuck = zeros(d,1);
+for i=d:-1:1
+    cr = nextcr;
+    cr = permute(cr, [2, 1, 3]);
+    cr = reshape(cr, n(i), rcr(i)*rcr(i+1));
+    [u,s,v]=svd(cr, 'econ');
+    s = diag(s);
+    nrm = norm(s);
+    r = my_chop2(s, tol*nrm/sqrt(d-1)/sqrt(max(log2(n))-1)); % !!!!!!
+    rtuck(i) = r;
+    if (i>1)
+        fc{i} = u(:,1:r);
+        cr = diag(s(1:r))*v(:,1:r)';
+        cr = reshape(cr, r, rcr(i), rcr(i+1));
+        cr = permute(cr, [1, 3, 2]);
+        cr = reshape(cr, r*rcr(i+1), rcr(i));
+        [cr,rv] = qr(cr, 0);
+        cr2 = core{i-1};
+        cr2 = reshape(cr2, rcr(i-1)*n(i-1), rcr(i));
+        cr2 = cr2*(rv.');
+        rcr(i) = size(cr, 2);
+        nextcr = reshape(cr2, rcr(i-1), n(i-1), rcr(i));
+        cr = reshape(cr, r, rcr(i+1), rcr(i));
+        core{i} = permute(cr, [3, 1, 2]);
+    else
+        cr = v(:,1:r)';
+        cr = reshape(cr, r, rcr(i), rcr(i+1));
+        core{i} = permute(cr, [2, 1, 3]);
+        fc{i} = u(:,1:r)*diag(s(1:r));
+    end;    
+end;
+
+% Quantics approximation
+for i=1:d
+    d0 = log2(n(i));
+    fc{i} = tt_tensor(fc{i});
+    fc{i} = tt_reshape(fc{i}, [2*ones(1,d0-1), 2*rtuck(i)], tol/sqrt(d-1));
+    nocore = fc{i}{d0}; % rqtt, 2*rtuck, 1
+    rqtt = size(nocore, 1);
+    if (i<d)
+        % Play with QRs: fc{i}->cr{i}->cr{i+1}->fc{i+1}        
+        nocore = reshape(nocore, rqtt*2, rtuck(i));
+        [ocore, nocore]=qr(nocore, 0);               
+        cr1 = core{i};
+        cr1 = permute(cr1, [2, 1, 3]);
+        cr1 = reshape(cr1, rtuck(i), rcr(i)*rcr(i+1));
+        cr1 = nocore*cr1;
+        rtuck(i) = size(cr1, 1);
+        fc{i}{d0} = reshape(ocore, rqtt, 2, rtuck(i));
+        
+        cr1 = reshape(cr1, rtuck(i)*rcr(i), rcr(i+1));
+        [cr1, rv]=qr(cr1, 0);
+        cr2 = core{i+1};
+        cr2 = reshape(cr2, rcr(i+1), rtuck(i+1)*rcr(i+2));
+        cr2 = rv*cr2;
+        rcr(i+1) = size(cr1, 2);
+        cr1 = reshape(cr1, rtuck(i), rcr(i), rcr(i+1));
+        core{i} = permute(cr1, [2,1,3]);
+        cr2 = reshape(cr2, rcr(i+1), rtuck(i+1), rcr(i+2));
+        cr2 = permute(cr2, [1, 3, 2]);
+        cr2 = reshape(cr2, rcr(i+1)*rcr(i+2), rtuck(i+1));
+        [cr2, rv]=qr(cr2, 0);
+        fc{i+1} = fc{i+1}*(rv.');
+        rtuck(i+1) = size(cr2, 2);
+        cr2 = reshape(cr2, rcr(i+1), rcr(i+2), rtuck(i+1));
+        core{i+1} = permute(cr2, [1, 3, 2]); 
+    else
+        fc{i}{d0} = reshape(nocore, rqtt, 2, rtuck(i));
+    end;
+end;
+
+end
