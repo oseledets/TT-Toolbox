@@ -10,7 +10,7 @@ function [tt]=tt_exp2(mat,eps,N,rmax)
 %TT_MAT is the result
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2011
 %
 %This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
 %Institute of Numerical Mathematics, Moscow, Russia
@@ -24,6 +24,9 @@ function [tt]=tt_exp2(mat,eps,N,rmax)
 %e=tt_eye(n,d);
 %xs=tt_random(n*n,d,rmax); 
 %xs=tt_vec_to_mat(xs,n,n);
+if ( nargin == 3) 
+  rmax=1000;
+end
 nrm=abs(norm2(mat));
 
 n0=floor(max(floor(log2(10*nrm)),0))+1;
@@ -47,7 +50,7 @@ end
 for k=1:n0
    % reff=sqrt(tt_mem(tt_mat)/(n*n*d));
    %fprintf('Iteration %d/%d Rank=%3.2f\n',k,n0,reff);
-   tt=round(tt*tt,eps);
+   tt=round(tt*tt,eps,rmax);
    %else
    %  tt_mat=tt_mm(tt_mat,tt_mat);
    %end
