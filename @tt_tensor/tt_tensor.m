@@ -1,5 +1,14 @@
 function t = tt_tensor(varargin)
-%TT_TENSOR Tensor stored as a TT-operator
+%Basic tt_tensor constructor
+%Supported calls:
+%tt_tensor(array,eps)
+%tt_tensor(array,sz,r1,r2,eps)
+%tt_tensor(tt1) -- copy constructor
+%tt_tensor(tt_matrix) --- unfold a tt_matrix
+%tt_tensor(tt_array) --- stack a tt_array
+%tt_tensor(filename) --- read from and sdv format 
+%tt_tensor(cell_array) --- convert from a TT-Toolbox 1.1 format
+
 
 if (nargin == 0)
     t.d    = 0;
@@ -55,57 +64,7 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
    t.core(ps(d):ps(d+1)-1) = cr(:);
    t.ps=ps;
    t = class(t, 'tt_tensor');
-end
-%From full format
-if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
-    t=tt_tensor;
-    b=varargin{1};
-    if ( nargin == 2 && isa(varargin{2},'double')) 
-      eps=varargin{2};
-    else
-      eps=1e-14;
-      %fprintf('Accuracy not specified, using %3.2e \n',eps);  
-    end
-    n=size(b);n=n';
-if ( numel(n) == 2 && n(2) == 1 ) %Singleton tensor
-  d=1; n=n(1:d);
-  r=ones(2,1);
-  core=b(:);
- ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
- t.d=d;  
-t.n=n;
-t.r=r;
-t.ps=ps;
-t.core=core;
-return
-end
-d=numel(size(b));
-r=zeros(d+1,1);
-r(1)=1; r(d)=1;
-c=b;
-core=[];
-pos=1;
-ep=eps/sqrt(d-1);
-for i=1:d-1
-  m=n(i)*r(i); c=reshape(c,[m,numel(c)/m]);
-  [u,s,v]=svd(c,'econ');
-  s=diag(s); r1=my_chop2(s,ep*norm(s));
-  u=u(:,1:r1); s=s(1:r1);
-  r(i+1)=r1;
-  core(pos:pos+r(i)*n(i)*r(i+1)-1)=u(:);
-  v=v(:,1:r1);
-  v=v*diag(s); c=v';
-  pos=pos+r(i)*n(i)*r(i+1);
-end
-r(d+1)=1;
-core(pos:pos+r(d)*n(d)*r(d+1)-1)=c(:);
-core=core(:); 
-ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
-t.d=d;
-t.n=n;
-t.r=r;
-t.ps=ps;
-t.core=core;
+   return
 end
 
 % From a simple tt_tensor struct without class definition
@@ -135,5 +94,61 @@ if (nargin == 1) && isa(varargin{1}, 'char')
     t.ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
     t = class(t, 'tt_tensor');
 end;
+
+%From full format
+if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
+    t=tt_tensor;
+    b=varargin{1};
+    
+    if ( nargin == 2 && isa(varargin{2},'double')) 
+      eps=varargin{2};
+    else
+      eps=1e-14;
+      %fprintf('Accuracy not specified, using %3.2e \n',eps);  
+    end
+    n=size(b); n=n(:); d=numel(n); r=ones(d+1,1);
+   if ( numel(n) == 2 && n(2) == 1 ) %Singleton tensor
+     d=1; n=n(1:d);
+     r=ones(2,1);
+     core=b(:);
+     ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
+     t.d=d;  
+     t.n=n;
+     t.r=r;
+     t.ps=ps;
+     t.core=core;
+     return
+   end
+    
+end
+if ( nargin == 5 && isa(varargin{1},'double')  && isa(varargin{2},'double') && numel(varargin{3})==1  && numel(varargin{4})==1 && numel(varargin{5})==1)
+   t=tt_tensor;
+   b=varargin{1}; n=varargin{2}; r(1)=varargin{3}; d=numel(n); r(d+1)=varargin{4}; eps=varargin{5};  
+end
+d=numel(n);
+c=b;
+core=[];
+pos=1;
+ep=eps/sqrt(d-1);
+n=n(:); r=r(:);
+for i=1:d-1
+  m=n(i)*r(i); c=reshape(c,[m,numel(c)/m]);
+  [u,s,v]=svd(c,'econ');
+  s=diag(s); r1=my_chop2(s,ep*norm(s));
+  u=u(:,1:r1); s=s(1:r1);
+  r(i+1)=r1;
+  core(pos:pos+r(i)*n(i)*r(i+1)-1)=u(:);
+  v=v(:,1:r1);
+  v=v*diag(s); c=v';
+  pos=pos+r(i)*n(i)*r(i+1);
+end
+core(pos:pos+r(d)*n(d)*r(d+1)-1)=c(:);
+core=core(:); 
+ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
+t.d=d;
+t.n=n;
+t.r=r;
+t.ps=ps;
+t.core=core;
 
 return;

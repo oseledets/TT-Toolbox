@@ -1,4 +1,6 @@
 function t = qtt_tucker(varargin)
+%QTT_TUCKER class constructor (mixed TT format for the core + QTT format
+% for the factors
 %QTT_TUCKER(ARRAY,SZ,EPS)
 
 if (nargin == 0)
@@ -12,6 +14,7 @@ end
 
 % Copy CONSTRUCTOR
 if (nargin == 1) && isa(varargin{1}, 'qtt_tucker')
+    t=qtt_tucker;
     t.core = varargin{1}.core;
     t.tuck = varargin{1}.tuck;
     t.sz = varargin{1}.sz;
@@ -34,6 +37,7 @@ end
 %From full format
 if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(varargin{3},'double'))
     %The method is as follows. %Tr
+    t=qtt_tucker;
     a=varargin{1};
     sz1=numel(a);
     sz=varargin{2};
@@ -52,36 +56,47 @@ if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(
     rtt=zeros(d+1,1); %TT-ranks
     rtuck=zeros(d,1);
     tuck=cell(d,1); 
-    rtt(1)=1; rtt(d)=1;
+    rtt(1)=1; rtt(d+1)=1;
     tt_core=[];
-    for i=1:d
-       a=reshape(a,[rtt(k-1),n(k),rtt(k)]);
+    for k=1:d-1
+       a=reshape(a,[rtt(k),n(k),numel(a)/(n(k)*rtt(k))]);
        %First, compute the 
        a=permute(a,[2,1,3]);
        a=reshape(a,[n(k),numel(a)/n(k)]);
        [u,s,v]=svd(a,'econ');
        s=diag(s);
        r=my_chop2(s,norm(s)*eps0);
-       rtuck{i}=r;
+       rtuck(k)=r;
        u=u(:,1:r); s=s(1:r);
        v=v(:,1:r); 
        u=u*diag(s); %This is a good  Tucker factor
-       u=reshape(u,[sz{i},r]); 
-       tuck{i}=tt_tensor(u,eps0);
-       [tuck{i},rm]=qr(tuck{i},'lr');
+       %u=reshape(u,[sz{i},r]); 
+       tuck{k}=tt_tensor(u,sz{i},1,r,eps0);
+       [tuck{k},rm]=qr(tuck{k},'lr');
        v=rm*v'; %a was n(k),rtt(k-1)*M
        %v is rxrtt
-       v=reshape(v,[r,rtt(k-1),numel(v)/(r*rtt(k-1))]);
+       v=reshape(v,[r,rtt(k),numel(v)/(r*rtt(k))]);
        v=permute(v,[2,3,1]); 
-       v=reshape(v,[rtt(k-1)*r,numel(v)/(r*rtt(k-1))]);
+       v=reshape(v,[rtt(k)*r,numel(v)/(r*rtt(k))]);
        [u1,s1,v1]=svd(v,'econ');
        s1=diag(s1); 
        r1=my_chop2(s1,norm(s1)*eps);
-       rtt(i)=r1;
+       rtt(k+1)=r1;
        u1=u1(:,1:r1);s1=s1(1:r1); v1=v1(:,1:r1);
-       a=diag(s1)*v1;
-       tt_core=[tt_core,u1(:)];
+       a=diag(s1)*v1';
+       tt_core=[tt_core;u1(:)];
     end
+    %Now we have to compute the last Tucker core
+    a=reshape(a,[rtt(d),n(d),numel(a)/(n(d)*rtt(d))]);
+    a=permute(a,[2,1,3]);
+    a=reshape(a,[sz{d},numel(a)/n(d)]);
+    tuck{d}=tt_tensor(a,sz{d},1,r,eps0);
+    [tuck{d},rm]=qr(tuck{d},'lr');
+    a=rm; a=reshape(a,[r,rtt(d),numel(a)/(r*rtt(d))]);
+    a=permute(a,[1,2,3]);
+    rtuck(d)=r;
+    tt_core=[tt_core;a(:)];
+    rtt(d+1)=size(a,3);
     cr=tt_tensor;
     cr.d=d;
     cr.n=rtuck;
