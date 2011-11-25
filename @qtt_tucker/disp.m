@@ -1,6 +1,15 @@
-function disp(tt,name)
+function disp(tt,name,varargin)
 %DISP Command window display of a qtt_tucker.
 %
+disp_mode_sizes=false;
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'modes'
+            disp_mode_sizes=varargin{i+1};
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+    end
+end
 
 if ~exist('name','var')
     name = 'ans';
@@ -19,15 +28,23 @@ for i=1:tt.dphys
 end
 fprintf('%d\n',rk(tt.dphys+1));
 tk=tt.tuck;
-fprintf('TT-ranks for the factors: \n');
+fprintf('TT-ranks/mode sizes for the factors: \n');
 for i=1:tt.dphys
    di=ndims(tk{i});
    ri=rank(tk{i});
+   ni=size(tk{i});
    fprintf('Factor %d: ',i);
-   for j=1:di-1
+   for j=1:di
       fprintf('%d-',ri(j));
+   end   
+   fprintf('%d\n',ri(di+1));
+   if ( disp_mode_sizes ) 
+     fprintf('Modes   : ');
+     for j=1:di-1
+       fprintf('%d-',ni(j));
+     end
+     fprintf('%d\n',ni(di));
    end
-   fprintf('%d\n',ri(di));
 end
 % %fprintf('r(1)=%d \n', r(1));
 % for i=1:d

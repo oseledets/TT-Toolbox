@@ -14,6 +14,7 @@ if ( numel(r) == 1 )
  r(1) = 1;
  r(d+1)=1;
 end
+r=r(:);
 tt=tt_tensor;
 tt.n=n;
 tt.r=r;
