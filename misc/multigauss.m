@@ -71,6 +71,7 @@ for i=1:d
         end;
         tt = tt.*curtt;
         tt = round(tt, eps);
+        fprintf('=multigauss= term (%d,%d) is done. Erank: %g\n', i, j, erank(tt));
     end;
 end;
 

@@ -95,9 +95,9 @@ while (i1<=d1)
         if (gcd(restn2(i2), n1(i1))~=1)||(restn2(i2)==1)
             % There exists a nontrivial divisor. Split it and convolve
             n12 = gcd(restn2(i2), n1(i1));
-            if (i2==11)
-                keyboard;
-            end;            
+%             if (i2==11)
+%                 keyboard;
+%             end;            
             curcr1 = reshape(curcr1, r1(i1)*n12, (n1(i1)/n12)*r1(i1+1));
             [u,s,v]=svd(curcr1, 'econ');
             s = diag(s);

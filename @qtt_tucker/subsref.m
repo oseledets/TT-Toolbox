@@ -59,32 +59,28 @@ switch s(1).type
       end
     case '.'
         switch s(1).subs
-            case 'r'
-                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                    elem = tt.r(s(2).subs{1});
-                else
-                    elem=tt.r;
-                end;
             case 'core'
-                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                    elem = tt.core(s(2).subs{1});
-                else
-                    elem=tt.core;
+                elem = tt.core;
+                if (numel(s)>1)
+                    s = s(2:end);
+                    elem = subsref(elem, s);
+                end;                
+            case 'tuck'
+                elem = tt.tuck;
+                if (numel(s)>1)
+                    s = s(2:end);
+                    elem = subsref(elem, s);
                 end;
             case 'd'
-                elem=tt.d;
-            case 'ps'
-                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                    elem = tt.ps(s(2).subs{1});
-                else
-                    elem=tt.ps;
-                end;
-            case 'n'
-                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                    elem = tt.n(s(2).subs{1});
-                else
-                    elem=tt.n;
-                end;
+                elem = tt.dphys;
+            case 'dphys'
+                elem = tt.dphys;
+            case 'sz'
+                elem = tt.sz;
+                if (numel(s)>1)
+                    s = s(2:end);
+                    elem = subsref(elem, s);
+                end;              
             otherwise
                 error(['No field ', s.subs, ' is here.']);
         end
@@ -100,6 +96,6 @@ switch s(1).type
 %             elem=permute(elem,[2,1,3]);
 %         end;
         
-    otherwise
+    otherwise        
         error('Invalid subsref.');
 end
