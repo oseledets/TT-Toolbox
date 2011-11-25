@@ -1,8 +1,10 @@
 function t = qtt_tucker(varargin)
+%QTT_TUCKER class constructor (mixed TT format for the core + QTT format
+% for the factors
 %QTT_TUCKER(ARRAY,SZ,EPS)
 
 if (nargin == 0)
-    t.core=qtt_tucker; %The Tucker core
+    t.core=tt_tensor; %The Tucker core
     t.tuck=cell(0); %The tucker factors (in the QTT format)
     t.dphys=0; %Number of physical dimensions
     t.sz=0; %Additional dimensions for each factor
@@ -48,7 +50,7 @@ if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(
     for i=1:d
       n(i)=prod(sz{i});
     end
-      if ( sz1 ~= prod(n) )
+    if ( sz1 ~= prod(n) )
        error('qtt_tucker: check_sizes');
     end
     rtt=zeros(d+1,1); %TT-ranks

@@ -71,6 +71,12 @@ switch s(1).type
                 else
                     elem=tt.core;
                 end;
+            case 'tuck'
+                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
+                    elem = tt.tuck(s(2).subs{1});
+                else
+                    elem=tt.tuck;
+                end;
             case 'd'
                 elem=tt.d;
             case 'ps'

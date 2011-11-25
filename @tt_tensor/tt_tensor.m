@@ -93,7 +93,15 @@ if (nargin == 1) && isa(varargin{1}, 'char')
     t.core = core;
     t.ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
     t = class(t, 'tt_tensor');
+    return
 end;
+
+%From qtt_tucker format
+
+if ( nargin == 1 && isa(varargin{1}, 'qtt_tucker') )
+   t=qtttucker_to_tt(varargin{1}.tuck,varargin{1}.core);
+   return
+end
 
 %From full format
 if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))

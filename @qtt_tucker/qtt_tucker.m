@@ -34,6 +34,32 @@ end
 %  return;
 %end
 
+%from tt_tensor (ordinary one)
+if ( isa(varargin{1},'tt_tensor') )
+  if ( nargin == 3 )
+  tt=varargin{1};
+  sz=varargin{2};
+  eps=varargin{3};
+  else
+    tt=varargin{1};
+    eps=varargin{2};
+    n=tt.n; 
+    d=tt.d;
+    sz=cell(d,1);
+    for i=1:d
+      sz{i}=2*ones(1,log2(n(i)));
+    end
+  end
+  [fc,cr]=qtt_tucker_m(tt,sz,eps);
+  t=qtt_tucker;
+  t.core=cr;
+  t.tuck=fc; 
+  t.sz=sz;
+  t.dphys=numel(sz);
+  return
+  
+end
+
 %From full format
 if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(varargin{3},'double'))
     %The method is as follows. %Tr
@@ -50,7 +76,7 @@ if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(
     for i=1:d
       n(i)=prod(sz{i});
     end
-      if ( sz1 ~= prod(n) )
+    if ( sz1 ~= prod(n) )
        error('qtt_tucker: check_sizes');
     end
     rtt=zeros(d+1,1); %TT-ranks
@@ -70,13 +96,14 @@ if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(
        u=u(:,1:r); s=s(1:r);
        v=v(:,1:r); 
        u=u*diag(s); %This is a good  Tucker factor
-       %u=reshape(u,[sz{i},r]); 
-       tuck{k}=tt_tensor(u,sz{i},1,r,eps0);
+       tuck{k}=tt_tensor(u,sz{k},1,r,eps0);
        [tuck{k},rm]=qr(tuck{k},'lr');
-       v=rm*v'; %a was n(k),rtt(k-1)*M
+       % v is (rtt(k)*M)*r
+       % v' is r*(rtt(k)*M)
+       v=rm*v'; %v is in fact rxMxrtt(k)
        %v is rxrtt
        v=reshape(v,[r,rtt(k),numel(v)/(r*rtt(k))]);
-       v=permute(v,[2,3,1]); 
+       v=permute(v,[2,1,3]); 
        v=reshape(v,[rtt(k)*r,numel(v)/(r*rtt(k))]);
        [u1,s1,v1]=svd(v,'econ');
        s1=diag(s1); 
