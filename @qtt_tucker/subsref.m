@@ -71,12 +71,6 @@ switch s(1).type
                     s = s(2:end);
                     elem = subsref(elem, s);
                 end;
-            case 'tuck'
-                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                    elem = tt.tuck(s(2).subs{1});
-                else
-                    elem=tt.tuck;
-                end;
             case 'd'
                 elem = tt.dphys;
             case 'dphys'
