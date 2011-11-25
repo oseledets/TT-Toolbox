@@ -60,6 +60,23 @@ if ( isa(varargin{1},'tt_tensor') )
   
 end
 
+% From factors and core
+if (nargin==2) && isa(varargin{1}, 'cell') && isa(varargin{2}, 'tt_tensor')
+    t = qtt_tucker;
+    t.core = varargin{2};
+    t.dphys = numel(varargin{1});
+    t.tuck = cell(t.dphys, 1);
+    t.sz = cell(t.dphys, 1);
+    for i=1:t.dphys
+        t.tuck{i} = varargin{1}{i};
+        if (isa(t.tuck{i}, 'double'))
+            t.tuck{i} = tt_tensor(t.tuck{i});
+        end;
+        t.sz{i} = t.tuck{i}.n;
+    end;
+%     t = class(t, 'qtt_tucker');
+end;
+
 %From full format
 if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(varargin{3},'double'))
     %The method is as follows. %Tr

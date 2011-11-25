@@ -1,10 +1,10 @@
 % d0t = 8; % quantics dims for t
-d0x = 10; % quantics dims for x
+d0x = 8; % quantics dims for x
 nx = 21;
 dpx = 3; % phys. dims for x
 dconf = 4;
 
-a = 20; % Domain is [-a,a]^...
+a = 5; % Domain is [-a,a]^...
 b = 10; % For ILangevin scale only!
 
 h = (2*a)/(2^d0x);
@@ -24,7 +24,7 @@ Trange = [0, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
 d0ts =   [ 8,   8,   8,  9, 10, 11, 12, 13, 13, 13,  14, 14, 15, 15];
 
 % For Fokker-Plank
-beta = 0.08;
+beta = 0.2;
 ddd = 0.5;
 zzz = 0.1;
 
@@ -47,6 +47,7 @@ L = diag(L);
 L = L.^(-0.5);
 L = reshape(L, dpx, dconf);
 
+% keyboard;
 Z = eye(dpx*dconf);
 % [Z,L]=eig(Arouse);
 % Z2 = [1,1;-1,1]/sqrt(2);
@@ -357,6 +358,9 @@ for out_t=1:Nt
             end;
         end;
         
+        fprintf('sososo\n');
+        keyboard;
+        
         % Velocities to stuff into equation %%% (Rouse matrix, flow included)
         Veq = cell(dconf,dpx);
         for i=1:dconf
@@ -403,11 +407,11 @@ for out_t=1:Nt
                 end;
             end;
         end;
-        u_ex = funcrs2(Vl, @(x)(exp(-x)), tol*0.1, Vl, 25);
-%         u_ex = tt_rc(Vl.d, Vl.n, @(ind)(exp(-Vl(ind))), tol, 'x0', u0);
-        while (abs(dot(Ax*u_ex, u_ex)/dot(u_ex,u_ex))>1)
-            u_ex = funcrs2(Vl, @(x)(exp(-x)), eps, Vl, 25);        
-        end;
+%         u_ex = funcrs2(Vl, @(x)(exp(-x)), tol*0.1, Vl, 25);
+% %         u_ex = tt_rc(Vl.d, Vl.n, @(ind)(exp(-Vl(ind))), tol, 'x0', u0);
+%         while (abs(dot(Ax*u_ex, u_ex)/dot(u_ex,u_ex))>1)
+%             u_ex = funcrs2(Vl, @(x)(exp(-x)), eps, Vl, 25);        
+%         end;
 %         u0 = u_ex;
     end;
         
@@ -465,6 +469,8 @@ for out_t=1:Nt
     
 %     U = tt_random(2, rhs.d, 2);
     U = kron(u0, tt_tensor(tt_ones(d0t,2)));
+    
+    % Prepare the rakes
     
     results = zeros(maxit,6);
     resid_old = 1e15;
@@ -620,7 +626,23 @@ for out_t=1:Nt
 end;
 
 
-
+% u_ex = multigauss(P, 2^d0x, a, tol)
+% u0 = tt_reshape(u_ex, 2*ones(d0x*dpx*dconf,1), tol);
+% erank(u0)
+% ons = tt_tensor(tt_ones(u0.d, u0.n));
+% nrm_u = dot(u0,ons);
+% tt = zeros(dpx,dpx);
+% for i=1:dconf
+%     for j=1:dpx
+%         for k=1:dpx
+%             tt(j,k)=tt(j,k)-dot(X{i,j}.*V{i,k}, u0);
+%         end;
+%     end;
+% end;
+% tt = tt/nrm_u;
+% -tt(1,2)/beta
+% -(tt(1,1)-tt(2,2))/(beta^2)
+% 
 
 % 
 % for t=1:Nt

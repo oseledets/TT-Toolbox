@@ -7,14 +7,20 @@ function t = subsasgn(t,s,b)
                  if (size(b,1)==1)
                      b=b';
                  end;
-                 if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                     if (size(s(2).subs{1},1)==1)
-                         s(2).subs{1}=s(2).subs{1}';
-                     end;
-                     t.n(s(2).subs{1})=b;
+                 if (numel(s)>1)
+                     s = s(2:end);
+                     t.n = subsasgn(t.n, s, b);
                  else
-                     t.n=b;
+                     t.n = b;
                  end;
+%                  if (numel(s)>1)&&(strcmp(s(2).type,'()'))
+%                      if (size(s(2).subs{1},1)==1)
+%                          s(2).subs{1}=s(2).subs{1}';
+%                      end;
+%                      t.n(s(2).subs{1})=b;
+%                  else
+%                      t.n=b;
+%                  end;
              case 'r'
                  if (size(b,1)==1)
                      b=b';

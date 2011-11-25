@@ -3,55 +3,30 @@ function t = subsasgn(t,s,b)
  switch s(1).type
      case '.'
          switch s(1).subs
-             case 'n'
-                 if (size(b,1)==1)
-                     b=b';
-                 end;
-                 if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                     if (size(s(2).subs{1},1)==1)
-                         s(2).subs{1}=s(2).subs{1}';
-                     end;
-                     t.n(s(2).subs{1})=b;
-                 else
-                     t.n=b;
-                 end;
-             case 'r'
-                 if (size(b,1)==1)
-                     b=b';
-                 end;
-                 if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                     if (size(s(2).subs{1},1)==1)
-                         s(2).subs{1}=s(2).subs{1}';
-                     end;
-                     t.r(s(2).subs{1})=b;
-                 else
-                     t.r=b;
-                 end;
-             case 'core'
-                 if (size(b,1)==1)
-                     b=b';
-                 end;
-                 if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                     if (size(s(2).subs{1},1)==1)
-                         s(2).subs{1}=s(2).subs{1}';
-                     end;
-                     t.core(s(2).subs{1})=b;
-                 else
-                     t.core=b;
-                 end;
+             case 'dphys'
+                 t.dphys = b;
              case 'd'
-                 t.d=b;
-             case 'ps'
-                 if (size(b,1)==1)
-                     b=b';
-                 end;
-                 if (numel(s)>1)&&(strcmp(s(2).type,'()'))
-                     if (size(s(2).subs{1},1)==1)
-                         s(2).subs{1}=s(2).subs{1}';
-                     end;
-                     t.ps(s(2).subs{1})=b;
+                 t.dphys = b;                 
+             case 'core'
+                 if (numel(s)>1)
+                     % Dispatch extra indexing gracefully
+                     t.core = subsasgn(t.core, s(2:end), b);
                  else
-                     t.ps=b;
+                     t.core = b;
+                 end;                 
+             case 'tuck'
+                 if (numel(s)>1)
+                     % Dispatch extra indexing gracefully
+                     t.tuck = subsasgn(t.tuck, s(2:end), b);
+                 else
+                     t.tuck = b;
+                 end;
+             case 'sz'
+                 if (numel(s)>1)
+                     % Dispatch extra indexing gracefully
+                     t.sz = subsasgn(t.sz, s(2:end), b);
+                 else
+                     t.sz = b;
                  end;
              otherwise
                  error(['Cannot change field ', s.subs, ' directly.']);
