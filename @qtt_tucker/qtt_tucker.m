@@ -34,30 +34,40 @@ end
 %  return;
 %end
 
-%from tt_tensor (ordinary one)
+%from tt_tensor (ordinary one or QTT)
 if ( isa(varargin{1},'tt_tensor') )
-  if ( nargin == 3 )
-  tt=varargin{1};
-  sz=varargin{2};
-  eps=varargin{3};
-  else
-    tt=varargin{1};
-    eps=varargin{2};
-    n=tt.n; 
-    d=tt.d;
-    sz=cell(d,1);
-    for i=1:d
-      sz{i}=2*ones(1,log2(n(i)));
-    end
-  end
-  [fc,cr]=qtt_tucker_m(tt,sz,eps);
-  t=qtt_tucker;
-  t.core=cr;
-  t.tuck=fc; 
-  t.sz=sz;
-  t.dphys=numel(sz);
-  return
-  
+    if ( nargin == 3 )
+        if (isa(varargin{2}, 'cell'))&&(isa(varargin{3}, 'double'))
+            % TT with quantization
+            tt=varargin{1};
+            sz=varargin{2};
+            eps=varargin{3};
+            [fc,cr]=qtt_tucker_m(tt,sz,eps);
+            t=qtt_tucker;
+            t.core=cr;
+            t.tuck=fc;
+            t.sz=sz;
+            t.dphys=numel(sz);
+        else
+            % QTT, varargin{2} is dims
+            t = linqtt_to_qtttucker(varargin{1}, varargin{2}, varargin{3});
+        end;
+    else
+        tt=varargin{1};
+        eps=varargin{2};
+        n=tt.n;
+        d=tt.d;
+        sz=cell(d,1);
+        for i=1:d
+            sz{i}=2*ones(1,log2(n(i)));
+        end
+        [fc,cr]=qtt_tucker_m(tt,sz,eps);
+        t=qtt_tucker;
+        t.core=cr;
+        t.tuck=fc;
+        t.sz=sz;
+        t.dphys=numel(sz);        
+    end;
 end
 
 % From factors and core

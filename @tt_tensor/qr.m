@@ -54,7 +54,8 @@ elseif (strcmp (op,'rl') || strcmp(op,'RL') )
     cr(pos1-r(i+1)*n(i)*rnew+1:pos1)=u(:); 
     pos1=pos1-r(i+1)*n(i)*rnew; 
  end
-pos1=pos1+r(1)*n(1)*r(2)-1;
+ pos1 = pos1+1;
+% pos1=pos1+r(1)*n(1)*r(2)-1;
 cr=cr(pos1:end);
 ps=cumsum([1;(n).*r(1:d).*r(2:d+1)]);
 tt.core=cr;
