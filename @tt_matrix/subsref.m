@@ -18,7 +18,9 @@ switch s(1).type
                 if (numel(s)>1)
                     s = s(2:end);
                     elem = subsref(elem, s);
-                end;                
+                end;    
+            case 'tt'
+                elem=tt.tt;
             otherwise
                 % Dispatch to the underlying TT - may be rank, core, etc.
                 elem = subsref(tt.tt, s);

@@ -170,7 +170,7 @@ while ( swp <= nswp && not_converged )
        b2=permute(b2,[2,4,3,5,1]); 
        b2=reshape(b2,[n(i+1)*ry(i+2),n(i+1)*ry(i+2),ra(i+1)]);
        mm=cell(2,1); mm{1}=b1; mm{2}=b2;
-       cry=[cry_left,cry_right];
+       cry=[cry_left(:);cry_right(:)];
        y.r=ry;
        y.core=cry;
        y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
