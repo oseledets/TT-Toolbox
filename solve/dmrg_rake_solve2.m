@@ -9,6 +9,57 @@ gmres_iters = 2;
 verb = 2;
 kickrank = 2;
 
+xc = []; xf = [];
+
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'nswp'
+            nswp=varargin{i+1};
+%         case 'rmax'
+%             rmax=lower(varargin{i+1});
+        case 'x0c'
+            xc=varargin{i+1};
+        case 'x0f'
+            xf=varargin{i+1};            
+        case 'verb'
+            verb=varargin{i+1};
+%         case 'local_prec'
+%             local_prec=varargin{i+1};
+        case 'nrestart'
+            nrestart=varargin{i+1};
+        case 'gmres_iters'
+            gmres_iters=varargin{i+1};
+        case 'kickrank'
+            kickrank=varargin{i+1};
+        case  'max_full_size'
+            max_full_size=varargin{i+1};
+%         case 'prec_compr'
+%             prec_compr=varargin{i+1};
+%         case 'prec_tol'
+%             prec_tol=varargin{i+1};
+%         case 'prec_iters'
+%             prec_iters=varargin{i+1};
+%         case 'use_self_prec'
+%             use_self_prec=varargin{i+1};
+%         case 'ddpow'
+%             ddpow=varargin{i+1};
+%         case 'ddrank'
+%             ddrank=varargin{i+1};
+%         case 'd_pow_check'
+%             d_pow_check=varargin{i+1};
+%         case 'bot_conv'
+%             bot_conv=varargin{i+1};
+%         case 'top_conv'
+%             top_conv=varargin{i+1};
+%         case 'min_dpow'
+%             min_dpow=varargin{i+1};            
+%         case 'min_drank'
+%             min_drank=varargin{i+1};                         
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+    end
+end
+
 d = yc.d; % Physical dim.
 L = zeros(1,d); % Quantics dims
 n = zeros(max(L), d); % Physical mode sizes
@@ -17,10 +68,14 @@ for i=1:d
     n(1:L(i), i) = yf{i}.n;
 end;
 
-xc = tt_rand(2,d,2);
-xf = cell(d,1);
-for i=1:d
-    xf{i} = tt_rand(n(1:L(i),i), L(i), [1;2*ones(L(i),1)]);
+if (isempty(xc))
+    xc = tt_rand(2,d,2);
+end;
+if (isempty(xf))
+    xf = cell(d,1);
+    for i=1:d
+        xf{i} = tt_rand(n(1:L(i),i), L(i), [1;2*ones(L(i),1)]);
+    end;
 end;
 
 % Extract ranks; Note that rf(L(i)+1,i) = r_tuck(i)

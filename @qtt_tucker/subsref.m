@@ -85,16 +85,17 @@ switch s(1).type
                 error(['No field ', s.subs, ' is here.']);
         end
     case '{}'
-        %Return the core in the old (not exactly!!! r1-n-r2 here) format
-        pp=s.subs;
-        mn=numel(pp);
-        if ( mn > 1 )
-          error('Invalid number of cores asked');
-        end
-        elem=core(tt,pp{1});
-%         if (pp{1}~=1)
-%             elem=permute(elem,[2,1,3]);
-%         end;
+%         %Return the core in the old (not exactly!!! r1-n-r2 here) format
+        elem = subsref(tt.tuck, s);
+%         pp=s.subs;
+%         mn=numel(pp);
+%         if ( mn > 1 )
+%           error('Invalid number of cores asked');
+%         end
+%         elem=core(tt,pp{1});
+% %         if (pp{1}~=1)
+% %             elem=permute(elem,[2,1,3]);
+% %         end;
         
     otherwise        
         error('Invalid subsref.');

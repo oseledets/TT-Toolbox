@@ -1,10 +1,10 @@
 % d0t = 8; % quantics dims for t
-d0x = 8; % quantics dims for x
+d0x = 10; % quantics dims for x
 nx = 21;
 dpx = 3; % phys. dims for x
 dconf = 4;
 
-a = 5; % Domain is [-a,a]^...
+a = 20; % Domain is [-a,a]^...
 b = 10; % For ILangevin scale only!
 
 h = (2*a)/(2^d0x);
@@ -24,7 +24,7 @@ Trange = [0, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 80, 100,150,200,300,400];
 d0ts =   [ 8,   8,   8,  9, 10, 11, 12, 13, 13, 13,  14, 14, 15, 15];
 
 % For Fokker-Plank
-beta = 0.2;
+beta = 1;
 ddd = 0.5;
 zzz = 0.1;
 
@@ -358,8 +358,8 @@ for out_t=1:Nt
             end;
         end;
         
-        fprintf('sososo\n');
-        keyboard;
+%         fprintf('sososo\n');
+%         keyboard;
         
         % Velocities to stuff into equation %%% (Rouse matrix, flow included)
         Veq = cell(dconf,dpx);

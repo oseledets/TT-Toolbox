@@ -16,8 +16,17 @@ function t = subsasgn(t,s,b)
                  end;                 
              case 'tuck'
                  if (numel(s)>1)
-                     % Dispatch extra indexing gracefully
-                     t.tuck = subsasgn(t.tuck, s(2:end), b);
+                     % Dispatch extra indexing gracefully <-BULLSHIT! IT
+                     % DOESN'T WORK!!!
+                     s = s(2:end);
+                     if (strcmp(s(1).type, '{}'))
+                         i = s(1).subs{1};
+                         if (numel(s)>1)
+                             t.tuck{i} = subsasgn(t.tuck{i}, s(2:end), b);
+                         else
+                             t.tuck{i} = b;
+                         end;
+                     end;
                  else
                      t.tuck = b;
                  end;
