@@ -1,39 +1,35 @@
-function [a]=times(b,c,varargin)
-%[A]=TIMES(B,C)
-%[A]=TIMES(B,C,EPS)
-%Hadamard product of two TT-tensors
-%If optional parameter EPS is specified, use Krylov method
+function [c]=times(a,b)
+%[C]=TIMES(A,B)
+%Hadamard product of two QTT-tuckers
 if (nargin == 2 )
-    %Put zaglushka in it
-%     a=tt_tensor(tt_hdm(core(b),core(c)));
-%     return
-    %Replace zaglushka by a code
-    d=b.d; n=b.n; crb=b.core; crc=c.core; rb=b.r; rc=c.r;
-    psb=b.ps; psc=c.ps;
-    %Ranks are just a product
-    a=tt_tensor;
-    ra=rb.*rc;
-    psa=cumsum([1;n(1:d).*ra(1:d).*ra(2:d+1)]);
-    sz=dot(n(1:d).*ra(1:d),ra(2:d+1));
-    cra=zeros(sz,1);
+    % times of tucker factors (whatever it is)
+    d = a.dphys;
+    c = qtt_tucker;
+    c.dphys = d;
+    c.tuck = cell(d,1);
     for i=1:d
-       cr1=crb(psb(i):psb(i+1)-1);
-       cr2=crc(psc(i):psc(i+1)-1);
-       cr1=reshape(cr1,[rb(i),n(i),rb(i+1)]);
-       cr2=reshape(cr2,[rc(i),n(i),rc(i+1)]);
-       cr=zeros(ra(i),n(i),ra(i+1));
-       for j=1:n(i)
-          cr(:,j,:)=kron(reshape(cr1(:,j,:),rb(i),rb(i+1)),reshape(cr2(:,j,:),rc(i),rc(i+1)));
-       end
-       cra(psa(i):psa(i+1)-1)=cr(:);
-    end
-    a.d=d;
-    a.n=n;
-    a.r=ra;
-    a.ps=psa;
-    a.core=cra;
-elseif (nargin == 3)
-     error('Krylov method is not yet supported, come again later');
+        c.tuck{i} = a.tuck{i}.*b.tuck{i};
+    end;
+    c.core = tt_tensor;
+    c.core.d = d;
+    rca = a.core.r;
+    rcb = b.core.r;
+    rta = a.core.n;
+    rtb = b.core.n;
+    c.core.r = rca.*rcb;
+    c.core.n = rta.*rtb;
+    c.core.ps = cumsum([1; c.core.r(1:d).*c.core.n.*c.core.r(2:d+1)]);
+    c.core.core = zeros(c.core.ps(d+1)-1,1);
+    for i=1:d
+        cra = a.core{i};
+        cra = reshape(cra, rca(i)*rta(i)*rca(i+1), 1);
+        crb = b.core{i};
+        crb = reshape(crb, 1, rcb(i)*rtb(i)*rcb(i+1));
+        crc = cra*crb;
+        crc = reshape(crc, rca(i), rta(i), rca(i+1), rcb(i), rtb(i), rcb(i+1));
+        crc = permute(crc, [1, 4, 2, 5, 3, 6]);
+        c.core.core(c.core.ps(i):c.core.ps(i+1)-1) = crc(:);
+    end;
 end
 return
 end

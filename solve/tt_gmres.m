@@ -11,7 +11,7 @@ function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1,
 
 %%%%%%%%%%%%% parameters %%%%%%%%%%%%%%%%%%%
 max_swp=12; % maximum sweeps in mvk2 allowed
-max_sp_factor = 0.5; % maximum stagpoints (as a part of Krylov basis size) allowed
+max_sp_factor = 1.5; % maximum stagpoints (as a part of Krylov basis size) allowed
 max_zrank_factor = 4; % maximum rank of Krylov vectors with respect to the rank of X.
 derr_tol_for_sp = 1.0; % minimal jump of residual at one iteration, which is considered as
                        % a stagnation.
@@ -71,10 +71,10 @@ if (existsM3)
 end;
 % pre_b = tt_stabilize(pre_b,0);
 
-% norm_f = tt_dot2(pre_b,pre_b)*0.5;
-% mod_norm_f = sign(norm_f)*mod(abs(norm_f), 10);
-% order_norm_f = norm_f - mod_norm_f;
-% cur_norm_f = exp(mod_norm_f);
+norm_f = tt_dot2(pre_b,pre_b)*0.5;
+mod_norm_f = sign(norm_f)*mod(abs(norm_f), 10);
+order_norm_f = norm_f - mod_norm_f;
+cur_norm_f = exp(mod_norm_f);
 
 if (existsx0)
     x = x0;
@@ -101,7 +101,7 @@ end;
 % z = cell(maxin, 1);
 
 err=2;
-max_err=2;
+max_err=Inf;
 old_err = 1;
 stagpoints=0;
 
@@ -207,8 +207,10 @@ for nitout=1:maxout
 %         y = beta*VH*SH*(UH(1,:)'); % y = pinv(H)*(beta*e1)
 
 %         err = norm(H(1:j+1, 1:j)*y-[beta zeros(1,j)]', 'fro')/normb;
-        err = log(norm(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', 'fro')/cur_normb+1e-308);
-        err = err+order_beta-order_normb;
+%         err = log(norm(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', 'fro')/cur_normb+1e-308);
+%         err = err+order_beta-order_normb;
+        err = log(norm(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', 'fro')/cur_norm_f+1e-308);
+        err = err+order_beta-order_norm_f;        
         err = exp(err);
         if (use_err_trunc==1)
 %             err_for_trunc=err;
@@ -230,13 +232,14 @@ for nitout=1:maxout
         x_new = x;
         max_x_rank = 0;
 %         dx = tt_scal2(v{j}, log(abs(y(j))+1e-308)+order_beta, sign(y(j)));
-        for i=1:j
+        for i=j:-1:1
 %             dx = tt_add(dx, tt_scal2(v{i}, log(abs(y(i))+1e-308)+order_beta, sign(y(i))));
 %             dx = tt_axpy2(0,1, dx, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);
             x_new = tt_axpy2(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);
 %             x_new = tt_axpy3(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i});
             max_x_rank = max([max_x_rank; tt_ranks(x_new)]);            
         end;
+%         x_new = tt_axpy2(0,1,x,0,1,dx,eps_x);
         if (nargout>3)
             rx(nitout,j)=max_x_rank;
         end;

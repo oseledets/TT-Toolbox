@@ -1,5 +1,5 @@
 rng = 1;
-tdig = 5;
+tdig = 4;
 viewdims = [3,4];
 
 d0t = d0ts(rng);

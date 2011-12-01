@@ -43,8 +43,20 @@ ca.n=na;
 ca.core=corea;
 ca.r=ra;
 ca.ps=cumsum([1;ca.n.*ca.r(1:ca.d).*ca.r(2:ca.d+1)]);
+ta = cell(d,1);
+ismatrix = 0;
 for i=1:d
+   if (isa(tb{i}, 'tt_matrix'))
+       curn = tb{i}.n;
+       curm = tb{i}.m;
+       tb{i} = tt_tensor(tb{i});
+       tc{i} = tt_tensor(tc{i});
+       ismatrix = 1;
+   end;
    ta{i}=[tb{i},tc{i}];
+   if (ismatrix)
+       ta{i} = tt_matrix(ta{i}, curn, curm);
+   end;
 end
 a.core=ca;
 a.tuck=ta;

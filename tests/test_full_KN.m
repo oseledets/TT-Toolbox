@@ -9,7 +9,7 @@ b = 10; % For ILangevin scale only!
 
 h = (2*a)/(2^d0x);
 
-tol = 1e-4;
+tol = 1e-3;
 eps = 1e-8;
 maxit = 1;
 
@@ -72,6 +72,7 @@ Sx = tt_matrix(tt_shf(d0x));
 Grad_x = (Sx - Sx')/(2*h);
 % Grad_x = tt_matrix(Grad_x);
 Grad_x = round(Grad_x, eps);
+% Grad_x = matrix(qtt_tucker(Grad_x.tt, d0x, eps));
 % Grad_x = tt_matrix(IpaS(d0x,-1));
 % Grad_x = Grad_x/h;
 Ix = tt_matrix(tt_eye(2, d0x));
@@ -293,6 +294,8 @@ uSN = tt_tensor(full_to_qtt(exp(-0.5*(x.^2)), eps));
     end;
 % end;
 
+u0 = qtt_tucker(u0, d0x*ones(dpx*dconf,1), eps);
+
 % u0 = x_ex;
 % u0 = round(u0, eps);
 
@@ -407,6 +410,12 @@ for out_t=1:Nt
                 end;
             end;
         end;
+        
+        qtAx = qtt_tucker(Ax.tt, d0x*ones(dpx*dconf,1), eps);
+        
+        Ix = tt_eye(Ax.n, Ax.d);
+        Ix = tt_matrix(Ix);
+        qtIx = qtt_tucker(Ix.tt, d0x*ones(dpx*dconf,1), eps);
 %         u_ex = funcrs2(Vl, @(x)(exp(-x)), tol*0.1, Vl, 25);
 % %         u_ex = tt_rc(Vl.d, Vl.n, @(ind)(exp(-Vl(ind))), tol, 'x0', u0);
 %         while (abs(dot(Ax*u_ex, u_ex)/dot(u_ex,u_ex))>1)
@@ -422,6 +431,9 @@ for out_t=1:Nt
     Grad_t = tt_matrix(Grad_t)/tau;
     It = tt_matrix(tt_eye(2,d0t));
     
+    qtGrad_t = qtt_tucker(Grad_t.tt, d0t, eps);
+    qtIt = qtt_tucker(It.tt, d0t, eps);
+    
 %     G2 = kron2(Grad_t, It);
 %     iGrad_t = dmrg_solve2(G2, It.tt, 1e-10, 'nswp', 50);
 %     iGrad_t = tt_matrix(iGrad_t, 2, 2);
@@ -432,16 +444,24 @@ for out_t=1:Nt
     
     KN_term = IpaS(d0t,1);
     KN_term = tt_matrix(KN_term)*0.5; % Krank-Nikolson term
+    qtKN_term = qtt_tucker(KN_term.tt, d0t, eps);
     
     e1t = cell(d0t,1);
     for i=1:d0t
         e1t{i}=[1;0];
     end;
     e1t = tt_tensor(e1t); % first identity vector for t - we need to put u0 into rhs   
+    e1t = qtt_tucker(e1t, d0t, eps);
     
     % global matrix
-    M = kron(tt_matrix(tt_eye(Ax.n,Ax.d)), Grad_t) + kron(Ax, KN_term);
-    M = round(M, eps);
+%     M = kron(tt_matrix(tt_eye(Ax.n,Ax.d)), Grad_t) + kron(Ax, KN_term);
+%     M = round(M, eps);
+    qtM = kron(qtIx, qtGrad_t)+kron(qtAx, qtKN_term);
+    qtM = round(qtM, eps);
+    qtM = matrix(qtM);
+    
+%     qtM = qtt_tucker(M.tt, [d0x*ones(dpx*dconf,1); d0t], eps);
+%     qtM = matrix(qtM);
     
     % f1 = sin(pi*(1:1:2^d0x)'/(1+2^d0x));
     % u0 = full_to_qtt(f1, 1e-12);
@@ -449,9 +469,14 @@ for out_t=1:Nt
     % u0 = kron(u0,u0);
     
     % u0 = tt_tensor(tt_ones(d0x*dpx, 2));
-    KNm = tt_matrix(tt_eye(Ax.n,Ax.d))/tau - Ax*0.5;
+    
+%     KNm = tt_matrix(tt_eye(Ax.n,Ax.d))/tau - Ax*0.5;
+    qtKNm = qtIx/tau - qtAx*0.5;
+%     qtKNm = qtt_tucker(KNm.tt, d0x*ones(dpx*dconf,1), eps);
+    qtKNm = matrix(qtKNm);    
             
-    u0_rhs = mvk3(KNm, u0, tol, 'nswp', 20); % stuff u0 into rhs of KN scheme
+    u0_rhs = mvrk(qtKNm, u0, tol);
+%     u0_rhs = mvk3(KNm, u0, tol, 'nswp', 20); % stuff u0 into rhs of KN scheme
 %     u0_rhs = u0/tau - (Au0)*0.5; 
 %     u0_rhs = round(u0_rhs, tol);
     rhs = kron(u0_rhs, e1t);
@@ -467,82 +492,107 @@ for out_t=1:Nt
 %     U = kron(u0, tt_tensor(tt_ones(d0t,2)));
 %     U = mvk3(Euler, U, tol);
     
-%     U = tt_random(2, rhs.d, 2);
-    U = kron(u0, tt_tensor(tt_ones(d0t,2)));
+%     U = tt_rand(Ax.n, Ax.d, 2);
+%     U = qtt_tucker(U, d0x*ones(dpx*dconf, 1), eps);
+%     U = kron(u0, qtt_tucker(tt_tensor(tt_ones(d0t,2)), d0t, eps));
     
-    % Prepare the rakes
-    
-    results = zeros(maxit,6);
-    resid_old = 1e15;
-    for i=1:maxit
-        tic;        
-        U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 1, 'nrestart', 25, 'max_full_size', 1500, 'min_dpow', 1);
-        cur_time = toc;
-        
-        if (i==1)
-            U_best = U;
-        end;
-        
-        Mx = mvk3(M,U,tol*5,'nswp',20); % tt_tensor(tt_random(2,rhs.d,2)),1000
-        %     Mx = M*x;
-        resid_true = norm(Mx-rhs)/norm(rhs);
-        %     MMx = mvk(M',Mx,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
-        %     resid = norm(MMx - norm_rhs)/norm(norm_rhs);
-        resid = resid_true;
-        
-        if (i>1)
-            if (resid_true<results(i-1,2))
-                U_best = U;
-            else
-                U=U_best;
-            end;
-        end;
-        
-        fprintf('\n\n\t cur_time: %g\n\t true_resid: %3.3e\n\t norm.resid: %3.3e\n\t erank: %g\n', cur_time, resid_true, resid, erank(U));
-        results(i,1)=i;
-        results(i,2)=resid_true;
-        results(i,3)=resid;
-        results(i,4)=erank(U);
-        results(i,5)=cur_time;
-        pause(0.5);
-        
-        if (resid_true<5*tol)
-            break;
-        end;
-	if ((resid_true/resid_old>1-1e-2)&&(resid_true<tol*1000))
-	    break;
-	end;
-	resid_old = resid_true;
-    end;
+    results = zeros(1,6);
+    tic;
+    U = dmrg_rake_solve2(qtM, rhs, tol);
+    cur_time = toc;    
+    Au = mvrk(qtM, U, tol);
+    resid = norm(Au-rhs)/norm(rhs);
+    results(1,1)=i;
+    results(1,2)=resid;
+%     results(1,3)=erank(U);
+    results(1,4)=cur_time;
+    fprintf('\n\n\t cur_time: %g\n\t true_resid: %3.3e\n\n', cur_time, resid);
+%     results(i,2)
+%     resid_old = 1e15;
+%     for i=1:maxit
+%         tic;        
+%         U = dmrg_solve2(M, rhs, tol, 'x0',U, 'nswp', 50, 'verb', 1, 'nrestart', 25, 'max_full_size', 1500, 'min_dpow', 1);
+%         cur_time = toc;
+%         
+%         if (i==1)
+%             U_best = U;
+%         end;
+%         
+%         Mx = mvk3(M,U,tol*5,'nswp',20); % tt_tensor(tt_random(2,rhs.d,2)),1000
+%         %     Mx = M*x;
+%         resid_true = norm(Mx-rhs)/norm(rhs);
+%         %     MMx = mvk(M',Mx,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
+%         %     resid = norm(MMx - norm_rhs)/norm(norm_rhs);
+%         resid = resid_true;
+%         
+%         if (i>1)
+%             if (resid_true<results(i-1,2))
+%                 U_best = U;
+%             else
+%                 U=U_best;
+%             end;
+%         end;
+%         
+%         fprintf('\n\n\t cur_time: %g\n\t true_resid: %3.3e\n\t norm.resid: %3.3e\n\t erank: %g\n', cur_time, resid_true, resid, erank(U));
+%         results(i,1)=i;
+%         results(i,2)=resid_true;
+%         results(i,3)=resid;
+%         results(i,4)=erank(U);
+%         results(i,5)=cur_time;
+%         pause(0.5);
+%         
+%         if (resid_true<5*tol)
+%             break;
+%         end;
+% 	if ((resid_true/resid_old>1-1e-2)&&(resid_true<tol*1000))
+% 	    break;
+% 	end;
+% 	resid_old = resid_true;
+%     end;
     
     Us{out_t}=U;
     
-    results(:,6)=cumsum(results(:,5));
+%     results(:,6)=cumsum(results(:,5));
     
-    fprintf('sweep\t true resid\t norm. resid \t erank  \t sw. time \t full time\n');
-    for i=1:maxit
-        fprintf('%d\t %3.3e\t %3.3e\t %3.3f  \t %3.5f \t %3.5f\n', results(i,1),results(i,2),results(i,3),results(i,4),results(i,5),results(i,6));
-    end;
+%     fprintf('sweep\t true resid\t norm. resid \t erank  \t sw. time \t full time\n');
+%     for i=1:maxit
+%         fprintf('%d\t %3.3e\t %3.3e\t %3.3f  \t %3.5f \t %3.5f\n', results(i,1),results(i,2),results(i,3),results(i,4),results(i,5),results(i,6));
+%     end;
     
     global_results{out_t+1}=results;
 
     % prepare new start
-    ind = num2cell([1;2]*ones(1,d0x*dpx*dconf), 1);
-%     ind = num2cell([1:2^d0x]'*ones(1,dpx*dconf), 1);
-%     ind(dpx*dconf+1:dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
-    ind(d0x*dpx*dconf+1:d0x*dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
-    u0 = U(ind);
-%     u0 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));    
-    u0 = tt_reshape(u0, 2*ones(d0x*dpx*dconf, 1));    
+    u0 = U;
+    ind = 2*ones(d0t,1);
+    u0.tuck{dpx*dconf+1} = u0.tuck{dpx*dconf+1}(ind);
+    u0.tuck{dpx*dconf+1} = full(u0.tuck{dpx*dconf+1}); % size is 1,rtuck
+    uc = u0.core{dpx*dconf+1};
+    uc = uc*((u0.tuck{dpx*dconf+1}).'); % size is rc1, 1
+    u0.core{dpx*dconf+1} = uc;
+    u0.core = tt_reshape(u0.core, u0.core.n(1:dpx*dconf));
+    u0.tuck = u0.tuck(1:dpx*dconf);
+    u0.dphys = dpx*dconf;
     
-    ons = tt_tensor(tt_ones(u0.d, u0.n));
-    nrm_u = dot(u0,ons);
+    u2 = qtttucker_to_tt(u0.tuck, u0.core);
+%     ind = num2cell([1;2]*ones(1,d0x*dpx*dconf), 1);
+% %     ind = num2cell([1:2^d0x]'*ones(1,dpx*dconf), 1);
+% %     ind(dpx*dconf+1:dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
+%     ind(d0x*dpx*dconf+1:d0x*dpx*dconf+d0t) = num2cell(2*ones(1,d0t), 1);
+%     u0 = U(ind);
+% %     u0 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));    
+%     u0 = tt_reshape(u0, 2*ones(d0x*dpx*dconf, 1));    
+    
+    ons = tt_tensor(tt_ones(u2.d, u2.n));
+    nrm_u = dot(u2,ons);
 %     nrm_u = dot(u0,cw);
     tt = zeros(dpx,dpx);
     for i=1:dconf
         for j=1:dpx
             for k=1:dpx
-                tt(j,k)=tt(j,k)-dot(X{i,j}.*V{i,k}, u0);
+                curXV = X{i,j}.*V{i,k};
+                curXV = tt_reshape(curXV, 2^d0x*ones(dpx*dconf, 1));
+                tt(j,k)=tt(j,k)-dot(curXV, u2);
+%                 tt(j,k)=tt(j,k)-dot(X{i,j}.*V{i,k}, u0);
 %                 tt(j,k)=tt(j,k)-dot(cw.*X{i,j}.*V{i,k}, u0);
             end;
         end;
@@ -562,7 +612,7 @@ for out_t=1:Nt
     etas(out_t+1) = -tt(1,2)/beta;
     psis(out_t+1) = -(tt(1,1)-tt(2,2))/(beta^2);
         
-    u2 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));
+%     u2 = tt_reshape(u0, 2^d0x*ones(dpx*dconf, 1));
 %     u2 = u0;
     n=2^d0x/2+1;
     plotind = 1:max(2^(d0x-7),1):2^d0x;    
@@ -617,8 +667,10 @@ for out_t=1:Nt
 %     figure(4);
 %     mesh(u0f(:,:,4*2^d0x/4));
     
-    Au0 = mvk3(tt_matrix(tt_eye(Ax.n,Ax.d))+Ax, u0, tol, 'nswp', 20);
-    norms_Au(out_t+1) = norm(Au0-u0)/norm(u0);
+    Au = mvrk(matrix(qtAx), u0, tol);
+    norms_Au(out_t+1) = norm(Au)/norm(u0);
+%     Au0 = mvk3(tt_matrix(tt_eye(Ax.n,Ax.d))+Ax, u0, tol, 'nswp', 20);
+%     norms_Au(out_t+1) = norm(Au0-u0)/norm(u0);
     
     fprintf('TimeRange: %d [%g->%g], eta=%3.3e, psi=%3.3e, norm_Au=%3.3e\n', out_t, Trange(out_t), Trange(out_t+1), etas(out_t+1), psis(out_t+1), norms_Au(out_t+1));
     pause(0.5);
