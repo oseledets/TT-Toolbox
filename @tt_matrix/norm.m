@@ -21,14 +21,44 @@ switch typ
   nrm=sqrt(abs(dot(t,t)));
   
  case {'2', 2} % 2-norm written by Thomas Mach
-  eps1=1e-8;
-  s=1; % oversampling p=0
   maxit = 20; % 20 iterations
+  tol = 0.01; % relative norm change
+  eps1=1e-8; % tt-approximation accuracy
+  rmax = 100; % maximal rank
+  diag = 0; % no diagonalization
+  s=1; % oversampling p=0
+  for i=2:2:length(varargin)-1
+    switch lower(varargin{i})
+     case 'maxit'
+      maxit=varargin{i+1};
+     case 'tol'
+      tol=lower(varargin{i+1});
+     case 'x0'
+      x0=varargin{i+1};
+     case 'eps'
+      eps1=varargin{i+1};
+     case 'rmax'
+      rmax=varargin{i+1};
+     case 'diag'
+      diag=varargin{i+1};
+     case 's'
+      s=varargin{i+1};
+     otherwise
+      error('Unrecognized option: %s\n',varargin{i});
+    end
+  end  
   tt=t.tt;
   x = cell(s,1);
   Mx = cell(s,1);
   MU = zeros(s,s);
-  for j=1:s
+  
+  if (exist('x0','var'))
+    x{1}=x0;
+  else
+    r = tt_random(t.n,tt.d,1); % choose structured random test vectors
+    x{1} = tt_tensor(r);
+  end    
+  for j=2:s
     r = tt_random(t.n,tt.d,1); % choose structured random test vectors
     x{j} = tt_tensor(r);
   end
@@ -36,60 +66,65 @@ switch typ
   for j=1:s
     for k=1:j-1
       alpha = -dot(x{k},x{j});
-      x{j} = round(x{j} + alpha*x{k} ,eps1);
+      x{j} = round(x{j} + alpha*x{k} ,eps1,rmax);
     end          
     %norm(x{j})
-    x{j} = round(x{j}/norm(x{j}) ,eps1);
+    x{j} = round(x{j}/norm(x{j}) ,eps1,rmax);
   end;
+  n2 = inf;
   for i=1:maxit
     for j=1:s
-%      Mx{j}=round(t*x{j},eps1);
-      x{j}=round(t*x{j},eps1);
-      x{j}=round(t'*x{j},eps1);
+      if (diag)
+	Mx{j}=round(t*x{j},eps1,rmax);
+      end
+      x{j}=round(t*x{j},eps1,rmax);
+      x{j}=round(t'*x{j},eps1,rmax);
     end
 
 % % diagonalizing
-%     for j=1:s
-%       for k=1:s
-% 	MU(j,k)=dot(x{k},Mx{j});
-%       end
-%     end
-%     [V,D]=eig(MU);
-%     [~,I]=sort(abs(diag(D)),'descend');
-%     V=V(:,I);
-%     %diag(D(I,I))
-%     
-%     for j=1:s
-%       x{j}=0*x{j};
-%     end
-%     for j=1:s
-%       for k=1:s
-% 	x{k} = round(x{k}+Mx{j}*V(j,k),eps1);
-%       end            
-%     end
-
-    if (s>1)
-      s=s-1;
-      MU=MU(1:s,1:s);
+    if (diag)
+      for j=1:s
+	for k=1:s
+	  MU(j,k)=dot(x{k},Mx{j});
+	end
+      end
+      [V,D]=eig(MU);
+      [~,I]=sort(abs(diag(D)),'descend');
+      V=V(:,I);
+      %diag(D(I,I))
+      
+      for j=1:s
+	x{j}=0*x{j};
+      end
+      for j=1:s
+	for k=1:s
+	  x{k} = round(x{k}+Mx{j}*V(j,k),eps1,rmax);
+	end            
+      end
     end
- 
-    % orthonormalize
-    for j=1:s
+    
+% orthonormalize
+    n1=norm(x{1});
+    x{1} = round(x{1}/n1,eps1,rmax);
+    for j=2:s
       for k=1:j-1
 	alpha = -dot(x{k},x{j});
-	x{j} = round(x{j} + alpha*x{k} ,eps1);
+	x{j} = round(x{j} + alpha*x{k} ,eps1,rmax);
       end          
-      x{j} = round(x{j}/norm(x{j}) ,eps1);
-    end; 
+      x{j} = round(x{j}/norm(x{j}) ,eps1,rmax);
+    end
+    if (abs(n2-n1)/abs(n1)<tol) break; % termination by tolerance
+    end 
+    n2=n1;
   end % Iteration
-
+  
   for j=1:s
-    Mx{j}=round(t*x{j},eps1);
-    Mx{j}=round(t'*Mx{j},eps1);
+    Mx{j}=round(t*x{j},eps1,rmax);
+    Mx{j}=round(t'*Mx{j},eps1,rmax);
     for k=1:s
       MU(j,k)=dot(x{k},Mx{j});
     end
   end
-  nrm=sqrt(max(eig(MU))); % approx. from below to the smallest eigenvalue
-return
+  nrm=sqrt(max(eig(MU))); % approx. from below to the largest singular value
+  return
 end
