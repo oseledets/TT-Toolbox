@@ -1,8 +1,13 @@
 function [nrm] = norm(t,varargin)
-% [NRM]=NORM(TT)
-% Frobenius norm of the tt_tensor
-% Extension to 2-norm, second argument like norm for matrices
-% 2-norm is really slow compared with Frobenius norm
+%% [NRM]=NORM(TT)
+% 
+% Matrix norm of tt_matrix
+% The behavior is similar to the Matlab built-in function.
+% For tt_matrices:
+% NORM(TT)/NORM(TT,'fro')/NORM(TT,'F') is the Frobenius norm of the tt_matrix
+% NORM(TT,2)/NORM(TT,'2') is the 2-norm of the tt_matrix
+% The 2-norm is approximated by a power iteration and is much more expensive
+% than the Frobenius norm
 
 if (nargin == 1)
   typ='F';
@@ -15,7 +20,7 @@ switch typ
  case {'fro','F'} % Frobenius norm
   nrm=sqrt(abs(dot(t,t)));
   
- case {'2', 2} % 2-norm
+ case {'2', 2} % 2-norm written by Thomas Mach
   eps1=1e-8;
   s=1; % oversampling p=0
   maxit = 20; % 20 iterations
