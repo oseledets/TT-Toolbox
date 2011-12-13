@@ -5,11 +5,13 @@ cd ../exp
 addpath(pwd)
 cd ../solve
 addpath(pwd)
+cd ../misc
+addpath(pwd)
 cd ../tests
 
 maxNumCompThreads(2)
 
-test_steps
+test_steps3
 
 cd ../
 save mlsave.mat

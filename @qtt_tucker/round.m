@@ -5,6 +5,10 @@ d=tt.dphys;
 core=tt.core;
 tuck=tt.tuck;
 eps=varargin{1};
+rmax = [];
+if (nargin==3)
+    rmax = varargin{2};
+end;
 ismatrix = 0;
 if (isa(tuck{1}, 'tt_matrix'))
     ismatrix = 1;
@@ -20,7 +24,12 @@ for i=1:d
    [tuck{i},rm]=qr(tuck{i},'lr');
    core{i}=ten_conv(core{i},2,rm.');
 end
-core=round(core,eps); %Round the core --- we know the result comes
+if (isempty(rmax))
+    core=round(core,eps); 
+else
+    core=round(core,eps,rmax); 
+end;
+%Round the core --- we know the result comes
 %with rl orthogonality? -< No, we don't
 [core, nrm] = qr(core, 'lr');
 core{d} = core{d}*nrm;
@@ -34,7 +43,11 @@ for i=d:-1:1
    r=my_chop2(s,norm(s)*eps);
    u=u(:,1:r); s=s(1:r); v=v(:,1:r);
    tuck{i}=tuck{i}*(u*diag(s)); 
-   tuck{i}=round(tuck{i},eps);
+   if (isempty(rmax))
+       tuck{i}=round(tuck{i},eps/sqrt(d));
+   else
+       tuck{i}=round(tuck{i},eps/sqrt(d), rmax);
+   end;
    [tuck{i},rm]=qr(tuck{i},'lr');
    cr=rm*v';
    cr=reshape(cr,[r,rtt(i),rtt(i+1)]);

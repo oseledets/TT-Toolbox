@@ -4,11 +4,13 @@ nswp = 20;
 local_format = 'full';
 % local_format = 'tt';
 max_full_size = 1500;
-max_full_size2 = 150000;
-nrestart = 10;
-gmres_iters = 10;
+max_full_size2 = Inf;
+nrestart = 40;
+gmres_iters = 5;
 verb = 1;
 kickrank = 2;
+resid_damp_glob = 1.5;
+resid_damp_loc = 1.5;
 
 x = [];
 
@@ -121,6 +123,8 @@ for i=1:d
     phfyt{i} = cell(L(i)+1,1);
     phfyt{i}{L(i)+1}=1;        
 end;
+
+last_sweep = false;
 
 for swp=1:nswp
     dx_max = 0;
@@ -270,22 +274,35 @@ for swp=1:nswp
         a1left = permute(a1left, [1,3,2]);
         a1left = reshape(a1left, rcx(i)*rcx(i), rcA(i));
         a1left = a1left*reshape(Ac{i}, rcA(i), rta*rcA(i+1));
-        % a1left is to use later to compute phcAl
-        ph2 = phcAr{i+1};
-        ph2 = permute(ph2, [2, 1, 3]);
-        ph2 = reshape(ph2, rcA(i+1), rcx(i+1)*rcx(i+1));
-        a1top = reshape(a1left, rcx(i)*rcx(i)*rta, rcA(i+1))*ph2;
-        a1top = reshape(a1top, rcx(i), rcx(i), rta, rcx(i+1), rcx(i+1));
-        a1top = permute(a1top, [1, 4, 2, 5, 3]);
-        % we need a1 as well, to check the  residual in tucker block
-        % splitting
-        a1top = reshape(a1top, rcx(i)*rcx(i+1)*rcx(i)*rcx(i+1), rta);
+        % old
+%         % a1left is to use later to compute phcAl
+%         ph2 = phcAr{i+1};
+%         ph2 = permute(ph2, [2, 1, 3]);
+%         ph2 = reshape(ph2, rcA(i+1), rcx(i+1)*rcx(i+1));
+%         a1top = reshape(a1left, rcx(i)*rcx(i)*rta, rcA(i+1))*ph2;
+%         a1top = reshape(a1top, rcx(i), rcx(i), rta, rcx(i+1), rcx(i+1));
+%         a1top = permute(a1top, [1, 4, 2, 5, 3]);
+%         % we need a1 as well, to check the  residual in tucker block
+%         % splitting
+%         a1top = reshape(a1top, rcx(i)*rcx(i+1)*rcx(i)*rcx(i+1), rta);
+        % new
+        a1left = reshape(a1left, rcx(i)*rcx(i), rta, rcA(i+1));
+        a1left = permute(a1left, [2, 1, 3]);
+        a1left = reshape(a1left, rta, rcx(i)*rcx(i)*rcA(i+1));
+        
         a2 = Af{i}{L(i)};
         a2 = reshape(a2, rfA(L(i),i)*n(L(i),i)*n(L(i),i), rta);
-        a2 = a2*a1top.';
-        a2 = reshape(a2, rfA(L(i),i), n(L(i),i), n(L(i),i), rcx(i)*rcx(i+1), rcx(i)*rcx(i+1));
-        a2 = permute(a2, [1, 2, 4, 3, 5]);
-        a2 = reshape(a2, rfA(L(i),i), n(L(i),i)*rcx(i)*rcx(i+1), n(L(i),i)*rcx(i)*rcx(i+1), 1);
+        % old
+%         a2 = a2*a1top.';       
+%         a2 = reshape(a2, rfA(L(i),i), n(L(i),i), n(L(i),i), rcx(i)*rcx(i+1), rcx(i)*rcx(i+1));
+%         a2 = permute(a2, [1, 2, 4, 3, 5]);
+%         a2 = reshape(a2, rfA(L(i),i), n(L(i),i)*rcx(i)*rcx(i+1), n(L(i),i)*rcx(i)*rcx(i+1), 1);
+        % new
+        a2 = a2*a1left;
+        a2 = reshape(a2, rfA(L(i),i), n(L(i),i), n(L(i),i), rcx(i), rcx(i), rcA(i+1));
+        a2 = permute(a2, [1, 2, 4, 3, 5, 6]);
+        a2 = reshape(a2, rfA(L(i),i), n(L(i),i)*rcx(i), n(L(i),i)*rcx(i), rcA(i+1));
+        
         Afr = Af{i};
         Afr{L(i)} = a2;
         
@@ -321,21 +338,30 @@ for swp=1:nswp
         currx = xfr.r;
         % DMRG over the factor from L(i) to 1
         for j=L(i):-1:2
-            a2 = phfAt{i}{j+1};
-            a2 = permute(a2, [2, 1, 3]);
-            a2 = reshape(a2, curra(j+1), currx(j+1)*currx(j+1));
-            a2 = reshape(Afr{j}, curra(j)*curn(j)*curn(j), curra(j+1))*a2;
-            a2 = reshape(a2, curra(j), curn(j), curn(j), currx(j+1), currx(j+1));
-            a2 = permute(a2, [2, 4, 3, 5, 1]);
-            a2 = reshape(a2, curn(j)*currx(j+1), curn(j)*currx(j+1), curra(j));
-
-            a1 = phfAb{i}{j-1};
-            a1 = permute(a1, [1, 3, 2]);
-            a1 = reshape(a1, currx(j-1)*currx(j-1), curra(j-1));
-            a1 = a1*reshape(Afr{j-1}, curra(j-1), curn(j-1)*curn(j-1)*curra(j));
-            a1 = reshape(a1, currx(j-1), currx(j-1), curn(j-1), curn(j-1), curra(j));
-            a1 = permute(a1, [1, 3, 2, 4, 5]);
-            a1 = reshape(a1, currx(j-1)*curn(j-1), currx(j-1)*curn(j-1), curra(j));
+            % new
+            if (j<L(i))
+                Phi2 = phfAt{i}{j+1};
+            else
+                Phi2 = phcAr{i+1};
+            end;
+            a2 = Afr{j};
+            a1 = Afr{j-1};
+            Phi1 = phfAb{i}{j-1};
+            % old 
+%             a2 = phfAt{i}{j+1};
+%             a2 = permute(a2, [2, 1, 3]);
+%             a2 = reshape(a2, curra(j+1), currx(j+1)*currx(j+1));
+%             a2 = reshape(Afr{j}, curra(j)*curn(j)*curn(j), curra(j+1))*a2;
+%             a2 = reshape(a2, curra(j), curn(j), curn(j), currx(j+1), currx(j+1));
+%             a2 = permute(a2, [2, 4, 3, 5, 1]);
+%             a2 = reshape(a2, curn(j)*currx(j+1), curn(j)*currx(j+1), curra(j));
+%             a1 = phfAb{i}{j-1};
+%             a1 = permute(a1, [1, 3, 2]);
+%             a1 = reshape(a1, currx(j-1)*currx(j-1), curra(j-1));
+%             a1 = a1*reshape(Afr{j-1}, curra(j-1), curn(j-1)*curn(j-1)*curra(j));
+%             a1 = reshape(a1, currx(j-1), currx(j-1), curn(j-1), curn(j-1), curra(j));
+%             a1 = permute(a1, [1, 3, 2, 4, 5]);
+%             a1 = reshape(a1, currx(j-1)*curn(j-1), currx(j-1)*curn(j-1), curra(j));
             
             y2 = phfyt{i}{j+1}.';            
             y2 = reshape(yfr{j}, curry(j)*curn(j), curry(j+1))*y2;
@@ -350,6 +376,12 @@ for swp=1:nswp
             x2 = x2.';
             x1 = reshape(xfr{j-1}, currx(j-1)*curn(j-1), currx(j));
             
+            % new
+            if (j==L(i))
+                currx(j+1)=rcx(i+1);
+                curn(j) = n(L(i),i)*rcx(i);
+            end;
+            
             if (verb>1)
                 fprintf('=rake_solve2= swp %d, factor {%d}{%d}, ', swp, i, j);
             end;
@@ -357,13 +389,21 @@ for swp=1:nswp
             if (currx(j-1)*curn(j-1)*curn(j)*currx(j+1)>max_full_size2)
                 local_format = 'tt';
             end;
-            [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
+            % old
+%             [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
+%                 currx(j-1), curn(j-1), curn(j), currx(j+1), curra(j), ...
+%                 tol/sqrt(L(i))/sqrt(d)/2, res_max, dx_max, ...
+%                 local_format, max_full_size, nrestart, gmres_iters, verb); 
+            % new
+            [u,s,v,r,dx_max,res_max]=local_solve(Phi1,a1, a2, Phi2, y1, y2, x1, x2, ...
                 currx(j-1), curn(j-1), curn(j), currx(j+1), curra(j), ...
-                tol/sqrt(L(i))/sqrt(d)/2, res_max, dx_max, ...
+                tol/sqrt(L(i))/sqrt(d), res_max, dx_max, resid_damp_loc, ...
                 local_format, max_full_size, nrestart, gmres_iters, verb);
             u = u*s;
             % kick
-            v = reort(v, randn(curn(j)*currx(j+1), kickrank));
+            if (~last_sweep)
+                v = reort(v, randn(curn(j)*currx(j+1), kickrank));
+            end;
             radd = size(v,2)-r;
             u = [u, zeros(currx(j-1)*curn(j-1), radd)];
             r = r+radd;
@@ -372,14 +412,17 @@ for swp=1:nswp
             currx(j) = r;
             rfx(j,i)=r;
             r_max = max(r_max, r);
+            % old
             % new phis
-            a2 = permute(a2, [1, 3, 2]);
-            a2 = reshape(a2, curn(j)*currx(j+1)*curra(j), curn(j)*currx(j+1));
-            a2 = a2*v;
-            a2 = reshape(a2, curn(j)*currx(j+1), curra(j)*r);
-            a2 = (v')*a2;
-            phfAt{i}{j} = reshape(a2, r, curra(j), r);
+%             a2 = permute(a2, [1, 3, 2]);
+%             a2 = reshape(a2, curn(j)*currx(j+1)*curra(j), curn(j)*currx(j+1));
+%             a2 = a2*v;
+%             a2 = reshape(a2, curn(j)*currx(j+1), curra(j)*r);
+%             a2 = (v')*a2;
+%             phfAt{i}{j} = reshape(a2, r, curra(j), r);
             phfyt{i}{j} = (v')*y2;
+            %new
+            phfAt{i}{j} = compute_next_Phi(Phi2, xfr{j}, a2, xfr{j}, 'rl');
         end;
         
 %         fprintf('=rake_solve========= factor {%d} processing, Sweep %d =======\n', i, swp);
@@ -415,17 +458,24 @@ for swp=1:nswp
                 cr = reshape(cr, rfx(j,i)*n(j,i), rcx(i)*rcx(i+1));
                 [u,s,v]=svd(cr, 'econ');
                 % Prepare the local matrix and rhs for residue check
-                curA = cell(2,1);
-                curA{2} = reshape(a1top, rcx(i)*rcx(i+1), rcx(i)*rcx(i+1), rta);
-                curA{1} = Af{i}{L(i)};
-                curA{1} = reshape(curA{1}, rfA(j,i), n(j,i)*n(j,i)*rta);
-                ph2 = phfAb{i}{j};
-                ph2 = permute(ph2, [1,3,2]);
-                ph2 = reshape(ph2, rfx(j,i)*rfx(j,i), rfA(j,i));
-                curA{1} = ph2*curA{1};
-                curA{1} = reshape(curA{1}, rfx(j,i), rfx(j,i), n(j,i), n(j,i), rta);
-                curA{1} = permute(curA{1}, [1, 3, 2, 4, 5]);
-                curA{1} = reshape(curA{1}, rfx(j,i)*n(j,i), rfx(j,i)*n(j,i), rta);
+                % new
+                Phi2 = phcAr{i+1};
+                curA2 = reshape(a1left, rta, rcx(i), rcx(i), rcA(i+1));
+                curA1 = Af{i}{L(i)};
+                Phi1 = phfAb{i}{j};
+                % old
+%                 curA = cell(2,1);
+%                 curA{2} = reshape(a1top, rcx(i)*rcx(i+1), rcx(i)*rcx(i+1), rta);
+%                 curA{1} = Af{i}{L(i)};
+%                 curA{1} = reshape(curA{1}, rfA(j,i), n(j,i)*n(j,i)*rta);
+%                 ph2 = phfAb{i}{j};
+%                 ph2 = permute(ph2, [1,3,2]);
+%                 ph2 = reshape(ph2, rfx(j,i)*rfx(j,i), rfA(j,i));
+%                 curA{1} = ph2*curA{1};
+%                 curA{1} = reshape(curA{1}, rfx(j,i), rfx(j,i), n(j,i), n(j,i), rta);
+%                 curA{1} = permute(curA{1}, [1, 3, 2, 4, 5]);
+%                 curA{1} = reshape(curA{1}, rfx(j,i)*n(j,i), rfx(j,i)*n(j,i), rta);
+                
                 rhs = reshape(yf{i}{j}, rfy(j,i), n(j,i)*rty);
                 rhs = phfyb{i}{j}*rhs;
                 rhs = reshape(rhs, rfx(j,i)*n(j,i), rty);
@@ -433,10 +483,16 @@ for swp=1:nswp
                 rhs = reshape(rhs, rfx(j,i)*n(j,i)*rcx(i)*rcx(i+1),1);
                 r = 1;
                 normy = norm(rhs);
-                res_true = norm(bfun2(curA, cr, rfx(j,i), n(j,i), rcx(i), rcx(i+1), rfx(j,i), n(j,i), rcx(i), rcx(i+1))-rhs)/normy;
+                % old
+%                 res_true = norm(bfun2(curA, cr, rfx(j,i), n(j,i), rcx(i), rcx(i+1), rfx(j,i), n(j,i), rcx(i), rcx(i+1))-rhs)/normy;
+                % new
+                res_true = norm(bfun3(Phi1, curA1, curA2, Phi2, cr)-rhs)/normy;
                 while (r<=size(s,1))
                     cursol = u(:,1:r)*s(1:r,1:r)*(v(:,1:r)');
-                    res = norm(bfun2(curA, cursol, rfx(j,i), n(j,i), rcx(i), rcx(i+1), rfx(j,i), n(j,i), rcx(i), rcx(i+1))-rhs)/normy;
+                    % old
+%                     res = norm(bfun2(curA, cursol, rfx(j,i), n(j,i), rcx(i), rcx(i+1), rfx(j,i), n(j,i), rcx(i), rcx(i+1))-rhs)/normy;
+                    % new
+                    res = norm(bfun3(Phi1, curA1, curA2, Phi2, cursol)-rhs)/normy;
                     if (res<max(tol/sqrt(L(i)), res_true*2))
                         break;
                     end;
@@ -449,7 +505,9 @@ for swp=1:nswp
                 v = conj(v(:,1:r));
                 s = s(1:r,1:r);
                 v = v*s;
-                u = reort(u, randn(rfx(j,i)*n(j,i), kickrank));
+                if (~last_sweep)
+                    u = reort(u, randn(rfx(j,i)*n(j,i), kickrank));
+                end;
                 radd = size(u,2)-r;
                 v = [v, zeros(rcx(i)*rcx(i+1), radd)];
                 r = r+radd;
@@ -480,19 +538,24 @@ for swp=1:nswp
             ra2 = rcA(i+1); ra3 = rcA(i+2); 
             ry2 = rcy(i+1); ry3 = rcy(i+2); 
             % Acr and ycr are okey, except the i-th core
-            a1 = reshape(a1left, rx1*rx1, rta, ra2);
-            a1 = core_matrix(a1, phAfc{i});
-            a1 = reshape(a1, rx1, rx1, rtx, rtx, ra2);
-            a1 = permute(a1, [1, 3, 2, 4, 5]);
-            a1 = reshape(a1, rx1*rtx, rx1*rtx, ra2);
-            
-            a2 = phcAr{i+2};
-            a2 = permute(a2, [2, 1, 3]);
-            a2 = reshape(a2, ra3, rx3*rx3);
-            a2 = reshape(Acr{i+1}, ra2*rtx2*rtx2, ra3)*a2;
-            a2 = reshape(a2, ra2, rtx2, rtx2, rx3, rx3);
-            a2 = permute(a2, [2, 4, 3, 5, 1]);
-            a2 = reshape(a2, rtx2*rx3, rtx2*rx3, ra2);
+            % new
+            Phi1 = phcAl{i};
+            a1 = core_matrix(Ac{i}, phAfc{i});
+            a2 = Acr{i+1};
+            Phi2 = phcAr{i+2};
+            % old
+%             a1 = reshape(a1left, rx1*rx1, rta, ra2);
+%             a1 = core_matrix(a1, phAfc{i});
+%             a1 = reshape(a1, rx1, rx1, rtx, rtx, ra2);
+%             a1 = permute(a1, [1, 3, 2, 4, 5]);
+%             a1 = reshape(a1, rx1*rtx, rx1*rtx, ra2);            
+%             a2 = phcAr{i+2};
+%             a2 = permute(a2, [2, 1, 3]);
+%             a2 = reshape(a2, ra3, rx3*rx3);
+%             a2 = reshape(Acr{i+1}, ra2*rtx2*rtx2, ra3)*a2;
+%             a2 = reshape(a2, ra2, rtx2, rtx2, rx3, rx3);
+%             a2 = permute(a2, [2, 4, 3, 5, 1]);
+%             a2 = reshape(a2, rtx2*rx3, rtx2*rx3, ra2);
             
             y1 = reshape(y1left, rx1, rty, ry2);
             y1 = core_vector(y1, phyfc{i});
@@ -514,13 +577,22 @@ for swp=1:nswp
             if (rx1*rtx*rtx2*rx3>max_full_size2)
                 local_format = 'tt';
             end;            
-            [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
+            % new
+            [u,s,v,r,dx_max,res_max]=local_solve(Phi1, a1, a2, Phi2, y1, y2, x1, x2, ...
                 rx1, rtx, rtx2, rx3, ra2, ...
-                tol/sqrt(d)/2, res_max, dx_max, ...
+                tol/sqrt(d), res_max, dx_max, resid_damp_loc,...
                 local_format, max_full_size, nrestart, gmres_iters, verb);
+            % old
+%             [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
+%                 rx1, rtx, rtx2, rx3, ra2, ...
+%                 tol/sqrt(d)/2, res_max, dx_max, ...
+%                 local_format, max_full_size, nrestart, gmres_iters, verb);
+            
             v = v*s;
             % kick
-            u = reort(u, randn(rx1*rtx, kickrank));
+            if (~last_sweep)
+                u = reort(u, randn(rx1*rtx, kickrank));
+            end;
             radd = size(u,2)-r;
             v = [v, zeros(rtx2*rx3, radd)];
             r = r+radd;
@@ -529,13 +601,16 @@ for swp=1:nswp
             rcx(i+1)=r;
             r_max = max(r_max, r);
             % new phis
-            a1 = permute(a1, [1, 3, 2]);
-            a1 = reshape(a1, rx1*rtx*ra2, rx1*rtx);
-            a1 = a1*u;
-            a1 = reshape(a1, rx1*rtx, ra2*r);
-            a1 = (u')*a1;
-            phcAl{i+1} = reshape(a1, r, ra2, r);
-            phcyl{i+1} = (u')*y1;            
+            % old
+%             a1 = permute(a1, [1, 3, 2]);
+%             a1 = reshape(a1, rx1*rtx*ra2, rx1*rtx);
+%             a1 = a1*u;
+%             a1 = reshape(a1, rx1*rtx, ra2*r);
+%             a1 = (u')*a1;
+%             phcAl{i+1} = reshape(a1, r, ra2, r);
+            phcyl{i+1} = (u')*y1; 
+            % new
+            phcAl{i+1} = compute_next_Phi(phcAl{i}, xc{i}, a1, xc{i}, 'lr');
             
 %             cr = xc{i};
 %             cr = reshape(cr, rcx(i)*rtx, rcx(i+1));
@@ -579,9 +654,11 @@ for swp=1:nswp
     if (verb>0)
         fprintf('\n=rake_solve2= swp %d, dx_max: %3.3e, res_max: %3.3e, r_max: %d\n\n', swp, dx_max, res_max, r_max);
     end;
-    
-    if (res_max<tol)
+    if (last_sweep)
         break;
+    end;
+    if (res_max<tol*resid_damp_glob)||(swp==nswp-1)
+        last_sweep = true;
     end;
 end;
 
@@ -685,19 +762,59 @@ rB=size(B{1},3);
 x = reshape(x, rxm1*m1, m2*rxm3);
 B1 = permute(B{1}, [3 1 2]);
 B1 = reshape(B1, rB*rxn1*k1, rxm1*m1);
-y = B1*x; % size rB*rxn1*k1,m2*rxm3
+y = B1*x; % size rB*rxn1*k1,m2*rxm3  % cplx rB*rx^3*n^3
 y = reshape(y, rB, rxn1*k1, m2*rxm3);
 y = permute(y, [3 1 2]);
 y = reshape(y, m2*rxm3*rB, rxn1*k1);
 B2 = reshape(B{2}, k2*rxn3, m2*rxm3*rB);
-y = B2*y; % size k2*rxn3,rxn1*k1
+y = B2*y; % size k2*rxn3,rxn1*k1 % cplx rB*rx^3*n^3
 y = reshape(y.', rxn1*k1*k2*rxn3, 1);
 end
 
 
-function [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
+function [y]=bfun3(Phi1,B1,B2,Phi2, x)
+% Computes (Phi1 * B1 * B2 * Phi2)*x
+% Phi1 is of sizes ry1, rB1, rx1
+% B1 is of sizes rB1, k1, m1, rB2
+% B2 is of sizes rB2, k2, m2, rB3
+% Phi2 is of sizes ry3, rB3, rx3
+ry1 = size(Phi1,1); ry3 = size(Phi2,1);
+rx1 = size(Phi1,3); rx3 = size(Phi2,3);
+rb1=size(B1,1); rb2=size(B1,4); rb3 = size(B2, 4);
+m1 = size(B1,3); m2 = size(B2,3);
+k1 = size(B1,2); k2 = size(B2,2);
+
+y = reshape(x, rx1, m1*m2*rx3);
+Phi1 = reshape(Phi1, ry1*rb1, rx1);
+y = Phi1*y; % size ry1*rb1,m1*m2*rx3 % cplx rb*rx^3*m^2
+y = reshape(y, ry1, rb1*m1, m2, rx3);
+y = permute(y, [2, 1, 3, 4]);
+y = reshape(y, rb1*m1, ry1*m2*rx3);
+B1 = permute(B1, [2, 4, 1, 3]);
+B1 = reshape(B1, k1*rb2, rb1*m1);
+y = B1*y; % size k1*rb2, ry1*m2*rx3 % cplx rb^2*rx^2*n^3
+y = reshape(y, k1, rb2, ry1, m2, rx3);
+y = permute(y, [2, 4, 3, 1, 5]);
+y = reshape(y, rb2*m2, ry1*k1*rx3);
+B2 = permute(B2, [2, 4, 1, 3]);
+B2 = reshape(B2, k2*rb3, rb2*m2);
+y = B2*y; % size k2*rb3, ry1*k1*rx3 % cplx rb^2*rx^2*n^3
+y = reshape(y, k2, rb3, ry1*k1, rx3);
+y = permute(y, [2, 4, 3, 1]);
+y = reshape(y, rb3*rx3, ry1*k1*k2);
+Phi2 = reshape(Phi2, ry3, rb3*rx3);
+y = Phi2*y; % size ry3, ry1*k1*k2 % cplx rb*rx^3*n^2
+y = y.';
+y = reshape(y, ry1*k1*k2*ry3, 1);
+end
+
+
+% old
+% function [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
+% new
+function [u,s,v,r,dx_max,res_max]=local_solve(Phi1,a1, a2, Phi2, y1, y2, x1, x2, ...
     rx1, n1, n2, rx3, ra2, ...
-    real_tol, res_max, dx_max, ...
+    real_tol, res_max, dx_max,  resid_damp, ...
     local_format, max_full_size, nrestart, gmres_iters, verb)
 
 if (strcmp(local_format, 'full'))
@@ -707,10 +824,29 @@ if (strcmp(local_format, 'full'))
     rhs = rhs(:);
     normy = norm(rhs);
     if (rx1*n1*n2*rx3<max_full_size)
-        B = reshape(a1, rx1*n1*rx1*n1, ra2);
-        B = B*(reshape(a2, n2*rx3*n2*rx3, ra2).');
-        B = reshape(B, rx1*n1,  rx1*n1, n2*rx3, n2*rx3);
-        B = permute(B, [1, 3, 2, 4]);
+        % new
+        B = permute(Phi1, [1,3,2]);
+        B = reshape(B, rx1*rx1, size(a1,1));
+        a1 = reshape(a1, size(a1,1), n1*n1*ra2);
+        B = B*a1;
+        B = reshape(B, rx1, rx1, n1, n1, ra2);
+        B = permute(B, [1, 3, 2, 4, 5]);
+        B = reshape(B, rx1*n1*rx1*n1, ra2);
+        ra3 = size(a2,4);
+        a2 = reshape(a2, ra2, n2*n2*ra3);
+        B = B*a2;
+        B = reshape(B, rx1*n1*rx1*n1*n2*n2, ra3);
+        Phi2 = permute(Phi2, [2, 1, 3]);
+        Phi2 = reshape(Phi2, ra3, rx3*rx3);
+        B = B*Phi2;
+        B = reshape(B, rx1*n1, rx1*n1, n2, n2, rx3, rx3);
+        B = permute(B, [1, 3, 5, 2, 4, 6]);  
+        % old
+%         B = reshape(a1, rx1*n1*rx1*n1, ra2);
+%         B = B*(reshape(a2, n2*rx3*n2*rx3, ra2).');
+%         B = reshape(B, rx1*n1,  rx1*n1, n2*rx3, n2*rx3);
+%         B = permute(B, [1, 3, 2, 4]);
+
         B = reshape(B, rx1*n1*n2*rx3, rx1*n1*n2*rx3);
         sol = B \ rhs;
         res_true = norm(B*sol-rhs)/normy;
@@ -719,10 +855,27 @@ if (strcmp(local_format, 'full'))
         B = cell(2,1);
         B{1} = a1;
         B{2} = a2;
-        [sol,flg]=gmres(@(v)bfun2(B, v, rx1, n1, n2, rx3, rx1, n1, n2, rx3), rhs, ...
-            nrestart, real_tol, gmres_iters, [], [], sol_prev);
-        res_true = norm(bfun2(B, sol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
-        res_prev = norm(bfun2(B, sol_prev, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+        % old
+%         res_prev = norm(bfun2(B, sol_prev, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+        % new
+        res_prev = norm(bfun3(Phi1, a1, a2, Phi2, sol_prev)-rhs)/normy;
+
+%         sol = als_solve_rx_2(B, rhs, real_tol, 10, sol_prev, [], 3);
+%         [sol,flg]=bicgstab(@(v)bfun2(B, v, rx1, n1, n2, rx3, rx1, n1, n2, rx3), rhs, ...
+%             max(real_tol,res_prev*0.1), nrestart*gmres_iters, [], [], sol_prev);
+        % old
+%         [sol,flg]=gmres(@(v)bfun2(B, v, rx1, n1, n2, rx3, rx1, n1, n2, rx3), rhs, ...
+%             nrestart, max(real_tol,res_prev*0.05), gmres_iters, [], [], sol_prev);
+        % new
+        [sol,flg]=gmres(@(v)bfun3(Phi1, a1, a2, Phi2, v), rhs, ...
+            nrestart, max(real_tol/resid_damp,res_prev*0), gmres_iters, [], [], sol_prev);
+        if (flg>0)
+            fprintf('--warn-- gmres did not converge\n');
+        end;
+        % old
+%         res_true = norm(bfun2(B, sol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;        
+        % new
+        res_true = norm(bfun3(Phi1, a1, a2, Phi2, sol)-rhs)/normy;        
     end;
     
     dx = norm(sol-sol_prev)/norm(sol);
@@ -732,19 +885,41 @@ if (strcmp(local_format, 'full'))
     sol = reshape(sol, rx1*n1, n2*rx3);
     [u,s,v]=svd(sol, 'econ');
     s = diag(s);
-    r = 1;
+    r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
+    while (r2-r1>1)        
+        cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+        if (rx1*n1*n2*rx3<max_full_size)
+            res = norm(B*cursol(:)-rhs)/normy;
+        else
+            % old
+%             res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+            % new
+            res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
+        end;
+        if (res<max(real_tol, res_true)*resid_damp)
+            r2 = r;
+        else
+            r1 = r;
+        end;       
+        r = round((r1+r2)/2);
+    end;
+%     r = 1;
     while (r<=numel(s))
         cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
         if (rx1*n1*n2*rx3<max_full_size)
             res = norm(B*cursol(:)-rhs)/normy;
         else
-            res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+            % old
+%             res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+            % new
+            res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
         end;
-        if (res<max(real_tol*2, res_true*2))
+        if (res<max(real_tol, res_true)*resid_damp)
             break;
         end;
         r = r+1;
     end;
+    r = min(r, numel(s));
     if (verb>1)
         fprintf('dx: %3.3e, res: %3.3e, res_prev: %3.3e, r: %d\n', dx, res, res_prev, r);
     end;
@@ -770,7 +945,7 @@ else
     res_prev = tt_dist3(drhs, rhs)/normy; 
     drhs = tt_add(rhs, tt_scal(drhs, -1));
     drhs = tt_compr2(drhs, real_tol);
-    dsol = tt_gmres(B, drhs, real_tol*2/res_prev, gmres_iters, nrestart, real_tol, real_tol, iB, [], [], [], 1);
+    dsol = tt_gmres(B, drhs, real_tol*resid_damp_loc/res_prev, gmres_iters, nrestart, real_tol, real_tol, iB, [], [], [], 1);
 %     sol = tt_gmres(B, rhs, real_tol*2, gmres_iters*5, nrestart/5, real_tol, real_tol, iB, [], [], sol_prev, 1);
     sol = tt_add(sol_prev, dsol);
     sol = tt_compr2(sol, real_tol);

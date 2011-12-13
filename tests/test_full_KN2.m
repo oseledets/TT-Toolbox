@@ -18,13 +18,19 @@ Ax = Ax/(h^2);
 
 Ix = tt_matrix(tt_eye(2, dpx*d0x));
 
+x = (-a+h:h:b-h)';
+x = tt_tensor(x);
+x = tt_reshape(x, 2*ones(d0x, 1), eps);
+e1 = tt_tensor(tt_ones(d0x, 2));
 % u0 = zeros(2^d0x,2^d0x);
 % u0(2:2^d0x-1, 2:2^d0x-1)=1;
 % u0 = tt_tensor(full_to_qtt(u0, eps, d0x*dpx));
-u0 = tt_tensor(tt_ones(d0x*dpx,2));
+% u0 = tt_tensor(tt_ones(d0x*dpx,2));
+u0 = kron(x.*(e1-x), e1).*kron(e1, x.*(e1-x));
+u0 = round(u0, eps);
 keyboard;
 
-spacial_rhs = u0;
+spacial_rhs = u0*0;
 
 % Now letz init the combined timestep procedure
 ttimes = zeros(1, max(size(tranges))-1);
@@ -71,10 +77,12 @@ for out_t=1:max(size(tranges))-1
     U = tt_random(2, rhs.d, 2);
     
     tic;
-    [U,swps] = dmrg_solve2(M, rhs, U, tol, [], [], 100, []);
+%     [U,swps] = dmrg_solve2(M, rhs, U, tol, [], [], 100, []);
+    [U,swps] = dmrg_solve2(M, rhs, tol, 'x0', U, 'nswp', 20);
     ttimes(out_t) = toc;
     
-    Mx = mvk(M,U,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
+%     Mx = mvk(M,U,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);
+    Mx = mvk3(M,U,tol);
     %     Mx = M*x;
     resids(out_t) = norm(Mx-rhs)/norm(rhs);
         
@@ -90,5 +98,5 @@ for out_t=1:max(size(tranges))-1
     u0 = tt_tensor(u0);
     
     fprintf('Time range: [%g; %g], solve_time = %g, resid = %3.3e, swps: %d\n', tranges(out_t), tranges(out_t+1), ttimes(out_t), resids(out_t), swps);
-    keyboard;
+%     keyboard;
 end;
