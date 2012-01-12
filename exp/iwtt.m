@@ -10,7 +10,7 @@ function [w]=iwtt_loc(v,u,r,sz)
 %Applies Inverse WTT transform to vector V with linear filters U 
 %and ranks R
 %SZ is optional
-if ( nargin == 3 )
+if ( nargin == 1 )
   sz=size(v);% d=numel(sz);
 else
  % d=numel(sz);

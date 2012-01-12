@@ -2,6 +2,7 @@ function t = qtt_tucker(varargin)
 %QTT_TUCKER class constructor (mixed TT format for the core + QTT format
 % for the factors
 %QTT_TUCKER(ARRAY,SZ,EPS)
+%sz is the cell array, containing Q-dimensions of the factors
 
 if (nargin == 0)
     t.core=tt_tensor; %The Tucker core
@@ -21,18 +22,6 @@ if (nargin == 1) && isa(varargin{1}, 'qtt_tucker')
     t.dphys=varargin{1}.dphys;
     return;
 end
-%From tt_matrix (unfold)
-%if ( nargin == 1 ) && isa(varargin{1},'tt_matrix');
-%  tm=varargin{1};
-%  t=tm.tt;
-%  return;
-%end
-%From tt_array (stack)
-%if ( nargin == 1 ) && isa(varargin{1},'tt_array');
-%  ta=varargin{1};
-%  t=ta.tt;
-%  return;
-%end
 
 %from tt_tensor (ordinary one or QTT)
 if ( isa(varargin{1},'tt_tensor') )

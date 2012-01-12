@@ -36,17 +36,22 @@ ten_ind1=[ten_ind1, ind1];
 % permute indices in ten1
 ten1=permute(ten1, ten_ind1);
 
-mod_size1=zeros(1,size1-col_conv_ind1);
-full_size1=1;
-for i=1:size1-col_conv_ind1
-    mod_size1(i)=size(ten1,i);
-    full_size1=full_size1*mod_size1(i);
-end
+%mod_size1=zeros(1,size1-col_conv_ind1);
+%full_size1=1;
+sz1=size(ten1);
+mod_size1=sz1(1:size1-col_conv_ind1);
+full_size1=prod(mod_size1);
+%full_size1=prod(sz1(1:size1-col_conv_ind1));
+%for i=1:size1-col_conv_ind1
+%    mod_size1(i)=size(ten1,i);
+%    full_size1=full_size1*mod_size1(i);
+%end
 
-conv_size=1;
-for i=1:col_conv_ind1
-    conv_size=conv_size*size(ten1,size1+1-i);
-end
+%conv_size=1;
+conv_size=numel(ten1)/full_size1;
+%for i=1:col_conv_ind1
+%    conv_size=conv_size*size(ten1,size1+1-i);
+%end
 
 ten1=reshape(ten1, full_size1, conv_size);
 
@@ -62,12 +67,15 @@ ten_ind2=[ind2, ten_ind2];
 ten2=permute(ten2, ten_ind2);
 %size(ten2)
 
-mod_size2=zeros(1,size2-col_conv_ind2);
-full_size2=1;
-for i=1:size2-col_conv_ind2
-    mod_size2(i)=size(ten2,col_conv_ind2+i);
-    full_size2=full_size2*mod_size2(i);
-end
+%mod_size2=zeros(1,size2-col_conv_ind2);
+%full_size2=1;
+sz2=size(ten2);
+mod_size2=sz2(col_conv_ind2+1:size2);
+full_size2=prod(mod_size2);
+%for i=1:size2-col_conv_ind2
+%    mod_size2(i)=size(ten2,col_conv_ind2+i);
+%    full_size2=full_size2*mod_size2(i);
+%end
 
 
 ten2=reshape(ten2, conv_size, full_size2);

@@ -1,5 +1,5 @@
 function [b]=chunk(b,i,j)
-%[B]=CHUNK(B)
+%[B]=CHUNK(B,I,J)
 %Cut the (i,j) part out of the TT-tensor
 if ( i > j ) 
  tmp=j; 

@@ -26,7 +26,7 @@ if ( nargin < 2 || isempty(ind) )
 ind=p(1:r);
 b=a(p,:);
 sbm=a(ind,:);
-z=b(r+1:n,:)/sbm;
+z=b(r+1:n,:)/sbm; %Watch for this later on please
 end
 %Start iterations
 niters=100;
