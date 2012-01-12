@@ -1,6 +1,10 @@
 function [tt]=tt_qreshape(tt,s,sz)
 
-% returns .
+% Reshapes the cores of the input (Q)TT representation.
+% s (scalar) is the number of mode indices in each core of the input representation;
+% sz is a matrix of size d x s1, where d is the number of cores and s1 is the number of mode indices in each core of the output representation;
+% sz(k,alpha) is the mode size of the alpha-th index in the k-th core of the output representation.
+% k-th component of prod(sz,2) is the overall numbers of mode degrees of freedom of the k-th core of the output representation 
 %
 % April 26, 2011
 % Vladimir Kazeev
