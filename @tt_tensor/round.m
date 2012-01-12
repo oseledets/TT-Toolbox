@@ -22,7 +22,9 @@ core0=cr(1:r(1)*n(1)*r(2));
 for i=1:d-1
    core0=reshape(core0,[r(i)*n(i),r(i+1)]);
    [core0,ru]=qr(core0,0); nrm(i+1)=norm(ru,'fro');
-   ru=ru./nrm(i+1);
+   if (nrm(i+1)~=0)
+    ru=ru./nrm(i+1);
+   end;
    core1=cr(pos(i+1):pos(i+2)-1);
    core1=reshape(core1,[r(i+1),n(i+1)*r(i+2)]);
    core1=ru*core1;
@@ -62,16 +64,21 @@ core0=cr(pos1-r(d)*n(d)*r(d+1)+1:pos1);
  tt.ps=cumsum([1;tt.n.*tt.r(1:d).*tt.r(2:d+1)]);
  pp=cr(1:r(1)*n(1)*r(2));
  nrm(1)=norm(pp,'fro');
- cr(1:r(1)*n(1)*r(2))=pp./nrm(1);
+ if (nrm(1)~=0)
+     pp = pp./nrm(1);
+ end;
+ cr(1:r(1)*n(1)*r(2))=pp;
  %Now a simple trick: balance the product of numbers;
  %All cores are orthogonal except the first one. Thus, we know the norm
  nrm0=sum(log(abs(nrm))); 
  nrm0=nrm0/d; nrm0=exp(nrm0);
- %Construct normalization of norm
- for i=1:d-1
-   nrm(i+1)=nrm(i+1)*nrm(i)/nrm0;
-   nrm(i)=nrm0;
- end
+ if (nrm0~=0)
+     %Construct normalization of norm
+     for i=1:d-1
+         nrm(i+1)=nrm(i+1)*nrm(i)/nrm0;
+         nrm(i)=nrm0;
+     end
+ end;
  %Finally redistribute the norm
  ps=tt.ps;
  for i=1:d

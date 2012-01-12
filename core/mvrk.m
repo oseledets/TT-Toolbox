@@ -252,7 +252,7 @@ for swp=1:nswp
             [u,s,v]=svd(rhs, 'econ');
             s = diag(s);
             nrm = norm(s);
-            r = my_chop2(s, eps*nrm/sqrt(L(i)-1)/sqrt(d-1));
+            r = my_chop2(s, eps*nrm/sqrt(L(i))/sqrt(d));
             v = conj(v(:,1:r));
             u = u(:,1:r)*diag(s(1:r));
             % Kick
@@ -295,7 +295,7 @@ for swp=1:nswp
                 [u,s,v]=svd(cr, 'econ');
                 s = diag(s);
                 nrm = norm(s);
-                r = my_chop2(s, eps*nrm/sqrt(L(i)-1)/sqrt(d-1));
+                r = my_chop2(s, eps*nrm/sqrt(L(i))/sqrt(d));
                 u = u(:,1:r);
                 v = diag(s(1:r))*(v(:,1:r)');
                 % Kick
@@ -372,7 +372,7 @@ for swp=1:nswp
             [u,s,v]=svd(rhs, 'econ');
             s = diag(s);
             nrm = norm(s);
-            r = my_chop2(s, eps*nrm/sqrt(d-1));
+            r = my_chop2(s, eps*nrm/sqrt(d));
             u = u(:,1:r);
             v = conj(v(:,1:r))*diag(s(1:r));
             % Kick

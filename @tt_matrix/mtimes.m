@@ -69,7 +69,36 @@ elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
     c=c.';
     elseif ( isa(a,'tt_matrix') && isa(b,'tt_matrix') && nargin == 2)
     %fprintf('matrix-by-matrix not implemented yet \n');
-    c=tt_matrix(tt_mm(core(a),core(b)));
+%     c=tt_matrix(tt_mm(core(a),core(b)));
+    % Time to write something working here
+    c = tt_matrix;
+    d = a.tt.d;
+    n = a.n; m = b.m; p = a.m;
+    c.n = n; c.m = m;
+    tt = tt_tensor;
+    ra = a.tt.r;
+    rb = b.tt.r;
+    tt.d = d;
+    tt.r = ra.*rb;
+    tt.n = n.*m;
+    tt.ps = cumsum([1; tt.r(1:d).*n.*m.*tt.r(2:d+1)]);
+    tt.core = zeros(tt.ps(d+1)-1, 1);
+    for i=1:d
+        cra = a.tt{i};
+        cra = reshape(cra, ra(i), n(i), p(i), ra(i+1));
+        crb = b.tt{i};
+        crb = reshape(crb, rb(i), p(i), m(i), rb(i+1));
+        cra = permute(cra, [1, 2, 4, 3]);
+        cra = reshape(cra, ra(i)*n(i)*ra(i+1), p(i));
+        crb = permute(crb, [2, 1, 3, 4]);
+        crb = reshape(crb, p(i), rb(i)*m(i)*rb(i+1));
+        crc = cra*crb;
+        crc = reshape(crc, ra(i), n(i), ra(i+1), rb(i), m(i), rb(i+1));
+        crc = permute(crc, [1, 4, 2, 5, 3, 6]);
+        tt.core(tt.ps(i):tt.ps(i+1)-1) = crc(:);
+    end;
+    c.tt = tt;
+    
 elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin > 3)
     c=mvk(a,b,varargin);
     fprintf('Krylov matrix-by-vector not implemented yet \n');

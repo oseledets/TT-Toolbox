@@ -8,6 +8,13 @@ elseif ( isempty(c) )
  a=b;
  return
 end
+
+if (b.d==1)&&(c.d==1)
+    a = b;
+    a.core = b.core + c.core;
+    return;
+end;
+
 a=tt_tensor;
 n1=b.n;
 r1=b.r;

@@ -29,7 +29,7 @@ switch s(1).type
       n0=zeros(d,1);
       for i=1:d
         ind=pp{i};
-        if ( ind == ':')
+        if ( strcmp(ind, ':'))
             pp{i}=1:n(i);
             ind=pp{i};
         end

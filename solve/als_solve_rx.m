@@ -1,4 +1,4 @@
-function [x]=als_solve_rx(mat, rhs, tol, drx, nswp)
+function [x]=als_solve_rx(mat, rhs, tol, drx, nswp, addswp)
 % function [x]=als_solve_rx(mat, rhs, [tol], [rx], [nswp])
 % 
 % Finds a solution to 2D TTM matrix MAT using the ALS to a 2D TT tensor
@@ -28,6 +28,9 @@ if (nargin<4)||(isempty(drx))
 end;
 if (nargin<5)||(isempty(nswp))
     nswp=10;
+end;
+if (nargin<6)||(isempty(addswp))
+    addswp=2;
 end;
 
 if (drx>m1)||(drx>m2)
@@ -98,11 +101,11 @@ for swp=1:nswp
     curx{1}=reshape(curx{1}, rx, m1).';
     
     % Now, let's try the kickass by rank drx:
-%     if (mod(swp,6)==0)
+    if (mod(swp,addswp)==0)
 %     if (sp>5)
         curx{1}=[curx{1}, randn(m1,drx)];
 %         sp=0;
-%     end;
+    end;
 %     rx=rx+1;
     
     % Now, let's compute the second block

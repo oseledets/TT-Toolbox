@@ -1,39 +1,39 @@
-function [p] = dot(tt1,tt2)
-%[PR]=DOT(TT1,TT2)
-%Dot  product of two TT tensors
+function [p] = dot(qt1,qt2)
+%[P]=DOT(QT1,QT2)
+%Dot  product of two QTT-tuckers
 %
 %
 
-d=tt1.d; 
-r1=tt1.r; r2=tt2.r; ps1=tt1.ps; ps2=tt2.ps;
-n=tt1.n;
-core1=tt1.core; core2=tt2.core;
-%ps is always r1(i-1)xr; but if there is a hanging thing? what to do?
-%That means, I define a dot product of two "hanging" tensors as a matrix...
-%brr.... And if it is hanging on the right? 
-% 
-% p=ones(r1(1),r2(1)); % Over r1(1) and r2(1) there is not summation blin.
-% %So, if we just sum over n(1) separatedly and leave a strange QxR1(I)xR2(I)
-% %matrix... 
-% for i=1:d
-%   cr1=core1(ps1(i):ps1(i+1)-1);
-%   cr2=core2(ps2(i):ps2(i+1)-1);
-%   p=reshape(p,[r1(i),r2(i)]);
-%   cr2=reshape(cr2,[r2(i),numel(cr2)/r2(i)]);
-%   p=p*cr2; %p is Q*r1(i)xn(i)xr2(i+1);
-%   cr1=reshape(cr1,[r1(i)*n(i),numel(cr1)/(r1(i)*n(i))]);
-%   p=reshape(p,[r1(i)*n(i),numel(p)/(r1(i)*n(i))]);
-%   p=cr1'*p;
-% end
-p=1;
+d=qt1.dphys;
 for i=1:d
-  cr1=core1(ps1(i):ps1(i+1)-1);
-  cr2=core2(ps2(i):ps2(i+1)-1);
-  cr1=reshape(cr1,[r1(i),n(i)*r1(i+1)]);
-  p=p'*cr1; %p is now r2(i)*n(i)*r1(i+1), sum over r2(i)*n(i);
-  p=reshape(p,[r2(i)*n(i),r1(i+1)]);
-  cr2=reshape(cr2,[r2(i)*n(i),r2(i+1)]);
-  p=p'*cr2;
-end
-return
+    % dot product of factors gives rt1 times rt2 matrix, to be convolved
+    % between cores
+    % Make it more precise by QRs?
+    [qt1.tuck{i}, rv1]=qr(qt1.tuck{i}, 'lr');
+    [qt2.tuck{i}, rv2]=qr(qt2.tuck{i}, 'lr');
+%     rv1 = eye(qt1.tuck{i}.r(end));
+%     rv2 = eye(qt2.tuck{i}.r(end));
+    Pfac = dot(qt1.tuck{i}, qt2.tuck{i});
+    rt1 = size(rv1, 2); rt2 = size(rv2, 2);
+    rt1new = size(rv1,1); rt2new = size(rv2,1);
+    % Now, merge Pfac to the core of qt1
+    curcr = qt1.core{i};
+    rc1 = size(curcr, 1); rc2 = size(curcr, 3);
+    curcr = permute(curcr, [1, 3, 2]);
+    curcr = reshape(curcr, rc1*rc2, rt1);
+    curcr = curcr*(rv1.');
+    curcr = curcr*Pfac; % Now, core1 has the tucker ranks of qt2
+    curcr = reshape(curcr, rc1, rc2, rt2new);
+    qt1.core{i} = permute(curcr, [1, 3, 2]);
+    
+    curcr = qt2.core{i};
+    rc1 = size(curcr, 1); rc2 = size(curcr, 3);
+    curcr = permute(curcr, [1, 3, 2]);
+    curcr = reshape(curcr, rc1*rc2, rt2);    
+    curcr = curcr*(rv2.');
+    curcr = reshape(curcr, rc1, rc2, rt2new);
+    qt2.core{i} = permute(curcr, [1, 3, 2]);    
+end;
+% Finaly, dot product of cores. It is consistent, since we merged Pfacs
+p = dot(qt1.core, qt2.core);
 end  

@@ -3,7 +3,7 @@ function [c] = mrdivide(a,b)
 %Implement multiplication for a tt_tensor and (in future) 
 %matrix-by-vector product
 
-if isa(a,'tt_tensor') && numel(b) == 1
+if isa(a,'qtt_tucker') && numel(b) == 1
 c=a*(1.0./b);
 else
     error('Use mrdivide(full(A),full(B)).');

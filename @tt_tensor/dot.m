@@ -4,6 +4,9 @@ function [p] = dot(tt1,tt2)
 %
 %
 
+[tt1,rv1]=qr(tt1, 'lr');
+[tt2,rv2]=qr(tt2, 'lr');
+
 d=tt1.d; 
 r1=tt1.r; r2=tt2.r; ps1=tt1.ps; ps2=tt2.ps;
 n=tt1.n;
@@ -35,5 +38,7 @@ for i=1:d
   cr2=reshape(cr2,[r2(i)*n(i),r2(i+1)]);
   p=p'*cr2;
 end
+p = (rv1.')*p;
+p = p*rv2;
 return
 end  
