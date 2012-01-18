@@ -26,7 +26,7 @@ for k=1:d
 end
 
 full=permute(full,prm);
-full=reshape(full,2^s*ones(1,d));
+full=reshape(full,[2^s*ones(1,d),1]);
 
 tt=full_to_tt(full,eps);
 
