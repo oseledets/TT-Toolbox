@@ -6,6 +6,9 @@ function [r]=rank(a,varargin)
     r = 0;
     for i=1:a.dphys
         r(1:a.tuck{i}.d+1, i) = a.tuck{i}.r;
+        if (i<a.dphys)
+	    r(a.tuck{i}.d+2, i) = a.core.r(i+1);
+	end;
     end;
 % else
 %   i=varargin{1};
