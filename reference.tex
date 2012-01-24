@@ -39,7 +39,7 @@
 %\def\o{\mathbin{\raise1pt\hbox{\otimesfont\char'12}}}
 
 \date{January-February 2011}
-\title{TT-toolbox 2.0: Fast multidimensional array operations in TT format }
+\title{TT-toolbox 2.1: Fast multidimensional array operations in TT format }
 \author{I.V. Oseledets}
 
 \begin{document}
@@ -63,8 +63,8 @@ where multiindex $i_k, k=1,\ldots,d$ corresponds to rows, and $j_k,k=1,\ldots,d$
 matrix. The matrix $M$ is said to be in the TT-format if 
 $$M(i_1,\ldots,i_d,j_1,\ldots,j_d) = M_1(i_1,j_1) M_2(i_2,j_2) \ldots M_d(i_d,j_d),$$
 and $M_k(i_k,j_k)$ is a $r_{k-1} \times r_k$ matrix. 
-\section{What is new in version 2.0}
-  TT Toolbox version 2.0 introduces several major innovations compared to version 1.0. \\
+\section{What is new in version 2.1}
+  TT Toolbox version 2.1 introduces several major innovations compared to version 1.0. \\
   \begin{enumerate}
   \item New classes $\tt$ and $\ttm$, which now represent TT-tensors and TT-matrices.
   \item Object-oriented approach allowed to overload many standard MATLAB functions, including addition, subtraction, 
@@ -79,7 +79,7 @@ product, computation of functions of TT-tensors using cross-DMRG algorithm, solu
  \end{enumerate}
 \section{Illustration of basic functionality}
 
-TT-Toolbox 2.0 has two main classes: $\tt$ and $\ttm$. 
+TT-Toolbox 2.1 has two main classes: $\tt$ and $\ttm$. 
 The first is a TT-representation of a $d$-dimensional array in TT-format, and the second --- of $d$-level 
 matrix in TT-format. From  old cell-array representations, used in TT-Toolbox 1.0, 
 these representations can be obtained via calls to $\tt$ and $\ttm$ constructors:
@@ -128,7 +128,7 @@ The conversion operations in the opposite direction are realized via $\texttt{co
 >> A=core(B);
 \end{lstlisting}
 This helps to keep compatibility with previously developed algorithms. All previous functions
-are kept in the TT Toolbox 2.0 and can be applied. The $\texttt{core}$ command is also overloaded
+are kept in the TT Toolbox 2.1 and can be applied. The $\texttt{core}$ command is also overloaded
 to get a specific core of the TT-decomposition (in the new ordering of indices, it returns a tensor of
 size $r_{k-1} \times n_k \times r_k$:
 \begin{lstlisting}
@@ -286,7 +286,7 @@ The following operations are supported:
 with accuracy $\texttt{eps}$. 
 \item $\texttt{tt=tt\_tensor(TT)}$ --- constructs TT-tensor from the TT-Toolbox 1.0 format.
 \item $\texttt{ttm=tt\_matrix(TTM)}$ --- constructs TT-matrix from the TT-Toolbox 1.0 format.
-\item $\texttt{tt=core(tt,k)}$, $\texttt{ttm=core(ttm,k)}$ --- constructs TT-Toolbox 1.0 format from TT-Toolbox 2.0 format, if parameter
+\item $\texttt{tt=core(tt,k)}$, $\texttt{ttm=core(ttm,k)}$ --- constructs TT-Toolbox 1.0 format from TT-Toolbox 2.1 format, if parameter
 $k$ is not specified, and $k$-th core of the decomposition, if it is specified.
 \item $\texttt{y=full(tt)}$ --- converts TT-tensor $\texttt{tt}$ a full array.
 \item $\texttt{y=full(ttm)}$ --- converts TT-matrix $\texttt{ttm}$ to a full square matrix. 
