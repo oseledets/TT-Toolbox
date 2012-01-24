@@ -51,10 +51,10 @@ end;
 
 rfy = cell(d,1);
 if (isempty(y))
-    yc = tt_rand(2, d, 2);
+    yc = tt_rand(1, d, 1);
     yf = cell(d,1);
     for i=1:d
-        yf{i} = tt_rand(n{i}, L(i), [1; 2*ones(L(i),1)]);
+        yf{i} = tt_rand(n{i}, L(i), [1; 1*ones(L(i),1)]);
     end;
 else
     yc = y.core;
@@ -65,6 +65,7 @@ for i=1:d
     rfy{i} = yf{i}.r;
 end;
 
+%  keyboard;
 
 phcl = cell(d+1,1); phcl{1} = 1;
 phcr = cell(d+1,1); phcr{d+1} = 1;
@@ -92,7 +93,7 @@ for swp=1:nswp
     % Factors
     for i=d:-1:1
         cury = yf{i};
-        for j=1:L(i)            
+        for j=1:L(i)
             cr = cury{j};
             cr = reshape(cr, rfy{i}(j)*n{i}(j), rfy{i}(j+1));
             [cr, rv]=qr(cr, 0);
@@ -101,7 +102,7 @@ for swp=1:nswp
                 cr2 = cury{j+1};
                 cr2 = reshape(cr2, rfy{i}(j+1), n{i}(j+1)*rfy{i}(j+2));
                 cr2 = rv*cr2;
-                rfy{i}(j+1) = size(cr,2);                
+                rfy{i}(j+1) = size(cr,2);
                 cury{j+1} = reshape(cr2, rfy{i}(j+1), n{i}(j+1), rfy{i}(j+2));
             else
                 % We are to work with core
@@ -115,13 +116,13 @@ for swp=1:nswp
             end;
             cr = reshape(cr, rfy{i}(j), n{i}(j), rfy{i}(j+1));
             cury{j} = cr;
-            % update bottom phi            
+            % update bottom phi
             if (j<L(i))
                 phfb{i}{j+1} = compute_next_Phi(phfb{i}{j}, cr, Af{i}{j}, xf{i}{j}, 'lr');
             else
                 phfc{i} = compute_next_Phi(phfb{i}{j}, cr, Af{i}{j}, xf{i}{j}, 'lr');
             end;
-        end; 
+        end;
         yf{i} = cury;
     end;
     % Now for core
@@ -142,19 +143,20 @@ for swp=1:nswp
         % Update right phi
         phcr{i} = compute_next_Phi(phcr{i+1}, cr, Acr{i}, xc{i}, 'rl');
     end;
-    
+
     % Now, DMRG over factors
     for i=1:d
+        rty(i) = rfy{i}(L(i)+1);
         % Convolve core blocks to the last factor blocks
         % And, as usual, it smells like manure
         curx = xf{i}; curxc = xc{i}; rtx(i) = rfx{i}(L(i)+1);
         cura = Af{i}; curac = Ac{i}; rta(i) = rfa{i}(L(i)+1);
-        cury = yf{i}; curyc = yc{i}; 
+        cury = yf{i}; curyc = yc{i};
         curxc = permute(curxc, [2, 1, 3]);
         curxc = reshape(curxc, rtx(i), rcx(i)*rcx(i+1));
-        
+
         %!!!!!!!!!!!!!!!!!!!!!!!!!! Bad things are here !!!!!!!!!!!!!!!!!!!!
-        % That's why I hate excessive overloads of "operator*" (like mtimes). 
+        % That's why I hate excessive overloads of "operator*" (like mtimes).
         % It has no chance
         % to determine my wished correctly. In this case, I would like to
         % multiply the last block by the matrix curxc. However, if curxc is
@@ -169,19 +171,19 @@ for swp=1:nswp
         % a class only for one absolutly clear operation.
         %!!!!!!!!!!!!!!!!!!!!!!!!!!
         curx = tt_dum1(curx,curxc); % Last block is of size m(L), rc1*rc2
-        
+
         curx = unitrank(curx);
         curyc = permute(curyc, [2, 1, 3]);
         curyc = reshape(curyc, rty(i), rcy(i)*rcy(i+1));
         cury = tt_dum1(cury,curyc); % Last block is of size n(L), rc1*rc2
         cury = unitrank(cury);
-        
+
         ph1 = phcl{i};
         ph1 = permute(ph1, [1,3,2]);
         ph1 = reshape(ph1, rcy(i)*rcx(i), rca(i));
         ph2 = phcr{i+1};
         ph2 = permute(ph2, [2, 1,3]);
-        ph2 = reshape(ph2, rca(i+1), rcy(i+1)*rcx(i+1));        
+        ph2 = reshape(ph2, rca(i+1), rcy(i+1)*rcx(i+1));
         curac = reshape(curac, rca(i), rta(i)*rca(i+1));
         curac = ph1*curac;
         curac = reshape(curac, rcy(i)*rcx(i)*rta(i), rca(i+1));
@@ -199,18 +201,18 @@ for swp=1:nswp
         curn = n{i}.*[ones(L(i)-1,1); rcy(i)*rcy(i+1)];
         curm = m{i}.*[ones(L(i)-1,1); rcx(i)*rcx(i+1)];
         cura = tt_matrix(cura, curn, curm);
-        
+
         % Now we are ready to perform mvk =). The last core is nonorth
         for j=L(i):-1:2
             rx1 = rfx{i}(j-1); rx2 = rfx{i}(j);
-            ry1 = rfy{i}(j-1); ry2 = rfy{i}(j);            
+            ry1 = rfy{i}(j-1); ry2 = rfy{i}(j);
             ra1 = rfa{i}(j-1); ra2 = rfa{i}(j);
             if (j==L(i))
                 rx3 = 1; ry3 = 1; ra3 = 1;
             else
                 rx3 = rfx{i}(j+1); ra3 = rfa{i}(j+1); ry3 = rfy{i}(j+1);
             end;
-            
+
             rhs2 = reshape(phft{i}{j+1}, ry3*ra3, rx3);
             x2 = curx{j};
             x2 = reshape(x2, rx2*curm(j), rx3);
@@ -225,7 +227,7 @@ for swp=1:nswp
             % We'll need it to compute new phi later
             rhs2 = reshape(rhs2, curn(j), ra2, ry3, rx2);
             rhs2 = permute(rhs2, [1, 3, 2, 4]);
-            
+
             rhs = reshape(rhs2, curn(j)*ry3*ra2, rx2);
             x1 = curx{j-1};
             x1 = reshape(x1, rx1*curm(j-1), rx2);
@@ -241,14 +243,14 @@ for swp=1:nswp
             rhs = reshape(rhs, ra1*rx1, curn(j-1)*curn(j)*ry3);
             rhs = reshape(phfb{i}{j-1}, ry1, ra1*rx1)*rhs;
             rhs = reshape(rhs, ry1*curn(j-1), curn(j)*ry3);
-            
+
             y_prev = cury{j-1};
             y_prev = reshape(y_prev, ry1*curn(j-1), ry2);
             y_prev = y_prev*reshape(cury{j}, ry2, curn(j)*ry3);
-            
+
             dy = norm(rhs-y_prev, 'fro')/norm(rhs, 'fro');
             dy_max = max(dy_max, dy);
-            
+
             [u,s,v]=svd(rhs, 'econ');
             s = diag(s);
             nrm = norm(s);
@@ -312,7 +314,7 @@ for swp=1:nswp
                 phfc{i} = compute_next_Phi(phfb{i}{j}, u, Af{i}{j}, xf{i}{j}, 'lr');
                 if (verb>1)
                     fprintf('=mvrk= swp %d, tucker_rank(%d), r: %d\n', swp, i, r);
-                end;                
+                end;
             end;
         end;
         yf{i} = cury;
@@ -337,7 +339,7 @@ for swp=1:nswp
             Acr{i} = cura;
             cura = permute(cura, [2, 4, 1, 3]);
             cura = reshape(cura, curn1*ra2, ra1*curm1);
-            
+
             rhs1 = reshape(phcl{i}, ry1*ra1, rx1);
             rhs1 = rhs1*reshape(xc{i}, rx1, curm1*rx2);
             rhs1 = reshape(rhs1, ry1, ra1, curm1, rx2);
@@ -347,7 +349,7 @@ for swp=1:nswp
             rhs1 = reshape(rhs1, curn1, ra2, ry1, rx2);
             % This is to be saved
             rhs1 = permute(rhs1, [3, 1, 2, 4]);
-            
+
             rhs = reshape(rhs1, ry1*curn1*ra2, rx2);
             rhs = rhs*reshape(xc{i+1}, rx2, curm2*rx3);
             rhs = reshape(rhs, ry1*curn1, ra2, curm2, rx3);
@@ -362,13 +364,13 @@ for swp=1:nswp
             rhs = reshape(rhs, ra3*rx3, ry1*curn1*curn2);
             rhs = reshape(phcr{i+2}, ry3, ra3*rx3)*rhs;
             rhs = reshape(rhs.', ry1*curn1, curn2*ry3);
-            
+
             y_prev = reshape(yc{i}, ry1*curn1, ry2);
             y_prev = y_prev*reshape(yc{i+1}, ry2, curn2*ry3);
-            
+
             dy = norm(rhs-y_prev, 'fro')/norm(rhs, 'fro');
             dy_max = max(dy_max, dy);
-            
+
             [u,s,v]=svd(rhs, 'econ');
             s = diag(s);
             nrm = norm(s);
@@ -389,10 +391,10 @@ for swp=1:nswp
             r_max = max(r_max, r);
             if (verb>1)
                 fprintf('=mvrk= swp %d, core {%d}, dy: %3.3e, r: %d\n', swp, i, dy, r);
-            end;            
+            end;
         end;
     end;
-    
+
     if (verb>0)
         fprintf('=mvrk= swp %d, dy_max: %3.3e, r_max: %d\n', swp, dy_max, r_max);
     end;
@@ -412,11 +414,11 @@ end
 function [Phi] = compute_next_Phi(Phi_prev, x, A, y, direction)
 % Performs the recurrent Phi (or Psi) matrix computation
 % Phi = Phi_prev * (x'Ay).
-% If direction is 'lr', computes Psi 
-% if direction is 'rl', computes Phi 
+% If direction is 'lr', computes Psi
+% if direction is 'rl', computes Phi
 % A can be empty, then only x'y is computed.
 
-if (strcmp(direction, 'rl')) 
+if (strcmp(direction, 'rl'))
   % Revert ranks to perform the right-to-left recursion
   x = permute(x, [3, 2, 1]);
   y = permute(y, [3, 2, 1]);
