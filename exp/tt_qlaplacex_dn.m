@@ -64,5 +64,6 @@ for k=1 : D
 	end
 end
 
+tt=tt_matrix(tt); % @Bydlocode
 return
 end

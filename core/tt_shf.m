@@ -3,9 +3,9 @@ function [tt]=tt_shf(d)
 %Compute Upper shift matrix of size 2^D x 2^D in TT format
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et. al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
@@ -29,3 +29,4 @@ for k=2:(d-1)
    tt{k}(:,:,2,2)=mat3;
    %tk{k}(:,:,1,2)=mat3;
 end
+tt=tt_matrix(mat);

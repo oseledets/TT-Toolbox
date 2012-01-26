@@ -24,5 +24,5 @@ if (d>1)
     M{d}(:,:,1)=eye(2);
     M{d}(:,:,2)=[0,0;1,0];
 end;
-
+M=tt_matrix(M); %Bydlocode
 end

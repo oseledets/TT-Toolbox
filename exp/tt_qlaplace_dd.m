@@ -1,5 +1,4 @@
 function [tt]=tt_qlaplace_dd(d)
-
 % returns a rank-3,4...4 QTT decomposition of
 % Delta_{1} \otimes \Id_{2} \ otimes \ldots \otimes \Id_{D} + \ldots +
 %  + \Id_{1} \ otimes \ldots \otimes \Id_{D-1} \otimes Delta_{D},
@@ -110,6 +109,6 @@ else
 		end
 	end
 end
-
+tt=tt_matrix(tt); % @Bydlocode
 return
 end

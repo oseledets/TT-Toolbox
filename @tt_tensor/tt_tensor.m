@@ -22,7 +22,7 @@ end
 
 % Copy CONSTRUCTOR
 if (nargin == 1) && isa(varargin{1}, 'tt_tensor')
-  %t = class(t, 'tt_tensor');
+    t = tt_tensor;
     t.d = varargin{1}.d;
     t.r = varargin{1}.r;
     t.n = varargin{1}.n;

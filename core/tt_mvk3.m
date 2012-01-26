@@ -32,7 +32,7 @@ verb = 1; % 0 - silent, 1 - sweep information, 2 - block information
 d = size(x,1);
 
 
-y = tt_ones(d, tt_size(x));
+y = core(tt_ones(tt_size(x)));
 y = tt_scal2(y, -tt_dot2(y,y)/2, 1);
 
 rmax=1000;

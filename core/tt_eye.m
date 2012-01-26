@@ -1,11 +1,12 @@
-function [e]=tt_eye(n,d)
-%[E]=TT_EYE(N,D)
-% Identity matrix in TT format with mode size N^D
+function [e]=tt_eye(n,varargin)
+%[E]=TT_EYE(N,D), N is scalar
+%[E]=TT_EYE(N), N is a vector of sizes
+%Identity matrix in TT format with mode size N^D
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
@@ -15,11 +16,15 @@ function [e]=tt_eye(n,d)
 
 
 if (numel(n) == 1)
+  d=varargin{1}; 
   n=n*ones(1,d);
+else
+  d=numel(n);
 end
 e=cell(d,1);
 for i=1:d
    e{i}=eye(n(i));
 end
-  return
+e=tt_matrix(e); %We did it
+return
 end

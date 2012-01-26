@@ -3,7 +3,17 @@ function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)
 %Matrix-by-vector product by Krylov-type Block algorithm,
 %which tries to compute everything fast, by increasing rank as far as
 %possible
-
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 exists_max_r=1;
 if ((nargin<4)||(isempty(max_r)))
     exists_max_r=0;
@@ -463,5 +473,7 @@ end
 if ( swp == nswp )&&(max(dy)>eps/(d^d_pow_check)) 
   fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, err_max); 
 end
- return
+
+y=tt_tensor(y); %Bydlocode
+return
 end

@@ -148,7 +148,7 @@ d=size(A,1);
 tau=1*ones(d+1,1);
 
 if ( isempty(P) )
-P = tt_eye(tt_size(y), d);
+   P = core(tt_eye(tt_size(y), d));
 end
 x=x0;
 
