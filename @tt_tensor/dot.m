@@ -1,16 +1,28 @@
-function [p] = dot(tt1,tt2)
+function [p] = dot(tt1,tt2,do_qr)
 %[PR]=DOT(TT1,TT2)
+%[PR]=DOT(TT1,TT2, DO_QR)
 %Dot  product of two TT tensors
 %
-%
+% if DO_QR==true is specified, perform the left-to-right QRs of TT1,TT2
+% before the scalar product. It increases the  accuracy in some cases.
+% 
+% In general, returns a 4D tensor of sizes 
+% r0(tt1), r0(tt2), rd(tt1), rd(tt2)
 
-[tt1,rv1]=qr(tt1, 'lr');
-[tt2,rv2]=qr(tt2, 'lr');
+if (nargin<3)||(isempty(do_qr))
+    do_qr = false;
+end;
+
+if (do_qr)
+    [tt1,rv1]=qr(tt1, 'lr');
+    [tt2,rv2]=qr(tt2, 'lr');
+end;
 
 d=tt1.d; 
 r1=tt1.r; r2=tt2.r; ps1=tt1.ps; ps2=tt2.ps;
 n=tt1.n;
 core1=tt1.core; core2=tt2.core;
+
 %ps is always r1(i-1)xr; but if there is a hanging thing? what to do?
 %That means, I define a dot product of two "hanging" tensors as a matrix...
 %brr.... And if it is hanging on the right? 
@@ -28,17 +40,55 @@ core1=tt1.core; core2=tt2.core;
 %   p=reshape(p,[r1(i)*n(i),numel(p)/(r1(i)*n(i))]);
 %   p=cr1'*p;
 % end
-p=1;
+
+% If the first indices are not ones
+p=eye(r1(1)*r2(1));
+p = reshape(p, r1(1)*r2(1)*r1(1), r2(1));
+
 for i=1:d
-  cr1=core1(ps1(i):ps1(i+1)-1);
-  cr2=core2(ps2(i):ps2(i+1)-1);
-  cr1=reshape(cr1,[r1(i),n(i)*r1(i+1)]);
-  p=p'*cr1; %p is now r2(i)*n(i)*r1(i+1), sum over r2(i)*n(i);
-  p=reshape(p,[r2(i)*n(i),r1(i+1)]);
-  cr2=reshape(cr2,[r2(i)*n(i),r2(i+1)]);
-  p=p'*cr2;
-end
-p = (rv1.')*p;
-p = p*rv2;
-return
+    cr1=core1(ps1(i):ps1(i+1)-1);
+    cr2=core2(ps2(i):ps2(i+1)-1);
+    cr2=reshape(cr2,[r2(i), n(i)*r2(i+1)]);
+    
+    p = p*cr2; % size r11*r21*r1-, n*r2+
+    p = reshape(p,r1(1)*r2(1), r1(i)*n(i), r2(i+1));
+    p = permute(p, [1, 3, 2]);
+    p = reshape(p, r1(1)*r2(1)*r2(i+1), r1(i)*n(i));
+    
+    cr1=reshape(cr1,[r1(i)*n(i), r1(i+1)]);
+    
+    p = p*conj(cr1); % size r11*r12*r2+, r1+
+    p = reshape(p, r1(1)*r2(1), r2(i+1), r1(i+1));
+    p = permute(p, [1, 3, 2]);
+    p = reshape(p, r1(1)*r2(1)*r1(i+1), r2(i+1));
+end;
+
+if (do_qr)
+    r2old = size(rv2, 2);
+    r1old = size(rv1,2);
+    p = p*rv2;
+    p = reshape(p, r1(1)*r2(1), r1(d+1), r2old);
+    p = permute(p, [1, 3, 2]);
+    p = reshape(p, r1(1)*r2(1)*r2old, r1(d+1));
+    p = p*conj(rv1);
+    p = reshape(p, r1(1), r2(1), r2old, r1old);
+    p = permute(p, [1,2,4,3]);
+else
+    p = reshape(p, r1(1), r2(1), r1(d+1), r2(d+1));
+end;
+
+% for i=1:d
+%   cr1=core1(ps1(i):ps1(i+1)-1);
+%   cr2=core2(ps2(i):ps2(i+1)-1);
+%   cr1=reshape(cr1,[r1(i),n(i)*r1(i+1)]);
+%   p = cr1'*p; % size n*r1+, r2-*r11*r21
+% %   p=p'*cr1; %p is now r2(i)*n(i)*r1(i+1), sum over r2(i)*n(i);
+% %   p=reshape(p,[r2(i)*n(i),r1(i+1)]);
+%   p = reshape(p, r1(i+1), n(i), r2(i), r1(1)*r2(1));
+%   cr2=reshape(cr2,[r2(i)*n(i),r2(i+1)]);
+%   p=p'*cr2;
+% end
+% p = (rv1.')*p;
+% p = p*rv2;
+% return
 end  

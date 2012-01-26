@@ -31,7 +31,6 @@ for i=1:dphys
     sz{i} = curn;
     rc1 = cf.r(1);
     rc2 = cf.r(dims(i)+1);
-    cf = unitrank(cf);
     cf = tt_reshape(cf, [rc1; curn; rc2], eps/sqrt(dphys));
     cf = move_tt_block(cf, 1, dims(i)+1, eps/sqrt(dphys));
     cf = tt_reshape(cf, [curn; rc1*rc2]);

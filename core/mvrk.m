@@ -172,11 +172,13 @@ for swp=1:nswp
         %!!!!!!!!!!!!!!!!!!!!!!!!!!
         curx = tt_dum1(curx,curxc); % Last block is of size m(L), rc1*rc2
 
-        curx = unitrank(curx);
+        % reshape [last_mode,last_rank] -> [last_mode*last_rank, 1]
+        curx = tt_reshape(curx, (curx.n).*[ones(L(i)-1,1); curx.r(L(i)+1)]);
         curyc = permute(curyc, [2, 1, 3]);
         curyc = reshape(curyc, rty(i), rcy(i)*rcy(i+1));
         cury = tt_dum1(cury,curyc); % Last block is of size n(L), rc1*rc2
-        cury = unitrank(cury);
+        % reshape [last_mode,last_rank] -> [last_mode*last_rank, 1]
+        cury = tt_reshape(cury, (cury.n).*[ones(L(i)-1,1); cury.r(L(i)+1)]);
 
         ph1 = phcl{i};
         ph1 = permute(ph1, [1,3,2]);

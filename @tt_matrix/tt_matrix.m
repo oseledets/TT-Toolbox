@@ -18,23 +18,32 @@ if (nargin == 1) && isa(varargin{1}, 'tt_matrix')
     t.m = varargin{1}.m;
     return;
 end
-if ( nargin == 3 && isa(varargin{1},'tt_tensor') && isa(varargin{2},'double') && isa(varargin{3},'double'))
+
+% From tt_tensor
+if (isa(varargin{1}, 'tt_tensor'))
     tt=varargin{1};
-    n=varargin{2};
-    m=varargin{3};
     d=tt.d;
-    if ( numel(n) == 1 )
-      n=n*ones(d,1);
-    end
-    if ( numel(m) == 1 )
-      m=m*ones(d,1);
-    end
+    if (nargin==3)&&(isa(varargin{2},'double'))&&(isa(varargin{3},'double'))
+        n=varargin{2};
+        m=varargin{3};
+        if ( numel(n) == 1 )
+            n=n*ones(d,1);
+        end
+        if ( numel(m) == 1 )
+            m=m*ones(d,1);
+        end
+    else
+        % Square matrix
+        n = round(sqrt(tt.n));
+        m = n;
+    end;
     t=tt_matrix;
     t.n=n;
     t.m=m;
     t.tt=tt;
 return
 end
+
 %From old format
 if ( nargin == 1 ) && isa(varargin{1},'cell') 
     t=tt_matrix;

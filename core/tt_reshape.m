@@ -1,20 +1,44 @@
-function [tt2]=tt_reshape(tt1,sz,eps)
+function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)
 %[TT1]=TT_RESHAPE(TT,SZ)
 %[TT1]=TT_RESHAPE(TT,SZ,EPS)
-%Reshapes TT-tensor into a new one, with dimensions specified by SZ
-%Optionally, accuracy EPS can be specified, default is 1e-14
-%Works in TT2
+%[TT1]=TT_RESHAPE(TT,SZ,EPS, RL)
+%[TT1]=TT_RESHAPE(TT,SZ,EPS, RL, RR)
+%Reshapes TT-tensor into a new one, with dimensions specified by SZ.
+%Optionally, accuracy EPS can be specified, default is 1e-14.
+%Works in TT2.
+%Optionally, the first (RL) and the last (RR) "tail" ranks can be
+%specified. The initial tensor may also have RL~=1, RR~=1, but the total sizes
+%prod(SZ)*RL*RR should be equal
+
+
 
 d1=tt1.d;
-n1=tt1.n;
 d2 = numel(sz);
-if ( prod(sz) ~= prod(n1) )
- error('Reshape: incorrect sizes');
-end
-
 if (nargin<3)||(isempty(eps))
     eps = 1e-14;
 end;
+if (nargin<4)||(isempty(rl))
+    rl = 1;
+end;
+if (nargin<5)||(isempty(rr))
+    rr = 1;
+end;
+
+% Recompute sz to include r0,rd,
+% and the items of tt1
+sz(1)=sz(1)*rl;
+sz(d2)=sz(d2)*rr;
+tt1.n(1) = tt1.n(1)*tt1.r(1);
+tt1.n(d1) = tt1.n(d1)*tt1.r(d1+1);
+tt1.r(1)=1;
+tt1.r(d1+1)=1;
+
+n1=tt1.n;
+
+if ( prod(n1) ~= prod(sz) )
+ error('Reshape: incorrect sizes');
+end
+
 
 needQRs = false;
 if (d2>d1)
@@ -172,32 +196,10 @@ tt2.r = r2;
 tt2.core = core2;
 tt2.ps = cumsum([1; r2(1:d2).*n2.*r2(2:d2+1)]);
 
-% tt1=tt_tensor;
-% %Now we have to determine the set of elementary operations.
-% %In new tensor, dimensions are either merged, or split, and this
-% %'diagram' has to be derived
-% i1=1;
-% cr1=[];
-% 
-% for i=1:d
-%   %Determine what to do with the first core: split or merge
-%   if ( sz(i1) < n(i) ) %split
-%       %Determine the number of cores to split
-%       cm=cumprod(sz); 
-%       ff=find(cm>n(i)); ff=ff(1); ff=ff-1;
-%       spt=sz(1:ff); %These are new! dimensions
-%       core=cr(ps(i):ps(i+1)-1); %Core to split
-%       core=reshape(core,[r(i),spt
-%   elseif ( sz(i1) == n(i) ) %do nothing
-%   else %Merge
-%       %Determine the number of cores to merge
-%   end
-% end
-% if ( nargin == 2 )
-%     
-% elseif ( nargin == 3 )
-%     
-% end
-%     error('Reshape function is not implemented yet');
-% return
+
+tt2.n(1) = tt2.n(1)/rl;
+tt2.n(d2) = tt2.n(d2)/rr;
+tt2.r(1) = rl;
+tt2.r(d2+1) = rr;
+
 end

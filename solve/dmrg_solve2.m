@@ -419,9 +419,6 @@ for swp=1:nswp
 %                 end
                 if (strcmp(local_format, 'full'))
                     [sol_new,flg] = gmres(mv, rhs, nrestart, real_tol, 2, [], [], sol_prev);
-                    if (flg>0)
-                        fprintf('-warn- gmres did not converge\n');
-                    end;
                     %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
                     %sol_new=sol_prev+dsol;
                     res_new=norm(mv(sol_new)-rhs)/normf;
@@ -442,10 +439,10 @@ for swp=1:nswp
                         end;
                     else
                         [sol,flg] = gmres(mv, rhs, nrestart, real_tol, gmres_iters, [], [], sol_new);
-                        if (flg>0)
-                            fprintf('-warn- gmres did not converge\n');
-                        end;
                     end;
+                    if (flg>0)
+                        fprintf('-warn- gmres did not converge at block %d\n', i);
+                    end;                    
 
                     res=mv(sol);
                     res_true = norm(res-rhs)/normf;

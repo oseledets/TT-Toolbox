@@ -51,7 +51,6 @@ for i=1:dphys
     cr = permute(cr, [2, 1, 3]);
     cr = reshape(cr, rt(i), rc(i)*rc(i+1));
     curtuck = tt_dum1(curtuck, cr); % now the last rank is rc(i)*rc(i+1)
-    curtuck = unitrank(curtuck);
     curtuck = tt_reshape(curtuck, [ns{i}; rc(i); rc(i+1)], eps);
     % Now the most dangerous: the movement of the block rc(i) to the beginning
     curtuck = move_tt_block(curtuck, numel(ns{i})+1, 1, eps);

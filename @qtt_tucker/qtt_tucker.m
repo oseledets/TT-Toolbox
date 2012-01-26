@@ -2,7 +2,21 @@ function t = qtt_tucker(varargin)
 %QTT_TUCKER class constructor (mixed TT format for the core + QTT format
 % for the factors
 %QTT_TUCKER(ARRAY,SZ,EPS)
-%sz is the cell array, containing Q-dimensions of the factors
+% two options:
+% 1) split large dimensions into the qtt_tucker: 
+%  in this case, sz is the cell array, containing Q-dimensions of the
+%  factors.
+% example: qtt_tucker(tt, {[2,2,2], [3,3,3], [5,5]}, eps), where tt should
+% be 2^3 x 3^3 x 5^2 tt_tensor.
+% 2) merge: 
+% sz is the ordinary row, containing numbers of dimensions to merge.
+% example: qtt_tucker(qtt, [7,7,2], eps), where qtt should be
+% 7+7+2 = 16-dimensional tt_tensor, the result will be the qtt_tucker
+% with 3D core, and 7,7,2-dimensional tucker factors.
+%
+% qtt_tucker(tt, eps) is the same as split-variant of
+% QTT_TUCKER(ARRAY,SZ,EPS), assuming sz contains all mode sizes equal to 2.
+
 
 if (nargin == 0)
     t.core=tt_tensor; %The Tucker core
