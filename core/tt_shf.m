@@ -29,4 +29,4 @@ for k=2:(d-1)
    tt{k}(:,:,2,2)=mat3;
    %tk{k}(:,:,1,2)=mat3;
 end
-tt=tt_matrix(mat);
+tt=tt_matrix(tt);

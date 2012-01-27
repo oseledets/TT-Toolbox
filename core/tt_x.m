@@ -1,4 +1,4 @@
-function [res]=tt_x(n,d)
+function [res]=tt_x(n,varargin)
 %[RES]=TT_X(N)
 %[RES]=TT_X(N,D)
 % Vector with elements 0:N(1)*...*N(D)-1 is transformed into a tensor

@@ -1,4 +1,4 @@
-function [tt] = tt_zeros(n,d)
+function [tt] = tt_zeros(n,varargin)
 %[TT]=TT_ZEROS(N,D)
 %[TT]=TT_ZEROS(N)
 %Creates a zero TT tensor of dimension D and mode size N

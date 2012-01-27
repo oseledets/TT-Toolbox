@@ -27,7 +27,7 @@ if (nargin == 1) && isa(varargin{1}, 'tt_tensor')
     t.r = varargin{1}.r;
     t.n = varargin{1}.n;
     t.core=varargin{1}.core;
-    
+    t.ps = varargin{1}.ps;
     return;
 end
 %From tt_matrix (unfold)
