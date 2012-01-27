@@ -76,7 +76,9 @@ if (do_qr)
 else
     p = reshape(p, r1(1), r2(1), r1(d+1), r2(d+1));
 end;
-
+if ( r1(1)*r2(1) == 1 ) %Save the rabbits 
+   p=reshape(p,r1(d+1),r2(d+1));
+end
 % for i=1:d
 %   cr1=core1(ps1(i):ps1(i+1)-1);
 %   cr2=core2(ps2(i):ps2(i+1)-1);
