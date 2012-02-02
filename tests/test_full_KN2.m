@@ -3,15 +3,14 @@ appr_glob = zeros(9,6);
 
 % for d0t=6:14
 % for d0x=6:11
-d0t = 6; % quantics dims for t
+d0t = 12; % quantics dims for t
 d0x = 10; % quantics dims for x
 dpx = 2; % phys. dims for x
 
-a = -7;
-b = 7;
+a = 0;
+b = 1;
 h = (b-a)/(2^d0x+1);
 
-gamma = 5;
 
 tol = 1e-6;
 eps = 1e-8;
@@ -43,7 +42,8 @@ for i=1:dpx
     C = kron(C,C1);
 end;
 
-u00 = tt_reshape(tt_tensor(exp(-abs(x)*sqrt(0.5)/0.5)), 2*ones(1,d0x), eps);
+u00 = tt_reshape(tt_tensor(sin(pi*x)), 2*ones(1,d0x), eps);
+% u00 = tt_reshape(tt_tensor(exp(-abs(x)*sqrt(0.5)/0.5)), 2*ones(1,d0x), eps);
 % u00 = kron(u00,u00);
 % u_ex2 = kron(exp(-x.^2*0.5/(0.25+2*tranges(end))), exp(-x.^2*0.5/(0.25+2*tranges(end))))*((4*pi*tranges(end))^(-dpx/2));
 
@@ -65,7 +65,8 @@ e1 = tt_tensor(tt_ones(2, d0x));
 
 u00 = kron(u00,u00);
 
-u_ex = round(C*u00, eps)*((4*pi*tranges(end))^(-dpx/2));
+% u_ex = round(C*u00, eps)*((4*pi*tranges(end))^(-dpx/2));
+u_ex = u00*exp(-2*pi^2*tranges(end));
 % u0 = round(u0, eps);
 % keyboard;
 

@@ -5,7 +5,7 @@ function t = subsasgn(t,s,b)
          switch s(1).subs
              case 'n'
                  if (size(b,1)==1)
-                     b=b';
+                     b=b.';
                  end;
                  if (numel(s)>1)
                      s = s(2:end);
@@ -23,7 +23,7 @@ function t = subsasgn(t,s,b)
 %                  end;
              case 'r'
                  if (size(b,1)==1)
-                     b=b';
+                     b=b.';
                  end;
                  if (numel(s)>1)&&(strcmp(s(2).type,'()'))
                      if (size(s(2).subs{1},1)==1)
@@ -35,7 +35,7 @@ function t = subsasgn(t,s,b)
                  end;
              case 'core'                 
                  if (size(b,1)==1)
-                     b=b';
+                     b=b.';
                  end;
                  % I don't want to dispatch all the rest subs to the core,
                  % because MATLAB will copy it. Fortunately, only () is
@@ -52,7 +52,7 @@ function t = subsasgn(t,s,b)
                  t.d=b;
              case 'ps'
                  if (size(b,1)==1)
-                     b=b';
+                     b=b.';
                  end;
                  if (numel(s)>1)&&(strcmp(s(2).type,'()'))
                      if (size(s(2).subs{1},1)==1)

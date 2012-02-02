@@ -127,7 +127,7 @@ while (i1<=d1)
             s = diag(s);
             r = my_chop2(s, eps*norm(s)/sqrt(d2-1));
             u = u(:,1:r);
-            v = conj(v(:,1:r))*diag(s(1:r));
+            v = v(:,1:r)*diag(s(1:r));
             u = reshape(u, r1(i1), n12*r);
             curcr2 = curcr2*u; % size r21*nold, dn*r22
             r2(i2+1)=r;
@@ -138,7 +138,7 @@ while (i1<=d1)
             r1(i1) = r;
             % and tt1
             n1(i1) = n1(i1)/n12;
-            curcr1 = reshape(v.', r1(i1), n1(i1), r1(i1+1));
+            curcr1 = reshape(v', r1(i1), n1(i1), r1(i1+1));
             tt1{i1} = curcr1;
         else
             % Bad case. We have to merge cores of tt1 until a common divisor

@@ -104,7 +104,7 @@ if ( nargin == 1 && isa(varargin{1}, 'qtt_tucker') )
 end
 
 %From full format
-if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
+if ( (nargin == 1 && isa(varargin{1},'double')) || (nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double')))
     t=tt_tensor;
     b=varargin{1};
     
