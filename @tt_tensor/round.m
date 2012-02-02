@@ -13,6 +13,9 @@ end
 d=tt.d;
 n=tt.n;
 r=tt.r;
+if (numel(rmax) == 1 )
+  rmax=rmax*ones(d+1,1); 
+end
 pos=tt.ps;
 cr=tt.core;
 pos1=1;
@@ -46,7 +49,7 @@ core0=cr(pos1-r(d)*n(d)*r(d+1)+1:pos1);
      core1=reshape(core1,[r(i-1)*n(i-1),r(i)]);
      [u,s,v]=svd(core0,'econ');
      s=diag(s); r1=my_chop2(s,norm(s)*ep);
-     r1=min(r1,rmax);
+     r1=min(r1,rmax(i));
      u=u(:,1:r1);s=s(1:r1); v=v(:,1:r1);
      u=u*diag(s);
      r(i)=r1;
