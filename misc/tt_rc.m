@@ -369,7 +369,8 @@ for i=1:d-1
   while ( r < maxr && er > eps )
      r=r+1;
       u0=u(:,1:r); s0=s(1:r); v0=v(:,1:r);
-     iu=maxvol2(u0); iv=maxvol2(v0);
+     iu=maxvol2(u0); 
+     iv=maxvol2(v0);
      iu1=i1(iu); iv1=i2(iv); 
      w1=score(:,iv1); [w1,dmp]=qr(w1,0);
      w1=w1 / w1(iu1,:);

@@ -529,11 +529,11 @@ for swp=1:nswp
 
             % kick
             if (~last_sweep)
-                Axprev = bfun3(Phi1,a1, a2, Phi2, x1*x2.');
-                Axprev = reshape(Axprev, currx(j-1)*curn(j-1), curn(j)*currx(j+1));
-                [unew,snew,vnew]=svd(Axprev, 'econ');
-                v = reort(v, vnew(:,1:min(kickrank, size(vnew,2))));
-%                 v = reort(v, randn(curn(j)*currx(j+1), kickrank));
+%                 Axprev = bfun3(Phi1,a1, a2, Phi2, x1*x2.');
+%                 Axprev = reshape(Axprev, currx(j-1)*curn(j-1), curn(j)*currx(j+1));
+%                 [unew,snew,vnew]=svd(Axprev, 'econ');
+%                 v = reort(v, vnew(:,1:min(kickrank, size(vnew,2))));
+                v = reort(v, randn(curn(j)*currx(j+1), kickrank));
             end;
             radd = size(v,2)-r;
             u = [u, zeros(currx(j-1)*curn(j-1), radd)];
@@ -646,11 +646,11 @@ for swp=1:nswp
                 s = s(1:r,1:r);
                 v = v*s;
                 if (~last_sweep)
-                    Axprev = bfun3(Phi1, curA1, curA2, Phi2, cr);
-                    Axprev = reshape(Axprev, rfx(j,i)*n(j,i), rcx(i)*rcx(i+1));
-                    [unew,snew,vnew]=svd(Axprev, 'econ');
-                    u = reort(u, unew(:,1:min(kickrank, size(unew,2))));                
-%                     u = reort(u, randn(rfx(j,i)*n(j,i), kickrank));
+%                     Axprev = bfun3(Phi1, curA1, curA2, Phi2, cr);
+%                     Axprev = reshape(Axprev, rfx(j,i)*n(j,i), rcx(i)*rcx(i+1));
+%                     [unew,snew,vnew]=svd(Axprev, 'econ');
+%                     u = reort(u, unew(:,1:min(kickrank, size(unew,2))));                
+                    u = reort(u, randn(rfx(j,i)*n(j,i), kickrank));
                 end;
                 radd = size(u,2)-r;
                 v = [v, zeros(rcx(i)*rcx(i+1), radd)];
@@ -770,11 +770,11 @@ for swp=1:nswp
 
             % kick
             if (~last_sweep)
-                Axprev = bfun3(Phi1, a1, a2, Phi2, x1*x2.');
-                Axprev = reshape(Axprev, rx1*rtx, rtx2*rx3);
-                [unew,snew,vnew]=svd(Axprev, 'econ');    
-                u = reort(u, unew(:,1:min(kickrank, size(unew,2))));                
-%                 u = reort(u, randn(rx1*rtx, kickrank));
+%                 Axprev = bfun3(Phi1, a1, a2, Phi2, x1*x2.');
+%                 Axprev = reshape(Axprev, rx1*rtx, rtx2*rx3);
+%                 [unew,snew,vnew]=svd(Axprev, 'econ');    
+%                 u = reort(u, unew(:,1:min(kickrank, size(unew,2))));                
+                u = reort(u, randn(rx1*rtx, kickrank));
             end;
             radd = size(u,2)-r;
             v = [v, zeros(rtx2*rx3, radd)];
