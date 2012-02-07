@@ -1,12 +1,26 @@
-% function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps)
-% Generates Finite-difference diffusion matrix in QTTM from the coefficient tt_a in QTT,
-% d_phys - physical dimension of the problem, bound1,2 - boundary conditions at 0 and 1:
-%     0 - Dirichlet,
-%     1 - Neumann
-% eps - tt-approximation tolerance
-
-
 function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps)
+%Generates finite-difference diffusion matrix in QTT
+%   [TTM] = TT_FD_MTX(D_PHYS, TT_A, BOUND1, BOUND2, PEPS) Generates 
+%   finite-difference diffusion matrix in QTTM from the coefficient TT_A 
+%   in QTT, D_PHYS - physical dimension of the problem, BOUND1,2 - 
+%   boundary conditions at 0 and 1:
+%       0 - Dirichlet,
+%       1 - Neumann
+%   EPS is the accuracy of the approximation. This function uses TT1.0
+%   format.
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
+
 
 d = size(tt_a, 1);
 d1 = round(d/d_phys);

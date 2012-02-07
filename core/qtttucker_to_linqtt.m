@@ -1,7 +1,20 @@
 function [tt] = qtttucker_to_linqtt(qt, eps)
-% function [qtu] = qtttucker_to_linqtt(tt, eps)
-% Computes the standard qtt representation from the (Q)TT-Tucker with the
-% accuracy eps.
+%Compute the standard QTT-representation from the QTT-Tucker
+%   [TT]=QTTTUCKER_TO_LINQTT(TT, EPS) Computes the "linear" QTT
+%   representation from the QTT-TUCKER. This is a technical function: use
+%   the corresponding constructor of the QTT-Tucker class.
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 dphys = qt.dphys;
 tuck = qt.tuck;

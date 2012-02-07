@@ -1,3 +1,4 @@
+%The test script for the Crank-Nicolson scheme with global time stepping
 times_glob = zeros(9,6);
 appr_glob = zeros(9,6);
 

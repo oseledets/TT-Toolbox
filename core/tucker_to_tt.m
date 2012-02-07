@@ -1,8 +1,18 @@
 function [tt] = tucker_to_tt(fc, core)
-% function [tt] = tucker_to_tt(fc, core)
-% Builds the TT tensor from the Tucker representation,
-% where fc is the cell array of Tucker factors,
-% cr is the Tucker core in TT.
+%Build TT-tensor from the QTT-Tucker representation
+%[TT] = TUCKER_TO_TT(FC, CORE) Given QTT-Tucker representation, compute the
+%TT-tensor representation 
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 d = core.d;
 n = zeros(d,1); rtuck = zeros(d,1);

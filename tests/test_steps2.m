@@ -1,3 +1,4 @@
+%Crank-Nicolson scheme with local time-stepping
 d0t = 10; % quantics dims for t
 d0x = 9; % quantics dims for x
 dpx = 2; % phys. dims for x

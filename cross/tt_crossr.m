@@ -1,19 +1,23 @@
 function [tt,ind_right]=tt_crossr(arr,ind_left)
-%[TT,IND_RIGHT]=TT_CROSSR(SZ,ARR,IND_LEFT)
-%SZ is the mode size of the array, 
-%ARR is the cell array with parameters to supply for my_elem
-%IND_LEFT is the left index sequence
-%TT is the approximation computed and IND_RIGHT is 
-%the computed right index sequence
+%One right-to-left sweep of the TT-cross method.
+%   [TT,IND_RIGHT]=TT_CROSSR(D,N,FUN,IND_LEFT) Computes one QR-maxvol sweep
+%   of the TT-cross method. The input is the pair (D,N) that determines the
+%   size of the tensor, FUN is the function handle to evaluate a particular
+%   element of the tensor, i.e., VAL=FUN(IND). To pass parameters, please
+%   use anonymous function handles in MATLAB. 
+% 
 %
-%Second technical function that tries to mimic the skeleton decomposition
-%of the TT-tensor directly using properly computed index sets
-%It works! But the problem is overparametrized, since
-%ind_left is uniquely defined by ind_list :-)
-%ind_right is perfectly arbitrary.
-%IND_LEFT is known and IND_RIGHT is computed
-%Array is given implicitly, only a subroutine that
-%computes any prescribed element is known (MY_ELEM) here
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 d=arr{1};
 sz=arr{2};
 %arr1=arr(:);

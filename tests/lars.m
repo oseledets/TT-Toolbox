@@ -1,3 +1,4 @@
+
 function [y]=lars(p,ind,mat,rhs,n,d,smin,h,i0,j0)
 %The dimension is p^2 (thus w
 k0=p*p;

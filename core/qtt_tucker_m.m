@@ -1,14 +1,20 @@
 function [fc,core]=qtt_tucker_m(tt, sz, tol)
-% function [fc,core]=qtt_tucker_m(tt, sz, tol)
-% Computes the QTT-Tucker representation of TT
-% fc is the cell array of @tt_tensor with qtt approximations of tucker
-% factors.
-% core - @tt_tensor of the Tucker core in the TT format.
-% tol - approximation tolerance. 
-% sz --- the cell array of the quantization size vectors
+%Compute the QTT-Tucker representation of TT
+%   [FC,CORE]=QTT_TUCKER_M(TT, SZ, TOL) Computes the QTT-Tucker 
+%   representation of TT-tensor. This is a technical function: use 
+%   corresponding constructors of the QTT-Tucker class
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
-%Note that tol is divided by 
-% sqrt(d_phys-1)*sqrt(d_qtt-1) in each local SVD.
 
 d = tt.d;
 n = tt.n;
