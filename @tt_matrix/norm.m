@@ -27,7 +27,7 @@ end
 
 switch typ
  case {'fro','F'} % Frobenius norm
-  nrm=sqrt(abs(dot(t,t)));
+  nrm=sqrt(abs(dot(t.tt,t.tt, true)));
   
  case {'2', 2} % 2-norm written by Thomas Mach
   maxit = 20; % 20 iterations
