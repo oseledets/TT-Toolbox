@@ -1,5 +1,5 @@
 function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)
-%TT_ITERAPP   Apply TT matrix operator to TT vector and error gracefully.
+%Apply TT matrix operator to TT vector and error gracefully.
 %   TT_ITERAPP(OP,AFUN,ATYPE,AFCNSTR,X) applies matrix operator AFUN to vector
 %   X. If ATYPE is 'matrix, then AFUN is a matrix and the OP is applied
 %   directly. OP is either 'mtimes' or 'mldivide'.

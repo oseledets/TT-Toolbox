@@ -1,5 +1,5 @@
 function [atype,afun,afcnstr] = tt_iterchk(A)
-%TT_ITERCHK  Checks arguments to iterative methods. A is a TT object.
+%Checks arguments to iterative methods. A is a TT object.
 %   [ATYPE,AFUN,AFCNSTR] = TT_ITERCHK(A) returns the following:
 %   ATYPE is either 'matrix', 'function', 'expression' or 'inline object'.
 %   AFUN is the function name or inline object.

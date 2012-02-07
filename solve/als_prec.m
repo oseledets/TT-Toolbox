@@ -1,9 +1,21 @@
 function [x,y]=als_prec(mat,rhs,y,niter)
-%[Y]=ALS_PREC(MAT,RHS,X)
-%Computes (approximate) rank-1 solution to the
-%problems MAT*P = RHS, where A is a low-Kronecker rank matrix
-%P=X x Y, RHS is a low-Kronecker rank matrix
-%B is given as a two-2d cell array, the same is for X
+%Computes an approximate rank-1 solution to the linear system
+%   [Y]=ALS_PREC(MAT,RHS,X) Computes (approximate) rank-1 solution to the
+%   problems MAT*P = RHS, where A is a low-Kronecker rank matrix
+%   P=X x Y, RHS is a low-Kronecker rank matrix
+%   B is given as a two-2d cell array, the same is for X
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 a=mat{1}; %The first cell
 b=mat{2}; 

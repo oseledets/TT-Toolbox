@@ -1,13 +1,42 @@
-function [y,ev] = dmrg_eigb(a,k,eps,y0,rmax,nswp)
-%[y,ev]=DMRG_EIGB(A,K,EPS,[Y0],[RMAX],[NSWP])
-%Solves for K minimal eigenvalues of the TT-matrix A 
-%with accuracy EPS by minimizing block Rayleigh quotient
-%by the two-sided DMRG method
-%Y0 is a possible initial guess, RMAX is the maximal rank
-%NSWP is the maximal number of sweeps
-%Currently generalized eigenproblem is not supported (hope to 
-%do it in future)
-n=a.n; %This works only for square matrices :)
+function [y,ev] = dmrg_eigb(a,k,eps,varargin)
+%Find several minimal eigenvalues of a TT-matrix using DMRG method
+%   [Y,EV]=DMRG_EIGB(A,K,EPS,OPTIONS) Attempts to find K minimal
+%   eigenvalues of a TT-matrix A with accuracy EPS. We use minimization of
+%   Block-Rayleigh quotient to do this. The solution is returned a block
+%   TT-tensor (i.e, r(d+1) is equal to K).
+%   Options are provided in form
+%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+%   on. The parameters are set to default (in brackets in the following) 
+%   The list of option names and default values are:
+%       o y0 - initial approximation [random rank-2 tensor]
+%       o rmax - maximal  TT-rank of the (block) solution [2500]
+%       o nswp - maximal number of sweeps [4]
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'nswp'
+            nswp=varargin{i+1};
+        case 'rmax'
+            rmax=lower(varargin{i+1});
+        case 'x0'
+            y0=varargin{i+1};
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+    end
+end
+
+n=a.n; 
 d=a.d;
 if ( nargin <= 3 || isempty(y0) )
     %Generate a random block tensor with the block dimension on the

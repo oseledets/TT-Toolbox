@@ -1,4 +1,34 @@
 function [x]=dmrg_rake_solve2(A, y, tol, varargin)
+%DMRG-type method for the solution of linear systems in QTT-Tucker format
+%   [X]=DMRG_RAKE_SOLVE2(A,Y,TOL,VARARGIN) Attempts to solve the linear
+%   system A*X = Y with accuracy EPS using the two-sided DMRG iteration.
+%   Matrix A has to be given in the QTT-Tucker, right-hand side Y should be
+%   given in the QTT-Tucker format also. Options are provided in form
+%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+%   on. The parameters are set to default (in brackets in the following) 
+%   The list of option names and default values are:
+%       o x0 - initial approximation [random rank-2 tensor] 
+%       o nswp - maximal number of DMRG sweeps [10]
+%       o rmax - maximal TT-rank of the solution [1000]
+%       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
+%       o kick_rank - stabilization parameter [2]
+%       o max_full_size - maximal size of the local matrix to full solver 
+%       [2500]
+%       o local_prec: Local preconditioner, 'als' - ALS-Richardson
+%       iteration, 'selfprec' (Saad selfpreconditioner) ['als']
+%       o gmres_iters - number of local gmres restarts [2]
+%       o nrestart - dimension of local gmres [25]
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 nswp = 20;
 local_format = 'full';
