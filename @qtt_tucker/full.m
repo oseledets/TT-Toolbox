@@ -1,6 +1,19 @@
 function [a] = full(tt, sizes)
-%[A]=FULL(QTT_TUCKER)
 %Converts a QTT-Tucker tensor the full tensor
+%   [A]=FULL(QTT_TUCKER,SIZES) Converts QTT_Tucker tensor into a tensor
+%   with mode sizes SIZES. The dimensions should be consistent.
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 a=full(tt.core); 
 fac=cell(tt.dphys,1);
 for i=1:tt.dphys

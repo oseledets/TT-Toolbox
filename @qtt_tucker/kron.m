@@ -1,8 +1,19 @@
 function [c] = kron(a,b)
-%[C]=KRON(A,B)
-%Kronecker product of two QTT_tuckers
+%Kronecker product of two QTT_Tuckers
+%   [C]=KRON(A,B) computes Kronecker product of A and B, where A and B are
+%   in the QTT-Tucker format
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
-%Time to replace it by something meaningful
 if ( isempty(a) )
   c=b;
   return

@@ -1,7 +1,17 @@
 function [c] = mtimes(a,b)
-%[C]=MTIMES(A,B)
-%Matrix multiplication for the QTT_TUCKER class
-
+%C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number in QTT-Tucker
+%   [C]=MTIMES(A,B) Matrix multiplication for the QTT_TUCKER class
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 if isa(a,'double') && isa(b,'qtt_tucker')
     c=b;
     c.core=a*b.core;

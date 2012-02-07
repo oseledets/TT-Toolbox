@@ -1,7 +1,19 @@
 function [qt]=diag(qt)
-% [QT]=DIAG(QT)
-% Either makes a diagonal matrix from a vector in qtt_tucker, 
-% or extracts a diagonal vector from a matrix
+%Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker
+%   [QT]=DIAG(QT) Either makes a diagonal matrix from a vector in 
+%   QTT_TUCKER, or extracts a diagonal vector from a matrix
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 d = qt.dphys;
 for i=1:d
