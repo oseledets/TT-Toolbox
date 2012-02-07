@@ -1,6 +1,22 @@
 function [tt]=round(tt,varargin)
-%[QTT_TUCKER]=ROUND(QTT_TUCKER,EPS)
-%The rounding procedure for the QTT-Tucker class
+%Approximate QTT-Tucker with another one with specified accuracy
+%   [QTT]=ROUND(QTT,EPS) Approximate QTT-Tucker tensor with relative 
+%   accuracy EPS
+%
+%   [QTT]=ROUND(QTT,EPS,RMAX) Approximate QTT-Tucker tensor with relative
+%   accuracy 
+%   EPS and maximal rank RMAX. RMAX can be array of ranks or a number
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 d=tt.dphys;
 core=tt.core;
 tuck=tt.tuck;

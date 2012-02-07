@@ -6,7 +6,6 @@ function [tt]=round(tt,varargin)
 %   EPS and maximal rank RMAX. RMAX can be array of ranks or a number
 %
 %
-%
 % TT Toolbox 2.1, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
