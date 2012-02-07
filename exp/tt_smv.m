@@ -1,6 +1,21 @@
 % function [res]=tt_smv(sttm, vec)
 
 function [res]=tt_smv(sttm, vec)
+%TT-matrix with sparse factors by TT-vector multiplication
+%   [res]=TT_SMV(STTM,VEC) Multiplies the TT-matrix stored in the TT1.0
+%   format but with "sparse" cores by a vector VEC
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 d=size(vec,1);
 res=cell(d,1);

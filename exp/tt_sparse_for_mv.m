@@ -1,7 +1,19 @@
-% function [sttm] = tt_sparse_for_mv(ttm, cuttol)
-
 function [sttm] = tt_sparse_for_mv(ttm, cuttol)
-
+%Sparsify the TT matrix in TT1.0 matrix format
+%   [STTM]=TT_SPARSE_FOR_MV(TTM,CUTTOL) Computes the sparse version of the
+%   matrix in the TT1.0 matrix format. May work for certain operators
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+z
 d=size(ttm,1);
 
 sttm=cell(d+2,1);

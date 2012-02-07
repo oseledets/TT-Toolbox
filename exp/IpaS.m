@@ -1,11 +1,24 @@
 function [M]=IpaS(d, a)
-% function [M]=IpaS(d, a)
-% Generates I+a*S_{-1} matrix in the QTT format:
-%  1 0 0 0
-%  a 1 0 0
-%  0 a 1 0
-%  0 0 a 1
+%A special bidiagonal matrix in the QTT-format
+%   [M]=IPAS(D, A)
+%   Generates I+a*S_{-1} matrix in the QTT-format:
+%   1 0 0 0
+%   a 1 0 0
+%   0 a 1 0
+%   0 0 a 1
 % Convenient for Crank-Nicolson and time gradient matrices
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 M = cell(d,1);
 M{1} = zeros(2,2,0);

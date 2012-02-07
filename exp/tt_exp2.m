@@ -1,13 +1,10 @@
 function [tt]=tt_exp2(mat,eps,N,rmax)
-%[tt]=TT_EXP2(mat,EPS,N,RMAX)
 %Computation of the matrix exponential of a matrix in TT format
-%Using scaling-and-squaring method
-%Input: TT --- matrix in TT format 
-%EPS --- accuracy parameter
-%N is the number of summands in Taylor series
-%(N=10 is usually enough)
-%RMAX is the maximal rank for matrix-by-matrix product
-%TT_MAT is the result
+%   [TT]=TT_EXP2(MAT,EPS,N,RMAX) This function computes matrix exponential
+%   using scaling and squaring method of the TT-matrix TT. EPS is the
+%   accuracy parameter, N is the number of summand for the local Taylor
+%   series (N=10 is usually enough). RMAX is the TT-rank bound and TT_MAT
+%   is the result
 %
 %
 % TT Toolbox 2.1, 2009-2011

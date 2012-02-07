@@ -1,3 +1,7 @@
+
+
+function [M]=Fd_mtx(d, a, bound)
+%Finite difference approximation of scalar diffusion equation in QTT
 %   [M]=FD_MTX(D, A, BOUND)
 %   Generate finite difference matrix from diffusion coefficient A(n,n) or A(n,n,n)
 %   M - n^D-by-n^D sparse matrix
@@ -6,8 +10,17 @@
 %       0 - Dirichlet,
 %       1 - Neuman
 
-
-function [M]=Fd_mtx(d, a, bound)
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 
 n = size(a, 1)-2;
