@@ -1,13 +1,14 @@
 function [res]=tt_mkron(tt_arr)
-%[RES]=TT_MKRON(TT_ARR)
-% Computes Kronecker product of many TT tensors
-% TT_ARR is a cell array of TT tensors,
-% and the result RES is the Kronecker product of them
+%Compute Kronecker product of many TT-tensors. 
+%   [RES]=TT_MKRON(TT_ARR) Computes Kronecker product of many TT tensors
+%   TT_ARR is a cell array of TT tensors, and the result RES is the 
+%   Kronecker product of them. It is much faster, then taking them
+%   one-by-one. Works in TT1.0 format (still).
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

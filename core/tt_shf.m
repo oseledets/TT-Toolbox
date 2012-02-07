@@ -1,6 +1,7 @@
 function [tt]=tt_shf(d)
-%[TT]=TT_SHF(D)
-%Compute Upper shift matrix of size 2^D x 2^D in TT format
+%Upper shift matrix in the QTT-format
+%   [TT]=TT_SHF(D) computes an upper shift matrix of size 2^D x 2^D in the
+%   TT-format
 %
 %
 % TT Toolbox 2.1, 2009-2012

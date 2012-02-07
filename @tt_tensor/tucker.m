@@ -15,7 +15,6 @@ function [factors,cr]=tucker(tt,eps)
 %---------------------------
 
 %Zaglushka
-[factors,cr]=tt_tuck(core(tt),eps);
-cr=tt_tensor(cr);
+[factors,cr]=tt_tuck(tt,eps);
 return
 end

@@ -1,9 +1,19 @@
 function [y]=axpx(a,x)
-%[y]=AXPX(A,X)
-%This is a technical function that multiplies
-%Matrix A by a vector and projects on X itself; 
-%This is for time-stepping 
-
+%Matrix-by-vector multiplication with projection onto the tangent space
+%   [y]=AXPX(A,X) Multiplies matrix A by a vector X and projects the
+%   result onto the tangent space of the TT-manifold at point X. This
+%   function can be used in the construction of efficient dynamical
+%   low-rank TT-approximations
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 d=x.d;
 n=a.n;
 m=a.m;

@@ -1,6 +1,8 @@
 function [res]=tt_mm(mat1,mat2)
-%[RES]=TT_MM(MAT1,MAT2)
-%Matrix MAT1 by matrix MAT2 product in the TT format
+%Matrix-by-matrix product in TT1.0 format
+%   [RES]=TT_MM(MAT1,MAT2) Matrix MAT1 by matrix MAT2 product in the 
+%   TT-format. Please avoid its usage: it will be removed in
+%   future releases. Use * operator from the object-oriented version.
 %
 %
 % TT Toolbox 2.1, 2009-2011

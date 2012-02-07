@@ -1,6 +1,9 @@
 function [tt_vec]=tt_mat_to_vec(tt_mat)
-%[TT_VEC]=TT_MAT_TO_VEC(TT_MAT)
-% Flattens TT matrix TT_MAT to a vector TT_VEC 
+%Flattens TT-matrix into TT-vector in the TT1.0 format
+%   [TT_VEC]=TT_MAT_TO_VEC(TT_MAT) Flattens TT matrix TT_MAT to a 
+%   vector TT_VEC. Please avoid its usage: it will be removed in
+%   future releases. Use tt_tensor constructor from the object-oriented 
+%   version
 %
 %
 % TT Toolbox 1.1, 2009-2010

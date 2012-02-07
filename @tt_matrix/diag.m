@@ -1,6 +1,17 @@
 function [tt]=diag(tm)
-%[TM]=DIAG(TT)
-%Extracts diagonal of the TT-matrix TM
+%Extract the diagonal of the TT-matrix
+%   [TT]=DIAG(TM) Diagonal of the TT-matrix TM as a TT-tensor TT
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 tt=tt_tensor;
 n=tm.n;
 tt1=tm.tt;

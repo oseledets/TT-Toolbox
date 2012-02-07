@@ -1,7 +1,10 @@
 function [tt] = tt_ones(n,varargin)
-%[TT]=TT_ONES(N,D) --- N is scalar
-%[TT]=TT_ONES(N) --- N is vector
-% Tensor of all ones, modes size N, dimension D
+%Tensor of all ones
+%   [TT]=TT_ONES(N,D), computes the d-dimensional TT-tensor of all ones 
+%   with mode size equal to N
+%
+%   [TT]=TT_ONES(N), computes the TT-tensor of all ones with mode size 
+%   given in the vector N
 %
 %
 % TT Toolbox 2.1, 2009-2012

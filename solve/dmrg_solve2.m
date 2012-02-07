@@ -573,9 +573,10 @@ for swp=1:nswp
             cursol{1}=u(:,1:r);
             cursol{2}=conj(v(:,1:r))*diag(s(1:r));
             if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-                resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
+                resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
             else
-                resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
+                resid = B*full(tt_tensor(tt_mv(B,cur_sol)),rxm1*m1*m2*rxm3)-rhs;
+                %resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
             end;
             while (r<min(size(s,1), rmax))
                 r=r+1;
@@ -583,9 +584,9 @@ for swp=1:nswp
                 cursol{1}=u(:,r);
                 cursol{2}=conj(v(:,r))*s(r);
                 if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-                    resid = resid + B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1);
+                    resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
                 else
-                    resid = resid + reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1);
+                    resid = B*full(tt_tensor(tt_mv(B,cur_sol)),rxm1*m1*m2*rxm3)-rhs;
                 end;
                 normres = norm(resid)/norm(rhs);
                 %             if ( verb>1 )

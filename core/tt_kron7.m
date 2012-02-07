@@ -1,5 +1,6 @@
 function [tt]=tt_kron7(tt1,tt2,s)
-
+%Kronecker product of two TT-tensors in the reverse order
+%   [TT]=TT_KRON7(TT1,TT2,S)
 % May 26, 2011
 % Vladimir Kazeev
 % vladimir.kazeev@gmail.com

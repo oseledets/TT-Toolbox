@@ -1,5 +1,5 @@
 function display(t)
-%DISPLAY Command window display of a TT_tensor.
+%Command window display of a TT_tensor.
 %
 %
 % TT Toolbox 2.1, 2009-2012

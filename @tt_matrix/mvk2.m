@@ -1,9 +1,21 @@
 function [y,swp]=mvk2(a,x,eps,nswp,z,rmax,varargin)
-%[Y,SWP]=MVK2(A,X,EPS,[NSWP],[Y],[RMAX],[OPTIONS])
-%Realization of the two-sided DMRG
-%Matrix-by-vector product of a TT-matrix A, by TT-tensor X,
-%with accuracy EPS, number of sweeps NSWP and initial approximation Y
-%Matrix a is n(i) x m(i), thus x is m(i) and y is n(i)
+%Two-sided DMRG fast matrix-by-vector product
+%   [Y,SWP]=MVK2(A,X,EPS,[NSWP],[Y],[RMAX],[OPTIONS]) Two-sided DMRG (mvk
+%   is one-sided). Matrix-by-vector product of a TT-matrix A
+%   by a TT-tensor X with accuracy EPS. Also, one can specify the number of
+%   sweeps NSWP, initial approximation Z and the maximal TT-rank RMAX (if
+%   they become too large)
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 n=a.n;
 m=a.m;
 att=a.tt;

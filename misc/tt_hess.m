@@ -38,7 +38,7 @@ for i=1:d
                     curhess{k}=curhess{k}(indext(k),:,:);
                 end;
             end;
-            Hess(i,i)=tt_to_full(curhess);
+            Hess(i,i)=full(tt_tensor(curhess));
         else % Grad_i * Grad_j
 %             corei=tt{i};
 %             ni = size(corei,1); r1i=size(corei,2); r2i=size(corei,3);

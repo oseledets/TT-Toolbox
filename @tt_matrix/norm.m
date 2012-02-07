@@ -1,14 +1,23 @@
 function [nrm] = norm(t,varargin)
-%% [NRM]=NORM(TT)
-% 
-% Matrix norm of tt_matrix
-% The behavior is similar to the Matlab built-in function.
-% For tt_matrices:
-% NORM(TT)/NORM(TT,'fro')/NORM(TT,'F') is the Frobenius norm of the tt_matrix
-% NORM(TT,2)/NORM(TT,'2') is the 2-norm of the tt_matrix
-% The 2-norm is approximated by a power iteration and is much more expensive
-% than the Frobenius norm
-
+%Matrix norm of the TT-matrix
+%   The behavior is similar to the Matlab built-in function.
+%   NRM=NORM(TT)/NORM(TT,'fro')/NORM(TT,'F') is the Frobenius norm of the
+%   TT-matrix
+%   
+%   NRM=NORM(TT,2)/NORM(TT,'2') is the 2-norm of the TT-matrix. The 2-norm 
+%   is approximated by a power iteration and is much more expensive than 
+%   the Frobenius norm
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 if (nargin == 1)
   typ='F';
 else

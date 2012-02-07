@@ -1,5 +1,5 @@
 function [a]=times(b,c,varargin)
-% A=B.*C
+%A=B.*C
 %   [A]=TIMES(B,C) Hadamard product of two TT-tensors
 %
 %

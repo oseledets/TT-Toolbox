@@ -1,20 +1,20 @@
 function [tt] = tt_compr2(tt,eps, max_r)
-%[TT]=TT_COMPR2(TT,EPS)
-% Most important subroutine, reapproximates a given TT tensor  with prescribed 
-% accuracy EPS
+%Tensor rounding in TT1.0 format
+%   [TT]=TT_COMPR2(TT,EPS) Reapproximates the given TT-tensor with 
+%   prescribed accuracy EPS. Please avoid its usage: it will be removed in
+%   future releases. Use round() from the object-oriented version
 %
 %
+% TT Toolbox 2.1, 2009-2012
 %
-%
-% TT Toolbox 1.0, 2009
-%
-%This is TT Toolbox, written by Ivan Oseledets.
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
+
 d = size(tt,1);
 %First, estimate the logarithm of the squared norm, and then --- the norm
 %of each core :-)

@@ -1,7 +1,9 @@
 function [e]=tt_eye(n,varargin)
-%[E]=TT_EYE(N,D), N is scalar
-%[E]=TT_EYE(N), N is a vector of sizes
-%Identity matrix in TT format with mode size N^D
+%Identity matrix in the TT-format
+%   [E]=TT_EYE(N,D) Computes  N^D x N^d identity matrix in the TT-format
+%
+%   [E]=TT_EYE(N) Computes identity matrix, row/col mode sizes are 
+%   specified by the vector N 
 %
 %
 % TT Toolbox 2.1, 2009-2012

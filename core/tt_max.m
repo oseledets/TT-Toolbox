@@ -1,13 +1,13 @@
 function [mx,ind_full]=tt_max(tt)
-%[MX,IND_FULL]=TT_MAX(TT)
-%Compute element quasi-maximal in modulus in a TT tensor TT by computing 
-%maxvol positions in all unfolding matrices
-%RK is the value
+%Compute the (supposedly) maximal in modulus element in a TT-tensor
+%   [MX,IND_FULL]=TT_MAX(TT) Compute element quasi-maximal in modulus in 
+%   a TT tensor TT by computing. It return the value MX and the multiindex
+%   IND_FULL where this element is located.
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
@@ -17,6 +17,7 @@ function [mx,ind_full]=tt_max(tt)
 
 %Algorithm: Compute left index set, compute right index set
 %compute submatrices of a tensors, compute maximal element in them
+tt=core(tt); %From the TT2 format
 d=size(tt,1);
 
 %NEW version 

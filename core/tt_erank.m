@@ -1,13 +1,12 @@
 function [rk]=tt_erank(tt)
-%[RK]=TT_ERANK(TT)
-%Computes the effective rank of the TT tensor,
-%assuming all mode sizes are equal
-%Result is RK
+%Effective rank of the TT-tensor: Approximate memory definition
+%   [RK]=TT_ERANK(TT) Computes the effective rank of the TT-tensor,
+%   assuming all modes sizes are equal
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

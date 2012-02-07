@@ -92,18 +92,4 @@ end;
 if ( r1(1)*r2(1) == 1 ) %Save the rabbits 
    p=reshape(p,r1(d+1),r2(d+1));
 end
-% for i=1:d
-%   cr1=core1(ps1(i):ps1(i+1)-1);
-%   cr2=core2(ps2(i):ps2(i+1)-1);
-%   cr1=reshape(cr1,[r1(i),n(i)*r1(i+1)]);
-%   p = cr1'*p; % size n*r1+, r2-*r11*r21
-% %   p=p'*cr1; %p is now r2(i)*n(i)*r1(i+1), sum over r2(i)*n(i);
-% %   p=reshape(p,[r2(i)*n(i),r1(i+1)]);
-%   p = reshape(p, r1(i+1), n(i), r2(i), r1(1)*r2(1));
-%   cr2=reshape(cr2,[r2(i)*n(i),r2(i+1)]);
-%   p=p'*cr2;
-% end
-% p = (rv1.')*p;
-% p = p*rv2;
-% return
 end  

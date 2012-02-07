@@ -1,11 +1,13 @@
 function [tt]=tt_transp(tt)
-%[TT]=TT_TRANSP(TT)
 %Transposition of the TT matrix
+%   [TT]=TT_TRANSP(TT) Transpose of the TT-matrix in TT1.0 format. Please 
+%   avoid its usage: it will be removed in future releases. Use ' and .'
+%   operators  from the object-oriented version
 %
 %
-% TT Toolbox 1.1, 2009
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

@@ -1,7 +1,18 @@
 function [tt]=tt_rand_pos(n, d, r)
-% function [tt]=tt_rand_pos(n, d, r)
-% Generates POSITIVE (important for quadr_solve) pseudo-random tensor
-
+%Random TT-tensor with positive elements
+%   [TT]=TT_RAND_POS(N, D, R) Generates positive (important in many cases)
+%   pseudo-random tensor with size defined by (N,D) and ranks - by R
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 if (max(size(n))==1)
     n = n*ones(d,1);
 end;

@@ -1,15 +1,25 @@
-% FUNCTION [M] = TT_FD_MTX1(TT_A, BOUND1, BOUND2)
-% Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.
-% tt_a - in QTT format.
-% bound1,2 - specify boundary conditions as x=0 and x=1, respectively:
+function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)
+%Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.
+%   [M] = TT_FD_MTX1(TT_A, BOUND1, BOUND2) Generates finite-difference 
+%   1D matrix of \nabla(tt_a \nabla) in QTTM format, TT_A is given in the
+%   QTT format, bound1,2 specify boundary conditions as x=0 and x=1,
+%   respectively:
 %     0 - Dirichlet,
 %     1 - Neumann
-% eps - QTT compression tolerance
-
-function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)
-
+%   EPS is the QTT compression tolerance
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 d = size(tt_a, 1);
-M = tt_diag(tt_a);
+M=core(diag(tt_tensor(a)));
 tt_shf_a = tt_mv(tt_shf(d), tt_a);
 tt_last_elem_a = tt_a;
 for i=1:d

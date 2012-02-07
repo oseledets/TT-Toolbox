@@ -1,20 +1,19 @@
 function [res,sgn] = tt_dot2(tt1,tt2)
-%[RES]=TT_DOT2(TT1,TT2)
-%Logarithm of the scalar product  of TT1 and TT2,
-%To avoid overflow for large dimensions
-%To fix: return also the sign
+%Logarithm of the scalar product of two tensor (to avoid overflow)
+%   [RES]=TT_DOT2(TT1,TT2) Computes the logarithm of the scalar product of
+%   two TT-tensors to avoid overflow. Avoid the usage: use dot2 function
+%   from the object-oriented version
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT Toolbox 2.1, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
-%---------------------------
-d=size(tt1,1);
+%---------------------------d=size(tt1,1);
 g0=(tt1{1})'*(tt2{1});
 gd=(tt1{d})'*(tt2{d});
 r1=size(gd,1); r2=size(gd,2);

@@ -1,5 +1,5 @@
 function disp(tt,name)
-%DISP Command window display of a TT-tensor.
+%Command window display of a TT-tensor.
 %
 %
 %

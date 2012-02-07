@@ -1,5 +1,5 @@
 function [rmax]=tt_maxrank(tt,s)
-
+%Maximal rank of the TT-tensor(?)
 % May 26, 2011
 % Vladimir Kazeev
 % vladimir.kazeev@gmail.com

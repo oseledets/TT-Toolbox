@@ -1,13 +1,30 @@
 function [c] = mtimes(a,b,varargin)
-%[C]=MTIMES(A,B) --- multiplies TT-matrix A by TT-vector B, or
-%matrix-by-number
-%[C]=MTIMES(A,B,EPS) --- multiplies TT-matrix A by TT-vector B using
-%Krylov-DMRG method with accuracy EPS
-%[C]=MTIMES(A,B,EPS,NSWP) --- the same, number of sweeps is specified also
-%[C]=MTIMES(A,B,EPS,NSWP,Y) --- the same, initial approximation is
-%specified also
-%Implement multiplication for a tt_tensor and 
-%matrix-by-vector product
+%C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication
+%   [C]=MTIMES(A,B) if A is a TT-matrix and B is a TT-matrix, computes
+%   matrix-by-matrix product, 
+%
+%   [C]=MTIMES(A,B) if A is a TT-matrix and B is TT-tensor, computes
+%   matrix-by-vector product,
+%
+%   [C]=MTIMES(A,B) if A is a TT-matrix and B is a full tensor, computes
+%   matrix-by-vector product,
+%
+%   [C]=MTIMES(A,B) if A is a TT-matrix and B is a number, computes their
+%   product,
+%
+%   [C]=MTIMES(A,B) if A is a number and B is a TT-matrix, computes their
+%   product
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 if (isa(a,'tt_matrix') && isa(b,'double') && numel(b) == 1 || (isa(b,'tt_matrix') && isa(a,'double') && numel(a) == 1) )
    c=tt_matrix;

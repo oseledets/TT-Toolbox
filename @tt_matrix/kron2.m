@@ -1,7 +1,20 @@
 function [tt]=kron2(tt1,tt2)
-%[TT]=KRON2(TT1,TT2)
-%Computes Kronecker product of two TT-matrices in non-standard
-%ordering
+%Kronecker product of two TT-matrices in non-standard ordering
+%   [TT]=KRON2(TT1,TT2) Computes Kronecker product of two TT-matrices in
+%   non-standard ordering: row indices of TT1 and TT2 are "mixed". The
+%   ranks are multiplied after this operation. It can be useful for the
+%   matrix inversion
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 %Zaglushka!
 n1=tt1.n; m1=tt1.m; n2=tt2.n; m2=tt2.m;

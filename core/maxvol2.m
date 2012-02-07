@@ -1,12 +1,13 @@
 function [ind]=maxvol2(a,ind)
-%[IND]=MAXVOL2(A)
-%Computes maximal volume submatrix in n x r matrix A
-%Returns rows indices that contain maximal volume submatrix
+%Maximal volume submatrix in an tall matrix
+%   [IND]=MAXVOL2(A) computes maximal volume submatrix in n x r matrix A
+%   Returns rows indices that contain maximal volume submatrix
 %
 %
-% TT Toolbox 1.1, 2009-2010
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

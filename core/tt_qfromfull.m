@@ -28,8 +28,7 @@ end
 full=permute(full,prm);
 full=reshape(full,[2^s*ones(1,d),1]);
 
-tt=full_to_tt(full,eps);
-
+tt=core(tt_tensor(full,eps));
 for k=1:d
 	[n,p,q]=size(tt{k});
 	tt{k}=reshape(tt{k},[2*ones(1,s),p,q]);

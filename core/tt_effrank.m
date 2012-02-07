@@ -1,5 +1,6 @@
 function [reff]=tt_effrank(tt,s)
-
+%Effective rank of the TT-tensor (correct memory definition)
+%   [REFF]=TT_EFFRANK(TT,S)
 % May 26, 2011
 % Vladimir Kazeev
 % vladimir.kazeev@gmail.com

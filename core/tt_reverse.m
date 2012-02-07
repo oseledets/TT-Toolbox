@@ -1,7 +1,6 @@
 function [tt2]=tt_reverse(tt,phd)
-
-% Returns a reversed TT rperesentation
-%
+% Returns a reversed TT representation
+%   [TT2]=TT_REVERSE(TT,PHD)
 % January 25, 2011
 % Vladimir Kazeev
 % vladimir.kazeev@gmail.com

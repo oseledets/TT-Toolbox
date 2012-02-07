@@ -1,8 +1,8 @@
 function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)
-%[A]=TT_MVK2(A,X,EPS, max_r, max_swp)
-%Matrix-by-vector product by Krylov-type Block algorithm,
-%which tries to compute everything fast, by increasing rank as far as
-%possible
+%Matrix-by-vector product by DMRG/Krylov method
+%   [A]=TT_MVK2(A,X,EPS, max_r, max_swp) Matrix-by-vector product by
+%   DMRG/Krylov method. Try to use tt_mvk3/mvk3 methods: this one is likely
+%   to be outdated and with not correct parameter selection
 %
 %
 % TT Toolbox 2.1, 2009-2012
@@ -44,7 +44,6 @@ d=size(a,1);
 %y=tt_mv(a,x);
 y=tt_random(tt_size(a),d,2);
 ph=cell(d,1);
-yold=[];
 %ph will be rx * ra * ry 
 swp=1;
 

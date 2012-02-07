@@ -1,11 +1,27 @@
 function [y]=mvrk(A, x, eps, varargin)
-% function [y]=mvrk(A, x, eps, varargin)
+% Computes matvec in the QTT-Tucker "rake" format 
+%   [Y]=MVRK(A, X, EPS, OPTIONS)
 % Computes the MatVec y=Ax in the qtt_tucker "rake" format using the DMRG
-% approach. varargins are:
-%   nswp (20)
-%   y0 (rand-rank2)
-%   verb (1)
-%   kickrank (2)
+% approach. Options are provided in form
+%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+%   on. The parameters are set to default (in brackets in the following) 
+%   The list of option names and default values is:
+%       o kickrank -- the additional ranks, the larger the more robust the
+%       method is, but the complexity increases [2]
+%       o nswp - maximal number of DMRG sweeps [20]
+%       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
+%       o y0 - initial approximation to the product [random-rank 2
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 nswp = 20;
 kickrank = 2;

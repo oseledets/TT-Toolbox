@@ -1,7 +1,19 @@
 function [y]=reort(u,uadd)
-%[Y]=REORT(U,UADD)
-%Faster (?) QR-decomposition of the matrix [u,v] by Golub-Kahan
-%reorthogonalization
+%Golub-Kahan reorthogonalization
+%   [Y]=REORT(U,UADD) Given orthonormal matrix U, orthonormalize UADD to it
+%   to get orthogonal basis in [U,UADD]. Faster then the QR-decomposition,
+%   using the Golub-Kahan method
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 if (size(uadd,2)==0)
     y = u;
     return;
