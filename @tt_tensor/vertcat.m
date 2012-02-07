@@ -1,9 +1,20 @@
 function [c]=vertcat(a,b)
-%C=VERTCAT(A,B)
 %C=[A;B]
-%Computes "addition of rows" of two TT-tensors A and B
-%The result has r(1) = sum(r(1,A)+r(1,B))
-%r(d+1) should be equal to the same of A & B
+%   C=VERTCAT(A,B) Computes "addition of columns" of two TT-tensors A and B
+%   The result has r(1) = sum(r(1,A)+r(1,B)). The last ranks should be
+%   equal for A and B
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 if (isempty(b) )
   c=a;

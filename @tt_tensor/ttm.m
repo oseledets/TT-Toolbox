@@ -1,6 +1,18 @@
 function [tt]=ttm(tt,k,mat)
-%[tt]=ttm(tt,k,mat)
-%Multiplies TT-tensor over the K-th mode with the matrix MAT
+%Tensor by matrix multiplication over a given mode
+%   [TT]=TTM(TT,K,MAT) Multiplies TT-tensor over the K-th mode 
+%   with the matrix MAT
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 cr=tt.core; 
 if (size(cr,1) == 1)

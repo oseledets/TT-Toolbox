@@ -1,7 +1,7 @@
 function [c] = mtimes(a,b)
-%[C]=MTIMES(A,B)
-%Implement multiplication for a tt_tensor and (in future) 
-%matrix-by-vector product
+%   C = A*B
+%   [C]=MTIMES(A,B)
+%   Matrix-by-number multiplication
 
 if isa(a,'tt_tensor') && numel(b) == 1
     c = tt_tensor; 

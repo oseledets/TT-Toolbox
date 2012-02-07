@@ -1,5 +1,5 @@
 function [xf, xc]=dmrg_rake_solve(Af, Ac, yf, yc, tol, varargin)
-
+%[
 nswp = 10;
 local_format = 'full';
 % local_format = 'tt';

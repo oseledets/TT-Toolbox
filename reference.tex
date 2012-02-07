@@ -38,8 +38,8 @@
 %\font\otimesfont=xccsy6 
 %\def\o{\mathbin{\raise1pt\hbox{\otimesfont\char'12}}}
 
-\date{January-February 2011}
-\title{TT-toolbox 2.1: Fast multidimensional array operations in TT format }
+\date{2009-2012}
+\title{TT-Toolbox 2.2: Fast multidimensional array operations in TT format }
 \author{I.V. Oseledets}
 
 \begin{document}
@@ -47,8 +47,7 @@
 \bibliographystyle{plain}
 \section{Contributors}
   The toolbox is written by Ivan Oseledets (Institute of Numerical Mathematics, Moscow, Russia), 
-with contributions from Olga Lebedeva, Sergei Dolgov,Vladimir Kazeev, Dmitry Savostyanov (all are from INM RAS Moscow),
-and ideas from  
+with contributions from Olga Lebedeva, Sergei Dolgov,Vladimir Kazeev and Thomas Mach.
 \section{What is the TT-format for tensors}
 Tensor $\A$ is said to be in the TT-format, if 
 $$A(i_1,i_2,\ldots,i_d) = G_1(i_1) \ldots G_d(i_d),$$
@@ -79,7 +78,7 @@ product, computation of functions of TT-tensors using cross-DMRG algorithm, solu
  \end{enumerate}
 \section{Illustration of basic functionality}
 
-TT-Toolbox 2.1 has two main classes: $\tt$ and $\ttm$. 
+TT-Toolbox 2.2 has two main classes: $\tt$ and $\ttm$. 
 The first is a TT-representation of a $d$-dimensional array in TT-format, and the second --- of $d$-level 
 matrix in TT-format. From  old cell-array representations, used in TT-Toolbox 1.0, 
 these representations can be obtained via calls to $\tt$ and $\ttm$ constructors:
@@ -277,6 +276,8 @@ Class $\ttm$ contains three fields:
 \item $\texttt{ttm.m}$ --- sizes of column indices
 \item $\texttt{ttm.tt}$ --- TT-tensor of the vectorized TT-representation of the matrix 
 \end{enumerate}
+
+
 \section{Basic functionality}
 TT-Toolbox supports several basic functions for matrices and vectors.
 The following operations are supported:
@@ -286,7 +287,7 @@ The following operations are supported:
 with accuracy $\texttt{eps}$. 
 \item $\texttt{tt=tt\_tensor(TT)}$ --- constructs TT-tensor from the TT-Toolbox 1.0 format.
 \item $\texttt{ttm=tt\_matrix(TTM)}$ --- constructs TT-matrix from the TT-Toolbox 1.0 format.
-\item $\texttt{tt=core(tt,k)}$, $\texttt{ttm=core(ttm,k)}$ --- constructs TT-Toolbox 1.0 format from TT-Toolbox 2.1 format, if parameter
+\item $\texttt{tt=core(tt,k)}$, $\texttt{ttm=core(ttm,k)}$ --- constructs TT-Toolbox 1.0 format from TT-Toolbox 2.2 format, if parameter
 $k$ is not specified, and $k$-th core of the decomposition, if it is specified.
 \item $\texttt{y=full(tt)}$ --- converts TT-tensor $\texttt{tt}$ a full array.
 \item $\texttt{y=full(ttm)}$ --- converts TT-matrix $\texttt{ttm}$ to a full square matrix. 

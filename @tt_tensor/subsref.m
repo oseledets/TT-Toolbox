@@ -1,7 +1,19 @@
 function [elem] = subsref(tt,s)
-%[ELEM]=SUBSREF(TT,S)
-%Used to evaluate element of a tensor,
-%and also --- get fields D,R,N,PS,CORE of the TT tensor
+% Evaluate elements, cores of TT-formats and fields of the TT-structure
+%   A=TT{I} computes I-th core of the TT-representation
+%
+%   ELEM=TT(IND) computes element with index IND of the tensor TT
+%   
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 switch s(1).type    
     case '()'

@@ -1,13 +1,26 @@
 function [p] = dot(tt1,tt2,do_qr)
-%[PR]=DOT(TT1,TT2)
-%[PR]=DOT(TT1,TT2, DO_QR)
 %Dot  product of two TT tensors
+%   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors
 %
-% if DO_QR==true is specified, perform the left-to-right QRs of TT1,TT2
-% before the scalar product. It increases the  accuracy in some cases.
-% 
+%   [PR]=DOT(TT1,TT2, DO_QR) if DO_QR==true is specified, perform the 
+%   left-to-right QRs of TT1,TT2
+%   before the scalar product. It increases the  accuracy in some cases.
+%
 % In general, returns a 4D tensor of sizes 
 % r0(tt1), r0(tt2), rd(tt1), rd(tt2)
+% If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 if (nargin<3)||(isempty(do_qr))
     do_qr = false;

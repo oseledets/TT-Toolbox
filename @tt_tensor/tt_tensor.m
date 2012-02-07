@@ -1,14 +1,31 @@
 function t = tt_tensor(varargin)
-%Basic tt_tensor constructor
-%Supported calls:
-%tt_tensor(array,eps)
-%tt_tensor(array,sz,r1,r2,eps)
-%tt_tensor(tt1) -- copy constructor
-%tt_tensor(tt_matrix) --- unfold a tt_matrix
-%tt_tensor(tt_array) --- stack a tt_array
-%tt_tensor(filename) --- read from and sdv format 
-%tt_tensor(cell_array) --- convert from a TT-Toolbox 1.1 format
+%TT-tensor constructor
+%   T=TT_TENSOR(ARRAY,EPS) Converts from a full array with accuracy EPS
 
+%   T=TT_TENSOR(ARRAY,SZ,R1,R2,EPS) Converts from a full array which is 
+%   treated as an array with mode sizes SZ and tail ranks R1 and R2. The
+%   accuracy is set to EPS
+%
+%   T=TT_TENSOR(TT1) Copies TT1 to TT
+%
+%   T=TT_TENSOR(TT_MATRIX) Unfolds a TT-matrix into a TT-tensor
+%
+%   T=TT_TENSOR(TT_ARRAY) Unfolds a TT-array
+%
+%   T=TT_TENSOR(FILENAME) Reads from the SDV format
+%
+%   T=TT_TENSOR(CELL_ARRAY) Converts from TT1 format
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 if (nargin == 0)
     t.d    = 0;

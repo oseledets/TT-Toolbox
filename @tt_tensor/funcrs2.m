@@ -1,12 +1,21 @@
 function [y]=funcrs2(tt,fun,eps,y,nswp)
-%[Y]=FUNCRS2(TT,FUN,EPS)
-%[Y]=FUNCRS2(TT,FUN,EPS)
-%[Y]=FUNCRS2(TT,FUN,EPS,Y)
-%[Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)
-%Computes approximation to the function FUN(TT) with accuracy EPS
-%Auxiliary parameters:  Y (initial approximation), NSWP
-%(number of sweeps in the method
-%Much faster then usual cross by vectorized computation of subtensors
+%Cross approximation of a function of a TT-tensor, Method 2
+%   [Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)
+%   Computes approximation to the function FUN(TT) with accuracy EPS
+%   Auxiliary parameters:  Y (initial approximation), NSWP
+%   (number of sweeps in the method
+%   Much faster then usual cross by vectorized computation of subtensors
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 
 %PARAMETERS SECTION
