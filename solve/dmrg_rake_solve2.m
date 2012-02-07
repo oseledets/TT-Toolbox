@@ -36,6 +36,8 @@ for i=1:2:length(varargin)-1
             kickrank=varargin{i+1};
         case  'max_full_size'
             max_full_size=varargin{i+1};
+        case  'resid_damp'
+            resid_damp_loc=varargin{i+1};            
 %         case 'prec_compr'
 %             prec_compr=varargin{i+1};
 %         case 'prec_tol'
@@ -1051,8 +1053,16 @@ if (strcmp(local_format, 'full'))
 %         B = permute(B, [1, 3, 2, 4]);
 
         B = reshape(B, rx1*n1*n2*rx3, rx1*n1*n2*rx3);
-%          sol = (B'*B) \ (B'*rhs);
-         sol = B \ rhs;
+         sol = (B'*B) \ (B'*rhs);
+%          sol = B \ rhs;
+         
+         % If the direct solution sucked
+        [sol,flg]=gmres(B, rhs, ...
+            nrestart, real_tol/resid_damp, gmres_iters, [], [], sol);
+        if (flg>0)
+            fprintf('--warn-- gmres did not converge\n');
+        end;         
+        
 %          sol = (B'*B + 1e-16*norm(B'*B, 'fro')) \ (B'*rhs);
 %         sol = pinv(B)*rhs;
         res_true = norm(B*sol-rhs)/normy;
@@ -1113,7 +1123,7 @@ if (strcmp(local_format, 'full'))
             % new
             res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
         end;
-        if (res<max(real_tol, res_true)*resid_damp)
+        if (res<max(real_tol, res_true*resid_damp))
             r2 = r;
         else
             r1 = r;
@@ -1131,7 +1141,7 @@ if (strcmp(local_format, 'full'))
             % new
             res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
         end;
-        if (res<max(real_tol, res_true)*resid_damp)
+        if (res<max(real_tol, res_true*resid_damp))
             break;
         end;
         r = r+1;
