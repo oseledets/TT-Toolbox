@@ -164,7 +164,6 @@ end
 %nrmF=sqrt(tt_dot(y,y));
 
 d=size(A,1);
-tau=1*ones(d+1,1);
 
 if ( isempty(P) )
    P = core(tt_eye(tt_size(y), d));
@@ -400,10 +399,10 @@ for swp=1:nswp
         else
             if (strcmp(MatVec, 'bfun2'))
                 mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+                %mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
             else
                 mv = @(vec)(B*vec);
-                mv1 = @(vec)(B*vec+tau(i)*vec);
+                %mv1 = @(vec)(B*vec+tau(i)*vec);
             end;
         end;
 
@@ -592,11 +591,11 @@ for swp=1:nswp
             cursol{1}=u(:,1:r);
             cursol{2}=conj(v(:,1:r))*diag(s(1:r));
             if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-                %resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
-                resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;                
+                resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
+                %resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;                
             else
-                %resid = full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)-rhs;
-                resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
+                resid = full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)-rhs;
+                %resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
             end;
             while (r<min(size(s,1), rmax))
                 r=r+1;
@@ -604,12 +603,12 @@ for swp=1:nswp
                 cursol{1}=u(:,r);
                 cursol{2}=conj(v(:,r))*s(r);
                 if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-                    %resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
-                    resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
+                    resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)+resid;
+                    %resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1) + resid;
 
                 else
-                    %resid = full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)-rhs;
-                    resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
+                    resid = full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)+resid;
+                    %resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)+resid;
 
                 end;
                 normres = norm(resid)/norm(rhs);
