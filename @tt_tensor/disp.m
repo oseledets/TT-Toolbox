@@ -19,11 +19,11 @@ end
 r=tt.r; n=tt.n; 
 d=tt.d;
 fprintf('%s is a %d-dimensional TT-tensor, ranks and mode sizes: \n',name,d);
-fprintf('r(1)=%d \n', r(1));
+%fprintf('r(1)=%d \n', r(1));
 for i=1:d
-%    fprintf('r(%d)=%d \t n(%d)=%d \n',i,r(i),i,n(i));
-   fprintf(' \t n(%d)=%d \n',i,n(i));
-   fprintf('r(%d)=%d \n',i+1,r(i+1));
+    fprintf('r(%d)=%d \t n(%d)=%d \n',i,r(i),i,n(i));
+%   fprintf(' \t n(%d)=%d \n',i,n(i));
+%   fprintf('r(%d)=%d \n',i+1,r(i+1));
 end
-% fprintf('r(%d)=%d \n',d+1,r(d+1));
+ fprintf('r(%d)=%d \n',d+1,r(d+1));
 

@@ -23,5 +23,10 @@ function [tt2]=reshape(tt1,sz,eps, rl, rr)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-
-tt2=tt_reshape(tt1,sz,eps,rl,rr);
+if ( nargin == 5)
+    tt2=tt_reshape(tt1,sz,eps,rl,rr);
+elseif (  nargin == 4 ) 
+    tt2=tt_reshape(tt1,sz,eps,rl);
+else
+   tt2=tt_reshape(tt1,sz,eps);
+end
