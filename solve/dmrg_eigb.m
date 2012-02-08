@@ -8,7 +8,7 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
 %   on. The parameters are set to default (in brackets in the following) 
 %   The list of option names and default values are:
-%       o y0 - initial approximation [random rank-2 tensor]
+%       o y0 - initial approximation [random rank-5 tensor]
 %       o rmax - maximal  TT-rank of the (block) solution [2500]
 %       o nswp - maximal number of sweeps [4]
 %       o kick_rank - stabilization parameter, the larger, the better
@@ -57,7 +57,7 @@ end
 n=a.n; 
 d=a.d;
 if ( isempty(y0) )
-    kk=2;
+    kk=max(5,k);
     r=kk*ones(1,d+1);
     r(d+1)=k;
     r(1)=1;

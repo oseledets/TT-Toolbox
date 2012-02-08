@@ -23,6 +23,7 @@ if ( numel(r) == 1 )
  r(d+1)=1;
 end
 r=r(:);
+n=n(:);
 tt=tt_tensor;
 tt.n=n;
 tt.r=r;

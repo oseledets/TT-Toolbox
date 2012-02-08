@@ -459,11 +459,6 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
  end;
  
  dy_old = dy;
-%  if (~isempty(yold) )
-%    er=tt_dist2(y,yold)/sqrt(tt_dot(yold,yold));
-%    fprintf('er=%3.2e\n',er);
-%  end
-%  yold=y;
   swp=swp+1;
   if (swp==nswp-1)
       last_sweep=true;
@@ -473,6 +468,5 @@ if ( swp == nswp )&&(max(dy)>eps/(d^d_pow_check))
   fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, err_max); 
 end
 
-y=tt_tensor(y); %Bydlocode
 return
 end

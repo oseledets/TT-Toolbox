@@ -17,18 +17,17 @@ function [y]=dmrg_cross(d,n,fun,eps,varargin)
 %       o y0   - initial approximation [random rank-2]
 %       o radd - minimal rank change [0]
 %       o rmin - minimal rank that is allows [1]
+%       o kickrank - stabilization parameter [2]
 %       
-%Difference to TT_CRS4: vectorized computation of subtensors added
-%TT_CROSS_ELEM is a function handle than computes a set of elements 
-%of array A
 
 %Default parameters
 rmin=1;
 verb=true;
 radd=0;
+kickrank=2;
 nswp=10;
 y=[];
-vec=false;
+vectorized=false;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -42,7 +41,10 @@ for i=1:2:length(varargin)-1
         case 'radd'
             radd=varargin{i+1};
         case 'vec'
-            vec=varargin{i+1};
+            vectorized=varargin{i+1};
+        case 'kickrank'
+            kickrank=varargin{i+1};
+
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -51,354 +53,230 @@ end
 if ( numel(n) == 1 )
    n=n*ones(d,1);
 end
-yold=[];
 
 sz=n;
 if (isempty(y) )
     y=tt_rand(sz,d,2); 
 end
-%y=round(y,0); %To avoid "overranks"
+if ( ~vectorized ) 
+    elem=@(ind) my_vec_fun(ind,fun);
+end
+y=round(y,0); %To avoid overranks
 ry=y.r;
-
-%Here we need: "left indices" and right indices; We consequently 
-%orthogonalize y from left to right (assuming that from right-to-left 
-%they are already orthogonalized)
-%At this point we assume that: Y is orthogonal from right-to-left
-%and ind_right correspond to correct max-vol positions in this matrix
-
+[y,rm]=qr(y,'rl');
+y=rm*y;
 %Warmup procedure: orthogonalization from right to left of the initial
-%approximation & computation of the index sets
-ind_left=cell(d,1);
-er=2*eps;
+%approximation & computation of the index sets & computation of the
+%right-to-left R matrix
 swp=1;
-
+rmat=cell(d+1,1); 
+rmat{d+1}=1;
+rmat{1}=1; %These are R-matrices from the QR-decomposition.
+index_array{d+1}=zeros(0,ry(d+1)); 
+index_array{1}=zeros(ry(1),0);
 r1=1;
 for i=d:-1:2
     cr=y{i}; cr=reshape(cr,[ry(i)*n(i),ry(i+1)]);
-    cr = cr*r1; cr=cr.';
-    [cr,~]=qr(cr,0);
-    [core,~]=qr(core,0);
-    [ind]=maxvol2(core); 
-    ind_old=ind_right{i};
-    rnew=min(ncur*r3,r2);
+    cr = cr*r1; cr=reshape(cr,[ry(i),n(i)*ry(i+1)]); cr=cr.';
+    [cr,rm]=qr(cr,0);
+    [ind]=maxvol2(cr); 
+    ind_old=index_array{i+1};
+    rnew=min(n(i)*ry(i+1),ry(i));
     ind_new=zeros(d-i+1,rnew);
     for s=1:rnew
        f_in=ind(s);
-       w1=tt_ind2sub([r3,ncur],f_in);
+       w1=tt_ind2sub([ry(i+1),n(i)],f_in);
        rs=w1(1); js=w1(2);
        ind_new(:,s)=[js,ind_old(:,rs)'];
     end
-    ind_right{i-1}=ind_new;
-    r1=core(ind,:);
-    ind_small{i}=ind;
-    sbm{i}=r1;
-    y{i}=core/r1;
-    rnew=min(ncur*r3,r2);
-    y{i}=reshape(y{i},[r3,ncur,rnew]);
-    y{i}=permute(y{i},[2,3,1]);
+    index_array{i}=ind_new;
+    r1=cr(ind,:);
+    cr=cr/r1; 
+    r1=r1*rm;
+    r1=r1.';
+
+    cr=cr.'; 
+    y{i}=reshape(cr,[ry(i),n(i),ry(i+1)]);
+    cr=reshape(cr,[ry(i)*n(i),ry(i+1)]);
+    cr=cr*rmat{i+1}; cr=reshape(cr,[ry(i),n(i)*ry(i+1)]);
+    cr=cr.'; 
+    [~,rm]=qr(cr,0);
+    rmat{i}=rm; %The R-matrix
 end
-yold=[];
+%Forgot to put r1 onto the last core
+cr=y{1}; cr=reshape(cr,[ry(1)*n(1),ry(2)]);
+y{1}=reshape(cr*r1,[ry(1),n(1),ry(2)]); 
 not_converged = true;
-
+dir = 1; %The direction of the sweep
+i=1; %Current position
+er_max=0;
 while ( swp < nswp && not_converged )
-    
-    
-    
-    %First core: we compute B(i1,i2,ra)
-    n1=sz(1);
-    n2=sz(2);
-    ra2=size(ind_right{2},2);
-    ind2=ind_right{2};
-    megaindex=zeros(d,n1,n2,ra2);
-    for i=1:n1
-      for j=1:n2
-         for s2=1:ra2
-             ind=[i,j,ind2(:,s2)'];
-            megaindex(:,i,j,s2)=ind;
-         end
-      end
+    % A sweep through the cores
+    %Compute the current index set, compute the current supercore
+    %(right now without any 2D cross inside, but it is trivial to
+    %implement). The supercore is (i,i+1) now. 
+    %Left index set is index_array{i}, right index set is index_array{i+2}
+    %We will modify ry(i+1) at this step and use rmat{i} and rmat{i+2} 
+    %as "weighting" matrices for the low-rank approximation. The initial 
+    %approximation is simply rmax{i}*u{i}*u{i+1}*rmat{i+2} (hey!)
+    %We also have to store the submatrix in the current factors
+    %Then the algorithm would be as follows: Computex sets, compute
+    %supercore. Compute rmax{i}*Phi*rmax{i+2} = U*V by SVD, then split
+    rm1=rmat{i}; rm2=rmat{i+2};
+    cr1=y{i}; cr2=y{i+1};
+    ind1=index_array{i};
+    ind2=index_array{i+2};
+    big_index=zeros(ry(i),n(i),n(i+1),ry(i+2),d);
+    for i1=1:n(i)
+        for i2=1:n(i+1)
+            for s1=1:ry(i)
+                for s2=1:ry(i+2)
+                    ind=[ind1(s1,:),i1,i2,ind2(:,s2)'];
+                    big_index(s1,i1,i2,s2,:)=ind;
+                end
+            end
+        end
     end
-    megaindex=reshape(megaindex,[d,n1*n2*ra2]);
-    b=tt_cross_elem(megaindex,arr);
+    big_index=reshape(big_index,[numel(big_index)/d,d]);
+    score=elem(big_index); 
+    %Now plug in the rmax matrices
+    score=reshape(score,[ry(i),n(i)*n(i+1)*ry(i+2)]);
+    score=rmat{i}*score;
+    ry(i)=size(score,1);
+    score=reshape(score,[ry(i)*n(i)*n(i+1),ry(i+2)]);
+    score=score*rmat{i+2}; 
+    ry(i+2)=size(score,2);
+    
+    %Do the SVD splitting (later on we can replace it by cross for large
+    %mode sizes)
+    score=reshape(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+    [u,s,v]=svd(score,'econ');
+    s=diag(s);
+    r=my_chop2(s,norm(s)*eps/sqrt(d-1)); %Truncation
+    u=u(:,1:r); v=v(:,1:r); s=s(1:r); 
+    %Kick rank
+    
+    if ( dir == 1 ) 
+        v=v*diag(s);
         
-    %Compute its SVD, new rank estimate, and new first core
-    b=reshape(b,[n1,n2*ra2]);
+        ur=randn(size(u,1),kickrank);
+        u=reort(u,ur);
+        radd=size(u,2)-r;
+        if ( radd > 0 )
+            vr=zeros(size(v,1),radd);
+            v=[v,vr];
+        end
+        r=r+radd;
+    else
+         u=u*diag(s);
+         vr=randn(size(v,1),kickrank);
+         v=reort(v,vr);
+         radd=size(v,2)-r;
+         if ( radd > 0 )
+             ur=zeros(size(u,1),radd);
+             u=[u,ur];
+         end
+         r=r+radd;
+    end
     
-   
-    [u,s,v]=svd(b,'econ');
-    s=diag(s); nrm=norm(s);
-    r=my_chop2(s,eps*nrm);
-    r=max([rmin,r]);
+    v=v';
+
+    %Compute the previous approximation
+    appr=reshape(cr1,[numel(cr1)/ry(i+1),ry(i+1)])*reshape(cr2,[ry(i+1),numel(cr2)/ry(i+1)]);
+    appr=reshape(appr,[ry(i),n(i)*n(i+1)*ry(i+2)]);
+    appr=rmat{i}*appr;
+    appr=reshape(appr,[ry(i)*n(i)*n(i+1),ry(i+2)]);
+    appr=appr*rmat{i+2}; 
+    er_loc=norm(score(:)-appr(:))/norm(score(:));
+    er_max=max(er_max,er_loc);
     if ( verb ) 
-        fprintf('We can push rank %d to %d \n',1,r);  
+        fprintf('swp=%d block=%d new_rank=%d local_er=%3.1e\n',swp,i,r,er_loc);
     end
-    u=u(:,1:r);    
-    ind=maxvol2(u);
-    ind_left{1}=ind;
-    u=u/u(ind,:);
-    y{1}=u;
-    %Test interpolation property
-    %keyboard;
+    ry(i+1)=r;
 
-    %Now check all other cores
-   for i=2:d-2
-       %We compute B(ra1,n1,n2,ra2)
-       n1=sz(i); n2=sz(i+1);
-       ra1=size(ind_left{i-1},2);
-       ra2=size(ind_right{i+1},2);
-       ind1=ind_left{i-1};
-       ind2=ind_right{i+1};
-       %b=zeros(ra1,n1,n2,ra2);
-       %Create MEGAINDEX array
-       megaindex=zeros(d,ra1,n1,n2,ra2); %These are all n1*n2*ra1*ra2 elements to compute (?)
-       
-       for i1=1:n1
-         for i2=1:n2
-           for s1=1:ra1
-             for s2=1:ra2
-                ind=[ind1(:,s1)',i1,i2,ind2(:,s2)'];
-         megaindex(:,s1,i1,i2,s2)=ind;
-               %         b(s1,i1,i2,s2)=(ind,arr);
-             end
-           end
-         end
-       end
-       %Compute b
-       megaindex=reshape(megaindex,[d,ra1*n1*n2*ra2]);
-       b=tt_cross_elem(megaindex,arr);
-       b=reshape(b,[ra1*n1,n2*ra2]);
-   
-       [u,s,v]=svd(b,'econ'); s=diag(s);
-      r=my_chop2(s,eps*norm(s));
-      r=max([r,rmin]);
-      %  r=min(r,size(s,1));
-  %if ( 
-  if ( verb )
-    fprintf('We can push rank %d to %d \n',i,r);
-  end
-  u=u(:,1:r);
-  u=reshape(u,[ra1*n1,r]);
-  rnew=min(ra1*n1,r);
-  [u,rm]=qr(u,0);
-  ind=maxvol2(u);
-  ind_small{i}=ind;
-  ind_old=ind_left{i-1};
-  ind_new=zeros(i,rnew);
-    for s=1:rnew
-     f_in=ind(s);
-     w1=tt_ind2sub([ra1,n1],f_in);
-     rs=w1(1); js=w1(2);
-     ind_new(:,s)=[ind_old(:,rs)',js];
+    u = reshape(u,[ry(i),n(i)*r]);
+    u = rmat{i}\u; %Hope it is stable blin
+    v=reshape(v,[r*n(i+1),ry(i+2)]); 
+    u=reshape(u,[ry(i)*n(i),ry(i+1)]);
+    v=v/rmat{i+2}; v=reshape(v,[r,n(i+1)*ry(i+2)]);
+    if ( dir == 1 ) 
+        [u,rm]=qr(u,0); 
+        ind=maxvol2(u); 
+        r1=u(ind,:); 
+        u=u/r1; y{i}=reshape(u,[ry(i),n(i),ry(i+1)]);
+        r1=r1*rm; 
+        v=r1*v; y{i+1}=reshape(v,[ry(i+1),n(i+1),ry(i+2)]);
+        %Recalculate rmat
+        u1=reshape(u,[ry(i),n(i)*ry(i+1)]);
+        u1=rmat{i}*u1;
+        u1=reshape(u1,[ry(i)*n(i),ry(i+1)]);
+        [~,rm]=qr(u1,0);
+        rmat{i+1}=rm;
+        %Recalculate index array
+        ind_old=index_array{i};
+        ind_new=zeros(ry(i+1),i);
+        for s=1:ry(i+1)
+            f_in=ind(s);
+            w1=tt_ind2sub([ry(i),n(i)],f_in);
+            rs=w1(1); js=w1(2);
+            ind_new(s,:)=[ind_old(rs,:),js];
+        end
+        index_array{i+1}=ind_new; 
+        if ( i == d - 1 ) 
+            dir = -dir;
+        else
+            i=i+1;
+        end
+    else %Reverse direction
+         v=v.'; %v is standing
+        [v,rm]=qr(v,0);
+        ind=maxvol2(v);
+        r1=v(ind,:);
+        v=v/r1; v2=reshape(v,[n(i+1),ry(i+2),ry(i+1)]); y{i+1}=permute(v2,[3,1,2]);
+        r1=r1*rm; r1=r1.';
+        u=u*r1; y{i}=reshape(u,[ry(i),n(i),ry(i+1)]);
+        %Recalculate rmat
+        v=v.'; 
+        v=reshape(v,[ry(i+1)*n(i+1),ry(i+2)]);
+        v=v*rmat{i+2};
+        v=reshape(v,[ry(i+1),n(i+1)*ry(i+2)]); v=v.';
+        [~,rm]=qr(v,0);
+        rmat{i+1}=rm;
+        %Recalculate index array
+        ind_old=index_array{i+2};
+        ind_new=zeros(d-i,ry(i+1));
+        for s=1:ry(i+1);
+            f_in=ind(s);
+            w1=tt_ind2sub([n(i+1),ry(i+2)],f_in);
+            rs=w1(2); js=w1(1);
+            ind_new(:,s)=[js,ind_old(:,rs)'];
+        end
+        index_array{i+1}=ind_new;
+        if ( i == 1 ) 
+            dir=-dir;
+            swp = swp + 1;
+            if ( er_max < eps ) 
+                not_converged=false;
+            else
+                er_max=0;
+            end
+        else
+            i=i-1;
+        end
     end
-    ind_left{i}=ind_new;
-    %core=core*inv(core(ind,:)); 
-    u=u/u(ind,:);
-    u=reshape(u,[ra1,n1,rnew]); u=permute(u,[2,1,3]);
-    y{i}=u;
-   end
-    %Now compute the last core - and we are done :-)
-    %Compute B(ra1,n1,n2)
-    n1=sz(d-1);
-    n2=sz(d);
-    ra1=size(ind_left{d-2},2);
-    ind1=ind_left{d-2};
-    b=zeros(ra1,n1,n2);
-%     for i1=1:n1
-%       for i2=1:n2
-%          for s1=1:ra1
-%             ind=[ind1(:,s1)',i1,i2];
-%             b(s1,i1,i2)=tt_cross_elem(ind,arr);
-%          end
-%       end
-%     end
-%     
-    
-    
-       megaindex=zeros(d,ra1,n1,n2); 
-           
-       for i1=1:n1
-         for i2=1:n2
-           for s1=1:ra1
-            ind=[ind1(:,s1)',i1,i2];
-                 megaindex(:,s1,i1,i2)=ind;
-           end
-         end
-       end
-      
-       %Compute b
-       megaindex=reshape(megaindex,[d,ra1*n1*n2]);
-       b=tt_cross_elem(megaindex,arr);
-       b=reshape(b,[ra1*n1,n2]);
-
-    
-    
-    [u,s,v]=svd(b,'econ'); s=diag(s);
-    r=my_chop2(s,eps*norm(s));
-    r=max([r,rmin]);
-    %r=min(r,size(s,1));
-    if ( verb )
-      fprintf('We can push rank %d to %d \n',d-1,r);
-    end
-    u=u(:,1:r);
-    v=v(:,1:r);
-    s=s(1:r);
-    u=u*diag(s);
-    
-    [ind]=maxvol2(v);
-    ind_small{d}=ind;
-    mt=v(ind,:);
-    u=u*mt';
-    u=reshape(u,[ra1,n1,r]);
-    u=permute(u,[2,1,3]);
-   
-    y{d-1}=u;
-    y{d}=v/mt;
-    ind_right{d-1}=ind;
-    v=v/v(ind,:);
-    y{d}=v;
-    %Here we start iteration backwards
-    %this means, that previous step is not that necessary
-  for i=d-2:-1:2
-       %We compute B(ra1,n1,n2,ra2)
-       n1=sz(i); n2=sz(i+1);
-       ra1=size(ind_left{i-1},2);
-       ra2=size(ind_right{i+1},2);
-       ind1=ind_left{i-1};
-       ind2=ind_right{i+1};
-       
-       megaindex=zeros(d,ra1,n1,n2,ra2); %These are all n1*n2*ra1*ra2 elements to compute (?)
-       
-       for i1=1:n1
-         for i2=1:n2
-           for s1=1:ra1
-             for s2=1:ra2
-                ind=[ind1(:,s1)',i1,i2,ind2(:,s2)'];
-         megaindex(:,s1,i1,i2,s2)=ind;
-               %         b(s1,i1,i2,s2)=my_elem(ind,arr);
-             end
-           end
-         end
-       end
-       %Compute b
-       megaindex=reshape(megaindex,[d,ra1*n1*n2*ra2]);
-       b=tt_cross_elem(megaindex,arr);
-       b=reshape(b,[ra1*n1,n2*ra2]);
-   
-       b=reshape(b,[ra1*n1,n2*ra2]);
-       %Now we have to fix SVD section 
-       [u,s1,v]=svd(b,'econ'); s1=diag(s1);
-       r=my_chop2(s1,eps*norm(s1));
-       r=max([r,rmin]); 
-       if ( verb )
-         fprintf('We can push rank %d to %d \n',i,r);
-       end
-       v=v(:,1:r);
-       
-  v=reshape(v,[n2*ra2,r]);
-  rnew=min(n2*ra2,r);
-  ind=maxvol2(v); 
-  ind_small{i+1}=ind;
-  ind_old=ind_right{i+1};
-  ind_new=zeros(d-i,rnew);
-  %fprintf('i=%d \n'); 
-  for s=1:rnew
-     f_in=ind(s);
-     w1=tt_ind2sub([n2,ra2],f_in);
-     rs=w1(2); js=w1(1);
-     ind_new(:,s)=[js,ind_old(:,rs)'];
-  end
-    ind_right{i}=ind_new;
-    mt=v(ind,:);
-    s1=s1(1:r);
-    u=u(:,1:r)*diag(s1)*mt';
-    v=v/mt;
-    v=reshape(v,[n2,ra2,rnew]); v=permute(v,[1,3,2]);
-    y{i+1}=v;
-    u=reshape(u,[ra1,n1,rnew]); u=permute(u,[2,1,3]);
-    y{i}=u;
- end
-%Fix the first core (separatedly)
-%           vv=tt_to_full(y);
-% vv=vv(:);
-% %Test interpolation property
-% k=1;
-% for k=1:d-2
-%   for s1=1:size(ind_left{k},2);
-%      for s2=1:size(ind_right{k+1},2)  
-% p0=[ind_left{k}(:,s1)',1,ind_right{k+1}(:,s2)'];
-% vv=vv(:);
-% p1=tt_sub2ind(sz,p0);
-% full_arr=full_arr(:);
-% full_arr(p1)-vv(p1)
-%      end
-%   end
-% end
-% keyboard;
-  
-if (isempty(yold) )
-  yold=y;
-else
- %er=tt_dist2(yold,y)/sqrt(tt_dot(yold,yold)*tt_dot(y,y));
- er=norm(tt_tensor(yold)-tt_tensor(y))/norm(tt_tensor(y));
- yold=y;
- fprintf('er=%3.2e \n',er);
 end
-   swp=swp+1;
+return
 end
-% %First core: we compute B(i1,i2,ra)
-    n1=sz(1);
-    n2=sz(2);
-    ra2=size(ind_right{2},2);
-    ind2=ind_right{2};
-%     b=zeros(n1,n2,ra2);
-%     for i=1:n1
-%       for j=1:n2
-%          for s2=1:ra2
-%              ind=[i,j,ind2(:,s2)'];
-%             b(i,j,s2)=my_elem(ind,arr);
-%          end
-%       end
-%     end
-    
-     megaindex=zeros(d,n1,n2,ra2); 
-           
-       for i1=1:n1
-         for i2=1:n2
-           for s2=1:ra2
-             ind=[i1,i2,ind2(:,s2)'];
-             megaindex(:,i1,i2,s2)=ind;
-           end
-         end
-       end
-      
-       %Compute b
-       megaindex=reshape(megaindex,[d,n1*n2*ra2]);
-       b=tt_cross_elem(megaindex,arr);
-
-    
-    
-    
-    %Compute its SVD, new rank estimate, and new first core
-    b=reshape(b,[n1,n2*ra2]);
-    
-    [u,s,v]=svd(b,'econ');
-    s=diag(s); nrm=norm(s);
-    r=my_chop2(s,eps*nrm);
-    r=max([rmin,r]);
-    %r=min(r,size(s,1));
-    if ( verb ) 
-        fprintf('We can push rank %d to %d \n',1,r);  
-    end
-    u=u(:,1:r)*diag(s(1:r));
-    v=v(:,1:r);
-    v=reshape(v,[n2,ra2,r]);
-    v=permute(v,[1,3,2]);
-    y{1}=u;
-    y{2}=v;
- 
-%vv=tt_to_full(y);
-%norm(vv(:)-full_arr(:))
-
-%keyboard;
+function val=my_vec_fun(ind,fun)
+%Trivial vectorized computation of the elements of a tensor
+%   [VAL]=MY_VEC_FUN(IND,FUN) Given a function handle FUN, compute all
+%   elements of a tensor given in the index array IND. IND is a M x d
+%   array, where M is the number of indices to be computed. 
+M=size(ind,1);
+val=zeros(M,1);
+for i=1:M
+   ind_loc=ind(i,:); ind_loc=ind_loc(:);
+   val(i)=fun(ind_loc);
+end
 return
 end
