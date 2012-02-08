@@ -1,12 +1,21 @@
 function [y]=funcrs2(tt,fun,eps,y,nswp)
-%[Y]=FUNCRS2(TT,FUN,EPS)
-%[Y]=FUNCRS2(TT,FUN,EPS)
-%[Y]=FUNCRS2(TT,FUN,EPS,Y)
-%[Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)
-%Computes approximation to the function FUN(TT) with accuracy EPS
-%Auxiliary parameters:  Y (initial approximation), NSWP
-%(number of sweeps in the method
-%Much faster then usual cross by vectorized computation of subtensors
+%Cross approximation of a function of a TT-tensor, Method 2
+%   [Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)
+%   Computes approximation to the function FUN(TT) with accuracy EPS
+%   Auxiliary parameters:  Y (initial approximation), NSWP
+%   (number of sweeps in the method
+%   Much faster then usual cross by vectorized computation of subtensors
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 
 %PARAMETERS SECTION
@@ -239,6 +248,9 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      s=diag(s);
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+     
+     v = conj(v); % <- bug was here
+     
      %Make it standard
      u=u*diag(s);
 
