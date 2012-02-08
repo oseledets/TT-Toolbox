@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of filters_wtt</title>
+  <meta name="keywords" content="filters_wtt">
+  <meta name="description" content="Computes the WTT transform filters for a given tensor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; filters_wtt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>filters_wtt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Computes the WTT transform filters for a given tensor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [wtt_transform] = filters_wtt (a,rmax,eps,sz) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Computes the WTT transform filters for a given tensor
+   [WTT_TRANSFORM]=FILTERS_WTT(A,RMAX,EPS,SZ)
+   Computes the set of filters for transform of A, A should be given 
+   either as d-dimensional array, or as by size-vector SZ
+   WTT_TRANSFORM is a structure with two fields: 
+   u and rks
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [wtt_transform] = filters_wtt (a,rmax,eps,sz)</a>
+0002 <span class="comment">%Computes the WTT transform filters for a given tensor</span>
+0003 <span class="comment">%   [WTT_TRANSFORM]=FILTERS_WTT(A,RMAX,EPS,SZ)</span>
+0004 <span class="comment">%   Computes the set of filters for transform of A, A should be given</span>
+0005 <span class="comment">%   either as d-dimensional array, or as by size-vector SZ</span>
+0006 <span class="comment">%   WTT_TRANSFORM is a structure with two fields:</span>
+0007 <span class="comment">%   u and rks</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0013 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0014 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0017 <span class="comment">%ivan.oseledets@gmail.com</span>
+0018 <span class="comment">%---------------------------</span>
+0019 
+0020 <span class="keyword">if</span> ( nargin == 1 )
+0021 sz=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(a); d = numel(sz);
+0022 <span class="keyword">else</span>
+0023    d = numel(sz);
+0024 <span class="keyword">end</span>
+0025 N=numel(a);
+0026 rks=zeros(d,1); u=cell(d-1,1);
+0027 rks(1)=1;
+0028 a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[sz(1),N/sz(1)]);
+0029 <span class="keyword">for</span> k=1:d-1
+0030    [m,p]=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(a);
+0031    <span class="keyword">if</span> ( m &gt; p ) 
+0032       [u1,s1,v1]=svd(a);
+0033    <span class="keyword">else</span>
+0034       [u1,s1,v1]=svd(a,<span class="string">'econ'</span>);
+0035    <span class="keyword">end</span>
+0036    <span class="comment">%Fix for u1 SLIGHTLY</span>
+0037 <span class="comment">%   a1=a;</span>
+0038 <span class="comment">%    if ( m &gt; p )</span>
+0039 <span class="comment">%  for s=1:5</span>
+0040 <span class="comment">%    b1=u1'*a1;</span>
+0041 <span class="comment">%    m1=size(b1,2);</span>
+0042 <span class="comment">%    sp=zeros(m,1);</span>
+0043 <span class="comment">%    for q=1:m1</span>
+0044 <span class="comment">%      b=b1(:,q);</span>
+0045 <span class="comment">%      sp(q)=norm(b,2)/norm(b,1); %this is a sparsity measure: for one 1 it is 1, for all ones --- 1/sqrt(np)</span>
+0046 <span class="comment">%    end</span>
+0047 <span class="comment">%    sgm=0.95; %cutoff for sparse vectors</span>
+0048 <span class="comment">%    ind1=find(sp&gt;sgm);</span>
+0049 <span class="comment">%    if ( numel(ind1) &gt; 0 )</span>
+0050 <span class="comment">%     a1=a1(:,ind1);</span>
+0051 <span class="comment">%     if ( m &gt; p )</span>
+0052 <span class="comment">%       [u1,s1,v1]=svd(a1);</span>
+0053 <span class="comment">%     else</span>
+0054 <span class="comment">%       [u1,s1,v1]=svd(a1,'econ');</span>
+0055 <span class="comment">%     end</span>
+0056 <span class="comment">%    end</span>
+0057 <span class="comment">%  end</span>
+0058 <span class="comment">%    end</span>
+0059  s1=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s1);
+0060    <span class="comment">%s1</span>
+0061    r0=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s1,eps*<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s1)/sqrt(d-1));
+0062       r=min([m,p,rmax,r0]);
+0063    N = N*r/(sz(k)*rks(k));
+0064    rks(k+1)=r;
+0065    a=u1'*a; 
+0066    a=a(1:r,:); a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[r*sz(k+1),N/(r*sz(k+1))]);
+0067    u{k}=u1;
+0068 <span class="keyword">end</span>
+0069 rks(d)=1;
+0070 u{d}=v1;
+0071 wtt_transform=struct;
+0072 wtt_transform.u=u;
+0073 wtt_transform.rks=rks;
+0074 wtt_transform.sz=sz;
+0075 <span class="keyword">return</span>
+0076 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

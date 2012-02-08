@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dot</title>
+  <meta name="keywords" content="dot">
+  <meta name="description" content="Dot  product of two TT tensors">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; dot.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dot
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Dot  product of two TT tensors</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [p] = dot(tt1,tt2,do_qr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Dot  product of two TT tensors
+   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors
+
+   [PR]=DOT(TT1,TT2, DO_QR) if DO_QR==true is specified, perform the 
+   left-to-right QRs of TT1,TT2
+   before the scalar product. It increases the  accuracy in some cases.
+
+ In general, returns a 4D tensor of sizes 
+ r0(tt1), r0(tt2), rd(tt1), rd(tt2)
+ If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>	Complex conjugate of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>	Compute a complex conjugate of TT-tensor</li><li><a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>	Dot product of two QTT-Tuckers</li><li><a href="../../tt2/@tt_matrix/dot.html" class="code" title="function [p] = dot(tt1,tt2)">dot</a>	Frobenius dot product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/kron2.html" class="code" title="function [tt]=kron2(tt1,tt2)">kron2</a>	Kronecker product of two TT-matrices in non-standard ordering</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="erank.html" class="code" title="function [er]=erank(tt)">erank</a>	Effective rank of the TT-tensor</li><li><a href="mem.html" class="code" title="function [mm]=mem(tt)">mem</a>	Computes memory for TT-tensor (only for cores)</li><li><a href="plus.html" class="code" title="function [a]=plus(b,c)">plus</a>	A=B+C</li><li><a href="times.html" class="code" title="function [a]=times(b,c,varargin)">times</a>	A=B.*C</li><li><a href="../../tt2/core/sub_to_ind.html" class="code" title="function [mult]=sub_to_ind(ind,sz1)">sub_to_ind</a>	Converts a multiindex to a linear index</li><li><a href="../../tt2/exp/tt_minres_selfprec2.html" class="code" title="function [X]=tt_minres_selfprec2(A,  eps, varargin)">tt_minres_selfprec2</a>	Computation of the approximate TT-matrix inverse using self-prec method</li><li><a href="../../tt2/misc/lars.html" class="code" title="function [y]=lars(p,ind,mat,rhs,n,d,smin,h,i0,j0)">lars</a>	The dimension is p^2 (thus w</li><li><a href="../../tt2/tests/lars.html" class="code" title="function [y]=lars(p,ind,mat,rhs,n,d,smin,h,i0,j0)">lars</a>	The dimension is p^2 (thus w</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [p] = dot(tt1,tt2,do_qr)</a>
+0002 <span class="comment">%Dot  product of two TT tensors</span>
+0003 <span class="comment">%   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   [PR]=DOT(TT1,TT2, DO_QR) if DO_QR==true is specified, perform the</span>
+0006 <span class="comment">%   left-to-right QRs of TT1,TT2</span>
+0007 <span class="comment">%   before the scalar product. It increases the  accuracy in some cases.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% In general, returns a 4D tensor of sizes</span>
+0010 <span class="comment">% r0(tt1), r0(tt2), rd(tt1), rd(tt2)</span>
+0011 <span class="comment">% If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0017 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0018 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0021 <span class="comment">%ivan.oseledets@gmail.com</span>
+0022 <span class="comment">%---------------------------</span>
+0023 
+0024 
+0025 <span class="keyword">if</span> (nargin&lt;3)||(isempty(do_qr))
+0026     do_qr = false;
+0027 <span class="keyword">end</span>;
+0028 
+0029 <span class="keyword">if</span> (do_qr)
+0030     [tt1,rv1]=<a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tt1, <span class="string">'lr'</span>);
+0031     [tt2,rv2]=<a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tt2, <span class="string">'lr'</span>);
+0032 <span class="keyword">end</span>;
+0033 
+0034 d=tt1.d; 
+0035 r1=tt1.r; r2=tt2.r; ps1=tt1.ps; ps2=tt2.ps;
+0036 n=tt1.n;
+0037 core1=tt1.core; core2=tt2.core;
+0038 
+0039 <span class="comment">%ps is always r1(i-1)xr; but if there is a hanging thing? what to do?</span>
+0040 <span class="comment">%That means, I define a dot product of two &quot;hanging&quot; tensors as a matrix...</span>
+0041 <span class="comment">%brr.... And if it is hanging on the right?</span>
+0042 <span class="comment">%</span>
+0043 <span class="comment">% p=ones(r1(1),r2(1)); % Over r1(1) and r2(1) there is not summation blin.</span>
+0044 <span class="comment">% %So, if we just sum over n(1) separatedly and leave a strange QxR1(I)xR2(I)</span>
+0045 <span class="comment">% %matrix...</span>
+0046 <span class="comment">% for i=1:d</span>
+0047 <span class="comment">%   cr1=core1(ps1(i):ps1(i+1)-1);</span>
+0048 <span class="comment">%   cr2=core2(ps2(i):ps2(i+1)-1);</span>
+0049 <span class="comment">%   p=reshape(p,[r1(i),r2(i)]);</span>
+0050 <span class="comment">%   cr2=reshape(cr2,[r2(i),numel(cr2)/r2(i)]);</span>
+0051 <span class="comment">%   p=p*cr2; %p is Q*r1(i)xn(i)xr2(i+1);</span>
+0052 <span class="comment">%   cr1=reshape(cr1,[r1(i)*n(i),numel(cr1)/(r1(i)*n(i))]);</span>
+0053 <span class="comment">%   p=reshape(p,[r1(i)*n(i),numel(p)/(r1(i)*n(i))]);</span>
+0054 <span class="comment">%   p=cr1'*p;</span>
+0055 <span class="comment">% end</span>
+0056 
+0057 <span class="comment">% If the first indices are not ones</span>
+0058 p=eye(r1(1)*r2(1));
+0059 p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1)*r2(1)*r1(1), r2(1));
+0060 
+0061 <span class="keyword">for</span> i=1:d
+0062     cr1=core1(ps1(i):ps1(i+1)-1);
+0063     cr2=core2(ps2(i):ps2(i+1)-1);
+0064     cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[r2(i), n(i)*r2(i+1)]);
+0065     
+0066     p = p*cr2; <span class="comment">% size r11*r21*r1-, n*r2+</span>
+0067     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p,r1(1)*r2(1), r1(i)*n(i), r2(i+1));
+0068     p = permute(p, [1, 3, 2]);
+0069     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1)*r2(1)*r2(i+1), r1(i)*n(i));
+0070     
+0071     cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[r1(i)*n(i), r1(i+1)]);
+0072     
+0073     p = p*<a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>(cr1); <span class="comment">% size r11*r12*r2+, r1+</span>
+0074     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1)*r2(1), r2(i+1), r1(i+1));
+0075     p = permute(p, [1, 3, 2]);
+0076     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1)*r2(1)*r1(i+1), r2(i+1));
+0077 <span class="keyword">end</span>;
+0078 
+0079 <span class="keyword">if</span> (do_qr)
+0080     r2old = <a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(rv2, 2);
+0081     r1old = <a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(rv1,2);
+0082     p = p*rv2;
+0083     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1)*r2(1), r1(d+1), r2old);
+0084     p = permute(p, [1, 3, 2]);
+0085     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1)*r2(1)*r2old, r1(d+1));
+0086     p = p*<a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>(rv1);
+0087     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1), r2(1), r2old, r1old);
+0088     p = permute(p, [1,2,4,3]);
+0089 <span class="keyword">else</span>
+0090     p = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p, r1(1), r2(1), r1(d+1), r2(d+1));
+0091 <span class="keyword">end</span>;
+0092 <span class="keyword">if</span> ( r1(1)*r2(1) == 1 ) <span class="comment">%Save the rabbits</span>
+0093    p=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(p,r1(d+1),r2(d+1));
+0094 <span class="keyword">end</span>
+0095 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

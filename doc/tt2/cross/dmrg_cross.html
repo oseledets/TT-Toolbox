@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dmrg_cross</title>
+  <meta name="keywords" content="dmrg_cross">
+  <meta name="description" content="DMRG-cross method for the approximation of TT-tensors">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">cross</a> &gt; dmrg_cross.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/cross&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dmrg_cross
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>DMRG-cross method for the approximation of TT-tensors</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y]=dmrg_cross(d,n,fun,eps,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">DMRG-cross method for the approximation of TT-tensors
+   [A]=DMRG_CROSS(D,N,FUN,EPS,OPTIONS) Computes the approximation of a
+   given tensor via the adaptive DMRG-cross procedure. The input is a pair
+   (D,N) which determines the size of the tensor (N can be either a
+   number, or array of mode sizes). FUN is the function to compute
+   a prescribed element of a tensor (FUN(IND)), or it can be vectorized to
+   compute series of elements of a tensor (see OPTIONS) To pass parameters 
+   to FUN please use anonymous function handles. EPS is the accuracy 
+   of the approximation.Options are provided in form
+   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+   on. The parameters are set to default (in brackets in the following) 
+   The list of option names and default values are:
+       o nswp - number of DMRG sweeps [10]
+       o vec  - Fun is vectorized [ true | {false} ]
+       o verb - output debug information [ {true} | false ]
+       o y0   - initial approximation [random rank-2]
+       o radd - minimal rank change [0]
+       o rmin - minimal rank that is allows [1]
+       o kickrank - stabilization parameter [2]
+
+   Example:
+       d=10; n=2; fun = @(ind) sum(ind);
+       tt=dmrg_cross(d,n,fun,1e-7);
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------
+Default parameters</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>	Maximal volume submatrix in an tall matrix</li><li><a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li><li><a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>	Golub-Kahan reorthogonalization</li><li><a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>	Correct conversion of an index to a multiindex</li><li><a href="../../tt2/core/tt_rand.html" class="code" title="function [tt]=tt_rand(n,d,r)">tt_rand</a>	Generates a random tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/tests/test_dmrg_cross.html" class="code" title="">test_dmrg_cross</a>	Simple script to test the stabilized dmrg-cross method</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function val=my_vec_fun(ind,fun)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y]=dmrg_cross(d,n,fun,eps,varargin)</a>
+0002 <span class="comment">%DMRG-cross method for the approximation of TT-tensors</span>
+0003 <span class="comment">%   [A]=DMRG_CROSS(D,N,FUN,EPS,OPTIONS) Computes the approximation of a</span>
+0004 <span class="comment">%   given tensor via the adaptive DMRG-cross procedure. The input is a pair</span>
+0005 <span class="comment">%   (D,N) which determines the size of the tensor (N can be either a</span>
+0006 <span class="comment">%   number, or array of mode sizes). FUN is the function to compute</span>
+0007 <span class="comment">%   a prescribed element of a tensor (FUN(IND)), or it can be vectorized to</span>
+0008 <span class="comment">%   compute series of elements of a tensor (see OPTIONS) To pass parameters</span>
+0009 <span class="comment">%   to FUN please use anonymous function handles. EPS is the accuracy</span>
+0010 <span class="comment">%   of the approximation.Options are provided in form</span>
+0011 <span class="comment">%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so</span>
+0012 <span class="comment">%   on. The parameters are set to default (in brackets in the following)</span>
+0013 <span class="comment">%   The list of option names and default values are:</span>
+0014 <span class="comment">%       o nswp - number of DMRG sweeps [10]</span>
+0015 <span class="comment">%       o vec  - Fun is vectorized [ true | {false} ]</span>
+0016 <span class="comment">%       o verb - output debug information [ {true} | false ]</span>
+0017 <span class="comment">%       o y0   - initial approximation [random rank-2]</span>
+0018 <span class="comment">%       o radd - minimal rank change [0]</span>
+0019 <span class="comment">%       o rmin - minimal rank that is allows [1]</span>
+0020 <span class="comment">%       o kickrank - stabilization parameter [2]</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%   Example:</span>
+0023 <span class="comment">%       d=10; n=2; fun = @(ind) sum(ind);</span>
+0024 <span class="comment">%       tt=dmrg_cross(d,n,fun,1e-7);</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0030 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0031 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0034 <span class="comment">%ivan.oseledets@gmail.com</span>
+0035 <span class="comment">%---------------------------</span>
+0036 <span class="comment">%Default parameters</span>
+0037 rmin=1;
+0038 verb=true;
+0039 radd=0;
+0040 kickrank=2;
+0041 nswp=10;
+0042 y=[];
+0043 vectorized=false;
+0044 <span class="keyword">for</span> i=1:2:length(varargin)-1
+0045     <span class="keyword">switch</span> lower(varargin{i})
+0046         <span class="keyword">case</span> <span class="string">'nswp'</span>
+0047             nswp=varargin{i+1};
+0048         <span class="keyword">case</span> <span class="string">'y0'</span>
+0049             y=varargin{i+1};
+0050         <span class="keyword">case</span> <span class="string">'verb'</span>
+0051             verb=varargin{i+1};
+0052         <span class="keyword">case</span> <span class="string">'rmin'</span>
+0053             rmin=varargin{i+1};
+0054         <span class="keyword">case</span> <span class="string">'radd'</span>
+0055             radd=varargin{i+1};
+0056         <span class="keyword">case</span> <span class="string">'vec'</span>
+0057             vectorized=varargin{i+1};
+0058         <span class="keyword">case</span> <span class="string">'kickrank'</span>
+0059             kickrank=varargin{i+1};
+0060 
+0061         <span class="keyword">otherwise</span>
+0062             error(<span class="string">'Unrecognized option: %s\n'</span>,varargin{i});
+0063     <span class="keyword">end</span>
+0064 <span class="keyword">end</span>
+0065 
+0066 <span class="keyword">if</span> ( numel(n) == 1 )
+0067    n=n*ones(d,1);
+0068 <span class="keyword">end</span>
+0069 
+0070 sz=n;
+0071 <span class="keyword">if</span> (isempty(y) )
+0072     y=<a href="../../tt2/core/tt_rand.html" class="code" title="function [tt]=tt_rand(n,d,r)">tt_rand</a>(sz,d,2); 
+0073 <span class="keyword">end</span>
+0074 <span class="keyword">if</span> ( ~vectorized ) 
+0075     elem=@(ind) <a href="#_sub1" class="code" title="subfunction val=my_vec_fun(ind,fun)">my_vec_fun</a>(ind,fun);
+0076 <span class="keyword">end</span>
+0077 y=<a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(y,0); <span class="comment">%To avoid overranks</span>
+0078 ry=y.r;
+0079 [y,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(y,<span class="string">'rl'</span>);
+0080 y=rm*y;
+0081 <span class="comment">%Warmup procedure: orthogonalization from right to left of the initial</span>
+0082 <span class="comment">%approximation &amp; computation of the index sets &amp; computation of the</span>
+0083 <span class="comment">%right-to-left R matrix</span>
+0084 swp=1;
+0085 rmat=cell(d+1,1); 
+0086 rmat{d+1}=1;
+0087 rmat{1}=1; <span class="comment">%These are R-matrices from the QR-decomposition.</span>
+0088 index_array{d+1}=zeros(0,ry(d+1)); 
+0089 index_array{1}=zeros(ry(1),0);
+0090 r1=1;
+0091 <span class="keyword">for</span> i=d:-1:2
+0092     cr=y{i}; cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i),ry(i+1)]);
+0093     cr = cr*r1; cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i),n(i)*ry(i+1)]); cr=cr.';
+0094     [cr,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr,0);
+0095     [ind]=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(cr); 
+0096     ind_old=index_array{i+1};
+0097     rnew=min(n(i)*ry(i+1),ry(i));
+0098     ind_new=zeros(d-i+1,rnew);
+0099     <span class="keyword">for</span> s=1:rnew
+0100        f_in=ind(s);
+0101        w1=<a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([ry(i+1),n(i)],f_in);
+0102        rs=w1(1); js=w1(2);
+0103        ind_new(:,s)=[js,ind_old(:,rs)'];
+0104     <span class="keyword">end</span>
+0105     index_array{i}=ind_new;
+0106     r1=cr(ind,:);
+0107     cr=cr/r1; 
+0108     r1=r1*rm;
+0109     r1=r1.';
+0110 
+0111     cr=cr.'; 
+0112     y{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i),n(i),ry(i+1)]);
+0113     cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i),ry(i+1)]);
+0114     cr=cr*rmat{i+1}; cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i),n(i)*ry(i+1)]);
+0115     cr=cr.'; 
+0116     [~,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr,0);
+0117     rmat{i}=rm; <span class="comment">%The R-matrix</span>
+0118 <span class="keyword">end</span>
+0119 <span class="comment">%Forgot to put r1 onto the last core</span>
+0120 cr=y{1}; cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(1)*n(1),ry(2)]);
+0121 y{1}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr*r1,[ry(1),n(1),ry(2)]); 
+0122 not_converged = true;
+0123 dir = 1; <span class="comment">%The direction of the sweep</span>
+0124 i=1; <span class="comment">%Current position</span>
+0125 er_max=0;
+0126 <span class="keyword">while</span> ( swp &lt; nswp &amp;&amp; not_converged )
+0127     <span class="comment">% A sweep through the cores</span>
+0128     <span class="comment">%Compute the current index set, compute the current supercore</span>
+0129     <span class="comment">%(right now without any 2D cross inside, but it is trivial to</span>
+0130     <span class="comment">%implement). The supercore is (i,i+1) now.</span>
+0131     <span class="comment">%Left index set is index_array{i}, right index set is index_array{i+2}</span>
+0132     <span class="comment">%We will modify ry(i+1) at this step and use rmat{i} and rmat{i+2}</span>
+0133     <span class="comment">%as &quot;weighting&quot; matrices for the low-rank approximation. The initial</span>
+0134     <span class="comment">%approximation is simply rmax{i}*u{i}*u{i+1}*rmat{i+2} (hey!)</span>
+0135     <span class="comment">%We also have to store the submatrix in the current factors</span>
+0136     <span class="comment">%Then the algorithm would be as follows: Computex sets, compute</span>
+0137     <span class="comment">%supercore. Compute rmax{i}*Phi*rmax{i+2} = U*V by SVD, then split</span>
+0138     rm1=rmat{i}; rm2=rmat{i+2};
+0139     cr1=y{i}; cr2=y{i+1};
+0140     ind1=index_array{i};
+0141     ind2=index_array{i+2};
+0142     big_index=zeros(ry(i),n(i),n(i+1),ry(i+2),d);
+0143     <span class="keyword">for</span> i1=1:n(i)
+0144         <span class="keyword">for</span> i2=1:n(i+1)
+0145             <span class="keyword">for</span> s1=1:ry(i)
+0146                 <span class="keyword">for</span> s2=1:ry(i+2)
+0147                     ind=[ind1(s1,:),i1,i2,ind2(:,s2)'];
+0148                     big_index(s1,i1,i2,s2,:)=ind;
+0149                 <span class="keyword">end</span>
+0150             <span class="keyword">end</span>
+0151         <span class="keyword">end</span>
+0152     <span class="keyword">end</span>
+0153     big_index=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(big_index,[numel(big_index)/d,d]);
+0154     score=elem(big_index); 
+0155     <span class="comment">%Now plug in the rmax matrices</span>
+0156     score=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(score,[ry(i),n(i)*n(i+1)*ry(i+2)]);
+0157     score=rmat{i}*score;
+0158     ry(i)=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(score,1);
+0159     score=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(score,[ry(i)*n(i)*n(i+1),ry(i+2)]);
+0160     score=score*rmat{i+2}; 
+0161     ry(i+2)=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(score,2);
+0162     
+0163     <span class="comment">%Do the SVD splitting (later on we can replace it by cross for large</span>
+0164     <span class="comment">%mode sizes)</span>
+0165     score=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+0166     [u,s,v]=svd(score,<span class="string">'econ'</span>);
+0167     s=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0168     r=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)*eps/sqrt(d-1)); <span class="comment">%Truncation</span>
+0169     u=u(:,1:r); v=v(:,1:r); s=s(1:r); 
+0170     <span class="comment">%Kick rank</span>
+0171     
+0172     <span class="keyword">if</span> ( dir == 1 ) 
+0173         v=v*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0174         
+0175         ur=randn(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1),kickrank);
+0176         u=<a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>(u,ur);
+0177         radd=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,2)-r;
+0178         <span class="keyword">if</span> ( radd &gt; 0 )
+0179             vr=zeros(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v,1),radd);
+0180             v=[v,vr];
+0181         <span class="keyword">end</span>
+0182         r=r+radd;
+0183     <span class="keyword">else</span>
+0184          u=u*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0185          vr=randn(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v,1),kickrank);
+0186          v=<a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>(v,vr);
+0187          radd=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v,2)-r;
+0188          <span class="keyword">if</span> ( radd &gt; 0 )
+0189              ur=zeros(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1),radd);
+0190              u=[u,ur];
+0191          <span class="keyword">end</span>
+0192          r=r+radd;
+0193     <span class="keyword">end</span>
+0194     
+0195     v=v';
+0196 
+0197     <span class="comment">%Compute the previous approximation</span>
+0198     appr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[numel(cr1)/ry(i+1),ry(i+1)])*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[ry(i+1),numel(cr2)/ry(i+1)]);
+0199     appr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(appr,[ry(i),n(i)*n(i+1)*ry(i+2)]);
+0200     appr=rmat{i}*appr;
+0201     appr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(appr,[ry(i)*n(i)*n(i+1),ry(i+2)]);
+0202     appr=appr*rmat{i+2}; 
+0203     er_loc=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(score(:)-appr(:))/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(score(:));
+0204     er_max=max(er_max,er_loc);
+0205     <span class="keyword">if</span> ( verb ) 
+0206         fprintf(<span class="string">'swp=%d block=%d new_rank=%d local_er=%3.1e\n'</span>,swp,i,r,er_loc);
+0207     <span class="keyword">end</span>
+0208     ry(i+1)=r;
+0209 
+0210     u = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i),n(i)*r]);
+0211     u = rmat{i}\u; <span class="comment">%Hope it is stable blin</span>
+0212     v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[r*n(i+1),ry(i+2)]); 
+0213     u=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i)*n(i),ry(i+1)]);
+0214     v=v/rmat{i+2}; v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[r,n(i+1)*ry(i+2)]);
+0215     <span class="keyword">if</span> ( dir == 1 ) 
+0216         [u,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(u,0); 
+0217         ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(u); 
+0218         r1=u(ind,:); 
+0219         u=u/r1; y{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i),n(i),ry(i+1)]);
+0220         r1=r1*rm; 
+0221         v=r1*v; y{i+1}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[ry(i+1),n(i+1),ry(i+2)]);
+0222         <span class="comment">%Recalculate rmat</span>
+0223         u1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i),n(i)*ry(i+1)]);
+0224         u1=rmat{i}*u1;
+0225         u1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u1,[ry(i)*n(i),ry(i+1)]);
+0226         [~,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(u1,0);
+0227         rmat{i+1}=rm;
+0228         <span class="comment">%Recalculate index array</span>
+0229         ind_old=index_array{i};
+0230         ind_new=zeros(ry(i+1),i);
+0231         <span class="keyword">for</span> s=1:ry(i+1)
+0232             f_in=ind(s);
+0233             w1=<a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([ry(i),n(i)],f_in);
+0234             rs=w1(1); js=w1(2);
+0235             ind_new(s,:)=[ind_old(rs,:),js];
+0236         <span class="keyword">end</span>
+0237         index_array{i+1}=ind_new; 
+0238         <span class="keyword">if</span> ( i == d - 1 ) 
+0239             dir = -dir;
+0240         <span class="keyword">else</span>
+0241             i=i+1;
+0242         <span class="keyword">end</span>
+0243     <span class="keyword">else</span> <span class="comment">%Reverse direction</span>
+0244          v=v.'; <span class="comment">%v is standing</span>
+0245         [v,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(v,0);
+0246         ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(v);
+0247         r1=v(ind,:);
+0248         v=v/r1; v2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[n(i+1),ry(i+2),ry(i+1)]); y{i+1}=permute(v2,[3,1,2]);
+0249         r1=r1*rm; r1=r1.';
+0250         u=u*r1; y{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i),n(i),ry(i+1)]);
+0251         <span class="comment">%Recalculate rmat</span>
+0252         v=v.'; 
+0253         v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[ry(i+1)*n(i+1),ry(i+2)]);
+0254         v=v*rmat{i+2};
+0255         v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[ry(i+1),n(i+1)*ry(i+2)]); v=v.';
+0256         [~,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(v,0);
+0257         rmat{i+1}=rm;
+0258         <span class="comment">%Recalculate index array</span>
+0259         ind_old=index_array{i+2};
+0260         ind_new=zeros(d-i,ry(i+1));
+0261         <span class="keyword">for</span> s=1:ry(i+1);
+0262             f_in=ind(s);
+0263             w1=<a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([n(i+1),ry(i+2)],f_in);
+0264             rs=w1(2); js=w1(1);
+0265             ind_new(:,s)=[js,ind_old(:,rs)'];
+0266         <span class="keyword">end</span>
+0267         index_array{i+1}=ind_new;
+0268         <span class="keyword">if</span> ( i == 1 ) 
+0269             dir=-dir;
+0270             swp = swp + 1;
+0271             <span class="keyword">if</span> ( er_max &lt; eps ) 
+0272                 not_converged=false;
+0273             <span class="keyword">else</span>
+0274                 er_max=0;
+0275             <span class="keyword">end</span>
+0276         <span class="keyword">else</span>
+0277             i=i-1;
+0278         <span class="keyword">end</span>
+0279     <span class="keyword">end</span>
+0280 <span class="keyword">end</span>
+0281 <span class="keyword">return</span>
+0282 <span class="keyword">end</span>
+0283 <a name="_sub1" href="#_subfunctions" class="code">function val=my_vec_fun(ind,fun)</a>
+0284 <span class="comment">%Trivial vectorized computation of the elements of a tensor</span>
+0285 <span class="comment">%   [VAL]=MY_VEC_FUN(IND,FUN) Given a function handle FUN, compute all</span>
+0286 <span class="comment">%   elements of a tensor given in the index array IND. IND is a M x d</span>
+0287 <span class="comment">%   array, where M is the number of indices to be computed.</span>
+0288 M=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ind,1);
+0289 val=zeros(M,1);
+0290 <span class="keyword">for</span> i=1:M
+0291    ind_loc=ind(i,:); ind_loc=ind_loc(:);
+0292    val(i)=fun(ind_loc);
+0293 <span class="keyword">end</span>
+0294 <span class="keyword">return</span>
+0295 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

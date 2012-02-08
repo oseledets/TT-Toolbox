@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subsref</title>
+  <meta name="keywords" content="subsref">
+  <meta name="description" content="Evaluate cores of TT-matrix and fields of the TT-matrix structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_matrix</a> &gt; subsref.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_matrix&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>subsref
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Evaluate cores of TT-matrix and fields of the TT-matrix structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function elem = subsref(tt,s) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Evaluate cores of TT-matrix and fields of the TT-matrix structure
+   A=TT{I} computes the I-th core of the TT-representation
+   
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate fields of the QTT-Tucker structure</li><li><a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate fields of the QTT-Tucker structure</li><li><a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="../../tt2/@tt_tensor/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function elem = subsref(tt,s)</a>
+0002 <span class="comment">% Evaluate cores of TT-matrix and fields of the TT-matrix structure</span>
+0003 <span class="comment">%   A=TT{I} computes the I-th core of the TT-representation</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015 
+0016 <span class="keyword">switch</span> s(1).type
+0017     <span class="keyword">case</span> <span class="string">'()'</span>
+0018         error(<span class="string">'Elementwise computation is not yet supported'</span>);
+0019     <span class="keyword">case</span> <span class="string">'.'</span>
+0020         <span class="keyword">switch</span> s(1).subs               
+0021             <span class="keyword">case</span> <span class="string">'n'</span>
+0022                 elem=tt.n;
+0023                 <span class="keyword">if</span> (numel(s)&gt;1)
+0024                     s = s(2:end);
+0025                     elem = <a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>(elem, s);
+0026                 <span class="keyword">end</span>;                
+0027             <span class="keyword">case</span> <span class="string">'m'</span>
+0028                 elem=tt.m;
+0029                 <span class="keyword">if</span> (numel(s)&gt;1)
+0030                     s = s(2:end);
+0031                     elem = <a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>(elem, s);
+0032                 <span class="keyword">end</span>;    
+0033             <span class="keyword">case</span> <span class="string">'tt'</span>
+0034                 elem=tt.tt;
+0035             <span class="keyword">otherwise</span>
+0036                 <span class="comment">% Dispatch to the underlying TT - may be rank, core, etc.</span>
+0037                 elem = <a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>(tt.tt, s);
+0038                 <span class="keyword">if</span> (numel(s)&gt;1)
+0039                     s = s(2:end);
+0040                     elem = <a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>(elem, s);
+0041                 <span class="keyword">end</span>;                
+0042 <span class="comment">%                 error(['No field ', s.subs, ' is here.']);</span>
+0043         <span class="keyword">end</span>
+0044     <span class="keyword">case</span> <span class="string">'{}'</span>
+0045         pp=s.subs;
+0046         mn=numel(pp);
+0047         <span class="keyword">if</span> ( mn &gt; 1 )
+0048           error(<span class="string">'Invalid number of cores asked'</span>);
+0049         <span class="keyword">end</span>
+0050         pp = pp{1};
+0051         elem=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(tt.tt,pp);
+0052         elem=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(elem, tt.tt.r(pp), tt.n(pp), tt.m(pp), tt.tt.r(pp+1));
+0053         
+0054         <span class="keyword">if</span> (numel(s)&gt;1)
+0055             s = s(2:end);
+0056             elem = <a href="subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>(elem, s);
+0057         <span class="keyword">end</span>;
+0058     <span class="keyword">otherwise</span>
+0059         error(<span class="string">'Invalid subsref.'</span>);
+0060 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

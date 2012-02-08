@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_hess</title>
+  <meta name="keywords" content="tt_hess">
+  <meta name="description" content="Numerical Hessian in a given point">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">misc</a> &gt; tt_hess.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_hess
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Numerical Hessian in a given point</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Hess]=tt_hess(tt, indext, h) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Numerical Hessian in a given point
+   [HESS]=TT_HESS(TT, INDEXT, H) Computes the numerical Hessian of the
+   TT-tensor TT computed at INDEXT. The grid size is supposed to be equal
+   to H
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Hess]=tt_hess(tt, indext, h)</a>
+0002 <span class="comment">%Numerical Hessian in a given point</span>
+0003 <span class="comment">%   [HESS]=TT_HESS(TT, INDEXT, H) Computes the numerical Hessian of the</span>
+0004 <span class="comment">%   TT-tensor TT computed at INDEXT. The grid size is supposed to be equal</span>
+0005 <span class="comment">%   to H</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 tt=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(tt); 
+0018 d = max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt));
+0019 <span class="keyword">if</span> (max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(h))==1)
+0020     h = h*ones(d,1);
+0021 <span class="keyword">end</span>;
+0022 <span class="keyword">if</span> (max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(indext))==1)
+0023     indext = indext*ones(d,1);
+0024 <span class="keyword">end</span>;
+0025 
+0026 <span class="comment">% curind = cell(d,1);</span>
+0027 
+0028 Hess = zeros(d,d);
+0029 <span class="keyword">for</span> i=1:d
+0030     <span class="keyword">for</span> j=1:d
+0031 <span class="comment">%         for k=1:d</span>
+0032 <span class="comment">%             curind{k}=indext(k);</span>
+0033 <span class="comment">%         end;</span>
+0034         curhess = tt;
+0035         <span class="keyword">if</span> (i==j) <span class="comment">% Laplace_i</span>
+0036 <span class="comment">%             curind{i}=indext(i)-1:indext(i)+1;</span>
+0037 <span class="comment">%             curhess = tt_elem3(tt, curind);</span>
+0038 <span class="comment">%             core=tt{i};</span>
+0039 <span class="comment">%             n = size(core,1); r1=size(core,2); r2=size(core,3);</span>
+0040 <span class="comment">%             core = reshape(core, n, r1*r2);</span>
+0041 <span class="comment">%             lp = spdiags(ones(n,1)*[1,-2,1], [-1,0,1], n, n)/(h(i)^2);</span>
+0042 <span class="comment">%             core = lp*core;</span>
+0043 <span class="comment">%             core = sum(core,1)*h(i);</span>
+0044 <span class="comment">%             curhess{i}=reshape(core, 1, r1, r2);</span>
+0045             curhess{i}=(1/(h(i)^2))*(curhess{i}(indext(i)-1,:,:)-2*curhess{i}(indext(i),:,:)+curhess{i}(indext(i)+1,:,:));
+0046             <span class="keyword">for</span> k=1:d
+0047                 <span class="keyword">if</span> (k~=i)
+0048 <span class="comment">%                     curhess{k}=sum(curhess{k},1)*h(k);</span>
+0049                     curhess{k}=curhess{k}(indext(k),:,:);
+0050                 <span class="keyword">end</span>;
+0051             <span class="keyword">end</span>;
+0052             Hess(i,i)=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(curhess));
+0053         <span class="keyword">else</span> <span class="comment">% Grad_i * Grad_j</span>
+0054 <span class="comment">%             corei=tt{i};</span>
+0055 <span class="comment">%             ni = size(corei,1); r1i=size(corei,2); r2i=size(corei,3);</span>
+0056 <span class="comment">%             corei = reshape(corei, ni, r1i*r2i);</span>
+0057 <span class="comment">%             gradi = spdiags(ones(ni,1)*[-0.5,0,0.5], [-1,0,1], ni, ni)/h(i);</span>
+0058 <span class="comment">%             corei = gradi*corei;</span>
+0059 <span class="comment">%             corei = sum(corei,1)*h(i);</span>
+0060 <span class="comment">%             curhess{i}=reshape(corei, 1, r1i, r2i);</span>
+0061 <span class="comment">%             corej=tt{j};</span>
+0062 <span class="comment">%             nj = size(corej,1); r1j=size(corej,2); r2j=size(corej,3);</span>
+0063 <span class="comment">%             corej = reshape(corej, nj, r1j*r2j);</span>
+0064 <span class="comment">%             gradj = spdiags(ones(nj,1)*[-0.5,0,0.5], [-1,0,1], nj, nj)/h(j);</span>
+0065 <span class="comment">%             corej = gradj*corej;</span>
+0066 <span class="comment">%             corej = sum(corej,1)*h(j);</span>
+0067 <span class="comment">%             curhess{j}=reshape(corej, 1, r1j, r2j);</span>
+0068 <span class="comment">%             curind{i}=indext(i)-1:indext(i)+1;</span>
+0069 <span class="comment">%             curind{j}=indext(j)-1:indext(j)+1;</span>
+0070 <span class="comment">%             curhess = tt_elem3(tt, curind);</span>
+0071             curhess{i}=(0.5/h(i))*(curhess{i}(indext(i)+1,:,:)-curhess{i}(indext(i)-1,:,:));
+0072             curhess{j}=(0.5/h(j))*(curhess{j}(indext(j)+1,:,:)-curhess{j}(indext(j)-1,:,:));            
+0073             <span class="keyword">for</span> k=1:d
+0074                 <span class="keyword">if</span> (k~=i)&amp;&amp;(k~=j)
+0075 <span class="comment">%                     curhess{k}=sum(curhess{k},1)*h(k);</span>
+0076                     curhess{k}=curhess{k}(indext(k),:,:);
+0077                 <span class="keyword">end</span>;
+0078             <span class="keyword">end</span>;            
+0079             Hess(i,j)=tt_to_full(curhess);
+0080         <span class="keyword">end</span>;
+0081     <span class="keyword">end</span>;
+0082 <span class="keyword">end</span>;
+0083 
+0084 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of test_cross2</title>
+  <meta name="keywords" content="test_cross2">
+  <meta name="description" content="Simple function to test the cross method">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">tests</a> &gt; test_cross2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/tests&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>test_cross2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Simple function to test the cross method</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Simple function to test the cross method</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/funcrs2.html" class="code" title="function [y]=funcrs2(tt,fun,eps,y,nswp)">funcrs2</a>	Cross approximation of a function of a TT-tensor, Method 2</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>	Tensor of all ones</li><li><a href="../../tt2/core/tt_x.html" class="code" title="function [res]=tt_x(n,varargin)">tt_x</a>	Computes X in the QTT-format</li><li><a href="../../tt2/cross/tt_rc.html" class="code" title="function [y]=tt_rc(d,n,elem_fun,eps,varargin)">tt_rc</a>	[Y]=TT_RC(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%Simple function to test the cross method</span>
+0002 d=10;
+0003 <span class="comment">%elem_fun=@(x) sum(x); %Just sum of everything</span>
+0004 p=0:d-1; p = 2.^p; 
+0005 a=-5;b=5;
+0006 n=2^d;
+0007 h=(b-a)/(n-1);
+0008 <span class="comment">%mv=@(x) x.^3;</span>
+0009 <span class="comment">%elem_fun=@(x) 1.0./(dot((x-1),p)+1e-3); %Just sum of everything</span>
+0010 <span class="comment">%elem_fun=@(x) mv(1e-12+dot(x-1,p)*h);</span>
+0011 
+0012 <span class="comment">%Compare functions of TT-tensors</span>
+0013 x=<a href="../../tt2/core/tt_x.html" class="code" title="function [res]=tt_x(n,varargin)">tt_x</a>(d,2); x=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(x); 
+0014 e=<a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>(d,2);e=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(e);
+0015 x=a*e+h*x; x=<a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(x,1e-13);
+0016 rs=x;
+0017 <span class="comment">%fun=@(x) 1.0./sqrt(x);</span>
+0018 <span class="comment">%fun=@(x) 1.0./x;</span>
+0019 fun=@(x) exp(-(x).^4) + 1;
+0020 elem_fun = @(ind) fun(rs(ind));
+0021 <span class="comment">%elem_fun=@(ind) rs(ind);</span>
+0022 <span class="comment">%elem_fun=@(x) sqrt(x(1))+x(2);</span>
+0023 
+0024 eps=1e-6;
+0025 <span class="comment">%y=tt_rc2(2*d,2,elem_fun,1e-12);</span>
+0026 y=<a href="../../tt2/cross/tt_rc.html" class="code" title="function [y]=tt_rc(d,n,elem_fun,eps,varargin)">tt_rc</a>(d,2,elem_fun,1e-6,<span class="string">'nswp'</span>,40,<span class="string">'change_dir_on'</span>,false);
+0027 
+0028 z=<a href="../../tt2/@tt_tensor/funcrs2.html" class="code" title="function [y]=funcrs2(tt,fun,eps,y,nswp)">funcrs2</a>(rs,fun,1e-12,rs,20);
+0029 
+0030</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of test_qlaplacez_dn</title>
+  <meta name="keywords" content="test_qlaplacez_dn">
+  <meta name="description" content="test code for tt_qlaplacez_dn()">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; test_qlaplacez_dn.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>test_qlaplacez_dn
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>test code for tt_qlaplacez_dn()</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> test code for tt_qlaplacez_dn()
+
+ September 22, 2010
+ Vladimir Kazeev
+ vladimir.kazeev@gmail.com
+ INM RAS
+ Moscow, Russia
+
+ Look for details in the Preprint No. 75, 2010 of
+ Max-Planck Institute for Mathematics in the Sciences
+ Vladimir A. Kazeev and Boris N. Khoromskij
+ On explicit QTT representation of Laplace operator and its inverse
+ http://www.mis.mpg.de/publications/preprints/2010/prepr2010-75.html</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>	Command window display of a QTT_TUCKER</li><li><a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/disp.html" class="code" title="function disp(tt,name)">disp</a>	Command window display of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/@tt_matrix/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/disp.html" class="code" title="function disp(tt,name)">disp</a>	Command window display of a TT-tensor.</li><li><a href="../../tt2/@tt_tensor/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="../../tt2/@tt_tensor/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/tt_mat_to_vec.html" class="code" title="function [tt_vec]=tt_mat_to_vec(tt_mat)">tt_mat_to_vec</a>	Flattens TT-matrix into TT-vector in the TT1.0 format</li><li><a href="tt_qlaplacez_dn.html" class="code" title="function [tt]=tt_qlaplacez_dn(d)">tt_qlaplacez_dn</a>	returns a rank-8 QTT decomposition of</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% test code for tt_qlaplacez_dn()</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% September 22, 2010</span>
+0004 <span class="comment">% Vladimir Kazeev</span>
+0005 <span class="comment">% vladimir.kazeev@gmail.com</span>
+0006 <span class="comment">% INM RAS</span>
+0007 <span class="comment">% Moscow, Russia</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Look for details in the Preprint No. 75, 2010 of</span>
+0010 <span class="comment">% Max-Planck Institute for Mathematics in the Sciences</span>
+0011 <span class="comment">% Vladimir A. Kazeev and Boris N. Khoromskij</span>
+0012 <span class="comment">% On explicit QTT representation of Laplace operator and its inverse</span>
+0013 <span class="comment">% http://www.mis.mpg.de/publications/preprints/2010/prepr2010-75.html</span>
+0014 
+0015 <span class="comment">% d is the only parameter</span>
+0016 d=[3,4,5];
+0017 <span class="comment">%</span>
+0018 
+0019 D=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(d,2);
+0020 tt=<a href="tt_qlaplacez_dn.html" class="code" title="function [tt]=tt_qlaplacez_dn(d)">tt_qlaplacez_dn</a>(d);
+0021 tt=<a href="../../tt2/core/tt_mat_to_vec.html" class="code" title="function [tt_vec]=tt_mat_to_vec(tt_mat)">tt_mat_to_vec</a>(tt);
+0022 
+0023 
+0024 <a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>=nd_to_full(tt);
+0025 
+0026 <a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>(<span class="string">'inv computation... '</span>);
+0027 Li=cell(D,1);
+0028 <span class="keyword">for</span> k=1 : D
+0029     L=2*eye(2^d(k));
+0030     <span class="keyword">for</span> i=1 : 2^d(k)-1
+0031         L(i,i+1)=-1;
+0032         L(i+1,i)=-1;
+0033     <span class="keyword">end</span>
+0034     L(2^d(k),2^d(k))=1;
+0035     Li{k}=inv(L);
+0036 <span class="keyword">end</span>
+0037 <a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>(<span class="string">'OK'</span>);
+0038 
+0039 <a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>(<span class="string">'kron computation... '</span>);
+0040 Z=zeros(2^sum(d));
+0041 <span class="keyword">for</span> k=1 : D
+0042     L=eye(2^d(k));
+0043     <span class="keyword">for</span> m=k-1 : -1: 1
+0044         L=<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(Li{m},L);
+0045     <span class="keyword">end</span>
+0046     <span class="keyword">for</span> m=k+1 : D
+0047         L=<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(L,Li{m});
+0048     <span class="keyword">end</span>
+0049     Z=Z+L;
+0050 <span class="keyword">end</span>
+0051 <a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>(<span class="string">'OK'</span>);
+0052 
+0053 err=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>-Z,<span class="string">'fro'</span>);
+0054 fprintf(<span class="string">'fro err = %e\n'</span>, err);</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

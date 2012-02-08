@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_axpy2</title>
+  <meta name="keywords" content="tt_axpy2">
+  <meta name="description" content="Returns A*X+P*Y in the TT-format (stabilized version)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_axpy2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_axpy2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Returns A*X+P*Y in the TT-format (stabilized version)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [res] = tt_axpy2(log_a, sign_a, x, log_p, sign_p, y, eps, max_rank) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Returns A*X+P*Y in the TT-format (stabilized version)
+   [RES]=TT_AXPY(A,X,P,Y,EPS,MAX_RANK) Stabilized a*X+p*Y where  log_a = 
+   log(abs(a)), sign_a = sign(a),  log_p = log(abs(p)), sign_p = sign(p), 
+   EPS, MAX_RANK - compression parameters</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>	Adds two TT-tensors in TT1 format.</li><li><a href="tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="tt_scal2.html" class="code" title="function [res]=tt_scal2(tt, log_a, sign_a)">tt_scal2</a>	Stabilized multiplication of a scalar by vector</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/solve/tt_gmres.html" class="code" title="function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin)">tt_gmres</a>	TT-GMRES method</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [res] = tt_axpy2(log_a, sign_a, x, log_p, sign_p, y, eps, max_rank)</a>
+0002 <span class="comment">%Returns A*X+P*Y in the TT-format (stabilized version)</span>
+0003 <span class="comment">%   [RES]=TT_AXPY(A,X,P,Y,EPS,MAX_RANK) Stabilized a*X+p*Y where  log_a =</span>
+0004 <span class="comment">%   log(abs(a)), sign_a = sign(a),  log_p = log(abs(p)), sign_p = sign(p),</span>
+0005 <span class="comment">%   EPS, MAX_RANK - compression parameters</span>
+0006 
+0007 <span class="keyword">if</span> ((nargin&lt;8)||(isempty(max_rank)))
+0008     max_rank=[];
+0009 <span class="keyword">end</span>;
+0010 
+0011 ax = <a href="tt_scal2.html" class="code" title="function [res]=tt_scal2(tt, log_a, sign_a)">tt_scal2</a>(x, log_a, sign_a);
+0012 py = <a href="tt_scal2.html" class="code" title="function [res]=tt_scal2(tt, log_a, sign_a)">tt_scal2</a>(y, log_p, sign_p);
+0013 
+0014 res = <a href="tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>(ax,py);
+0015 res = <a href="tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>(res, eps, max_rank);
+0016 
+0017 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

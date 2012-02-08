@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of qtt_tucker</title>
+  <meta name="keywords" content="qtt_tucker">
+  <meta name="description" content="QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; qtt_tucker.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>qtt_tucker
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function t = qtt_tucker(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)
+   T=QTT_TUCKER(TT,SZ,EPS) Splits large mode sizes of a TT-Tensor TT, if
+   SZ is a cell array with contain Q-dimensions of the factors. 
+   Example: qtt_tucker(tt, {[2,2,2], [3,3,3], [5,5]}, eps), where tt should
+   be a 2^3 x 3^3 x 5^2 tt_tensor.
+
+   T=QTT_TUCKER(QTT,SZ,EPS) Merges large several modes and computes
+   the Tucker decomposition in these long modes. In this case, sz should
+   be an ordinary row, containing the numbers of dimensions to merge
+   sz is the ordinary row, containing numbers of dimensions to merge.
+    Example: qtt_tucker(qtt, [7,7,2], eps), where qtt should be
+   7+7+2 = 16-dimensional tt_tensor, the result will be the qtt_tucker
+   with 3D core, and 7,7,2-dimensional tucker factors.
+
+   QTT_TUCKER(TT,EPS) is the same as split variant of
+   QTT_TUCKER(TT,SZ,EPS), assuming that SZ has all mode sizes equal to 2
+   (i.e., the mode sizes of the original TT-tensor are a power of 2)
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li><li><a href="../../tt2/core/qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>	Compute the QTT-Tucker representation of TT</li><li><a href="../../tt2/misc/linqtt_to_qtttucker.html" class="code" title="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">linqtt_to_qtttucker</a>	function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="mtimes.html" class="code" title="function [c] = mtimes(a,b)">mtimes</a>	C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number in QTT-Tucker</li><li><a href="plus.html" class="code" title="function [a]=plus(b,c)">plus</a>	A=B+C</li><li><a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="times.html" class="code" title="function [c]=times(a,b)">times</a>	C=A.*B</li><li><a href="../../tt2/core/mvrk.html" class="code" title="function [y]=mvrk(A, x, eps, varargin)">mvrk</a>	Computes matvec in the QTT-Tucker "rake" format</li><li><a href="../../tt2/misc/linqtt_to_qtttucker.html" class="code" title="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">linqtt_to_qtttucker</a>	function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</li><li><a href="../../tt2/solve/dmrg_rake_solve2.html" class="code" title="function [x]=dmrg_rake_solve2(A, y, tol, varargin)">dmrg_rake_solve2</a>	DMRG-type method for the solution of linear systems in QTT-Tucker format</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function t = qtt_tucker(varargin)</a>
+0002 <span class="comment">%QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</span>
+0003 <span class="comment">%   T=QTT_TUCKER(TT,SZ,EPS) Splits large mode sizes of a TT-Tensor TT, if</span>
+0004 <span class="comment">%   SZ is a cell array with contain Q-dimensions of the factors.</span>
+0005 <span class="comment">%   Example: qtt_tucker(tt, {[2,2,2], [3,3,3], [5,5]}, eps), where tt should</span>
+0006 <span class="comment">%   be a 2^3 x 3^3 x 5^2 tt_tensor.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   T=QTT_TUCKER(QTT,SZ,EPS) Merges large several modes and computes</span>
+0009 <span class="comment">%   the Tucker decomposition in these long modes. In this case, sz should</span>
+0010 <span class="comment">%   be an ordinary row, containing the numbers of dimensions to merge</span>
+0011 <span class="comment">%   sz is the ordinary row, containing numbers of dimensions to merge.</span>
+0012 <span class="comment">%    Example: qtt_tucker(qtt, [7,7,2], eps), where qtt should be</span>
+0013 <span class="comment">%   7+7+2 = 16-dimensional tt_tensor, the result will be the qtt_tucker</span>
+0014 <span class="comment">%   with 3D core, and 7,7,2-dimensional tucker factors.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%   QTT_TUCKER(TT,EPS) is the same as split variant of</span>
+0017 <span class="comment">%   QTT_TUCKER(TT,SZ,EPS), assuming that SZ has all mode sizes equal to 2</span>
+0018 <span class="comment">%   (i.e., the mode sizes of the original TT-tensor are a power of 2)</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0024 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0025 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0028 <span class="comment">%ivan.oseledets@gmail.com</span>
+0029 <span class="comment">%---------------------------</span>
+0030 
+0031 
+0032 <span class="keyword">if</span> (nargin == 0)
+0033     t.core=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>; <span class="comment">%The Tucker core</span>
+0034     t.tuck=cell(0); <span class="comment">%The tucker factors (in the QTT format)</span>
+0035     t.dphys=0; <span class="comment">%Number of physical dimensions</span>
+0036     t.sz=0; <span class="comment">%Additional dimensions for each factor</span>
+0037     t = class(t, <span class="string">'qtt_tucker'</span>);
+0038     <span class="keyword">return</span>;
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="comment">% Copy CONSTRUCTOR</span>
+0042 <span class="keyword">if</span> (nargin == 1) &amp;&amp; isa(varargin{1}, <span class="string">'qtt_tucker'</span>)
+0043     t=<a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0044     t.core = varargin{1}.core;
+0045     t.tuck = varargin{1}.tuck;
+0046     t.sz = varargin{1}.sz;
+0047     t.dphys=varargin{1}.dphys;
+0048     <span class="keyword">return</span>;
+0049 <span class="keyword">end</span>
+0050 
+0051 <span class="comment">%from tt_tensor (ordinary one or QTT)</span>
+0052 <span class="keyword">if</span> ( isa(varargin{1},<span class="string">'tt_tensor'</span>) )
+0053     <span class="keyword">if</span> ( nargin == 3 )
+0054         <span class="keyword">if</span> (isa(varargin{2}, <span class="string">'cell'</span>))&amp;&amp;(isa(varargin{3}, <span class="string">'double'</span>))
+0055             <span class="comment">% TT with quantization</span>
+0056             tt=varargin{1};
+0057             sz=varargin{2};
+0058             eps=varargin{3};
+0059             [fc,cr]=<a href="../../tt2/core/qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>(tt,sz,eps);
+0060             t=<a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0061             t.core=cr;
+0062             t.tuck=fc;
+0063             t.sz=sz;
+0064             t.dphys=numel(sz);
+0065         <span class="keyword">else</span>
+0066             <span class="comment">% QTT, varargin{2} is dims</span>
+0067             t = <a href="../../tt2/misc/linqtt_to_qtttucker.html" class="code" title="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">linqtt_to_qtttucker</a>(varargin{1}, varargin{2}, varargin{3});
+0068         <span class="keyword">end</span>;
+0069     <span class="keyword">else</span>
+0070         tt=varargin{1};
+0071         eps=varargin{2};
+0072         n=tt.n;
+0073         d=tt.d;
+0074         sz=cell(d,1);
+0075         <span class="keyword">for</span> i=1:d
+0076             sz{i}=2*ones(1,log2(n(i)));
+0077         <span class="keyword">end</span>
+0078         [fc,cr]=<a href="../../tt2/core/qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>(tt,sz,eps);
+0079         t=<a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0080         t.core=cr;
+0081         t.tuck=fc;
+0082         t.sz=sz;
+0083         t.dphys=numel(sz);        
+0084     <span class="keyword">end</span>;
+0085 <span class="keyword">end</span>
+0086 
+0087 <span class="comment">% From factors and core</span>
+0088 <span class="keyword">if</span> (nargin==2) &amp;&amp; isa(varargin{1}, <span class="string">'cell'</span>) &amp;&amp; isa(varargin{2}, <span class="string">'tt_tensor'</span>)
+0089     t = <a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0090     t.core = varargin{2};
+0091     t.dphys = numel(varargin{1});
+0092     t.tuck = cell(t.dphys, 1);
+0093     t.sz = cell(t.dphys, 1);
+0094     <span class="keyword">for</span> i=1:t.dphys
+0095         t.tuck{i} = varargin{1}{i};
+0096         <span class="keyword">if</span> (isa(t.tuck{i}, <span class="string">'double'</span>))
+0097             t.tuck{i} = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(t.tuck{i});
+0098         <span class="keyword">end</span>;
+0099         t.sz{i} = t.tuck{i}.n;
+0100     <span class="keyword">end</span>;
+0101 <span class="comment">%     t = class(t, 'qtt_tucker');</span>
+0102 <span class="keyword">end</span>;
+0103 
+0104 <span class="comment">%From full format</span>
+0105 <span class="keyword">if</span> (  nargin ==3 &amp;&amp; isa(varargin{1},<span class="string">'double'</span>) &amp;&amp; isa(varargin{2},<span class="string">'cell'</span>) &amp;&amp; isa(varargin{3},<span class="string">'double'</span>))
+0106     <span class="comment">%The method is as follows. %Tr</span>
+0107     t=<a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0108     a=varargin{1};
+0109     sz1=numel(a);
+0110     sz=varargin{2};
+0111     eps=varargin{3};
+0112     eps0=eps;
+0113   
+0114     <span class="comment">%Get physical dimensions from quantized ones</span>
+0115     d=numel(sz);
+0116     n=zeros(d,1);
+0117     <span class="keyword">for</span> i=1:d
+0118       n(i)=prod(sz{i});
+0119     <span class="keyword">end</span>
+0120     <span class="keyword">if</span> ( sz1 ~= prod(n) )
+0121        error(<span class="string">'qtt_tucker: check_sizes'</span>);
+0122     <span class="keyword">end</span>
+0123     rtt=zeros(d+1,1); <span class="comment">%TT-ranks</span>
+0124     rtuck=zeros(d,1);
+0125     tuck=cell(d,1); 
+0126     rtt(1)=1; rtt(d+1)=1;
+0127     tt_core=[];
+0128     <span class="keyword">for</span> k=1:d-1
+0129        a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[rtt(k),n(k),numel(a)/(n(k)*rtt(k))]);
+0130        <span class="comment">%First, compute the</span>
+0131        a=permute(a,[2,1,3]);
+0132        a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[n(k),numel(a)/n(k)]);
+0133        [u,s,v]=svd(a,<span class="string">'econ'</span>);
+0134        s=<a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0135        r=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)*eps0);
+0136        rtuck(k)=r;
+0137        u=u(:,1:r); s=s(1:r);
+0138        v=v(:,1:r); 
+0139        u=u*<a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s); <span class="comment">%This is a good  Tucker factor</span>
+0140        tuck{k}=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(u,sz{k},1,r,eps0);
+0141        [tuck{k},rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tuck{k},<span class="string">'lr'</span>);
+0142        <span class="comment">% v is (rtt(k)*M)*r</span>
+0143        <span class="comment">% v' is r*(rtt(k)*M)</span>
+0144        v=rm*v'; <span class="comment">%v is in fact rxMxrtt(k)</span>
+0145        <span class="comment">%v is rxrtt</span>
+0146        v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[r,rtt(k),numel(v)/(r*rtt(k))]);
+0147        v=permute(v,[2,1,3]); 
+0148        v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[rtt(k)*r,numel(v)/(r*rtt(k))]);
+0149        [u1,s1,v1]=svd(v,<span class="string">'econ'</span>);
+0150        s1=<a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s1); 
+0151        r1=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s1,<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s1)*eps);
+0152        rtt(k+1)=r1;
+0153        u1=u1(:,1:r1);s1=s1(1:r1); v1=v1(:,1:r1);
+0154        a=<a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s1)*v1';
+0155        tt_core=[tt_core;u1(:)];
+0156     <span class="keyword">end</span>
+0157     <span class="comment">%Now we have to compute the last Tucker core</span>
+0158     a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[rtt(d),n(d),numel(a)/(n(d)*rtt(d))]);
+0159     a=permute(a,[2,1,3]);
+0160     a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[sz{d},numel(a)/n(d)]);
+0161     tuck{d}=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(a,sz{d},1,r,eps0);
+0162     [tuck{d},rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tuck{d},<span class="string">'lr'</span>);
+0163     a=rm; a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[r,rtt(d),numel(a)/(r*rtt(d))]);
+0164     a=permute(a,[1,2,3]);
+0165     rtuck(d)=r;
+0166     tt_core=[tt_core;a(:)];
+0167     rtt(d+1)=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(a,3);
+0168     cr=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0169     cr.d=d;
+0170     cr.n=rtuck;
+0171     cr.r=rtt;
+0172     cr.core=tt_core;
+0173     cr.ps=cumsum([1;cr.n.*cr.r(1:cr.d).*cr.r(2:cr.d+1)]);
+0174     t.core=cr;
+0175     t.tuck=tuck;
+0176     t.dphys=d;
+0177     t.sz=sz;
+0178     
+0179 <span class="keyword">end</span>
+0180 
+0181 
+0182 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

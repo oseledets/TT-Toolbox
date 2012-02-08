@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of test_steps2</title>
+  <meta name="keywords" content="test_steps2">
+  <meta name="description" content="Crank-Nicolson scheme with local time-stepping">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">tests</a> &gt; test_steps2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/tests&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>test_steps2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Crank-Nicolson scheme with local time-stepping</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Crank-Nicolson scheme with local time-stepping</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/@tt_matrix/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/erank.html" class="code" title="function [er]=erank(tt)">erank</a>	Effective rank of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="../../tt2/@tt_tensor/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>	Identity matrix in the TT-format</li><li><a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>	Tensor of all ones</li><li><a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/exp/tt_qlaplace_dd.html" class="code" title="function [tt]=tt_qlaplace_dd(d)">tt_qlaplace_dd</a>	returns a rank-3,4...4 QTT decomposition of</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%Crank-Nicolson scheme with local time-stepping</span>
+0002 d0t = 10; <span class="comment">% quantics dims for t</span>
+0003 d0x = 9; <span class="comment">% quantics dims for x</span>
+0004 dpx = 2; <span class="comment">% phys. dims for x</span>
+0005 
+0006 a=0; 
+0007 b=1;
+0008 h = (b-a)/(2^d0x+1);
+0009 
+0010 tol = 1e-6;
+0011 eps = 1e-8;
+0012 maxit=20;
+0013 
+0014 T = 0.5;
+0015 tau = T/(2^d0t);
+0016 
+0017 Ax = <a href="../../tt2/exp/tt_qlaplace_dd.html" class="code" title="function [tt]=tt_qlaplace_dd(d)">tt_qlaplace_dd</a>(d0x*ones(1,dpx));
+0018 Ax = Ax/(h^2);
+0019 
+0020 x = (-a+h:h:b-h)';
+0021 u0 = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(sin(pi*x), sin(pi*x));
+0022 x = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(x);
+0023 x = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(x, 2*ones(d0x, 1), eps);
+0024 e1 = <a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>(2, d0x);
+0025 
+0026 u0 = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(u0), 2*ones(1,2*d0x), eps);
+0027 <span class="comment">% u0 = kron(x.*(e1-x), e1).*kron(e1, x.*(e1-x));</span>
+0028 <span class="comment">% u0 = round(u0, eps);</span>
+0029 <span class="comment">% u0 = tt_tensor(tt_ones(d0x*dpx,2));</span>
+0030 
+0031 spacial_rhs = u0*0;
+0032 
+0033 
+0034 <span class="comment">% Now, generate parts of KN scheme:</span>
+0035 KNm = <a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>(2,dpx*d0x)/tau - Ax*0.5;
+0036 KNm = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(KNm, eps);
+0037 
+0038 KNp = <a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>(2,dpx*d0x)/tau + Ax*0.5;
+0039 KNp = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(KNp, eps);
+0040 
+0041 Euler = <a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>(2,dpx*d0x) - Ax*tau;
+0042 Euler = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(Euler, eps);
+0043 
+0044 ttimes = zeros(1,2^d0t);
+0045 resids = zeros(1,2^d0t);
+0046 dmrg_resids = zeros(1,2^d0t);
+0047 dmrg_swps = zeros(1,2^d0t);
+0048 eranks = zeros(1,2^d0t);
+0049 u = u0;
+0050 <span class="keyword">for</span> t=1:1:2^d0t
+0051     times_0 = tic;    
+0052     u_new = <a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>(KNm, u, tol, <span class="string">'nswp'</span>, 20, <span class="string">'y0'</span>, u); <span class="comment">% 1\tI - A/2</span>
+0053     u_new = u_new + spacial_rhs;
+0054     u = <a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>(Euler, u, tol, <span class="string">'nswp'</span>, 20, <span class="string">'y0'</span>, u) + tau*spacial_rhs;    
+0055 <span class="comment">%     for i=1:maxit</span>
+0056 <span class="comment">%         [u,swps] = dmrg_solve2(KNp, u_new, u, tol, [], [], 100, []);</span>
+0057         [u,swps] = <a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>(KNp, u_new, tol, <span class="string">'x0'</span>, u, <span class="string">'nswp'</span>, 1, <span class="string">'min_drank'</span>, 0, <span class="string">'ddrank'</span>, 0, <span class="string">'min_dpow'</span>, 0);
+0058 <span class="comment">%         dmrg_resid = norm(KNp*u-u_new)/norm(u_new);</span>
+0059 <span class="comment">%         fprintf('-- dmrg sweep: %d, resid: %3.3e\n', i, dmrg_resid);</span>
+0060 <span class="comment">%         if (dmrg_resid&lt;tol*5)</span>
+0061 <span class="comment">%             break;</span>
+0062 <span class="comment">%         end;</span>
+0063 <span class="comment">%     end;</span>
+0064     ttimes(t)=toc(times_0);    
+0065     
+0066     mesh(<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(u, 2^d0x*[1,1]))
+0067     appr = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(u-u0*exp(-2*pi^2*t*tau))/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(u0*exp(-2*pi^2*t*tau))
+0068     
+0069     dmrg_resid = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(KNp*u-u_new)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(u_new);
+0070     dmrg_swps(t)=swps;
+0071     
+0072     dmrg_resids(t) = dmrg_resid;
+0073     resids(t) = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(Ax*u - spacial_rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(spacial_rhs);
+0074 <span class="comment">%     resids(t) = dot(Ax*u, u)/norm(Ax*u)/norm(u)-1;</span>
+0075     eranks(t) = <a href="../../tt2/@tt_tensor/erank.html" class="code" title="function [er]=erank(tt)">erank</a>(u);
+0076     
+0077     fprintf(<span class="string">'\nTime step %d (%3.5e) done. ttimes: %3.5f, dmrg_resid: %3.3e, sweeps: %d, spac_resid: %3.5e, erank: %3.2f\n'</span>, t, t*tau, ttimes(t), dmrg_resids(t), dmrg_swps(t), resids(t), eranks(t));
+0078 <span class="comment">%     mesh(full(u, [2^d0x,2^d0x]));</span>
+0079     pause(0.01);
+0080 <span class="comment">%     keyboard;</span>
+0081 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

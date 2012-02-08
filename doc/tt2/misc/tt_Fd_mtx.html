@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_Fd_mtx</title>
+  <meta name="keywords" content="tt_Fd_mtx">
+  <meta name="description" content="Generates finite-difference diffusion matrix in QTT">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">misc</a> &gt; tt_Fd_mtx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_Fd_mtx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Generates finite-difference diffusion matrix in QTT</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Generates finite-difference diffusion matrix in QTT
+   [TTM] = TT_FD_MTX(D_PHYS, TT_A, BOUND1, BOUND2, PEPS) Generates 
+   finite-difference diffusion matrix in QTTM from the coefficient TT_A 
+   in QTT, D_PHYS - physical dimension of the problem, BOUND1,2 - 
+   boundary conditions at 0 and 1:
+       0 - Dirichlet,
+       1 - Neumann
+   EPS is the accuracy of the approximation. This function uses TT1.0
+   format.
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>	Tensor by matrix multiplication over a given mode</li><li><a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>	Tensor rounding for the TT-matrix in TT1.0 format</li><li><a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>	Compute all ranks of the TT-decomposition in TT1.0 format</li><li><a href="tt_Fd_mtx1.html" class="code" title="function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)">tt_Fd_mtx1</a>	Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps)</a>
+0002 <span class="comment">%Generates finite-difference diffusion matrix in QTT</span>
+0003 <span class="comment">%   [TTM] = TT_FD_MTX(D_PHYS, TT_A, BOUND1, BOUND2, PEPS) Generates</span>
+0004 <span class="comment">%   finite-difference diffusion matrix in QTTM from the coefficient TT_A</span>
+0005 <span class="comment">%   in QTT, D_PHYS - physical dimension of the problem, BOUND1,2 -</span>
+0006 <span class="comment">%   boundary conditions at 0 and 1:</span>
+0007 <span class="comment">%       0 - Dirichlet,</span>
+0008 <span class="comment">%       1 - Neumann</span>
+0009 <span class="comment">%   EPS is the accuracy of the approximation. This function uses TT1.0</span>
+0010 <span class="comment">%   format.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0016 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0017 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0020 <span class="comment">%ivan.oseledets@gmail.com</span>
+0021 <span class="comment">%---------------------------</span>
+0022 
+0023 
+0024 
+0025 d = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt_a, 1);
+0026 d1 = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(d/d_phys);
+0027 dims = ones(1,d_phys-1);
+0028 <span class="keyword">for</span> i=1:d_phys-1
+0029     dims(i) = d1*i;
+0030 <span class="keyword">end</span>;
+0031 ranks = <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(tt_a);
+0032 phys_ranks = ranks(dims);
+0033 phys_j = ones(1, d_phys-1);
+0034 first_comp=1;
+0035 <span class="comment">% ttm = tt_zeros(d,2);</span>
+0036 
+0037 <span class="keyword">while</span> (phys_j(d_phys-1)&lt;=phys_ranks(d_phys-1))
+0038     
+0039     <span class="keyword">for</span> q=1:d_phys
+0040         M = cell(d, 1);
+0041         cur_a = cell(d1,1);
+0042 
+0043         <span class="keyword">for</span> k=1:d1-1
+0044             cur_a{k}=tt_a{k};
+0045         <span class="keyword">end</span>;
+0046         cur_a{d1} = tt_a{d1}(:,:,phys_j(1));
+0047         <span class="keyword">if</span> (q==1)
+0048             cur_a = <a href="tt_Fd_mtx1.html" class="code" title="function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)">tt_Fd_mtx1</a>(cur_a, bound1, bound2,eps);
+0049         <span class="keyword">else</span>
+0050             cur_a = tt_diag_av1(cur_a, eps);
+0051         <span class="keyword">end</span>;
+0052         <span class="keyword">for</span> k=1:d1-1
+0053             M{k}=cur_a{k};
+0054         <span class="keyword">end</span>;
+0055         M{d1}(1:2,1:2,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{d1}, 3),1)=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_a{d1}, 2, 2, <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{d1}, 3), 1);
+0056 
+0057         
+0058         <span class="keyword">for</span> p=2:d_phys-1
+0059             cur_a{1} = permute(tt_a{d1*(p-1)+1}(:,phys_j(p-1),:), [1 3 2]);
+0060             <span class="keyword">for</span> k=2:d1-1
+0061                 cur_a{k}=tt_a{d1*(p-1)+k};
+0062             <span class="keyword">end</span>;
+0063             cur_a{d1} = tt_a{d1*p}(:,:,phys_j(p));
+0064             
+0065             <span class="keyword">if</span> (p==q)
+0066                 cur_a = <a href="tt_Fd_mtx1.html" class="code" title="function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)">tt_Fd_mtx1</a>(cur_a, bound1, bound2,eps);
+0067             <span class="keyword">else</span>
+0068                 cur_a = tt_diag_av1(cur_a, eps);
+0069             <span class="keyword">end</span>;
+0070             
+0071             M{d1*(p-1)+1}(1:2,1:2,1,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{1},3)) = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_a{1}, 2, 2, 1, <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{1},3));
+0072             <span class="keyword">for</span> k=2:d1-1
+0073                 M{d1*(p-1)+k}(1:2,1:2,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{k},3),1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{k},4))=cur_a{k};
+0074             <span class="keyword">end</span>;
+0075             M{d1*p}(1:2,1:2,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{d1},3), 1) = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_a{d1}, 2, 2, <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{d1},3), 1);
+0076         <span class="keyword">end</span>;
+0077         
+0078         cur_a{1} = permute(tt_a{d1*(d_phys-1)+1}(:,phys_j(d_phys-1),:), [1 3 2]);
+0079         <span class="keyword">for</span> k=2:d1-1
+0080             cur_a{k}=tt_a{d1*(d_phys-1)+k};
+0081         <span class="keyword">end</span>;
+0082         cur_a{d1} = tt_a{d1*d_phys}(:,:,1);
+0083         
+0084         <span class="keyword">if</span> (q==d_phys)
+0085             cur_a = <a href="tt_Fd_mtx1.html" class="code" title="function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)">tt_Fd_mtx1</a>(cur_a, bound1, bound2,eps);
+0086         <span class="keyword">else</span>
+0087             cur_a = tt_diag_av1(cur_a, eps);
+0088         <span class="keyword">end</span>;
+0089         
+0090         M{d1*(d_phys-1)+1}(1:2,1:2,1,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{1},3)) = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_a{1}, 2, 2, 1, <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{1},3));
+0091         <span class="keyword">for</span> k=2:d1-1
+0092             M{d1*(d_phys-1)+k}(1:2,1:2,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{k},3),1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{k},4))=cur_a{k};
+0093         <span class="keyword">end</span>;
+0094         M{d1*d_phys}(1:2,1:2,1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{d1},3), 1) = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_a{d1}, 2, 2, <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cur_a{d1},3), 1);
+0095         
+0096         <span class="keyword">if</span> (first_comp==1)
+0097             <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a> = M;
+0098             first_comp=0;
+0099         <span class="keyword">else</span>
+0100             <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a> = ttm_add(<a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>, M);
+0101             <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a> = <a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>(<a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>, eps);
+0102         <span class="keyword">end</span>;
+0103     <span class="keyword">end</span>;
+0104     
+0105     phys_j(1)=phys_j(1)+1;
+0106     <span class="keyword">for</span> i=1:d_phys-2
+0107         <span class="keyword">if</span> (phys_j(i)&gt;phys_ranks(i))
+0108             phys_j(i)=1;
+0109             phys_j(i+1)=phys_j(i+1)+1;
+0110         <span class="keyword">end</span>;
+0111     <span class="keyword">end</span>;
+0112 <span class="keyword">end</span>;
+0113 
+0114 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

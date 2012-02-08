@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subsasgn</title>
+  <meta name="keywords" content="subsasgn">
+  <meta name="description" content="Indexing of cores of TT-format: T{I}=B">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_matrix</a> &gt; subsasgn.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_matrix&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>subsasgn
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Indexing of cores of TT-format: T{I}=B</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function t = subsasgn(t,s,b) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Indexing of cores of TT-format: T{I}=B
+   T{I} = B Set i-th core to be equal to B
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Assign fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_tensor/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function t = subsasgn(t,s,b)</a>
+0002 <span class="comment">%Indexing of cores of TT-format: T{I}=B</span>
+0003 <span class="comment">%   T{I} = B Set i-th core to be equal to B</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015 <span class="keyword">switch</span> s(1).type
+0016     <span class="keyword">case</span> <span class="string">'.'</span>
+0017         <span class="keyword">switch</span> s(1).subs
+0018             <span class="keyword">case</span> <span class="string">'n'</span>
+0019                 t.n=b;
+0020             <span class="keyword">case</span> <span class="string">'m'</span>
+0021                 t.m=b;
+0022             <span class="keyword">case</span> <span class="string">'r'</span>
+0023                 t.tt.r=b;
+0024             <span class="keyword">case</span> <span class="string">'core'</span>
+0025                 t.tt.core=b;
+0026             <span class="keyword">case</span> <span class="string">'ps'</span>
+0027                 t.tt.ps=b;
+0028             <span class="keyword">case</span> <span class="string">'tt'</span>
+0029                 t.tt=b;
+0030             <span class="keyword">case</span> <span class="string">'d'</span>
+0031                 t.tt.d=b;
+0032             <span class="keyword">otherwise</span>
+0033                 error([<span class="string">'Cannot change field '</span>, s.subs, <span class="string">' directly.'</span>]);
+0034         <span class="keyword">end</span>
+0035     <span class="keyword">case</span> <span class="string">'{}'</span>
+0036         i = s.subs{1};
+0037         r1 = <a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(b,1);
+0038         n1 = <a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(b,2);
+0039         m1 = <a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(b,3);
+0040         r2 = <a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(b,4);
+0041         b = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b, r1, n1*m1, r2);
+0042         t.tt{i} = b;
+0043         t.n(i) = n1;
+0044         t.m(i) = m1;
+0045     <span class="keyword">otherwise</span>
+0046         error(<span class="string">'Invalid subsasgn.'</span>);
+0047 <span class="keyword">end</span>
+0048 
+0049 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

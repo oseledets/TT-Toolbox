@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of full</title>
+  <meta name="keywords" content="full">
+  <meta name="description" content="Converts a QTT-Tucker tensor the full tensor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; full.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>full
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Converts a QTT-Tucker tensor the full tensor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [a] = full(tt, sizes) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Converts a QTT-Tucker tensor the full tensor
+   [A]=FULL(QTT_TUCKER,SIZES) Converts QTT_Tucker tensor into a tensor
+   with mode sizes SIZES. The dimensions should be consistent.
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	Computes ranks of the QTT-Tucker tensor</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/@tt_matrix/rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	All or individual TT-ranks of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="../../tt2/@tt_tensor/rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	Returns TT-ranks of the given tensor in TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/core/tt_qfromfull.html" class="code" title="function [tt]=tt_qfromfull(full,s,d,eps)">tt_qfromfull</a>	Approximates a full-format s-dimensional 2^{d} x...x 2^{d}-tensor</li><li><a href="../../tt2/core/tt_qtofull.html" class="code" title="function [ful]=tt_qtofull(tt,s)">tt_qtofull</a>	Returns a tensor _full_, given in a QTT decomposition _tt_,</li><li><a href="../../tt2/exp/lobpcg.html" class="code" title="function [blockVectorX,lambda,varargout] =lobpcg(blockVectorX,operatorA,varargin)">lobpcg</a>	LOBPCG solves Hermitian partial eigenproblems using preconditioning</li><li><a href="../../tt2/exp/test_qlaplace_dd.html" class="code" title="">test_qlaplace_dd</a>	test code for tt_qlaplace_dd()</li><li><a href="../../tt2/exp/test_qlaplace_dn.html" class="code" title="">test_qlaplace_dn</a>	test code for tt_qlaplace_dn()</li><li><a href="../../tt2/exp/test_qlaplacex_dd.html" class="code" title="">test_qlaplacex_dd</a>	test code for tt_qlaplacex_dd()</li><li><a href="../../tt2/exp/test_qlaplacex_dn.html" class="code" title="">test_qlaplacex_dn</a>	test code for tt_qlaplacex_dn()</li><li><a href="../../tt2/exp/test_qlaplacez_dd.html" class="code" title="">test_qlaplacez_dd</a>	test code for tt_qlaplacez_dd()</li><li><a href="../../tt2/exp/test_qlaplacez_dn.html" class="code" title="">test_qlaplacez_dn</a>	test code for tt_qlaplacez_dn()</li><li><a href="../../tt2/misc/tt_hess.html" class="code" title="function [Hess]=tt_hess(tt, indext, h)">tt_hess</a>	Numerical Hessian in a given point</li><li><a href="../../tt2/solve/dmrg_eigb.html" class="code" title="function [y,ev] = dmrg_eigb(a,k,eps,varargin)">dmrg_eigb</a>	Find several minimal eigenvalues of a TT-matrix using DMRG method</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li><li><a href="../../tt2/tests/test_steps2.html" class="code" title="">test_steps2</a>	Crank-Nicolson scheme with local time-stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [a] = full(tt, sizes)</a>
+0002 <span class="comment">%Converts a QTT-Tucker tensor the full tensor</span>
+0003 <span class="comment">%   [A]=FULL(QTT_TUCKER,SIZES) Converts QTT_Tucker tensor into a tensor</span>
+0004 <span class="comment">%   with mode sizes SIZES. The dimensions should be consistent.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0010 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0011 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0014 <span class="comment">%ivan.oseledets@gmail.com</span>
+0015 <span class="comment">%---------------------------</span>
+0016 
+0017 a=<a href="full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(tt.core); 
+0018 fac=cell(tt.dphys,1);
+0019 <span class="keyword">for</span> i=1:tt.dphys
+0020    ti=tt.tuck{i}; ri=<a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>(ti,ti.d+1);
+0021     ti=<a href="full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(ti);
+0022    fac{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(ti,[numel(ti)/ri,ri]);
+0023 <span class="keyword">end</span>
+0024 <span class="comment">%And now convert tucker representation to the full one</span>
+0025 n=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt.core);
+0026 <span class="keyword">for</span> i=1:tt.dphys
+0027    a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,[n(i),numel(a)/n(i)]);
+0028    a=(fac{i}*a).'; <span class="comment">%r1r2r3 -&gt; n1r2r3 -&gt;r2r3n1</span>
+0029 <span class="keyword">end</span>
+0030 <span class="keyword">if</span> ( nargin &gt; 1 &amp;&amp; ~isempty(sizes) )
+0031    a=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(a,sizes);
+0032 <span class="keyword">end</span>
+0033 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

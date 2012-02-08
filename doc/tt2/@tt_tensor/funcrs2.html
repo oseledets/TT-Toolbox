@@ -1,0 +1,382 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of funcrs2</title>
+  <meta name="keywords" content="funcrs2">
+  <meta name="description" content="Cross approximation of a function of a TT-tensor, Method 2">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; funcrs2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>funcrs2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Cross approximation of a function of a TT-tensor, Method 2</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y]=funcrs2(tt,fun,eps,y,nswp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Cross approximation of a function of a TT-tensor, Method 2
+   [Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)
+   Computes approximation to the function FUN(TT) with accuracy EPS
+   Auxiliary parameters:  Y (initial approximation), NSWP
+   (number of sweeps in the method
+   Much faster then usual cross by vectorized computation of subtensors
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>	Complex conjugate of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>	Compute a complex conjugate of TT-tensor</li><li><a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>	Maximal volume submatrix in an tall matrix</li><li><a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li><li><a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>	Golub-Kahan reorthogonalization</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/tests/test_cross.html" class="code" title="">test_cross</a>	Simple function to test the cross method</li><li><a href="../../tt2/tests/test_cross2.html" class="code" title="">test_cross2</a>	Simple function to test the cross method</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y]=funcrs2(tt,fun,eps,y,nswp)</a>
+0002 <span class="comment">%Cross approximation of a function of a TT-tensor, Method 2</span>
+0003 <span class="comment">%   [Y]=FUNCRS2(TT,FUN,EPS,Y,NSWP)</span>
+0004 <span class="comment">%   Computes approximation to the function FUN(TT) with accuracy EPS</span>
+0005 <span class="comment">%   Auxiliary parameters:  Y (initial approximation), NSWP</span>
+0006 <span class="comment">%   (number of sweeps in the method</span>
+0007 <span class="comment">%   Much faster then usual cross by vectorized computation of subtensors</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0013 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0014 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0017 <span class="comment">%ivan.oseledets@gmail.com</span>
+0018 <span class="comment">%---------------------------</span>
+0019 
+0020 
+0021 <span class="comment">%PARAMETERS SECTION</span>
+0022 rmin=1;
+0023 verb=true;
+0024 kick_rank=5;
+0025 <span class="keyword">if</span> (~isempty(y))
+0026    yold=y;
+0027 <span class="keyword">end</span>
+0028 y1=y;
+0029 <span class="comment">%For this procedure we need only local (!) indices, since it</span>
+0030 <span class="comment">%is more or less equivalent to orthogonalization;</span>
+0031 d=tt.d;
+0032 ps=tt.ps;
+0033 core0=tt.core;
+0034 n=tt.n;
+0035 r=tt.r;
+0036 
+0037 ry=y.r;
+0038 psy=y.ps;
+0039 cry=y.core;
+0040 phi=cell(d+1,1);
+0041 phi{d+1}=1;
+0042 phi{1}=1;
+0043 phx=cell(d+1,1);
+0044 phx{d+1}=1; <span class="comment">%For storing submatrices in U &amp; V</span>
+0045 phx{1}=1;
+0046 <span class="comment">%Warmup procedure: orthogonalize from right-to-left &amp; maxvol</span>
+0047    cry_old=cry; <span class="comment">%This is for checking the accuracy</span>
+0048    psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0049    pos1=psy(d+1);
+0050    <span class="comment">%The first is the the o</span>
+0051    <span class="keyword">for</span> i=d-1:-1:1
+0052       <span class="comment">%Do right-to-left SVD + maxvol (i.e., no fun() is employed, just the</span>
+0053       <span class="comment">%current approximation)</span>
+0054       cr=cry(pos1-ry(i+1)*n(i+1)*ry(i+2):pos1-1);
+0055       cr2=cry_old(psy(i):psy(i+1)-1);
+0056       cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[ry(i)*n(i),ry(i+1)]);
+0057       cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i+1),n(i+1)*ry(i+2)]);
+0058       <span class="comment">%cr=cr.';</span>
+0059       <span class="comment">%[cr,rm]=qr(cr,0);</span>
+0060       <span class="comment">%rm=2*eye(ry(i+1));</span>
+0061       <span class="comment">%cr=cr/2;</span>
+0062       [u,s,v]=svd(cr,<span class="string">'econ'</span>); s=<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s);
+0063       ry(i+1) = <a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)*eps/sqrt(d-1));
+0064       <span class="comment">%cr = u * s * v', I think we should leave v orthogonal</span>
+0065       u=u(:,1:ry(i+1)); v=v(:,1:ry(i+1));
+0066       s=s(1:ry(i+1)); u=u*<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s);
+0067       cr=<a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>(v); <span class="comment">%cr is n(i+1),ry(i+2),ry(i+1) ---  No. it is conj(v)</span>
+0068       rm=u.'; <span class="comment">%This is discussable --- maybe u' (or u.')?</span>
+0069       ry(i+1)=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(cr,2);
+0070       <span class="comment">%Maxvol should be computed in a different matrix</span>
+0071       cr0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[n(i+1),ry(i+2),ry(i+1)]);
+0072       cr0=permute(cr0,[3,1,2]);
+0073       cr0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0,[ry(i+1)*n(i+1),ry(i+2)]);
+0074       cr0=cr0*phx{i+2}.';
+0075       cr0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0,[ry(i+1),n(i+1)*ry(i+2)]);
+0076       cr0=cr0.';
+0077       ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(cr0);
+0078       r1=cr0(ind,:);
+0079       phx{i+1}=r1;
+0080 
+0081       cr=cr.';
+0082 
+0083       cry(pos1-ry(i+1)*n(i+1)*ry(i+2):pos1-1)=cr(:);
+0084       pos1=pos1-ry(i+1)*n(i+1)*ry(i+2);
+0085       cr2=cr2*(rm).';
+0086       cry(pos1-ry(i)*n(i)*ry(i+1):pos1-1)=cr2(:);
+0087       <span class="comment">%Take phi matrix; convolve from right with current cors of V</span>
+0088       cr0=core0(ps(i+1):ps(i+2)-1);
+0089       cr0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0,[r(i+1)*n(i+1),r(i+2)]);
+0090       cr0=cr0*phi{i+2}; <span class="comment">%cr0 is now r(i)*n(i)*ry(i+1);</span>
+0091       cr0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0,[r(i+1),n(i+1)*ry(i+2)]);
+0092       phi{i+1}=cr0(:,ind);
+0093    <span class="keyword">end</span>
+0094    pos1=pos1-ry(1)*n(1)*ry(2);
+0095    psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0096    cry=cry(pos1:numel(cry));
+0097    y.core=cry;
+0098    y.r=ry;
+0099    y.ps=psy;
+0100 
+0101    swp=1;
+0102 yold=[];
+0103 not_converged = true;
+0104 <span class="keyword">while</span> ( swp &lt; nswp &amp;&amp; not_converged )
+0105     max_er=0;
+0106 cry_old=cry; <span class="comment">%This is for checking the accuracy</span>
+0107 psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0108 pos1=1;
+0109  <span class="keyword">for</span> i=1:d-1
+0110      <span class="comment">%fprintf('i=%d \n',i);</span>
+0111      <span class="comment">%We care for two cores, with number i &amp; number i+1, and use</span>
+0112      <span class="comment">%psi(i) and psi(i+2) as a basis; also we will need to recompute</span>
+0113      <span class="comment">%psi(i+1)</span>
+0114      ps1=phi{i}; ps2=phi{i+2}; px1=phx{i}; px2=phx{i+2};
+0115      <span class="comment">%Compute (!) superblock and function (!) of it</span>
+0116      cr1=core0(ps(i):ps(i+1)-1);
+0117      cr2=core0(ps(i+1):ps(i+2)-1);
+0118      cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[r(i),n(i)*r(i+1)]);
+0119      cr1=ps1*cr1;
+0120      cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[r(i+1)*n(i+1),r(i+2)]);
+0121      cr2=cr2*ps2;
+0122      cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[ry(i)*n(i),r(i+1)]);
+0123      cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[r(i+1),n(i+1)*ry(i+2)]);
+0124      cr=cr1*cr2;
+0125      <span class="comment">%cr=reshape(cr,[ry(i)*n(i)*n(i+1),ry(i+2)]);</span>
+0126      cr=fun(cr); <span class="comment">%Elements are evaluated here!</span>
+0127      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i)*n(i+1),ry(i+2)]);
+0128      cr = cr/(px2.');
+0129      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i),n(i)*n(i+1)*ry(i+2)]);
+0130      cr=px1 \cr;
+0131      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+0132      <span class="comment">%Check for local approximation of cr for the error</span>
+0133      cry1=cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1);
+0134      <span class="comment">%cry2=cry(pos1+ry(i)*n(i)*ry(i+1):pos1+ry(i)*n(i)*ry(i+1)+ry(i+1)*n(i+1)*ry(i+2)-1);</span>
+0135      <span class="comment">%if ( swp == 2 )</span>
+0136      <span class="comment">% if ( i == 5 )</span>
+0137      <span class="comment">%   keyboard;</span>
+0138      <span class="comment">% end</span>
+0139      <span class="comment">%end</span>
+0140      cry2=cry_old(psy(i+1):psy(i+2)-1);
+0141 
+0142      cry1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry1,[ry(i)*n(i),ry(i+1)]);
+0143      cry2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry2,[ry(i+1),n(i+1)*ry(i+2)]);
+0144      appr=cry1*cry2;
+0145      er=<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(appr-cr,<span class="string">'fro'</span>)/<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(cr,<span class="string">'fro'</span>);
+0146      <span class="comment">%keyboard;</span>
+0147      max_er=max(er,max_er);
+0148 
+0149      <span class="comment">%Compute SVD of cr</span>
+0150 
+0151      [u,s,v]=svd(cr,<span class="string">'econ'</span>);
+0152      s=<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s);
+0153      r2=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,eps*<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)/sqrt(d-1));
+0154      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+0155      v=v*<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s);
+0156 
+0157      <span class="comment">%Kick rank of u</span>
+0158      ur=randn(<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(u,1),kick_rank);
+0159      <span class="comment">%Orthogonalize ur to u by Golub-Kahan reorth</span>
+0160      u=<a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>(u,ur);
+0161      radd=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(u,2)-r2;
+0162      <span class="keyword">if</span> ( radd &gt; 0 )
+0163        vr=zeros(<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(v,1),radd);
+0164        v=[v,vr];
+0165      <span class="keyword">end</span>
+0166      r2=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(u,2);
+0167 
+0168 
+0169      <span class="comment">%ind=maxvol2(u);</span>
+0170      <span class="comment">%r1=u(ind,:);</span>
+0171      <span class="comment">%u=u/r1; v=v*r1'; v=v.';</span>
+0172      v=v.';
+0173      ry(i+1)=r2;
+0174      cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=u(:);
+0175      pos1=pos1+ry(i)*n(i)*ry(i+1);
+0176      cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1)=v(:);
+0177 
+0178 
+0179 
+0180      <span class="comment">%Compute new maxvol and (new) submatrices</span>
+0181      u=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i),n(i)*ry(i+1)]);
+0182      u=px1*u;
+0183      u=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u,[ry(i)*n(i),ry(i+1)]);
+0184      ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(u);
+0185      phx{i+1}=u(ind,:);
+0186      <span class="comment">%Now we have to: cr1 with phi from the left</span>
+0187      phi{i+1}=cr1(ind,:); <span class="comment">%phi{i+1}=phi{i+1};</span>
+0188 
+0189 
+0190  <span class="keyword">end</span>
+0191   <span class="comment">%Truncate local memory</span>
+0192   cry=cry(1:pos1+ry(d)*n(d)*ry(d+1)-1);
+0193   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0194 y.core=cry;
+0195 y.r=ry;
+0196 y.ps=psy;
+0197 cry_old=cry;
+0198 <span class="comment">%m=numel(cry);</span>
+0199 <span class="comment">%cry=[zeros(size(cry)),cry];</span>
+0200 <span class="comment">%pos1=pos1+m;</span>
+0201 <span class="comment">%cry2=cry_old(psy(i+1):psy(i+2)-1);</span>
+0202 cry=cry(psy(d):psy(d+1)-1); <span class="comment">%Start--only two cores</span>
+0203  <span class="keyword">for</span> i=d-1:-1:1
+0204      <span class="comment">%fprintf('i=%d \n',i);</span>
+0205      <span class="comment">%We care for two cores, with number i &amp; number i+1, and use</span>
+0206      <span class="comment">%psi(i) and psi(i+2) as a basis; also we will need to recompute</span>
+0207      <span class="comment">%psi(i+1)</span>
+0208      ps1=phi{i}; ps2=phi{i+2}; px1=phx{i}; px2=phx{i+2};
+0209      <span class="comment">%Take current core; convolve it with</span>
+0210      <span class="comment">%core=core(ps</span>
+0211      <span class="comment">%Compute (!) superblock and function (!) of it</span>
+0212      cr1=core0(ps(i):ps(i+1)-1);
+0213      cr2=core0(ps(i+1):ps(i+2)-1);
+0214      cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[r(i),n(i)*r(i+1)]);
+0215      cr1=ps1*cr1;
+0216      cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[r(i+1)*n(i+1),r(i+2)]);
+0217      cr2=cr2*ps2;
+0218      cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[ry(i)*n(i),r(i+1)]);
+0219      cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[r(i+1),n(i+1)*ry(i+2)]);
+0220      cr=cr1*cr2;
+0221      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+0222      cr=fun(cr); <span class="comment">%Elements are evaluated here!</span>
+0223      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i)*n(i+1),ry(i+2)]);
+0224      cr = cr/(px2.');
+0225      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i),n(i)*n(i+1)*ry(i+2)]);
+0226      cr=px1 \cr;
+0227      cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+0228      <span class="comment">%Check for local approximation of cr for the error</span>
+0229      <span class="comment">%cry1=cry(pos1-ry(i)*n(i)*ry(i+1):pos1-1);</span>
+0230      cry1=cry_old(psy(i):psy(i+1)-1);
+0231      <span class="comment">%cry2=cry(ry(:ry(i+1)*n(i+1)*ry(i+2));</span>
+0232      <span class="comment">%cry1=cry(1:ry(i)*n(i)*ry(i+1));</span>
+0233      <span class="comment">%cry2=cry(ry(i)*n(i)*ry(i+1)+1:ry(i)*n(i)*ry(i+1)+ry(i+1)*n(i+1)*ry(i+2));</span>
+0234      cry2=cry(1:ry(i+1)*n(i+1)*ry(i+2));
+0235      cry(1:ry(i+1)*n(i+1)*ry(i+2))=[];
+0236      <span class="comment">%cry2=cry_old(psy(i+1):psy(i+2)-1);</span>
+0237      <span class="comment">%cry(1:(ry(i+1)*n(i+1)*ry(i+2)))=[]; %Delete both of first cores</span>
+0238      <span class="comment">%cry(1:ry(i)*n(i)*ry(i+1)+ry(i+1)*n(i+1)*ry(i+2))=[];</span>
+0239      cry1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry1,[ry(i)*n(i),ry(i+1)]);
+0240      cry2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry2,[ry(i+1),n(i+1)*ry(i+2)]);
+0241      appr=cry1*cry2;
+0242      er=<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(appr-cr,<span class="string">'fro'</span>)/<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(cr,<span class="string">'fro'</span>);
+0243      <span class="comment">%er</span>
+0244           max_er=max(er,max_er);
+0245 
+0246      <span class="comment">%Compute SVD of cr</span>
+0247      [u,s,v]=svd(cr,<span class="string">'econ'</span>);
+0248      s=<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s);
+0249      r2=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,eps*<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)/sqrt(d-1));
+0250      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+0251      <span class="comment">%Make it standard</span>
+0252      u=u*<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s);
+0253 
+0254 
+0255      <span class="comment">%Kick rank</span>
+0256 
+0257       vr=randn(<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(v,1),kick_rank);
+0258       v=<a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>(v,vr);
+0259       radd=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(v,2)-r2;
+0260       <span class="keyword">if</span> ( radd &gt; 0 )
+0261          ur=zeros(<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(u,1),radd);
+0262          u=[u,ur];
+0263       <span class="keyword">end</span>
+0264       r2=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(v,2);
+0265 
+0266 
+0267 
+0268      v=v.';v0=v;
+0269      <span class="comment">%Compute new phi;</span>
+0270      ry(i+1)=r2;
+0271      u=u(:); u=u.'; v=v(:); v=v.';
+0272      cry=[u,v,cry];
+0273      <span class="comment">%keyboard;</span>
+0274      <span class="comment">%We need new memory for</span>
+0275      <span class="comment">%cry(pos1:pos1+ry(i+1)*n(i+1)*ry(i+2)-1)=v(:); %Here memory has to be (?) enlarged</span>
+0276      <span class="comment">%if ( pos1 &lt;= ry(i)*n(i)*ry(i+1) ) %Have to enlarge memory</span>
+0277      <span class="comment">%  cry=cry(pos1:numel(cry));</span>
+0278      <span class="comment">%  cry=[u(:)',cry];</span>
+0279      <span class="comment">%  pos1=ry(i)*n(i)*ry(i+1)+1;</span>
+0280      <span class="comment">%else</span>
+0281      <span class="comment">%   pos1=pos1-ry(i)*n(i)*ry(i+1);</span>
+0282       <span class="comment">%  cry(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=u(:);</span>
+0283      <span class="comment">%end</span>
+0284      <span class="comment">%Compute new maxvol and (new) submatrices</span>
+0285      v0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v0,[ry(i+1)*n(i+1),ry(i+2)]);
+0286      v0=v0*px2.';
+0287      v0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v0,[ry(i+1),n(i+1)*ry(i+2)]);
+0288      v0=v0.';
+0289      ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(v0);
+0290      phx{i+1}=v0(ind,:);
+0291      <span class="comment">%Now we have to: cr1 with phi from the left</span>
+0292      phi{i+1}=cr2(:,ind);
+0293 
+0294  <span class="keyword">end</span>
+0295 
+0296   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0297 
+0298 y.core=cry;
+0299 y.r=ry;
+0300 y.ps=psy;
+0301 <span class="keyword">if</span> ( isempty(yold) )
+0302  yold=y;
+0303  er_nrm=1;
+0304 <span class="keyword">else</span>
+0305 
+0306    er_nrm=<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(yold-y)/<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(y);
+0307    yold=y;
+0308 <span class="keyword">end</span>
+0309  fprintf(<span class="string">'sweep=%d, er=%3.2e er_nrm=%3.2e \n'</span>,swp,max_er,er_nrm);
+0310 
+0311 swp=swp+1;
+0312 <span class="keyword">end</span>
+0313   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0314 
+0315 y.core=cry;
+0316 y.r=ry;
+0317 y.ps=psy;
+0318 
+0319 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of round</title>
+  <meta name="keywords" content="round">
+  <meta name="description" content="Approximate QTT-Tucker with another one with specified accuracy">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; round.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>round
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Approximate QTT-Tucker with another one with specified accuracy</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=round(tt,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Approximate QTT-Tucker with another one with specified accuracy
+   [QTT]=ROUND(QTT,EPS) Approximate QTT-Tucker tensor with relative 
+   accuracy EPS
+
+   [QTT]=ROUND(QTT,EPS,RMAX) Approximate QTT-Tucker tensor with relative
+   accuracy 
+   EPS and maximal rank RMAX. RMAX can be array of ranks or a number
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	Computes ranks of the QTT-Tucker tensor</li><li><a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	All or individual TT-ranks of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	Returns TT-ranks of the given tensor in TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li><li><a href="../../tt2/core/ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>	Tensor-by-matrix multiplication of three-dimensional tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/mvk2.html" class="code" title="function [y,swp]=mvk2(a,x,eps,nswp,z,rmax,varargin)">mvk2</a>	Two-sided DMRG fast matrix-by-vector product</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/core/tt_wround.html" class="code" title="function [y,swp]=tt_wround(W, x, eps, varargin)">tt_wround</a>	Approximates a vector in the weighted norm using DMRG iterations</li><li><a href="../../tt2/cross/dmrg_cross.html" class="code" title="function [y]=dmrg_cross(d,n,fun,eps,varargin)">dmrg_cross</a>	DMRG-cross method for the approximation of TT-tensors</li><li><a href="../../tt2/exp/canm_to_qtt.html" class="code" title="function [tt]=canm_to_qtt(can,rmax,eps)">canm_to_qtt</a>	Converts a canonical representation to QTT-format</li><li><a href="../../tt2/exp/lobpcg.html" class="code" title="function [blockVectorX,lambda,varargout] =lobpcg(blockVectorX,operatorA,varargin)">lobpcg</a>	LOBPCG solves Hermitian partial eigenproblems using preconditioning</li><li><a href="../../tt2/exp/tt_exp2.html" class="code" title="function [tt]=tt_exp2(mat,eps,N,rmax)">tt_exp2</a>	Computation of the matrix exponential of a matrix in TT format</li><li><a href="../../tt2/exp/tt_minres_selfprec2.html" class="code" title="function [X]=tt_minres_selfprec2(A,  eps, varargin)">tt_minres_selfprec2</a>	Computation of the approximate TT-matrix inverse using self-prec method</li><li><a href="../../tt2/misc/tt_Fd_mtx.html" class="code" title="function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps)">tt_Fd_mtx</a>	Generates finite-difference diffusion matrix in QTT</li><li><a href="../../tt2/solve/dmrg_eigb.html" class="code" title="function [y,ev] = dmrg_eigb(a,k,eps,varargin)">dmrg_eigb</a>	Find several minimal eigenvalues of a TT-matrix using DMRG method</li><li><a href="../../tt2/solve/dmrg_rake_solve2.html" class="code" title="function [x]=dmrg_rake_solve2(A, y, tol, varargin)">dmrg_rake_solve2</a>	DMRG-type method for the solution of linear systems in QTT-Tucker format</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li><li><a href="../../tt2/tests/test_cross.html" class="code" title="">test_cross</a>	Simple function to test the cross method</li><li><a href="../../tt2/tests/test_cross2.html" class="code" title="">test_cross2</a>	Simple function to test the cross method</li><li><a href="../../tt2/tests/test_full_KN2.html" class="code" title="">test_full_KN2</a>	The test script for the Crank-Nicolson scheme with global time stepping</li><li><a href="../../tt2/tests/test_steps2.html" class="code" title="">test_steps2</a>	Crank-Nicolson scheme with local time-stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=round(tt,varargin)</a>
+0002 <span class="comment">%Approximate QTT-Tucker with another one with specified accuracy</span>
+0003 <span class="comment">%   [QTT]=ROUND(QTT,EPS) Approximate QTT-Tucker tensor with relative</span>
+0004 <span class="comment">%   accuracy EPS</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   [QTT]=ROUND(QTT,EPS,RMAX) Approximate QTT-Tucker tensor with relative</span>
+0007 <span class="comment">%   accuracy</span>
+0008 <span class="comment">%   EPS and maximal rank RMAX. RMAX can be array of ranks or a number</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0014 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0015 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0018 <span class="comment">%ivan.oseledets@gmail.com</span>
+0019 <span class="comment">%---------------------------</span>
+0020 d=tt.dphys;
+0021 <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=tt.core;
+0022 tuck=tt.tuck;
+0023 eps=varargin{1};
+0024 rmax = [];
+0025 <span class="keyword">if</span> (nargin==3)
+0026     rmax = varargin{2};
+0027 <span class="keyword">end</span>;
+0028 ismatrix = 0;
+0029 <span class="keyword">if</span> (isa(tuck{1}, <span class="string">'tt_matrix'</span>))
+0030     ismatrix = 1;
+0031     curn = cell(d,1);
+0032     curm = cell(d,1);
+0033 <span class="keyword">end</span>;
+0034 <span class="keyword">for</span> i=1:d
+0035     <span class="keyword">if</span> (ismatrix)
+0036         curn{i} = tuck{i}.n;
+0037         curm{i} = tuck{i}.m;
+0038         tuck{i} = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(tuck{i});
+0039     <span class="keyword">end</span>;
+0040    [tuck{i},rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tuck{i},<span class="string">'lr'</span>);
+0041    <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i}=<a href="../../tt2/core/ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i},2,rm.');
+0042 <span class="keyword">end</span>
+0043 <span class="keyword">if</span> (isempty(rmax))
+0044     <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,eps); 
+0045 <span class="keyword">else</span>
+0046     <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,eps,rmax); 
+0047 <span class="keyword">end</span>;
+0048 <span class="comment">%Round the core --- we know the result comes</span>
+0049 <span class="comment">%with rl orthogonality? -&lt; No, we don't</span>
+0050 [<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>, nrm] = <a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>, <span class="string">'lr'</span>);
+0051 <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{d} = <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{d}*nrm;
+0052 rtt=<a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>); 
+0053 n=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>);
+0054 <span class="keyword">for</span> i=d:-1:1
+0055    cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i},[rtt(i),n(i),rtt(i+1)]);
+0056    cr=permute(cr,[2,1,3]); cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,n(i),rtt(i)*rtt(i+1));
+0057    [u,s,v]=svd(cr,<span class="string">'econ'</span>);
+0058    s=<a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0059    r=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)*eps);
+0060    u=u(:,1:r); s=s(1:r); v=v(:,1:r);
+0061    tuck{i}=tuck{i}*(u*<a href="diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s)); 
+0062    <span class="keyword">if</span> (isempty(rmax))
+0063        tuck{i}=<a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(tuck{i},eps/sqrt(d));
+0064    <span class="keyword">else</span>
+0065        tuck{i}=<a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(tuck{i},eps/sqrt(d), rmax);
+0066    <span class="keyword">end</span>;
+0067    [tuck{i},rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tuck{i},<span class="string">'lr'</span>);
+0068    cr=rm*v';
+0069    cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[r,rtt(i),rtt(i+1)]);
+0070    <span class="comment">% Shift QR to the next core block</span>
+0071    <span class="keyword">if</span> (i&gt;1)
+0072        cr=permute(cr,[1,3,2]);
+0073        cr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr, r*rtt(i+1), rtt(i));
+0074        [cr, rv] = <a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr, 0);
+0075        cr2 = <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i-1};
+0076        rtuck2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr2, 2);
+0077        cr2 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, rtt(i-1)*rtuck2, rtt(i));
+0078        cr2 = cr2*(rv.');
+0079        rtt(i) = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr, 2);
+0080        <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i-1} = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, rtt(i-1), rtuck2, rtt(i));
+0081        <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i} = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr.', rtt(i), r, rtt(i+1));
+0082    <span class="keyword">else</span>
+0083        <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i}=permute(cr,[2,1,3]);
+0084    <span class="keyword">end</span>;
+0085 <span class="keyword">end</span>
+0086 <span class="keyword">if</span> (ismatrix)
+0087     <span class="keyword">for</span> i=1:d
+0088         tuck{i} = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(tuck{i}, curn{i}, curm{i});
+0089     <span class="keyword">end</span>;
+0090 <span class="keyword">end</span>;
+0091 tt.core=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>;
+0092 tt.tuck=tuck;
+0093 <span class="keyword">return</span>
+0094 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

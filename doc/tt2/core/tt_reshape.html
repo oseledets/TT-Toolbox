@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_reshape</title>
+  <meta name="keywords" content="tt_reshape">
+  <meta name="description" content="Reshape of the TT-tensor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_reshape.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_reshape
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Reshape of the TT-tensor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt2]=tt_reshape(tt1,sz,eps, rl, rr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Reshape of the TT-tensor
+   [TT1]=TT_RESHAPE(TT,SZ) reshapes TT-tensor or TT-matrix into another 
+   with mode sizes SZ, accuracy 1e-14
+
+   [TT1]=TT_RESHAPE(TT,SZ,EPS) reshapes TT-tensor/matrix into another with
+   mode sizes SZ and accuracy EPS
+   
+   [TT1]=TT_RESHAPE(TT,SZ,EPS, RL) reshapes TT-tensor/matrix into another 
+   with mode size SZ and left tail rank RL
+
+   [TT1]=TT_RESHAPE(TT,SZ,EPS, RL, RR) reshapes TT-tensor/matrix into 
+   another with mode size SZ and tail ranks RL*RR
+   Reshapes TT-tensor/matrix into a new one, with dimensions specified by SZ.
+
+   If the input is TT-matrix, SZ must have the sizes for both modes, 
+   so it is a matrix if sizes d2-by-2.
+   If the input is TT-tensor, SZ may be either a column or a row vector.
+   
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="mvrk.html" class="code" title="function [y]=mvrk(A, x, eps, varargin)">mvrk</a>	Computes matvec in the QTT-Tucker "rake" format</li><li><a href="qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>	Compute the QTT-Tucker representation of TT</li><li><a href="qtttucker_to_linqtt.html" class="code" title="function [tt] = qtttucker_to_linqtt(qt, eps)">qtttucker_to_linqtt</a>	Compute the standard QTT-representation from the QTT-Tucker</li><li><a href="../../tt2/misc/linqtt_to_qtttucker.html" class="code" title="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">linqtt_to_qtttucker</a>	function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</li><li><a href="../../tt2/misc/qtttucker_to_tt.html" class="code" title="function [tt]=qtttucker_to_tt(fc, cr)">qtttucker_to_tt</a>	function [tt]=qtttucker_to_tt(fc, cr)</li><li><a href="../../tt2/tests/test_full_KN2.html" class="code" title="">test_full_KN2</a>	The test script for the Crank-Nicolson scheme with global time stepping</li><li><a href="../../tt2/tests/test_steps2.html" class="code" title="">test_steps2</a>	Crank-Nicolson scheme with local time-stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)</a>
+0002 <span class="comment">%Reshape of the TT-tensor</span>
+0003 <span class="comment">%   [TT1]=TT_RESHAPE(TT,SZ) reshapes TT-tensor or TT-matrix into another</span>
+0004 <span class="comment">%   with mode sizes SZ, accuracy 1e-14</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   [TT1]=TT_RESHAPE(TT,SZ,EPS) reshapes TT-tensor/matrix into another with</span>
+0007 <span class="comment">%   mode sizes SZ and accuracy EPS</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   [TT1]=TT_RESHAPE(TT,SZ,EPS, RL) reshapes TT-tensor/matrix into another</span>
+0010 <span class="comment">%   with mode size SZ and left tail rank RL</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%   [TT1]=TT_RESHAPE(TT,SZ,EPS, RL, RR) reshapes TT-tensor/matrix into</span>
+0013 <span class="comment">%   another with mode size SZ and tail ranks RL*RR</span>
+0014 <span class="comment">%   Reshapes TT-tensor/matrix into a new one, with dimensions specified by SZ.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%   If the input is TT-matrix, SZ must have the sizes for both modes,</span>
+0017 <span class="comment">%   so it is a matrix if sizes d2-by-2.</span>
+0018 <span class="comment">%   If the input is TT-tensor, SZ may be either a column or a row vector.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0025 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0026 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0029 <span class="comment">%ivan.oseledets@gmail.com</span>
+0030 <span class="comment">%---------------------------</span>
+0031 
+0032 
+0033 d1=tt1.d;
+0034 <span class="keyword">if</span> (nargin&lt;3)||(isempty(eps))
+0035     eps = 1e-14;
+0036 <span class="keyword">end</span>;
+0037 <span class="keyword">if</span> (nargin&lt;4)||(isempty(rl))
+0038     rl = 1;
+0039 <span class="keyword">end</span>;
+0040 <span class="keyword">if</span> (nargin&lt;5)||(isempty(rr))
+0041     rr = 1;
+0042 <span class="keyword">end</span>;
+0043 
+0044 ismatrix = false;
+0045 <span class="keyword">if</span> (isa(tt1, <span class="string">'tt_matrix'</span>))
+0046     d2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(sz, 1);
+0047     ismatrix = true;
+0048     <span class="comment">% The size should be [n,m] in R^{d x 2}</span>
+0049     restn2_n = sz(:,1);
+0050     restn2_m = sz(:,2);
+0051     sz_n = sz(:,1);
+0052     sz_m = sz(:,2);
+0053     n1_n = tt1.n;
+0054     n1_m = tt1.m;    
+0055     sz = prod(sz, 2); <span class="comment">% We will split/convolve using the vector form anyway</span>
+0056     tt1 = tt1.tt;
+0057 <span class="keyword">else</span>
+0058     d2 = numel(sz);
+0059 <span class="keyword">end</span>;
+0060 
+0061 <span class="comment">% Recompute sz to include r0,rd,</span>
+0062 <span class="comment">% and the items of tt1</span>
+0063 sz(1)=sz(1)*rl;
+0064 sz(d2)=sz(d2)*rr;
+0065 tt1.n(1) = tt1.n(1)*tt1.r(1);
+0066 tt1.n(d1) = tt1.n(d1)*tt1.r(d1+1);
+0067 <span class="keyword">if</span> (ismatrix) <span class="comment">% in matrix: 1st tail rank goes to the n-mode, last to the m-mode</span>
+0068     restn2_n(1)=restn2_n(1)*rl;
+0069     restn2_m(d2)=restn2_m(d2)*rr;
+0070     n1_n(1) = n1_n(1)*tt1.r(1);
+0071     n1_m(d1) = n1_m(d1)*tt1.r(d1+1);
+0072 <span class="keyword">end</span>;
+0073 tt1.r(1)=1;
+0074 tt1.r(d1+1)=1;
+0075 
+0076 n1=tt1.n;
+0077 
+0078 <span class="keyword">if</span> ( prod(n1) ~= prod(sz) )
+0079  error(<span class="string">'Reshape: incorrect sizes'</span>);
+0080 <span class="keyword">end</span>
+0081 
+0082 
+0083 needQRs = false;
+0084 <span class="keyword">if</span> (d2&gt;d1)
+0085     needQRs = true;
+0086 <span class="keyword">end</span>;
+0087 <span class="keyword">if</span> (d2&lt;=d1)
+0088     i2=1;
+0089     n2 = sz;
+0090     <span class="keyword">for</span> i1=1:d1
+0091         <span class="keyword">if</span> (n2(i2)==1)
+0092             i2 = i2+1;
+0093             <span class="keyword">if</span> (i2&gt;d2)
+0094                 <span class="keyword">break</span>;
+0095             <span class="keyword">end</span>;
+0096         <span class="keyword">end</span>;
+0097         <span class="keyword">if</span> (mod(n2(i2), n1(i1))==0)
+0098             n2(i2)=n2(i2)/n1(i1);
+0099         <span class="keyword">else</span>
+0100             needQRs = true;
+0101             <span class="keyword">break</span>;
+0102         <span class="keyword">end</span>;
+0103     <span class="keyword">end</span>;
+0104 <span class="keyword">end</span>;
+0105 
+0106 <span class="keyword">if</span> (needQRs) <span class="comment">% We have to split some cores -&gt; perform QRs</span>
+0107     <span class="keyword">for</span> i=d1:-1:2
+0108         cr = tt1{i};
+0109         r1 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr,1); r2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr,3);
+0110         cr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr, r1, n1(i)*r2);
+0111         [cr,rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr.', 0); <span class="comment">% Size n*r2, r1new - r1nwe,r1</span>
+0112         cr0 = tt1{i-1};
+0113         r0 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr0, 1);
+0114         cr0 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0, r0*n1(i-1), r1);
+0115         cr0 = cr0*(rv.'); <span class="comment">% r0*n0, r1new</span>
+0116         r1 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr,2);        
+0117         cr0 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0, r0, n1(i-1), r1);
+0118         cr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr.', r1, n1(i), r2);
+0119         tt1{i} = cr;
+0120         tt1{i-1} = cr0;  
+0121     <span class="keyword">end</span>;
+0122 <span class="keyword">end</span>;
+0123 
+0124 r1 = tt1.r;
+0125 r2 = ones(d2+1,1);
+0126     
+0127 i1 = 1; <span class="comment">% Working index in tt1</span>
+0128 i2 = 1; <span class="comment">% Working index in tt2</span>
+0129 core2 = zeros(0,1);
+0130 last_ps2 = 1;
+0131 curcr2 = 1;
+0132 restn2 = sz;
+0133 n2 = ones(d2,1);
+0134 <span class="keyword">if</span> (ismatrix)
+0135     n2_n = ones(d2, 1);
+0136     n2_m = ones(d2, 1);
+0137 <span class="keyword">end</span>;
+0138 
+0139 <span class="keyword">while</span> (i1&lt;=d1)
+0140     curcr1 = tt1{i1};    
+0141     <span class="keyword">if</span> (gcd(restn2(i2), n1(i1))==n1(i1))
+0142         <span class="comment">% The whole core1 fits to core2. Convolve it</span>
+0143         <span class="keyword">if</span> (i1&lt;d1)&amp;&amp;(needQRs) <span class="comment">% QR to the next core - for safety</span>
+0144             curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1)*n1(i1), r1(i1+1));
+0145             [curcr1, rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(curcr1, 0);
+0146             curcr12 = tt1{i1+1};
+0147             curcr12 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr12, r1(i1+1), n1(i1+1)*r1(i1+2));
+0148             curcr12 = rv*curcr12;
+0149             r1(i1+1)=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(curcr12, 1);
+0150             tt1{i1+1} = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr12, r1(i1+1), n1(i1+1), r1(i1+2));
+0151         <span class="keyword">end</span>;
+0152         
+0153         curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1), n1(i1)*r1(i1+1));
+0154         curcr2 = curcr2*curcr1; <span class="comment">% size r21*nold, dn*r22</span>
+0155         <span class="keyword">if</span> (ismatrix) <span class="comment">% Permute if we are working with tt_matrix</span>
+0156             curcr2 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr2, r2(i2), n2_n(i2), n2_m(i2), n1_n(i1), n1_m(i1), r1(i1+1));
+0157             curcr2 = permute(curcr2, [1, 2, 4, 3, 5, 6]);
+0158             <span class="comment">% Update the &quot;matrix&quot; sizes</span>
+0159             n2_n(i2) = n2_n(i2)*n1_n(i1);
+0160             n2_m(i2) = n2_m(i2)*n1_m(i1);
+0161             restn2_n(i2)=restn2_n(i2)/n1_n(i1);
+0162             restn2_m(i2)=restn2_m(i2)/n1_m(i1);
+0163         <span class="keyword">end</span>;
+0164         r2(i2+1)=r1(i1+1);
+0165         <span class="comment">% Update the sizes of tt2</span>
+0166         n2(i2)=n2(i2)*n1(i1);
+0167         restn2(i2)=restn2(i2)/n1(i1);
+0168         curcr2 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr2, r2(i2)*n2(i2), r2(i2+1));
+0169 <span class="comment">%         if (i1&lt;d1)</span>
+0170             i1 = i1+1; <span class="comment">% current core1 is over</span>
+0171 <span class="comment">%         end;</span>
+0172     <span class="keyword">else</span>
+0173         <span class="keyword">if</span> (gcd(restn2(i2), n1(i1))~=1)||(restn2(i2)==1)
+0174             <span class="comment">% There exists a nontrivial divisor. Split it and convolve</span>
+0175             n12 = gcd(restn2(i2), n1(i1));
+0176             <span class="keyword">if</span> (ismatrix) <span class="comment">% Permute before the truncation</span>
+0177                 <span class="comment">% Matrix sizes we are able to split</span>
+0178                 n12_n = gcd(restn2_n(i2), n1_n(i1));
+0179                 n12_m = gcd(restn2_m(i2), n1_m(i1));
+0180                 curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1), n12_n, (n1_n(i1)/n12_n), n12_m, (n1_m(i1)/n12_m), r1(i1+1));
+0181                 curcr1 = permute(curcr1, [1, 2, 4, 3, 5, 6]);
+0182                 <span class="comment">% Update the matrix sizes of tt2 and tt1</span>
+0183                 n2_n(i2)=n2_n(i2)*n12_n;
+0184                 n2_m(i2)=n2_m(i2)*n12_m;
+0185                 restn2_n(i2)=restn2_n(i2)/n12_n;
+0186                 restn2_m(i2)=restn2_m(i2)/n12_m;
+0187                 n1_n(i1) = n1_n(i1)/n12_n;
+0188                 n1_m(i1) = n1_m(i1)/n12_m;
+0189             <span class="keyword">end</span>;
+0190             
+0191             curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1)*n12, (n1(i1)/n12)*r1(i1+1));
+0192             [u,s,v]=svd(curcr1, <span class="string">'econ'</span>);
+0193             s = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0194             r = <a href="my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s, eps*<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s)/sqrt(d2-1));
+0195             u = u(:,1:r);
+0196             v = v(:,1:r)*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s(1:r));
+0197             u = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u, r1(i1), n12*r);
+0198             curcr2 = curcr2*u; <span class="comment">% size r21*nold, dn*r22</span>
+0199             r2(i2+1)=r;
+0200             <span class="comment">% Update the sizes of tt2</span>
+0201             n2(i2)=n2(i2)*n12;
+0202             restn2(i2)=restn2(i2)/n12;
+0203             curcr2 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr2, r2(i2)*n2(i2), r2(i2+1));
+0204             r1(i1) = r;
+0205             <span class="comment">% and tt1</span>
+0206             n1(i1) = n1(i1)/n12;
+0207             curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v', r1(i1), n1(i1), r1(i1+1));
+0208             tt1{i1} = curcr1;
+0209         <span class="keyword">else</span>
+0210             <span class="comment">% Bad case. We have to merge cores of tt1 until a common divisor</span>
+0211             <span class="comment">% appears</span>
+0212             i1new = i1+1;
+0213             curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1)*n1(i1), r1(i1+1));
+0214             <span class="keyword">while</span> (gcd(restn2(i2), n1(i1))==1)&amp;&amp;(i1new&lt;=d1)
+0215                 cr1new = tt1{i1new};
+0216                 cr1new = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1new, r1(i1new), n1(i1new)*r1(i1new+1));
+0217                 curcr1 = curcr1*cr1new; <span class="comment">% size r1(i1)*n1(i1), n1new*r1new</span>
+0218                 <span class="keyword">if</span> (ismatrix) <span class="comment">% Permutes and matrix size updates</span>
+0219                     curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1), n1_n(i1), n1_m(i1), n1_n(i1new), n1_m(i1new), r1(i1new+1));
+0220                     curcr1 = permute(curcr1, [1, 2, 4, 3, 5, 6]);
+0221                     n1_n(i1) = n1_n(i1)*n1_n(i1new);
+0222                     n1_m(i1) = n1_m(i1)*n1_m(i1new);
+0223                 <span class="keyword">end</span>;
+0224                 n1(i1) = n1(i1)*n1(i1new);
+0225                 curcr1 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr1, r1(i1)*n1(i1), r1(i1new+1));
+0226                 i1new = i1new+1;
+0227             <span class="keyword">end</span>;
+0228             <span class="comment">% Reduce dimension of tt1</span>
+0229             tt1.n = [n1(1:i1); n1(i1new:d1)];
+0230             tt1.r = [r1(1:i1); r1(i1new:d1+1)];
+0231             <span class="keyword">if</span> (i1new&lt;=d1)
+0232                 crlast = tt1.core(tt1.ps(i1new):end);
+0233             <span class="keyword">else</span>
+0234                 crlast = [];
+0235             <span class="keyword">end</span>;
+0236             tt1.core = [tt1.core(1:tt1.ps(i1)-1); curcr1(:); crlast];
+0237             n1 = tt1.n;
+0238             r1 = tt1.r;
+0239             d1 = numel(n1);
+0240             tt1.d = d1;
+0241             tt1.ps = cumsum([1; r1(1:d1).*n1.*r1(2:d1+1)]);
+0242         <span class="keyword">end</span>;
+0243     <span class="keyword">end</span>;
+0244     
+0245     <span class="keyword">if</span> (restn2(i2)==1)&amp;&amp;((i1&gt;d1)||((i1&lt;=d1)&amp;&amp;(n1(i1)~=1))) <span class="comment">% The core of tt2 is finished</span>
+0246         <span class="comment">% The second condition works, if we are squeezing the tailing singletons.</span>
+0247         core2(last_ps2:last_ps2+r2(i2)*n2(i2)*r2(i2+1)-1) = curcr2(:);
+0248         last_ps2 = last_ps2 + r2(i2)*n2(i2)*r2(i2+1);
+0249 <span class="comment">%         if (i2&lt;d2)</span>
+0250             i2 = i2+1;
+0251 <span class="comment">%         end;</span>
+0252         <span class="comment">% Start new core2</span>
+0253         curcr2 = 1;
+0254     <span class="keyword">end</span>;
+0255 <span class="keyword">end</span>;
+0256 
+0257 <span class="comment">% If we've asked for singletons</span>
+0258 <span class="keyword">while</span> (i2&lt;=d2)
+0259     core2(last_ps2) = 1;
+0260     last_ps2 = last_ps2+1;
+0261     r2(i2)=1;
+0262     i2 = i2+1;
+0263 <span class="keyword">end</span>;
+0264 
+0265 tt2 = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0266 tt2.d = d2;
+0267 tt2.n = n2;
+0268 tt2.r = r2;
+0269 tt2.core = core2;
+0270 tt2.ps = cumsum([1; r2(1:d2).*n2.*r2(2:d2+1)]);
+0271 
+0272 
+0273 tt2.n(1) = tt2.n(1)/rl;
+0274 tt2.n(d2) = tt2.n(d2)/rr;
+0275 tt2.r(1) = rl;
+0276 tt2.r(d2+1) = rr;
+0277 
+0278 <span class="keyword">if</span> (ismatrix)
+0279     tt2 = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(tt2, sz_n, sz_m);
+0280 <span class="keyword">end</span>;
+0281 
+0282 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

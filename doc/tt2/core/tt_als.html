@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_als</title>
+  <meta name="keywords" content="tt_als">
+  <meta name="description" content="Several ALS sweeps for the approximation in the TT-format">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_als.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_als
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Several ALS sweeps for the approximation in the TT-format</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [res] = tt_als(x,y,nswp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Several ALS sweeps for the approximation in the TT-format
+   [RES]=TT_ALS(X,Y,NSWP) Compute NSWP sweeps of the ALS method for the
+   approximation of a tensor X, starting from a tensor Y. The output RES is
+   the improved approximation of X
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>	Tensor-by-matrix multiplication of three-dimensional tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [res] = tt_als(x,y,nswp)</a>
+0002 <span class="comment">%Several ALS sweeps for the approximation in the TT-format</span>
+0003 <span class="comment">%   [RES]=TT_ALS(X,Y,NSWP) Compute NSWP sweeps of the ALS method for the</span>
+0004 <span class="comment">%   approximation of a tensor X, starting from a tensor Y. The output RES is</span>
+0005 <span class="comment">%   the improved approximation of X</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 
+0018 <span class="comment">%Make old format out of the new one</span>
+0019 x=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(x); y=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(y); 
+0020 d=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x,1);
+0021 <span class="comment">%The first step is to compute left-to-right sweep of summation, yielding</span>
+0022 <span class="comment">%phi-matrices</span>
+0023 phi=cell(d,1); <span class="comment">%To store phi matrices</span>
+0024 
+0025 [q,rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(y{1},0);
+0026 y{1}=q;
+0027 <span class="comment">%X(i1,a)*Y(i1,b)</span>
+0028 phi{1}=y{1}'*x{1}; <span class="comment">%will be ry x rx</span>
+0029 <span class="keyword">for</span> i=2:d-1
+0030     <span class="comment">%fprintf('i=%d/%d \n',i,d-1);</span>
+0031     y{i} = <a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(y{i},2,rv');
+0032     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},1);
+0033     r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},2);
+0034     r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},3);
+0035     core1=permute(y{i},[1,2,3]);
+0036     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[ncur*r2,r3]);
+0037     [y{i},rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core1,0);
+0038     rnew=min(r3,ncur*r2);
+0039     y{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(y{i},[ncur,r2,rnew]);
+0040     y{i}=permute(y{i},[1,2,3]);
+0041    n=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},1); rx1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},2);  rx2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},3);
+0042    ry1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},2); ry2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},3);
+0043    <span class="comment">%phi x is ry1 x rx1 core_x is n x rx1 x rx2</span>
+0044    phi{i}=phi{i-1}*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(permute(x{i}, [2,1,3]),[rx1,n*rx2]);
+0045    <span class="comment">%phi is now ry1 x n x rx2, core_y is n x ry1 x ry2</span>
+0046    phi{i}=permute(<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phi{i},[ry1,n,rx2]),[2,1,3]); <span class="comment">% n x ry1 x rx2</span>
+0047    phi{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(y{i},[n*ry1,ry2])'*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phi{i},[n*ry1,rx2]);
+0048 <span class="keyword">end</span>
+0049 <span class="comment">%Now we are able to recompute Y_d</span>
+0050 <span class="comment">%mat_x{d} is X(i_d,rx) and phi is  ry x rx</span>
+0051 <span class="keyword">for</span> s=1:nswp
+0052 
+0053 y{d}= x{d}*phi{d-1}';
+0054 
+0055 <span class="comment">%Now we can start right-to-left sweep that combines computation of</span>
+0056 <span class="comment">%phi matrices with Y right-to-left orthogonalization</span>
+0057 [q,rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(y{d},0);
+0058 y{d}=q;
+0059 <span class="comment">%mat_x{d} is n x rx, mat_y{d} is n x ry phi will be ry x rx</span>
+0060 phi{d}=y{d}'*x{d};
+0061 
+0062 
+0063 
+0064 <span class="keyword">for</span> i=d-1:-1:2
+0065     <span class="comment">%fprintf('i=%d/%d \n',i,d-1);</span>
+0066    <span class="comment">%First solve for y{i} then orthogonalize it</span>
+0067    <span class="comment">%Since the left phi matrix for y dissappears we have to</span>
+0068    <span class="comment">%convolve the current core X(a1,i1,a2) with phi(i-1) from the left</span>
+0069    <span class="comment">%and with phi(i) from the right</span>
+0070    <span class="comment">%y{i}=ten_conv(x{i},3,phi{i+1}'); %is n x rx1 x ry2</span>
+0071    phi0=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(x{i},3,phi{i+1}');
+0072    <span class="comment">%printf('true \n'); y{i}</span>
+0073    <span class="comment">%return</span>
+0074    
+0075    y{i}=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(phi0,2,phi{i-1}'); <span class="comment">%is n x ry1 x ry2</span>
+0076    <span class="comment">%Orthogonalize y</span>
+0077     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},1);
+0078     r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},2);
+0079     r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},3);
+0080     core1=permute(y{i},[1,3,2]);
+0081     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[ncur*r3,r2]);
+0082     [y{i},rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core1,0);
+0083     rnew=min(r2,ncur*r3);
+0084     y{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(y{i},[ncur,r3,rnew]);
+0085     y{i}=permute(y{i},[1,3,2]);
+0086     
+0087     <span class="comment">%Compute new phi{i}</span>
+0088     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},1); rx1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},2);
+0089     ry1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},2); ry2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(phi{i+1},1);
+0090     
+0091     <span class="comment">%X is ncur x rx1 x rx2, phi is ry2 x rx2</span>
+0092   <span class="comment">% keyboard;</span>
+0093     <span class="comment">%phi0=reshape(x{i},[ncur*rx1,rx2])*phi{i+1}';</span>
+0094     <span class="comment">%phi0=reshape(x{i},[ncur*rx1,rx2])*phi{i+1}';</span>
+0095     
+0096     <span class="comment">%phi0 is ncur x rx1 x ry2, y{i} is ncur x ry1 x ry2</span>
+0097     phi0=permute(<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phi0,[ncur,rx1,ry2]),[1,3,2]); 
+0098     phi{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(permute(y{i},[1,3,2]),[ncur*ry2,ry1])'*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phi0,[ncur*ry2,rx1]); 
+0099     <span class="comment">%fprintf('true phi{%i} norm: %e \n',i,norm(phi{i}(:)));</span>
+0100 
+0101 <span class="keyword">end</span>
+0102 y{1} = x{1}*phi{2}';
+0103 <span class="comment">%Now (finally!) we have this left-to-right sweep</span>
+0104 [q,rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(y{1},0);
+0105 y{1}=q;
+0106 <span class="comment">%X(i1,a)*Y(i1,b)</span>
+0107 phi{1}=y{1}'*x{1}; <span class="comment">%will be ry x rx</span>
+0108 <span class="comment">%phi{1}</span>
+0109 <span class="keyword">for</span> i=2:d-1
+0110     <span class="comment">%fprintf('i=%d/%d \n',i,d-1);</span>
+0111    y{i}=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(x{i},3,phi{i+1}');
+0112    y{i}=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(y{i},2,phi{i-1}');
+0113    <span class="comment">%norm(y{i}(:))</span>
+0114    <span class="comment">%return</span>
+0115    <span class="comment">%Orthogonalize new core</span>
+0116    ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},1);
+0117    r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},2);
+0118    r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},3);
+0119    core1=permute(y{i},[1,2,3]);
+0120    core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[ncur*r2,r3]);
+0121    [y{i},rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core1,0);
+0122    rnew=min(r3,ncur*r2);
+0123    y{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(y{i},[ncur,r2,rnew]);
+0124    y{i}=permute(y{i},[1,2,3]);
+0125    <span class="comment">%Compute new phi</span>
+0126    n=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},1); rx1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},2);  rx2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x{i},3);
+0127    ry1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},2); ry2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(y{i},3);
+0128    <span class="comment">%phi x is ry1 x rx1 core_x is n x rx1 x rx2</span>
+0129    phi{i}=phi{i-1}*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(permute(x{i}, [2,1,3]),[rx1,n*rx2]);
+0130    <span class="comment">%phi is now ry1 x n x rx2, core_y is n x ry1 x ry2</span>
+0131    phi{i}=permute(<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phi{i},[ry1,n,rx2]),[2,1,3]); <span class="comment">% n x ry1 x rx2</span>
+0132    phi{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(y{i},[n*ry1,ry2])'*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phi{i},[n*ry1,rx2]);
+0133 <span class="keyword">end</span>
+0134 <span class="comment">%Now we are able to recompute Y_d</span>
+0135 <span class="comment">%mat_x{d} is X(i_d,rx) and phi is  ry x rx</span>
+0136 <span class="keyword">end</span>
+0137 y{d}= x{d}*phi{d-1}';
+0138 res=y;
+0139 res=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(res);
+0140 <span class="keyword">return</span>
+0141 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of qtttucker_to_linqtt</title>
+  <meta name="keywords" content="qtttucker_to_linqtt">
+  <meta name="description" content="Compute the standard QTT-representation from the QTT-Tucker">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; qtttucker_to_linqtt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>qtttucker_to_linqtt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Compute the standard QTT-representation from the QTT-Tucker</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt] = qtttucker_to_linqtt(qt, eps) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Compute the standard QTT-representation from the QTT-Tucker
+   [TT]=QTTTUCKER_TO_LINQTT(TT, EPS) Computes the &quot;linear&quot; QTT
+   representation from the QTT-TUCKER. This is a technical function: use
+   the corresponding constructor of the QTT-Tucker class.
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="move_tt_block.html" class="code" title="function [tt] = move_tt_block(tt, spos, epos, eps)">move_tt_block</a>	Performs a bubble movement of a block inside a train</li><li><a href="tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt] = qtttucker_to_linqtt(qt, eps)</a>
+0002 <span class="comment">%Compute the standard QTT-representation from the QTT-Tucker</span>
+0003 <span class="comment">%   [TT]=QTTTUCKER_TO_LINQTT(TT, EPS) Computes the &quot;linear&quot; QTT</span>
+0004 <span class="comment">%   representation from the QTT-TUCKER. This is a technical function: use</span>
+0005 <span class="comment">%   the corresponding constructor of the QTT-Tucker class.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 
+0018 
+0019 dphys = qt.dphys;
+0020 tuck = qt.tuck;
+0021 <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a> = qt.core;
+0022 rc = core.r;
+0023 rt = core.n;
+0024 ns = cell(dphys,1);
+0025 <span class="keyword">for</span> i=1:dphys
+0026     ns{i} = tuck{i}.n;    
+0027 <span class="keyword">end</span>;
+0028 
+0029 tt = []; <span class="comment">% we will kron the chunks</span>
+0030 <span class="comment">%  tt = tt_tensor;</span>
+0031 <span class="comment">%  tt.d = sum(L);</span>
+0032 <span class="comment">%  tt.ps = ones(tt.d+1,1);</span>
+0033 <span class="comment">%  tt.n = zeros(tt.d,1);</span>
+0034 <span class="comment">%  tt.r = zeros(tt.d+1,1);</span>
+0035 
+0036 <span class="comment">% Move the nonorth to the first factor</span>
+0037 <span class="keyword">for</span> i=1:dphys
+0038     [tuck{i},rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tuck{i}, <span class="string">'lr'</span>);
+0039     cr = <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i};
+0040     cr = permute(cr, [2,1,3]);
+0041     cr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr, rt(i), rc(i)*rc(i+1));
+0042     cr = rv*cr;
+0043     rt(i) = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(rv, 1);
+0044     cr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr, rt(i), rc(i), rc(i+1));
+0045     <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i} = permute(cr, [2, 1, 3]);
+0046 <span class="keyword">end</span>;
+0047 [<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,nrm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>, <span class="string">'rl'</span>);
+0048 cr = <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{1};
+0049 cr = nrm*cr;
+0050 <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{1} = cr;
+0051 rc = core.r;
+0052 <span class="comment">%  cr = permute(cr, [1,3,2]);</span>
+0053 <span class="comment">%  cr = reshape(cr, rc(1)*rc(2), rt(1));</span>
+0054 <span class="comment">%  [q,rv]=qr(cr, 0);</span>
+0055 <span class="comment">%  tuck{1} = tuck{1}*(rv.');</span>
+0056 <span class="comment">%  rt(1) = size(q,2);</span>
+0057 <span class="comment">%  q = reshape(q, rc(1), rc(2), rt(1));</span>
+0058 <span class="comment">%  core{1} = permute(q, [1, 3, 2]);</span>
+0059 
+0060 <span class="comment">% Now, we can start to move the ranks to the linear model</span>
+0061 <span class="keyword">for</span> i=1:dphys
+0062     curtuck = tuck{i};
+0063     cr = <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i};
+0064     cr = permute(cr, [2, 1, 3]);
+0065     cr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr, rt(i), rc(i)*rc(i+1));
+0066     curtuck = curtuck*cr; <span class="comment">% now the last rank is rc(i)*rc(i+1)</span>
+0067     curtuck = <a href="tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(curtuck, [ns{i}; rc(i); rc(i+1)], eps);
+0068     <span class="comment">% Now the most dangerous: the movement of the block rc(i) to the beginning</span>
+0069     curtuck = <a href="move_tt_block.html" class="code" title="function [tt] = move_tt_block(tt, spos, epos, eps)">move_tt_block</a>(curtuck, numel(ns{i})+1, 1, eps);
+0070     curtuck = <a href="tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(curtuck, [rc(i)*ns{i}(1); ns{i}(2:end-1); ns{i}(end)*rc(i+1)], eps);
+0071     <span class="comment">% the data is in fact done; update the rank and n formally</span>
+0072     curtuck.r(1) = rc(i);
+0073     curtuck.n(1) = ns{i}(1);
+0074     curtuck.r(numel(ns{i})+1) = rc(i+1);
+0075     curtuck.n(numel(ns{i})) = ns{i}(numel(ns{i}));    
+0076     <span class="comment">% Ha-ha, that's not all; QR to the rest of the tucker core, so we will be able to proceed further</span>
+0077     <span class="keyword">if</span> (i&lt;dphys)
+0078     [curtuck, rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(curtuck, <span class="string">'lr'</span>);
+0079     cr2 = <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i+1};
+0080     cr2 = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, rc(i+1), rt(i+1)*rc(i+2));
+0081     cr2 = rv*cr2;
+0082     rc(i+1) = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(rv, 1);
+0083     <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>{i+1} = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, rc(i+1), rt(i+1), rc(i+2));
+0084     <span class="keyword">end</span>;
+0085     <span class="comment">% Now, stuff to the TT</span>
+0086     tt = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(tt, curtuck);
+0087 <span class="keyword">end</span>;
+0088 
+0089 
+0090 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

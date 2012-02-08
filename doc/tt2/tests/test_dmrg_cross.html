@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of test_dmrg_cross</title>
+  <meta name="keywords" content="test_dmrg_cross">
+  <meta name="description" content="Simple script to test the stabilized dmrg-cross method">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">tests</a> &gt; test_dmrg_cross.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/tests&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>test_dmrg_cross
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Simple script to test the stabilized dmrg-cross method</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Simple script to test the stabilized dmrg-cross method</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/cross/dmrg_cross.html" class="code" title="function [y]=dmrg_cross(d,n,fun,eps,varargin)">dmrg_cross</a>	DMRG-cross method for the approximation of TT-tensors</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%Simple script to test the stabilized dmrg-cross method</span>
+0002 
+0003 d=10;
+0004 <span class="comment">%fun = @(ind) (sum(ind)+1i*ind(1));</span>
+0005 a=10;
+0006 n=2^d; h=2*a/(n-1);
+0007 x=-a:h:a;
+0008 f=exp(-10*x.^2); f=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(f,2*ones(1,d)),1e-9);
+0009 fun = @(ind) f(ind);
+0010 <span class="comment">%fun = @(ind) 1;</span>
+0011 <span class="comment">%n=2:d+1;</span>
+0012 n=2;
+0013 <span class="comment">%y=tt_ones(n);</span>
+0014 <span class="comment">%r=ones(d+1,1);</span>
+0015 <span class="comment">%r(2:d-1)=2:d-1;</span>
+0016 <span class="comment">%y=tt_rand(n,d,r);</span>
+0017 <span class="comment">%fun = @(ind) y(ind);</span>
+0018 tt=<a href="../../tt2/cross/dmrg_cross.html" class="code" title="function [y]=dmrg_cross(d,n,fun,eps,varargin)">dmrg_cross</a>(d,n,fun,1e-7,<span class="string">'nswp'</span>,20);</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

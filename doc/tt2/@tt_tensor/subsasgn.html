@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subsasgn</title>
+  <meta name="keywords" content="subsasgn">
+  <meta name="description" content="Indexing of cores of TT-format: T{I}=B">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; subsasgn.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>subsasgn
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Indexing of cores of TT-format: T{I}=B</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function t = subsasgn(t,s,b) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Indexing of cores of TT-format: T{I}=B
+   T{I} = B Set i-th core to be equal to B
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Assign fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li><li><a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Assign fields of the QTT-Tucker structure</li><li><a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function t = subsasgn(t,s,b)</a>
+0002 <span class="comment">%Indexing of cores of TT-format: T{I}=B</span>
+0003 <span class="comment">%   T{I} = B Set i-th core to be equal to B</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015  <span class="keyword">switch</span> s(1).type
+0016      <span class="keyword">case</span> <span class="string">'.'</span>
+0017          <span class="keyword">switch</span> s(1).subs
+0018              <span class="keyword">case</span> <span class="string">'n'</span>
+0019                  <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,1)==1)
+0020                      b=b.';
+0021                  <span class="keyword">end</span>;
+0022                  <span class="keyword">if</span> (numel(s)&gt;1)
+0023                      s = s(2:end);
+0024                      t.n = <a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>(t.n, s, b);
+0025                  <span class="keyword">else</span>
+0026                      t.n = b;
+0027                  <span class="keyword">end</span>;
+0028 <span class="comment">%                  if (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,'()'))</span>
+0029 <span class="comment">%                      if (size(s(2).subs{1},1)==1)</span>
+0030 <span class="comment">%                          s(2).subs{1}=s(2).subs{1}';</span>
+0031 <span class="comment">%                      end;</span>
+0032 <span class="comment">%                      t.n(s(2).subs{1})=b;</span>
+0033 <span class="comment">%                  else</span>
+0034 <span class="comment">%                      t.n=b;</span>
+0035 <span class="comment">%                  end;</span>
+0036              <span class="keyword">case</span> <span class="string">'r'</span>
+0037                  <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,1)==1)
+0038                      b=b.';
+0039                  <span class="keyword">end</span>;
+0040                  <span class="keyword">if</span> (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,<span class="string">'()'</span>))
+0041                      <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(s(2).subs{1},1)==1)
+0042                          s(2).subs{1}=s(2).subs{1}';
+0043                      <span class="keyword">end</span>;
+0044                      t.r(s(2).subs{1})=b;
+0045                  <span class="keyword">else</span>
+0046                      t.r=b;
+0047                  <span class="keyword">end</span>;
+0048              <span class="keyword">case</span> <span class="string">'core'</span>                 
+0049                  <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,1)==1)
+0050                      b=b.';
+0051                  <span class="keyword">end</span>;
+0052                  <span class="comment">% I don't want to dispatch all the rest subs to the core,</span>
+0053                  <span class="comment">% because MATLAB will copy it. Fortunately, only () is</span>
+0054                  <span class="comment">% reasonable here.</span>
+0055                  <span class="keyword">if</span> (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,<span class="string">'()'</span>))
+0056                      <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(s(2).subs{1},1)==1)
+0057                          s(2).subs{1}=s(2).subs{1}';
+0058                      <span class="keyword">end</span>;
+0059                      t.core(s(2).subs{1})=b;
+0060                  <span class="keyword">else</span>
+0061                      t.core=b;
+0062                  <span class="keyword">end</span>;
+0063              <span class="keyword">case</span> <span class="string">'d'</span>
+0064                  t.d=b;
+0065              <span class="keyword">case</span> <span class="string">'ps'</span>
+0066                  <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,1)==1)
+0067                      b=b.';
+0068                  <span class="keyword">end</span>;
+0069                  <span class="keyword">if</span> (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,<span class="string">'()'</span>))
+0070                      <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(s(2).subs{1},1)==1)
+0071                          s(2).subs{1}=s(2).subs{1}';
+0072                      <span class="keyword">end</span>;
+0073                      t.ps(s(2).subs{1})=b;
+0074                  <span class="keyword">else</span>
+0075                      t.ps=b;
+0076                  <span class="keyword">end</span>;
+0077              <span class="keyword">otherwise</span>
+0078                  error([<span class="string">'Cannot change field '</span>, s.subs, <span class="string">' directly.'</span>]);
+0079          <span class="keyword">end</span>
+0080      <span class="keyword">case</span> <span class="string">'{}'</span>
+0081          <span class="comment">% Insert one core (r1-n-r2!!!!!! not n-r1-r2!) into the TT2</span>
+0082          r1 = <a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,1);
+0083          n1 = <a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,2);
+0084          r2 = <a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b,3);
+0085          i = s.subs{1};
+0086 <span class="comment">%          if (i==1)</span>
+0087 <span class="comment">%              r2 = r1;</span>
+0088 <span class="comment">%              r1 = 1;</span>
+0089 <span class="comment">%          end;</span>
+0090          n = t.n;
+0091          d = t.d;
+0092          r = t.r;
+0093          cr = t.core;
+0094          ps = t.ps;
+0095          <span class="comment">% Update the positions of the untouched cores</span>
+0096          psnew = ps;
+0097          psnew(i+1:end) = ps(i+1:end)-(ps(i+1)-ps(i))+n1*r1*r2;
+0098          cr(psnew(i+1):psnew(d+1)-1) = cr(ps(i+1):ps(d+1)-1);
+0099 <span class="comment">%          if (i~=1)</span>
+0100 <span class="comment">%              b = permute(b, [2, 1, 3]); % We have r1,n1,r2 in the new format</span>
+0101 <span class="comment">%          end;</span>
+0102          <span class="comment">% Update the current core</span>
+0103          cr(psnew(i):psnew(i+1)-1)=b(:);
+0104          cr = cr(1:psnew(d+1)-1);
+0105          <span class="comment">% Stuff evrthg back</span>
+0106          n(i)=n1;
+0107          r(i)=r1;
+0108          r(i+1)=r2;
+0109          t.n = n;
+0110          t.r = r;
+0111          t.core = cr;
+0112          t.ps = psnew;
+0113      <span class="keyword">otherwise</span>
+0114          error(<span class="string">'Invalid subsasgn.'</span>);
+0115  <span class="keyword">end</span>
+0116 
+0117</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

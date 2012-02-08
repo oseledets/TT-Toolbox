@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of times</title>
+  <meta name="keywords" content="times">
+  <meta name="description" content="C=A.*B">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; times.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>times
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>C=A.*B</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [c]=times(a,b) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">C=A.*B
+   [C]=TIMES(A,B) Hadamard product of two QTT-tuckers
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [c]=times(a,b)</a>
+0002 <span class="comment">%C=A.*B</span>
+0003 <span class="comment">%   [C]=TIMES(A,B) Hadamard product of two QTT-tuckers</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015 
+0016 <span class="keyword">if</span> (nargin == 2 )
+0017     <span class="comment">% times of tucker factors (whatever it is)</span>
+0018     d = a.dphys;
+0019     c = <a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0020     c.dphys = d;
+0021     c.tuck = cell(d,1);
+0022     <span class="keyword">for</span> i=1:d
+0023         c.tuck{i} = a.tuck{i}.*b.tuck{i};
+0024     <span class="keyword">end</span>;
+0025     c.core = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0026     c.core.d = d;
+0027     rca = a.core.r;
+0028     rcb = b.core.r;
+0029     rta = a.core.n;
+0030     rtb = b.core.n;
+0031     c.core.r = rca.*rcb;
+0032     c.core.n = rta.*rtb;
+0033     c.core.ps = cumsum([1; c.core.r(1:d).*c.core.n.*c.core.r(2:d+1)]);
+0034     c.core.core = zeros(c.core.ps(d+1)-1,1);
+0035     <span class="keyword">for</span> i=1:d
+0036         cra = a.core{i};
+0037         cra = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra, rca(i)*rta(i)*rca(i+1), 1);
+0038         crb = b.core{i};
+0039         crb = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crb, 1, rcb(i)*rtb(i)*rcb(i+1));
+0040         crc = cra*crb;
+0041         crc = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crc, rca(i), rta(i), rca(i+1), rcb(i), rtb(i), rcb(i+1));
+0042         crc = permute(crc, [1, 4, 2, 5, 3, 6]);
+0043         c.core.core(c.core.ps(i):c.core.ps(i+1)-1) = crc(:);
+0044     <span class="keyword">end</span>;
+0045 <span class="keyword">end</span>
+0046 <span class="keyword">return</span>
+0047 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

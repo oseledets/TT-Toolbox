@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ten_conv</title>
+  <meta name="keywords" content="ten_conv">
+  <meta name="description" content="Tensor-by-matrix multiplication of three-dimensional tensor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; ten_conv.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>ten_conv
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Tensor-by-matrix multiplication of three-dimensional tensor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [new_core] = ten_conv(core, k, mat) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Tensor-by-matrix multiplication of three-dimensional tensor
+   [NEW_CORE]=TEN_CONV(CORE,K,MAT) Tensor-by-matrix multiplication of 
+   three-dimensional tensor CORE over mode K with matrix  MAT
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="tt_als.html" class="code" title="function [res] = tt_als(x,y,nswp)">tt_als</a>	Several ALS sweeps for the approximation in the TT-format</li><li><a href="tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="tt_dot.html" class="code" title="function [res] = tt_dot(tt1,tt2)">tt_dot</a>	Scalar product of two TT-tensors in the TT1.0 format</li><li><a href="tt_dot2.html" class="code" title="function [res,sgn] = tt_dot2(tt1,tt2)">tt_dot2</a>	Logarithm of the scalar product of two tensor (to avoid overflow)</li><li><a href="tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>	Compute the (supposedly) maximal in modulus element in a TT-tensor</li><li><a href="tt_mvk2.html" class="code" title="function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)">tt_mvk2</a>	Matrix-by-vector product by DMRG/Krylov method</li><li><a href="tt_squeeze.html" class="code" title="function [tt]=tt_squeeze(tt)">tt_squeeze</a>	Removes singleton dimensions from the TT-tensor</li><li><a href="tt_tuck.html" class="code" title="function [factors,res]=tt_tuck(tt,eps)">tt_tuck</a>	Computes Tucker factors and Tucker core of the TT-tensor</li><li><a href="../../tt2/exp/tt_canform1.html" class="code" title="function [core_int,ind_l,ind_r,ind_left,ind_right]=tt_canform1(tt)">tt_canform1</a>	Transforms a TT-tensor into the skeleton form</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [new_core] = ten_conv(core, k, mat)</a>
+0002 <span class="comment">%Tensor-by-matrix multiplication of three-dimensional tensor</span>
+0003 <span class="comment">%   [NEW_CORE]=TEN_CONV(CORE,K,MAT) Tensor-by-matrix multiplication of</span>
+0004 <span class="comment">%   three-dimensional tensor CORE over mode K with matrix  MAT</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0010 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0011 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0014 <span class="comment">%ivan.oseledets@gmail.com</span>
+0015 <span class="comment">%---------------------------</span>
+0016 n1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,1);
+0017 n2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,2);
+0018 n3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,3);
+0019 
+0020 <span class="keyword">if</span> ( k == 1 ) 
+0021   <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[n1,n2*n3]);
+0022   <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=mat'*<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>;
+0023   r1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,1);
+0024   new_core  = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,r1,n2,n3);
+0025 <span class="keyword">elseif</span> ( k == 2)
+0026   <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(permute(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[1,3,2]),[n1*n3,n2])*mat;
+0027   r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,2);
+0028   <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,n1,n3,r2);
+0029   new_core=permute(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[1,3,2]);
+0030 <span class="keyword">elseif</span> ( k == 3)
+0031   <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[n1*n2,n3])*mat;
+0032   r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,2);
+0033   new_core = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,n1,n2,r3);
+0034 <span class="keyword">end</span>
+0035 <span class="keyword">return</span>
+0036 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

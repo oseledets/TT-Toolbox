@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_qlaplace_dd</title>
+  <meta name="keywords" content="tt_qlaplace_dd">
+  <meta name="description" content="returns a rank-3,4...4 QTT decomposition of">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; tt_qlaplace_dd.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_qlaplace_dd
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>returns a rank-3,4...4 QTT decomposition of</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=tt_qlaplace_dd(d) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> returns a rank-3,4...4 QTT decomposition of
+ Delta_{1} \otimes \Id_{2} \ otimes \ldots \otimes \Id_{D} + \ldots +
+  + \Id_{1} \ otimes \ldots \otimes \Id_{D-1} \otimes Delta_{D},
+ Delta_{k} being a discretization of Laplace operator on 2^d(k) points
+ uniform grid,
+ Dirichlet-Dirichlet boundary conditions being imposed
+
+ D=size(d,2) must be &gt;= 1
+
+ September 3, 2010
+ Vladimir Kazeev
+ vladimir.kazeev@gmail.com
+ INM RAS
+ Moscow, Russia
+
+ Look for details in the Preprint No. 75, 2010 of
+ Max-Planck Institute for Mathematics in the Sciences
+ Vladimir A. Kazeev and Boris N. Khoromskij
+ On explicit QTT representation of Laplace operator and its inverse
+ http://www.mis.mpg.de/publications/preprints/2010/prepr2010-75.html</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="test_qlaplace_dd.html" class="code" title="">test_qlaplace_dd</a>	test code for tt_qlaplace_dd()</li><li><a href="../../tt2/tests/test_full_KN2.html" class="code" title="">test_full_KN2</a>	The test script for the Crank-Nicolson scheme with global time stepping</li><li><a href="../../tt2/tests/test_steps2.html" class="code" title="">test_steps2</a>	Crank-Nicolson scheme with local time-stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=tt_qlaplace_dd(d)</a>
+0002 <span class="comment">% returns a rank-3,4...4 QTT decomposition of</span>
+0003 <span class="comment">% Delta_{1} \otimes \Id_{2} \ otimes \ldots \otimes \Id_{D} + \ldots +</span>
+0004 <span class="comment">%  + \Id_{1} \ otimes \ldots \otimes \Id_{D-1} \otimes Delta_{D},</span>
+0005 <span class="comment">% Delta_{k} being a discretization of Laplace operator on 2^d(k) points</span>
+0006 <span class="comment">% uniform grid,</span>
+0007 <span class="comment">% Dirichlet-Dirichlet boundary conditions being imposed</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% D=size(d,2) must be &gt;= 1</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% September 3, 2010</span>
+0012 <span class="comment">% Vladimir Kazeev</span>
+0013 <span class="comment">% vladimir.kazeev@gmail.com</span>
+0014 <span class="comment">% INM RAS</span>
+0015 <span class="comment">% Moscow, Russia</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Look for details in the Preprint No. 75, 2010 of</span>
+0018 <span class="comment">% Max-Planck Institute for Mathematics in the Sciences</span>
+0019 <span class="comment">% Vladimir A. Kazeev and Boris N. Khoromskij</span>
+0020 <span class="comment">% On explicit QTT representation of Laplace operator and its inverse</span>
+0021 <span class="comment">% http://www.mis.mpg.de/publications/preprints/2010/prepr2010-75.html</span>
+0022 
+0023 d=fliplr(d);
+0024 D=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(d,2);
+0025 tt=cell(sum(d),1);
+0026 I=eye(2);
+0027 J=zeros(2);
+0028 J(1,2)=1;
+0029 
+0030 <span class="keyword">if</span> (D == 1)
+0031     <span class="keyword">for</span> key=1 : d
+0032         <span class="keyword">if</span> (key == 1)
+0033             tt{key}=zeros(2,2,3);
+0034             tt{key}(:,:,1)=2*I-J-J';
+0035             tt{key}(:,:,2)=-J;
+0036             tt{key}(:,:,3)=-J';
+0037         <span class="keyword">elseif</span> (key == d)
+0038             tt{key}=zeros(2,2,3);
+0039             tt{key}(:,:,1)=I;
+0040             tt{key}(:,:,2)=J';
+0041             tt{key}(:,:,3)=J;
+0042         <span class="keyword">else</span>
+0043             tt{key}=zeros(2,2,3,3);
+0044             tt{key}(:,:,1,1)=I;
+0045             tt{key}(:,:,2,2)=J;
+0046             tt{key}(:,:,3,3)=J';
+0047             tt{key}(:,:,2,1)=J';
+0048             tt{key}(:,:,3,1)=J;
+0049         <span class="keyword">end</span>
+0050     <span class="keyword">end</span>
+0051 <span class="keyword">else</span>
+0052 
+0053     key=0;
+0054     <span class="keyword">for</span> k=1 : D
+0055         <span class="keyword">for</span> kappa=1 : d(k)
+0056             key=key+1;
+0057             <span class="keyword">if</span> (kappa == 1)
+0058                 <span class="keyword">if</span> (k == 1)
+0059                     tt{key}=zeros(2,2,4);
+0060                     tt{key}(:,:,1)=2*I-J-J';
+0061                     tt{key}(:,:,2)=-J;
+0062                     tt{key}(:,:,3)=-J';
+0063                     tt{key}(:,:,4)=I;
+0064                 <span class="keyword">elseif</span> (k == D)
+0065                     tt{key}=zeros(2,2,2,3);
+0066                     tt{key}(:,:,1,1)=2*I-J-J';
+0067                     tt{key}(:,:,1,2)=-J;
+0068                     tt{key}(:,:,1,3)=-J';
+0069                     tt{key}(:,:,2,1)=I;
+0070                 <span class="keyword">else</span>
+0071                     tt{key}=zeros(2,2,2,4);
+0072                     tt{key}(:,:,1,1)=2*I-J-J';
+0073                     tt{key}(:,:,1,2)=-J;
+0074                     tt{key}(:,:,1,3)=-J';
+0075                     tt{key}(:,:,1,4)=I;
+0076                     tt{key}(:,:,2,1)=I;
+0077                 <span class="keyword">end</span>
+0078             <span class="keyword">elseif</span> (kappa == d(k))
+0079                 <span class="keyword">if</span> (k == D)
+0080                     tt{key}=zeros(2,2,3);
+0081                     tt{key}(:,:,1)=I;
+0082                     tt{key}(:,:,2)=J';
+0083                     tt{key}(:,:,3)=J;
+0084                 <span class="keyword">else</span>
+0085                     tt{key}=zeros(2,2,4,2);
+0086                     tt{key}(:,:,4,1)=I;
+0087                     tt{key}(:,:,1,2)=I;
+0088                     tt{key}(:,:,2,2)=J';
+0089                     tt{key}(:,:,3,2)=J;
+0090                 <span class="keyword">end</span>
+0091             <span class="keyword">else</span>
+0092                 <span class="keyword">if</span> (k == D)
+0093                     tt{key}=zeros(2,2,3,3);
+0094                     tt{key}(:,:,1,1)=I;
+0095                     tt{key}(:,:,2,2)=J;
+0096                     tt{key}(:,:,3,3)=J';
+0097                     tt{key}(:,:,2,1)=J';
+0098                     tt{key}(:,:,3,1)=J;
+0099                 <span class="keyword">else</span>
+0100                     tt{key}=zeros(2,2,4,4);
+0101                     tt{key}(:,:,1,1)=I;
+0102                     tt{key}(:,:,2,2)=J;
+0103                     tt{key}(:,:,3,3)=J';
+0104                     tt{key}(:,:,2,1)=J';
+0105                     tt{key}(:,:,3,1)=J;
+0106                     tt{key}(:,:,4,4)=I;
+0107                 <span class="keyword">end</span>
+0108             <span class="keyword">end</span>
+0109         <span class="keyword">end</span>
+0110     <span class="keyword">end</span>
+0111 <span class="keyword">end</span>
+0112 tt=<a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(tt); <span class="comment">% @Bydlocode</span>
+0113 <span class="keyword">return</span>
+0114 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

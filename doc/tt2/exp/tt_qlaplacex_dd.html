@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_qlaplacex_dd</title>
+  <meta name="keywords" content="tt_qlaplacex_dd">
+  <meta name="description" content="returns a rank-5 QTT decomposition of">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; tt_qlaplacex_dd.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_qlaplacex_dd
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>returns a rank-5 QTT decomposition of</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=tt_qlaplacex_dd(d) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> returns a rank-5 QTT decomposition of
+ Delta_{1}^{-1} \ otimes \ldots \otimes Delta_{D}^{-1},
+ Delta_{k} being a discretization of Laplace operator on 2^d(k) points
+ uniform grid,
+ Dirichlet-Dirichlet boundary conditions being imposed
+
+ D=size(d,2) must be &gt;= 1
+
+ January 17, 2011
+ Vladimir Kazeev
+ vladimir.kazeev@gmail.com
+ INM RAS
+ Moscow, Russia
+
+ Look for details in the Preprint No. 75, 2010 of
+ Max-Planck Institute for Mathematics in the Sciences
+ Vladimir A. Kazeev and Boris N. Khoromskij
+ On explicit QTT representation of Laplace operator and its inverse
+ http://www.mis.mpg.de/publications/preprints/2010/prepr2010-75.html</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="test_qlaplacex_dd.html" class="code" title="">test_qlaplacex_dd</a>	test code for tt_qlaplacex_dd()</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=tt_qlaplacex_dd(d)</a>
+0002 
+0003 <span class="comment">% returns a rank-5 QTT decomposition of</span>
+0004 <span class="comment">% Delta_{1}^{-1} \ otimes \ldots \otimes Delta_{D}^{-1},</span>
+0005 <span class="comment">% Delta_{k} being a discretization of Laplace operator on 2^d(k) points</span>
+0006 <span class="comment">% uniform grid,</span>
+0007 <span class="comment">% Dirichlet-Dirichlet boundary conditions being imposed</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% D=size(d,2) must be &gt;= 1</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% January 17, 2011</span>
+0012 <span class="comment">% Vladimir Kazeev</span>
+0013 <span class="comment">% vladimir.kazeev@gmail.com</span>
+0014 <span class="comment">% INM RAS</span>
+0015 <span class="comment">% Moscow, Russia</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Look for details in the Preprint No. 75, 2010 of</span>
+0018 <span class="comment">% Max-Planck Institute for Mathematics in the Sciences</span>
+0019 <span class="comment">% Vladimir A. Kazeev and Boris N. Khoromskij</span>
+0020 <span class="comment">% On explicit QTT representation of Laplace operator and its inverse</span>
+0021 <span class="comment">% http://www.mis.mpg.de/publications/preprints/2010/prepr2010-75.html</span>
+0022 
+0023 d=fliplr(d);
+0024 D=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(d,2);
+0025 tt=cell(sum(d),1);
+0026 I=eye(2);
+0027 P=[0,1;1,0];
+0028 E=ones(2);
+0029 F=[1,-1;-1,1];
+0030 K=[-1,0;0,1];
+0031 L=[0,-1;1,0];
+0032 
+0033 
+0034 key=0;
+0035 <span class="keyword">for</span> k=1 : D
+0036     <span class="keyword">for</span> kappa=1 : d(k)
+0037         key=key+1;
+0038         xi=(2^(kappa-1)+1)/(2^kappa+1);
+0039         eta=2^(kappa-2)/(2^kappa+1);
+0040         zeta=xi*(2^(kappa-1)+1)/2^(kappa-1);
+0041         <span class="keyword">if</span> (kappa == 1)
+0042             tt{key}=zeros(2,2,5);
+0043             tt{key}(:,:,1)=(E+I)/3;
+0044             tt{key}(:,:,2)=2*E;
+0045             tt{key}(:,:,3)=F/18;
+0046             tt{key}(:,:,4)=2*K/3;
+0047             tt{key}(:,:,5)=-2*L/3;
+0048             <span class="keyword">if</span> (k ~= 1)
+0049                 tt{key}=permute(tt{key},[1,2,4,3]);
+0050             <span class="keyword">end</span>
+0051         <span class="keyword">elseif</span> (kappa == d(k))
+0052             tt{key}=zeros(2,2,5);
+0053             tt{key}(:,:,1)=I;
+0054             tt{key}(:,:,2)=xi*I/4+zeta*P/4;
+0055             tt{key}(:,:,3)=xi*I-zeta*P;
+0056             tt{key}(:,:,4)=-xi*K/2;
+0057             tt{key}(:,:,5)=zeta*L/2;
+0058         <span class="keyword">else</span>
+0059             tt{key}=zeros(2,2,5,5);
+0060             tt{key}(:,:,1,1)=I;
+0061             tt{key}(:,:,2,1)=xi*I/4+zeta*P/4;
+0062             tt{key}(:,:,3,1)=xi*I-zeta*P;
+0063             tt{key}(:,:,4,1)=-xi*K/2;
+0064             tt{key}(:,:,5,1)=zeta*L/2;
+0065             tt{key}(:,:,2,2)=2*E;
+0066             tt{key}(:,:,2,3)=2*eta^2*F;
+0067             tt{key}(:,:,3,3)=2*xi^2*E;
+0068             tt{key}(:,:,4,3)=2*xi*eta*K;
+0069             tt{key}(:,:,5,3)=2*xi*eta*L;
+0070             tt{key}(:,:,2,4)=4*eta*K;
+0071             tt{key}(:,:,4,4)=2*xi*E;
+0072             tt{key}(:,:,2,5)=-4*eta*L;
+0073             tt{key}(:,:,5,5)=2*xi*E;
+0074         <span class="keyword">end</span>
+0075     <span class="keyword">end</span>
+0076 <span class="keyword">end</span>
+0077 
+0078 tt=<a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(tt); <span class="comment">% @Bydlocode</span>
+0079 <span class="keyword">return</span>
+0080 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

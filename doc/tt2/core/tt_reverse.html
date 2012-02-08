@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_reverse</title>
+  <meta name="keywords" content="tt_reverse">
+  <meta name="description" content="Returns a reversed TT representation">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_reverse.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_reverse
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Returns a reversed TT representation</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt2]=tt_reverse(tt,phd) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Returns a reversed TT representation
+   [TT2]=TT_REVERSE(TT,PHD)
+ January 25, 2011
+ Vladimir Kazeev
+ vladimir.kazeev@gmail.com
+ INM RAS
+ Moscow, Russia</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_qshiftstack.html" class="code" title="function [tt]=tt_qshiftstack(d)">tt_qshiftstack</a>	returns a stack S of non-periodic shift matrices</li><li><a href="tt_qshiftstack_p.html" class="code" title="function [tt]=tt_qshiftstack_p(d)">tt_qshiftstack_p</a>	returns a stack P of periodic shift matrices</li><li><a href="tt_qshiftstack_q.html" class="code" title="function [tt]=tt_qshiftstack_q(d)">tt_qshiftstack_q</a>	returns a stack Q of non-periodic shift matrices</li><li><a href="tt_qshiftstack_r.html" class="code" title="function [tt]=tt_qshiftstack_r(d)">tt_qshiftstack_r</a>	returns a stack R of non-periodic shift matrices</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt2]=tt_reverse(tt,phd)</a>
+0002 <span class="comment">% Returns a reversed TT representation</span>
+0003 <span class="comment">%   [TT2]=TT_REVERSE(TT,PHD)</span>
+0004 <span class="comment">% January 25, 2011</span>
+0005 <span class="comment">% Vladimir Kazeev</span>
+0006 <span class="comment">% vladimir.kazeev@gmail.com</span>
+0007 <span class="comment">% INM RAS</span>
+0008 <span class="comment">% Moscow, Russia</span>
+0009 <span class="comment">%</span>
+0010 
+0011 d=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt,1);
+0012 tt2=cell(d,1);
+0013 
+0014 tt2{1}=tt{d};
+0015 <span class="keyword">for</span> k=2:d-1
+0016     prm=(1:phd+2);
+0017     prm(phd+1)=phd+2;
+0018     prm(phd+2)=phd+1;
+0019     tt2{k}=permute(tt{d+1-k},prm);
+0020 <span class="keyword">end</span>
+0021 tt2{d}=tt{1};
+0022 
+0023 <span class="keyword">return</span>
+0024 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

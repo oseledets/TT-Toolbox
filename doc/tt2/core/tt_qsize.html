@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_qsize</title>
+  <meta name="keywords" content="tt_qsize">
+  <meta name="description" content="For a QTT decomposition _tt_,">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_qsize.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_qsize
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>For a QTT decomposition _tt_,</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [sz]=tt_qsize(tt,s) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> For a QTT decomposition _tt_,
+ k-th core of which is indexed by
+ i^{k}_{1} ,..., i^{k}_{s},
+ k=1,...,d,
+ returns the array of mode lengths
+ sz = [n^{1}_{1} ,..., n^{1}_{s};
+                 ,...,
+       n^{d}_{1} ,..., n^{d}_{s}]
+
+ April 26, 2011
+ Vladimir Kazeev
+ vladimir.kazeev@gmail.com
+ INM RAS
+ Moscow, Russia</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_effrank.html" class="code" title="function [reff]=tt_effrank(tt,s)">tt_effrank</a>	Effective rank of the TT-tensor (correct memory definition)</li><li><a href="tt_qtofull.html" class="code" title="function [ful]=tt_qtofull(tt,s)">tt_qtofull</a>	Returns a tensor _full_, given in a QTT decomposition _tt_,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [sz]=tt_qsize(tt,s)</a>
+0002 
+0003 <span class="comment">% For a QTT decomposition _tt_,</span>
+0004 <span class="comment">% k-th core of which is indexed by</span>
+0005 <span class="comment">% i^{k}_{1} ,..., i^{k}_{s},</span>
+0006 <span class="comment">% k=1,...,d,</span>
+0007 <span class="comment">% returns the array of mode lengths</span>
+0008 <span class="comment">% sz = [n^{1}_{1} ,..., n^{1}_{s};</span>
+0009 <span class="comment">%                 ,...,</span>
+0010 <span class="comment">%       n^{d}_{1} ,..., n^{d}_{s}]</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% April 26, 2011</span>
+0013 <span class="comment">% Vladimir Kazeev</span>
+0014 <span class="comment">% vladimir.kazeev@gmail.com</span>
+0015 <span class="comment">% INM RAS</span>
+0016 <span class="comment">% Moscow, Russia</span>
+0017 <span class="comment">%</span>
+0018 
+0019 d=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt,1);
+0020 sz=zeros(d,s);
+0021 
+0022 <span class="keyword">for</span> k=1:d
+0023     szk=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt{k});
+0024     szk=[szk,ones(1,s)];
+0025     sz(k,1:s)=szk(1:s);
+0026 <span class="keyword">end</span>
+0027 
+0028 <span class="keyword">return</span>
+0029 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

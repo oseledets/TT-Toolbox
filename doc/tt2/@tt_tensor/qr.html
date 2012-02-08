@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of qr</title>
+  <meta name="keywords" content="qr">
+  <meta name="description" content="Left and right orthogonalization of the TT-format">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; qr.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>qr
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Left and right orthogonalization of the TT-format</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt,rm]=qr(tt,op) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Left and right orthogonalization of the TT-format
+   [TT,RM]=QR(TT,OP) Implements the TT-QR algorithm for the 
+   orthogonalization of the TT-representation. OP can be 'LR' 
+   (for the left-right orthogonalization) and 'RL' for the 
+   right-left orthogonalization. Also returns R matrix for the block case,
+   when r(d) or r(1) are not equal to 1.     
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/axpx.html" class="code" title="function [y]=axpx(a,x)">axpx</a>	Matrix-by-vector multiplication with projection onto the tangent space</li><li><a href="../../tt2/@tt_matrix/mvk.html" class="code" title="function [y]=mvk(a,x,eps,nswp,z,rmax)">mvk</a>	DMRG fast matrix-by-vector product, Method 1 (less accurate)</li><li><a href="../../tt2/@tt_matrix/mvk2.html" class="code" title="function [y,swp]=mvk2(a,x,eps,nswp,z,rmax,varargin)">mvk2</a>	Two-sided DMRG fast matrix-by-vector product</li><li><a href="dot.html" class="code" title="function [p] = dot(tt1,tt2,do_qr)">dot</a>	Dot  product of two TT tensors</li><li><a href="funcrs.html" class="code" title="function [y]=funcrs(tt,fun,eps,y,nswp,varargin)">funcrs</a>	Cross approximation of a function of a TT-tensor, Method 1</li><li><a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="sv.html" class="code" title="function [sval]=sv(tt)">sv</a>	Computes singular values of all unfoldings of a TT-tensor</li><li><a href="../../tt2/core/move_tt_block.html" class="code" title="function [tt] = move_tt_block(tt, spos, epos, eps)">move_tt_block</a>	Performs a bubble movement of a block inside a train</li><li><a href="../../tt2/core/mvrk.html" class="code" title="function [y]=mvrk(A, x, eps, varargin)">mvrk</a>	Computes matvec in the QTT-Tucker "rake" format</li><li><a href="../../tt2/core/qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>	Compute the QTT-Tucker representation of TT</li><li><a href="../../tt2/core/qtttucker_to_linqtt.html" class="code" title="function [tt] = qtttucker_to_linqtt(qt, eps)">qtttucker_to_linqtt</a>	Compute the standard QTT-representation from the QTT-Tucker</li><li><a href="../../tt2/core/reort.html" class="code" title="function [y]=reort(u,uadd)">reort</a>	Golub-Kahan reorthogonalization</li><li><a href="../../tt2/core/tt_als.html" class="code" title="function [res] = tt_als(x,y,nswp)">tt_als</a>	Several ALS sweeps for the approximation in the TT-format</li><li><a href="../../tt2/core/tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="../../tt2/core/tt_dist3.html" class="code" title="function [res]=tt_dist3(tt1,tt2)">tt_dist3</a>	Accurate distance between two tensors in TT1.0 format</li><li><a href="../../tt2/core/tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>	Compute the (supposedly) maximal in modulus element in a TT-tensor</li><li><a href="../../tt2/core/tt_mvk2.html" class="code" title="function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)">tt_mvk2</a>	Matrix-by-vector product by DMRG/Krylov method</li><li><a href="../../tt2/core/tt_mvk3.html" class="code" title="function [y,swp]=tt_mvk3(W, x, eps, varargin)">tt_mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/core/tt_tuck.html" class="code" title="function [factors,res]=tt_tuck(tt,eps)">tt_tuck</a>	Computes Tucker factors and Tucker core of the TT-tensor</li><li><a href="../../tt2/core/tt_wround.html" class="code" title="function [y,swp]=tt_wround(W, x, eps, varargin)">tt_wround</a>	Approximates a vector in the weighted norm using DMRG iterations</li><li><a href="../../tt2/cross/dmrg_cross.html" class="code" title="function [y]=dmrg_cross(d,n,fun,eps,varargin)">dmrg_cross</a>	DMRG-cross method for the approximation of TT-tensors</li><li><a href="../../tt2/cross/tt_crossl.html" class="code" title="function [tt,ind_left]=tt_crossl(d,n,fun,ind_right)">tt_crossl</a>	One left-to-right sweep of the TT-cross method.</li><li><a href="../../tt2/cross/tt_crossr.html" class="code" title="function [tt,ind_right]=tt_crossr(arr,ind_left)">tt_crossr</a>	One right-to-left sweep of the TT-cross method.</li><li><a href="../../tt2/cross/tt_rc.html" class="code" title="function [y]=tt_rc(d,n,elem_fun,eps,varargin)">tt_rc</a>	[Y]=TT_RC(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])</li><li><a href="../../tt2/exp/tt_canform1.html" class="code" title="function [core_int,ind_l,ind_r,ind_left,ind_right]=tt_canform1(tt)">tt_canform1</a>	Transforms a TT-tensor into the skeleton form</li><li><a href="../../tt2/misc/axpx.html" class="code" title="function [y]=axpx(a,x)">axpx</a>	[y]=AXPX(A,X)</li><li><a href="../../tt2/misc/linqtt_to_qtttucker.html" class="code" title="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">linqtt_to_qtttucker</a>	function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</li><li><a href="../../tt2/solve/als_solve_rx.html" class="code" title="function [x]=als_solve_rx(mat, rhs, tol, drx, nswp, addswp)">als_solve_rx</a>	Computes an approximate low-rank solution for 2D case</li><li><a href="../../tt2/solve/dmrg_eigb.html" class="code" title="function [y,ev] = dmrg_eigb(a,k,eps,varargin)">dmrg_eigb</a>	Find several minimal eigenvalues of a TT-matrix using DMRG method</li><li><a href="../../tt2/solve/dmrg_rake_solve2.html" class="code" title="function [x]=dmrg_rake_solve2(A, y, tol, varargin)">dmrg_rake_solve2</a>	DMRG-type method for the solution of linear systems in QTT-Tucker format</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt,rm]=qr(tt,op)</a>
+0002 <span class="comment">%Left and right orthogonalization of the TT-format</span>
+0003 <span class="comment">%   [TT,RM]=QR(TT,OP) Implements the TT-QR algorithm for the</span>
+0004 <span class="comment">%   orthogonalization of the TT-representation. OP can be 'LR'</span>
+0005 <span class="comment">%   (for the left-right orthogonalization) and 'RL' for the</span>
+0006 <span class="comment">%   right-left orthogonalization. Also returns R matrix for the block case,</span>
+0007 <span class="comment">%   when r(d) or r(1) are not equal to 1.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0013 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0014 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0017 <span class="comment">%ivan.oseledets@gmail.com</span>
+0018 <span class="comment">%---------------------------</span>
+0019 
+0020 d=tt.d;
+0021 r=tt.r;
+0022 cr=tt.core;
+0023 ps=tt.ps;
+0024 n=tt.n;
+0025 <span class="keyword">if</span> ( strcmp(op,<span class="string">'lr'</span>) || strcmp(op,<span class="string">'LR'</span>)) 
+0026   <span class="comment">%Orthogonalization from left-to-tight</span>
+0027   core0=cr(ps(1):ps(2)-1);
+0028   pos1=1;
+0029   <span class="keyword">for</span> i=1:d-1 
+0030    core0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core0,[r(i)*n(i),r(i+1)]);
+0031    [core0,ru]=<a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core0,0); <span class="comment">%nrm(i+1)=norm(ru,'fro');</span>
+0032    <span class="comment">%ru=ru;%./nrm(i+1);</span>
+0033    core1=cr(ps(i+1):ps(i+2)-1);
+0034    core1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[r(i+1),n(i+1)*r(i+2)]);
+0035    core1=ru*core1;
+0036    r(i+1)=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(core0,2);
+0037    cr(pos1:pos1-1+r(i)*n(i)*r(i+1))=core0(:);
+0038    cr(pos1+r(i)*n(i)*r(i+1):pos1+r(i)*n(i)*r(i+1)+r(i+1)*n(i+1)*r(i+2)-1)=core1(:);
+0039    core0=core1;
+0040    pos1=pos1+r(i)*n(i)*r(i+1);
+0041   <span class="keyword">end</span>
+0042   <span class="comment">%pos1 points to the d-th core</span>
+0043   core0=cr(pos1:pos1-1+r(d)*n(d)*r(d+1));
+0044   core0=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core0,[r(d)*n(d),r(d+1)]);
+0045   [core0,rm]=<a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core0,0);
+0046   r(d+1)=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(core0,2);
+0047   cr(pos1:pos1+r(d)*n(d)*r(d+1)-1)=core0(:);
+0048  pos1=pos1+r(d)*n(d)*r(d+1)-1;
+0049  cr=cr(1:pos1); <span class="comment">%Truncate storage if required</span>
+0050  tt.core=cr; tt.r=r; 
+0051  tt.ps=cumsum([1;tt.n.*tt.r(1:d).*tt.r(2:d+1)]);
+0052  <span class="keyword">return</span>
+0053 <span class="keyword">elseif</span> (strcmp (op,<span class="string">'rl'</span>) || strcmp(op,<span class="string">'RL'</span>) )
+0054     <span class="comment">%Orthogonalization from right-to-left</span>
+0055     rm=1;
+0056     pos1=ps(d+1)-1;
+0057  <span class="keyword">for</span> i=d:-1:1
+0058     cr1=cr(ps(i):ps(i+1)-1);
+0059     cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[r(i)*n(i),r(i+1)]);
+0060     cr1=cr1*rm; 
+0061     r(i+1)=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(cr1,2); 
+0062     cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[r(i),n(i)*r(i+1)]);
+0063     cr1=cr1.'; <span class="comment">%It seems to be needed</span>
+0064     [u,rm]=<a href="qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr1,0); 
+0065     rm=rm.';
+0066     rnew=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(u,2);
+0067     u=u.'; <span class="comment">%n(i)*ry(i+1)xry(i)-&gt;ry(i)xn(i)xry(i+1)</span>
+0068     cr(pos1-r(i+1)*n(i)*rnew+1:pos1)=u(:); 
+0069     pos1=pos1-r(i+1)*n(i)*rnew; 
+0070  <span class="keyword">end</span>
+0071  pos1 = pos1+1;
+0072 <span class="comment">% pos1=pos1+r(1)*n(1)*r(2)-1;</span>
+0073 cr=cr(pos1:end);
+0074 ps=cumsum([1;(n).*r(1:d).*r(2:d+1)]);
+0075 tt.core=cr;
+0076 tt.r=r;
+0077 tt.ps=ps;
+0078 <span class="keyword">return</span>
+0079 <span class="keyword">else</span>
+0080   error(<span class="string">'Option is not supported (yet)'</span>);    
+0081 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

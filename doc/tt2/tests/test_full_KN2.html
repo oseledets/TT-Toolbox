@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of test_full_KN2</title>
+  <meta name="keywords" content="test_full_KN2">
+  <meta name="description" content="The test script for the Crank-Nicolson scheme with global time stepping">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">tests</a> &gt; test_full_KN2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/tests&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>test_full_KN2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>The test script for the Crank-Nicolson scheme with global time stepping</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">The test script for the Crank-Nicolson scheme with global time stepping</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>	Identity matrix in the TT-format</li><li><a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>	Tensor of all ones</li><li><a href="../../tt2/core/tt_qltrtoepl.html" class="code" title="function [tt]=tt_qltrtoepl(x)">tt_qltrtoepl</a>	returns the multilevel lower-triangular Toeplitz matrix tt generated by the multi-dimensional input vector x</li><li><a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/core/tt_shf.html" class="code" title="function [tt]=tt_shf(d)">tt_shf</a>	Upper shift matrix in the QTT-format</li><li><a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>	Tensor of all zeros</li><li><a href="../../tt2/exp/tt_qlaplace_dd.html" class="code" title="function [tt]=tt_qlaplace_dd(d)">tt_qlaplace_dd</a>	returns a rank-3,4...4 QTT decomposition of</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%The test script for the Crank-Nicolson scheme with global time stepping</span>
+0002 times_glob = zeros(9,6);
+0003 appr_glob = zeros(9,6);
+0004 
+0005 <span class="comment">% for d0t=6:14</span>
+0006 <span class="comment">% for d0x=6:11</span>
+0007 d0t = 12; <span class="comment">% quantics dims for t</span>
+0008 d0x = 10; <span class="comment">% quantics dims for x</span>
+0009 dpx = 2; <span class="comment">% phys. dims for x</span>
+0010 
+0011 a = 0;
+0012 b = 1;
+0013 h = (b-a)/(2^d0x+1);
+0014 
+0015 
+0016 tol = 1e-6;
+0017 eps = 1e-8;
+0018 
+0019 <span class="comment">% tranges = [0, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 2, 4];</span>
+0020 tranges = [0,0.5];
+0021 
+0022 
+0023 Ax = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(<a href="../../tt2/exp/tt_qlaplace_dd.html" class="code" title="function [tt]=tt_qlaplace_dd(d)">tt_qlaplace_dd</a>(d0x*ones(1,dpx)));
+0024 Ax = Ax/(h^2);
+0025 
+0026 Ix = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(<a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>(2, dpx*d0x));
+0027 
+0028 x = (a+h:h:b-h)';
+0029 
+0030 z = (0:h:(b-a-2*h))';
+0031 z = exp(-z.^2/(4*tranges(end)));
+0032 z = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(z), 2*ones(1,d0x), eps);
+0033 
+0034 C1l = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(<a href="../../tt2/core/tt_qltrtoepl.html" class="code" title="function [tt]=tt_qltrtoepl(x)">tt_qltrtoepl</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(z)));
+0035 C1d = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(C1l));
+0036 C1 = C1l+ C1l' - C1d;
+0037 C1 = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(C1, eps)*h;
+0038 <span class="comment">% C1 = toeplitz(z)*h;</span>
+0039 <span class="comment">% C1 = tt_matrix(full_to_nd(C1, eps));</span>
+0040 
+0041 C = [];
+0042 <span class="keyword">for</span> i=1:dpx
+0043     C = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(C,C1);
+0044 <span class="keyword">end</span>;
+0045 
+0046 u00 = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(sin(pi*x)), 2*ones(1,d0x), eps);
+0047 <span class="comment">% u00 = tt_reshape(tt_tensor(exp(-abs(x)*sqrt(0.5)/0.5)), 2*ones(1,d0x), eps);</span>
+0048 <span class="comment">% u00 = kron(u00,u00);</span>
+0049 <span class="comment">% u_ex2 = kron(exp(-x.^2*0.5/(0.25+2*tranges(end))), exp(-x.^2*0.5/(0.25+2*tranges(end))))*((4*pi*tranges(end))^(-dpx/2));</span>
+0050 
+0051 x = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(x);
+0052 x = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(x, 2*ones(d0x, 1), eps);
+0053 e1 = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(<a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>(2, d0x));
+0054 <span class="comment">% u0 = zeros(2^d0x,2^d0x);</span>
+0055 <span class="comment">% u0(2:2^d0x-1, 2:2^d0x-1)=1;</span>
+0056 <span class="comment">% u00 = tt_reshape(tt_tensor(u00), 2*ones(1,dpx*d0x), eps);</span>
+0057 <span class="comment">% u_ex2 = tt_reshape(tt_tensor(u_ex2), 2*ones(1,dpx*d0x), eps);</span>
+0058 <span class="comment">% u0 = tt_tensor(tt_ones(d0x*dpx,2));</span>
+0059 <span class="comment">% u00 = kron((x-a*e1).*(b*e1-x), e1).*kron(e1, (x-a*e1).*(b*e1-x));</span>
+0060 
+0061 <span class="comment">% u00 = ((x-a*e1).*(b*e1-x)/(a*b)).*u00;</span>
+0062 <span class="comment">% for i=2:gamma</span>
+0063 <span class="comment">%     u00 = u00.*(x-a*e1).*(b*e1-x)/(a*b);</span>
+0064     u00 = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(u00, eps);
+0065 <span class="comment">% end;</span>
+0066 
+0067 u00 = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(u00,u00);
+0068 
+0069 <span class="comment">% u_ex = round(C*u00, eps)*((4*pi*tranges(end))^(-dpx/2));</span>
+0070 u_ex = u00*exp(-2*pi^2*tranges(end));
+0071 <span class="comment">% u0 = round(u0, eps);</span>
+0072 <span class="comment">% keyboard;</span>
+0073 
+0074 spacial_rhs = <a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>(2,d0x*dpx);
+0075 
+0076 u0 = u00;
+0077 <span class="comment">% Now letz init the combined timestep procedure</span>
+0078 ttimes = zeros(1, max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tranges))-1);
+0079 resids = zeros(1, max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tranges))-1);
+0080 <span class="keyword">for</span> out_t=1:max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tranges))-1
+0081     tau = (tranges(out_t+1)-tranges(out_t))/(2^d0t);
+0082     
+0083     St = <a href="../../tt2/core/tt_shf.html" class="code" title="function [tt]=tt_shf(d)">tt_shf</a>(d0t); St = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(St); St=St'; <span class="comment">% lower shift matrix for gradient</span>
+0084     It = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(<a href="../../tt2/core/tt_eye.html" class="code" title="function [e]=tt_eye(n,varargin)">tt_eye</a>(2,d0t));
+0085     Grad_t = (It-St)/tau; <span class="comment">% for gradient</span>
+0086     Grad_t = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(Grad_t, eps);
+0087     
+0088     KN_term = (It+St)*0.5; <span class="comment">% Krank-Nikolson term</span>
+0089     KN_term = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(KN_term, eps);
+0090     
+0091     e1t = cell(d0t,1);
+0092     <span class="keyword">for</span> i=1:d0t
+0093         e1t{i}=[1;0];
+0094     <span class="keyword">end</span>;
+0095     e1t = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(e1t); <span class="comment">% first identity vector for t - we need to put u0 into rhs</span>
+0096     eet = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(<a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>(2,d0t));
+0097 <span class="comment">%     e2t = round(e2t, 1e-12);</span>
+0098     
+0099     
+0100     <span class="comment">% global matrix</span>
+0101     M = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(Ix, Grad_t) + <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(Ax, KN_term);
+0102     M = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(M, eps);
+0103     
+0104     <span class="comment">% f1 = sin(pi*(1:1:2^d0x)'/(1+2^d0x));</span>
+0105     <span class="comment">% u0 = full_to_qtt(f1, 1e-12);</span>
+0106     <span class="comment">% u0 = tt_tensor(u0);</span>
+0107     <span class="comment">% u0 = kron(u0,u0);</span>
+0108     
+0109     <span class="comment">% u0 = tt_tensor(tt_ones(d0x*dpx, 2));</span>
+0110     
+0111     U = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(u0, eet);
+0112     
+0113     tic;
+0114     u0_rhs = u0/tau - (Ax*u0)*0.5; <span class="comment">% stuff u0 to rhs of KN scheme</span>
+0115     u0_rhs = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(u0_rhs, eps);
+0116     rhs = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(u0_rhs, e1t) + <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(spacial_rhs, eet);
+0117     rhs = <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(rhs, eps);
+0118     
+0119     <span class="comment">% norm_rhs = mvk(M',rhs,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);</span>
+0120 <span class="comment">%     [U,swps] = dmrg_solve2(M, rhs, U, tol, [], [], 100, []);</span>
+0121     [U,swps] = <a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>(M, rhs, tol, <span class="string">'x0'</span>, U, <span class="string">'nswp'</span>, 20);
+0122     ttimes(out_t) = toc;
+0123     
+0124 <span class="comment">%     Mx = mvk(M,U,tol,20,tt_tensor(tt_random(2,rhs.d,2)),1000);</span>
+0125     Mx = <a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>(M,U,tol);
+0126     <span class="comment">%     Mx = M*x;</span>
+0127     resids(out_t) = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(Mx-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0128         
+0129 
+0130     <span class="comment">% prepare new start</span>
+0131     ind = num2cell([1;2]*ones(1,U.d), 1);    
+0132 <span class="comment">%     last_indices = cell(1, d0t);</span>
+0133     <span class="keyword">for</span> i=1:d0t
+0134         ind{i+dpx*d0x}=2;
+0135     <span class="keyword">end</span>;
+0136     u0 = U(ind);
+0137     u0 = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(u0, 2*ones(1,dpx*d0x));
+0138 <span class="comment">%     u0 = core(U);</span>
+0139 <span class="comment">%     u0 = tt_elem3(u0, last_indices);</span>
+0140 <span class="comment">%     u0 = tt_squeeze(u0);</span>
+0141 <span class="comment">%     u0 = tt_tensor(u0);</span>
+0142     
+0143 <span class="comment">%     appr = norm(u0-u00*exp(-2*pi^2*tranges(out_t+1)))/norm(u00*exp(-2*pi^2*tranges(out_t+1)))</span>
+0144     appr = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(u0-u_ex)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(u_ex)
+0145     
+0146     fprintf(<span class="string">'Time range: [%g; %g], solve_time = %g, resid = %3.3e, swps: %d\n'</span>, tranges(out_t), tranges(out_t+1), ttimes(out_t), resids(out_t), swps);
+0147 <span class="comment">%     keyboard;</span>
+0148 <span class="keyword">end</span>;
+0149 
+0150 times_glob(d0t-5, d0x-5)=sum(ttimes);
+0151 appr_glob(d0t-5, d0x-5)=appr;
+0152 
+0153 <span class="comment">% end;</span>
+0154 <span class="comment">% end;</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

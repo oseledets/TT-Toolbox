@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_Fd_mtx1</title>
+  <meta name="keywords" content="tt_Fd_mtx1">
+  <meta name="description" content="Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">misc</a> &gt; tt_Fd_mtx1.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_Fd_mtx1
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.
+   [M] = TT_FD_MTX1(TT_A, BOUND1, BOUND2) Generates finite-difference 
+   1D matrix of \nabla(tt_a \nabla) in QTTM format, TT_A is given in the
+   QTT format, bound1,2 specify boundary conditions as x=0 and x=1,
+   respectively:
+     0 - Dirichlet,
+     1 - Neumann
+   EPS is the QTT compression tolerance
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>	Tensor rounding for the TT-matrix in TT1.0 format</li><li><a href="../../tt2/core/tt_mv.html" class="code" title="function [res]=tt_mv(mat,vec)">tt_mv</a>	Matrix-by-vector product in the TT1.0 format</li><li><a href="../../tt2/core/tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>	Multiply tensor by a scalar in TT1.0 format</li><li><a href="../../tt2/core/tt_shf.html" class="code" title="function [tt]=tt_shf(d)">tt_shf</a>	Upper shift matrix in the QTT-format</li><li><a href="../../tt2/core/tt_transp.html" class="code" title="function [tt]=tt_transp(tt)">tt_transp</a>	Transposition of the TT matrix</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_Fd_mtx.html" class="code" title="function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps)">tt_Fd_mtx</a>	Generates finite-difference diffusion matrix in QTT</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)</a>
+0002 <span class="comment">%Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.</span>
+0003 <span class="comment">%   [M] = TT_FD_MTX1(TT_A, BOUND1, BOUND2) Generates finite-difference</span>
+0004 <span class="comment">%   1D matrix of \nabla(tt_a \nabla) in QTTM format, TT_A is given in the</span>
+0005 <span class="comment">%   QTT format, bound1,2 specify boundary conditions as x=0 and x=1,</span>
+0006 <span class="comment">%   respectively:</span>
+0007 <span class="comment">%     0 - Dirichlet,</span>
+0008 <span class="comment">%     1 - Neumann</span>
+0009 <span class="comment">%   EPS is the QTT compression tolerance</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0015 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0016 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0019 <span class="comment">%ivan.oseledets@gmail.com</span>
+0020 <span class="comment">%---------------------------</span>
+0021 d = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt_a, 1);
+0022 M=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(a)));
+0023 tt_shf_a = <a href="../../tt2/core/tt_mv.html" class="code" title="function [res]=tt_mv(mat,vec)">tt_mv</a>(<a href="../../tt2/core/tt_shf.html" class="code" title="function [tt]=tt_shf(d)">tt_shf</a>(d), tt_a);
+0024 tt_last_elem_a = tt_a;
+0025 <span class="keyword">for</span> i=1:d
+0026     tt_last_elem_a{i}(1,:,:)=0;
+0027 <span class="keyword">end</span>;
+0028 M = ttm_add(M, tt_diag(tt_shf_a));
+0029 M = ttm_add(M, tt_diag(tt_last_elem_a));
+0030 M = <a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>(M, eps);
+0031 M_shf = tt_shf_diag(tt_a, 0);
+0032 M = ttm_add(M, <a href="../../tt2/core/tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>(M_shf, -1));
+0033 M = ttm_add(M, <a href="../../tt2/core/tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>(<a href="../../tt2/core/tt_transp.html" class="code" title="function [tt]=tt_transp(tt)">tt_transp</a>(M_shf), -1));
+0034 M = <a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>(M, eps);
+0035 M = <a href="../../tt2/core/tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>(M, (2^d+1)^2);
+0036 
+0037 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtimes</title>
+  <meta name="keywords" content="mtimes">
+  <meta name="description" content="C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_matrix</a> &gt; mtimes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_matrix&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>mtimes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [c] = mtimes(a,b,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication
+   [C]=MTIMES(A,B) if A is a TT-matrix and B is a TT-matrix, computes
+   matrix-by-matrix product, 
+
+   [C]=MTIMES(A,B) if A is a TT-matrix and B is TT-tensor, computes
+   matrix-by-vector product,
+
+   [C]=MTIMES(A,B) if A is a TT-matrix and B is a full tensor, computes
+   matrix-by-vector product,
+
+   [C]=MTIMES(A,B) if A is a TT-matrix and B is a number, computes their
+   product,
+
+   [C]=MTIMES(A,B) if A is a number and B is a TT-matrix, computes their
+   product
+
+
+ TT Toolbox 2.1, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="mvk.html" class="code" title="function [y]=mvk(a,x,eps,nswp,z,rmax)">mvk</a>	DMRG fast matrix-by-vector product, Method 1 (less accurate)</li><li><a href="size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>	Tensor by matrix multiplication over a given mode</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [c] = mtimes(a,b,varargin)</a>
+0002 <span class="comment">%C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication</span>
+0003 <span class="comment">%   [C]=MTIMES(A,B) if A is a TT-matrix and B is a TT-matrix, computes</span>
+0004 <span class="comment">%   matrix-by-matrix product,</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   [C]=MTIMES(A,B) if A is a TT-matrix and B is TT-tensor, computes</span>
+0007 <span class="comment">%   matrix-by-vector product,</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   [C]=MTIMES(A,B) if A is a TT-matrix and B is a full tensor, computes</span>
+0010 <span class="comment">%   matrix-by-vector product,</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%   [C]=MTIMES(A,B) if A is a TT-matrix and B is a number, computes their</span>
+0013 <span class="comment">%   product,</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%   [C]=MTIMES(A,B) if A is a number and B is a TT-matrix, computes their</span>
+0016 <span class="comment">%   product</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% TT Toolbox 2.1, 2009-2012</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0022 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0023 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0026 <span class="comment">%ivan.oseledets@gmail.com</span>
+0027 <span class="comment">%---------------------------</span>
+0028 
+0029 <span class="keyword">if</span> (isa(a,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(b,<span class="string">'double'</span>) &amp;&amp; numel(b) == 1 || (isa(b,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(a,<span class="string">'double'</span>) &amp;&amp; numel(a) == 1) )
+0030    c=<a href="tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>;
+0031     <span class="keyword">if</span> (  isa(b,<span class="string">'double'</span>) )
+0032       c.n=a.n; c.m=a.m; c.tt=(a.tt)*b;
+0033    <span class="keyword">else</span>
+0034       c.n=b.n; c.m=b.m; c.tt=a*(b.tt);
+0035    <span class="keyword">end</span>
+0036 <span class="keyword">elseif</span> ( isa(a,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(b,<span class="string">'tt_tensor'</span>) &amp;&amp; nargin == 2)
+0037     <span class="comment">%Put &quot;zaglushka&quot; in it</span>
+0038     <span class="comment">%c=tt_tensor(tt_mv(core(a),core(b)));</span>
+0039     <span class="comment">% return</span>
+0040      <span class="comment">%Replace zaglushka</span>
+0041      c=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0042      n=a.n; m=a.m; crm=a.tt.core; <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>=a.tt; psm=ttm.ps; d=ttm.d; rm=ttm.r;
+0043      rv=b.r; crv=b.core; psv=b.ps; 
+0044      rp=rm.*rv; 
+0045      psp=cumsum([1;n.*rp(1:d).*rp(2:d+1)]);
+0046      crp=zeros(psp(d+1)-1,1);
+0047      c.d=d;
+0048      c.r=rp;
+0049      c.n=n;
+0050      c.ps=psp;
+0051      <span class="keyword">for</span> i=1:d
+0052         mcur=crm(psm(i):psm(i+1)-1);
+0053         vcur=crv(psv(i):psv(i+1)-1);
+0054         mcur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(mcur,[rm(i)*n(i),m(i),rm(i+1)]);
+0055         mcur=permute(mcur,[1,3,2]); mcur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(mcur,[rm(i)*n(i)*rm(i+1),m(i)]);
+0056         vcur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(vcur,[rv(i),m(i),rv(i+1)]);
+0057         vcur=permute(vcur,[2,1,3]); vcur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(vcur,[m(i),rv(i)*rv(i+1)]);
+0058         pcur=mcur*vcur; <span class="comment">%pcur is now rm(i)*n(i)*rm(i+1)*rv(i)*rv(i+1)</span>
+0059         pcur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pcur,[rm(i),n(i),rm(i+1),rv(i),rv(i+1)]);
+0060         pcur=permute(pcur,[1,4,2,3,5]); 
+0061         crp(psp(i):psp(i+1)-1)=pcur(:);
+0062      <span class="keyword">end</span>
+0063      c.core=crp;
+0064      <span class="comment">%Simple cycle through cores</span>
+0065     <span class="comment">%fprintf('matrix-by-vector not implemented yet \n');</span>
+0066 <span class="keyword">elseif</span> ( isa(a,<span class="string">'tt_tensor'</span>) &amp;&amp; isa(b,<span class="string">'tt_matrix'</span>) &amp;&amp; nargin == 2)
+0067         fprintf(<span class="string">'vector-by-matrix not implemented yet \n'</span>);
+0068 <span class="keyword">elseif</span> ( isa(a,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(b,<span class="string">'double'</span>) &amp;&amp; nargin == 2 )
+0069     <span class="comment">%TT-matrix by full vector product</span>
+0070     n=a.n; m=a.m; tt=a.tt; cra=tt.core; d=tt.d; ps=tt.ps; r=tt.r;
+0071     rb=<a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(b,2);
+0072     c=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b,[m',rb]);
+0073     
+0074     <span class="keyword">for</span> k=1:d
+0075       <span class="comment">%c is rk*jk...jd*(i1..ik-1) tensor, conv over</span>
+0076       <span class="comment">%core is r(i)*n(i)*r(i+1)</span>
+0077       cr=cra(ps(k):ps(k+1)-1);
+0078       cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[r(k),n(k),m(k),r(k+1)]);
+0079       cr=permute(cr,[2,4,1,3]); cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[n(k)*r(k+1),r(k)*m(k)]);
+0080       M=numel(c);
+0081       c=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(c,[r(k)*m(k),M/(r(k)*m(k))]);
+0082       c=cr*c; c=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(c,[n(k),numel(c)/n(k)]);
+0083       c=permute(c,[2,1]);
+0084     <span class="keyword">end</span>
+0085     c=c(:); c=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(c,[rb,numel(c)/rb]);
+0086     c=c.';
+0087     <span class="keyword">elseif</span> ( isa(a,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(b,<span class="string">'tt_matrix'</span>) &amp;&amp; nargin == 2)
+0088     <span class="comment">%fprintf('matrix-by-matrix not implemented yet \n');</span>
+0089 <span class="comment">%     c=tt_matrix(tt_mm(core(a),core(b)));</span>
+0090     <span class="comment">% Time to write something working here</span>
+0091     c = <a href="tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>;
+0092     d = a.tt.d;
+0093     n = a.n; m = b.m; p = a.m;
+0094     c.n = n; c.m = m;
+0095     tt = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0096     ra = a.tt.r;
+0097     rb = b.tt.r;
+0098     tt.d = d;
+0099     tt.r = ra.*rb;
+0100     tt.n = n.*m;
+0101     tt.ps = cumsum([1; tt.r(1:d).*n.*m.*tt.r(2:d+1)]);
+0102     tt.core = zeros(tt.ps(d+1)-1, 1);
+0103     <span class="keyword">for</span> i=1:d
+0104         cra = a.tt{i};
+0105         cra = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra, ra(i), n(i), p(i), ra(i+1));
+0106         crb = b.tt{i};
+0107         crb = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crb, rb(i), p(i), m(i), rb(i+1));
+0108         cra = permute(cra, [1, 2, 4, 3]);
+0109         cra = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra, ra(i)*n(i)*ra(i+1), p(i));
+0110         crb = permute(crb, [2, 1, 3, 4]);
+0111         crb = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crb, p(i), rb(i)*m(i)*rb(i+1));
+0112         crc = cra*crb;
+0113         crc = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crc, ra(i), n(i), ra(i+1), rb(i), m(i), rb(i+1));
+0114         crc = permute(crc, [1, 4, 2, 5, 3, 6]);
+0115         tt.core(tt.ps(i):tt.ps(i+1)-1) = crc(:);
+0116     <span class="keyword">end</span>;
+0117     c.tt = tt;
+0118     
+0119 <span class="keyword">elseif</span> ( isa(a,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(b,<span class="string">'tt_tensor'</span>) &amp;&amp; nargin &gt; 3)
+0120     c=<a href="mvk.html" class="code" title="function [y]=mvk(a,x,eps,nswp,z,rmax)">mvk</a>(a,b,varargin);
+0121     fprintf(<span class="string">'Krylov matrix-by-vector not implemented yet \n'</span>);
+0122     
+0123 <span class="keyword">elseif</span> ( isa(a,<span class="string">'tt_matrix'</span>) &amp;&amp; isa(b,<span class="string">'tt_matrix'</span>) &amp;&amp; nargin == 3)
+0124     fprintf(<span class="string">'Krylov matrix-by-matrix not implemented yet \n'</span>);
+0125 
+0126    
+0127 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

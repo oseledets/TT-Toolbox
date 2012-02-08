@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of linqtt_to_qtttucker</title>
+  <meta name="keywords" content="linqtt_to_qtttucker">
+  <meta name="description" content="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">misc</a> &gt; linqtt_to_qtttucker.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>linqtt_to_qtttucker
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [qtu] = linqtt_to_qtttucker(tt, dims, eps) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function [qtu] = linqtt_to_qtttucker(tt, dims, eps)
+ Computes the qtt_tucker representation from the linear (Q)TT with the
+ accuracy eps.
+ dims specifies, how many dimensions include in each tucker factor</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/chunk.html" class="code" title="function [b]=chunk(b,i,j)">chunk</a>	Cut the (i,j) part out of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/move_tt_block.html" class="code" title="function [tt] = move_tt_block(tt, spos, epos, eps)">move_tt_block</a>	Performs a bubble movement of a block inside a train</li><li><a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</a>
+0002 <span class="comment">% function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</span>
+0003 <span class="comment">% Computes the qtt_tucker representation from the linear (Q)TT with the</span>
+0004 <span class="comment">% accuracy eps.</span>
+0005 <span class="comment">% dims specifies, how many dimensions include in each tucker factor</span>
+0006 
+0007 dphys = numel(dims);
+0008 dtt = tt.d;
+0009 qtu = <a href="../../tt2/@qtt_tucker/qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0010 qtu.dphys = dphys;
+0011 tucks = cell(dphys, 1);
+0012 sz = cell(dphys, 1);
+0013 qtucore = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0014 qtucore.d = dphys;
+0015 qtucore.n = zeros(dphys, 1);
+0016 qtucore.r = [1; zeros(dphys-1,1); 1];
+0017 qtucore.ps = ones(dphys+1,1);
+0018 qtucore.core = 0;
+0019 
+0020 [tt,nrm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(tt, <span class="string">'rl'</span>);
+0021 tt{1} = nrm*tt{1};
+0022 
+0023 <span class="keyword">for</span> i=1:dphys
+0024     cf = <a href="../../tt2/@tt_tensor/chunk.html" class="code" title="function [b]=chunk(b,i,j)">chunk</a>(tt, 1, dims(i));
+0025     <span class="keyword">if</span> (i&lt;dphys)
+0026         tt = <a href="../../tt2/@tt_tensor/chunk.html" class="code" title="function [b]=chunk(b,i,j)">chunk</a>(tt, dims(i)+1, dtt);
+0027     <span class="keyword">end</span>;
+0028     dtt = dtt-dims(i);
+0029     
+0030     curn = cf.n;
+0031     sz{i} = curn;
+0032     rc1 = cf.r(1);
+0033     rc2 = cf.r(dims(i)+1);
+0034     cf = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(cf, [rc1; curn; rc2], eps/sqrt(dphys));
+0035     cf = <a href="../../tt2/core/move_tt_block.html" class="code" title="function [tt] = move_tt_block(tt, spos, epos, eps)">move_tt_block</a>(cf, 1, dims(i)+1, eps/sqrt(dphys));
+0036     cf = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(cf, [curn; rc1*rc2]);
+0037     [cf, nrm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cf, <span class="string">'lr'</span>);
+0038     rtuck = cf.r(dims(i)+1);    
+0039     curcr = cf{dims(i)+1};
+0040     curcr = curcr*nrm;
+0041     <span class="comment">% Orthogonal tucker factor is ready</span>
+0042     tucks{i} = <a href="../../tt2/@tt_tensor/chunk.html" class="code" title="function [b]=chunk(b,i,j)">chunk</a>(cf, 1, dims(i));
+0043     <span class="comment">% Now prepare the core</span>
+0044     <span class="keyword">if</span> (i&lt;dphys)
+0045         curcr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr, rtuck*rc1, rc2);
+0046         [curcr, rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(curcr, 0);
+0047         <span class="comment">% Orthogonal tucker core is ready</span>
+0048         <span class="comment">% Convolve the RV to the rest of linear TT</span>
+0049         cr_in_tt = tt{1};
+0050         n2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr_in_tt, 2);
+0051         rtt2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr_in_tt, 3);
+0052         cr_in_tt = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr_in_tt, rc2, n2*rtt2);
+0053         cr_in_tt = rv*cr_in_tt;
+0054         rc2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(curcr,2);
+0055         tt{1} = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr_in_tt, rc2, n2, rtt2);
+0056     <span class="keyword">end</span>;
+0057     curcr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr, rtuck, rc1, rc2);
+0058     qtucore{i} = permute(curcr, [2, 1, 3]);
+0059 <span class="keyword">end</span>;
+0060 
+0061 qtu.core = qtucore;
+0062 qtu.tuck = tucks;
+0063 qtu.sz = sz;
+0064 
+0065 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 17:45:55 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
