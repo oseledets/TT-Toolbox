@@ -11,6 +11,11 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %       o y0 - initial approximation [random rank-2 tensor]
 %       o rmax - maximal  TT-rank of the (block) solution [2500]
 %       o nswp - maximal number of sweeps [4]
+%       o kick_rank - stabilization parameter, the larger, the better
+%       accuracy but the higher complexity [5]
+%       o verb - print debug info [ {true} | false ]
+%       o msize - the size of local matrix when the iterative solver is
+%       used
 %
 %
 % TT Toolbox 2.1, 2009-2012
@@ -23,6 +28,14 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 
+%Default parameters
+y0=[];
+rmax=2500;
+nswp=4;
+msize=1000;
+max_l_steps=200;
+kick_rank=5;
+verb=true;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -31,62 +44,27 @@ for i=1:2:length(varargin)-1
             rmax=lower(varargin{i+1});
         case 'x0'
             y0=varargin{i+1};
+        case 'msize'
+            msize=varargin{i+1};
+        case 'verb'
+            verb=varargin{i+1};
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
+            
     end
 end
 
 n=a.n; 
 d=a.d;
-if ( nargin <= 3 || isempty(y0) )
-    %Generate a random block tensor with the block dimension on the
-    %right 
-   y=tt_tensor;
-   y.d=d;
-   ry=k*ones(1,d); ry(1)=1; ry(d+1)=k; ry=ry';
-   y.r=ry;
-   y.n=n;
-   y.ps=cumsum([1;y.n.*ry(1:d).*ry(2:d+1)]);
-   psy=y.ps;
-   sz=psy(d+1)-1;
-   cr=randn(1,sz);
-   %cr=ones(sz,1);
-   y.core=cr;
-else
-   y=y0;
+if ( isempty(y0) )
+    kk=2;
+    r=kk*ones(1,d+1);
+    r(d+1)=k;
+    r(1)=1;
+    y0=tt_random(n,d,r);
 end
-if ( nargin <= 4 || isempty(rmax) )
-  rmax=2500;
-end
-if ( nargin <= 5 || isempty(nswp) )
-  nswp = 4;
-end
-y0=y;
-%            fm=full(a); 
-%            [v,dg]=eig(fm);
-%            ev=diag(dg);
-%            [ev,ind]=sort(ev,'ascend');
-%            v=v(:,ind);
-%           w=v(:,1:k); ww0=w;
-%            ev=ev(1:k);
-%  w=reshape(w,[2*ones(1,d),k]);  
-%  y=tt_tensor(w,1e-8);
-%  y.d=d;
-%  psy=y.ps; 
-%  psy=psy(1:d+1);
-%  cry=y.core; 
-%  cry=cry(1:psy(d+1)-1); 
-%  y.core=cry;
-%  y.n=2*ones(d,1);
-%  ry=y.r; ry=ry(1:d+1); 
-%  y.r=ry;
+y=round(y0,0);
 
-
-%Parameters section
-msize=1000;
-max_l_steps=200;
-kick_rank=5;
-verb=true;
 %We start from the orthogonalization of the y vector from left-to-right
 %(it does not influence the TT-ranks)
 

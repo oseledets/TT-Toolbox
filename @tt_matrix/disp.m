@@ -1,6 +1,5 @@
 function disp(tt,name)
-%Command window display of a tt_tensor.
-%   DISP(TT,NAME)
+%Command window display of a TT-matrix
 %
 %
 % TT Toolbox 2.1, 2009-2012
