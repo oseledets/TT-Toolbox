@@ -31,7 +31,7 @@ if (isa(a,'tt_matrix') && isa(b,'double') && numel(b) == 1 || (isa(b,'tt_matrix'
     if (  isa(b,'double') )
       c.n=a.n; c.m=a.m; c.tt=(a.tt)*b;
    else
-      c.n=b.n; c.m=b.m; c.tt=(b.tt)*a;
+      c.n=b.n; c.m=b.m; c.tt=a*(b.tt);
    end
 elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin == 2)
     %Put "zaglushka" in it

@@ -171,28 +171,13 @@ for swp=1:nswp
         curxc = permute(curxc, [2, 1, 3]);
         curxc = reshape(curxc, rtx(i), rcx(i)*rcx(i+1));
 
-        %!!!!!!!!!!!!!!!!!!!!!!!!!! Bad things are here !!!!!!!!!!!!!!!!!!!!
-        % That's why I hate excessive overloads of "operator*" (like mtimes).
-        % It has no chance
-        % to determine my wished correctly. In this case, I would like to
-        % multiply the last block by the matrix curxc. However, if curxc is
-        % a constant, it calls tt_tensor-by-scalar routine instead, which
-        % multiplies the first core, but not the last. As a result, the
-        % method will never converge, as the last block is not scaled
-        % properly. So, I had to write the explicit call to the
-        % last_block-by-matrix function tt_dum1. Which turns all efforts to
-        % write overloaded operators and constructors to shit. Probably, we
-        % need a convention, say, if a number is at right position, scale
-        % the last core, etc. Or just use overloading of operator* inside
-        % a class only for one absolutly clear operation.
-        %!!!!!!!!!!!!!!!!!!!!!!!!!!
-        curx = tt_dum1(curx,curxc); % Last block is of size m(L), rc1*rc2
+        curx = curx*curxc; % Last block is of size m(L), rc1*rc2
 
         % reshape [last_mode,last_rank] -> [last_mode*last_rank, 1]
         curx = tt_reshape(curx, (curx.n).*[ones(L(i)-1,1); curx.r(L(i)+1)]);
         curyc = permute(curyc, [2, 1, 3]);
-        curyc = reshape(curyc, rty(i), rcy(i)*rcy(i+1));
-        cury = tt_dum1(cury,curyc); % Last block is of size n(L), rc1*rc2
+        curyc = reshape(curyc, rty(i), rcy(i)*rcy(i+1));        
+        cury = cury*curyc; % Last block is of size n(L), rc1*rc2
         % reshape [last_mode,last_rank] -> [last_mode*last_rank, 1]
         cury = tt_reshape(cury, (cury.n).*[ones(L(i)-1,1); cury.r(L(i)+1)]);
 
@@ -210,7 +195,7 @@ for swp=1:nswp
         curac = permute(curac, [3, 1, 4, 2, 5]);
         curac = reshape(curac, rta(i), rcy(i)*rcy(i+1)*rcx(i)*rcx(i+1));
         cura = tt_tensor(cura);
-        cura = tt_dum1(cura, curac); % New last block
+        cura = cura*curac; % New last block
         lasta = cura{L(i)};
         lasta = reshape(lasta, rfa{i}(L(i)), n{i}(L(i)), m{i}(L(i)), rcy(i)*rcy(i+1), rcx(i)*rcx(i+1));
         lasta = permute(lasta, [1, 2, 4, 3, 5]);
