@@ -4,7 +4,7 @@ function [w]=iwtt(v,wtt_transform)
 %   given tensor with filters, stored in the WTT_TRANSFORM structure.
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

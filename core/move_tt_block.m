@@ -6,7 +6,7 @@ function [tt] = move_tt_block(tt, spos, epos, eps)
 %   otherwise. Requires truncation with the L2-norm accuracy EPSs
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et. al.
 %Institute of Numerical Mathematics, Moscow, Russia

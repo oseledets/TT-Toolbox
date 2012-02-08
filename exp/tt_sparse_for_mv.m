@@ -4,7 +4,7 @@ function [sttm] = tt_sparse_for_mv(ttm, cuttol)
 %   matrix in the TT1.0 matrix format. May work for certain operators
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

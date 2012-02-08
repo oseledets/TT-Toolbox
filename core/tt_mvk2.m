@@ -5,7 +5,7 @@ function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)
 %   to be outdated and with not correct parameter selection
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

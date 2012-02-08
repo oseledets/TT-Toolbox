@@ -3,7 +3,7 @@ function [c] = power(a,b,varargin)
 %   [C]=POWER(A,B) Computes A.^B for a QTT-Tucker A and natural B. 
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

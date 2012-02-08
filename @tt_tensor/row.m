@@ -3,7 +3,7 @@ function [tt]=row(tt,k)
 %   [TT]=ROW(TT,K) Returns the k-the row of a block-row TT-tensor
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

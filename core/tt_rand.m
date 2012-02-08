@@ -5,7 +5,7 @@ function [tt]=tt_rand(n,d,r)
 %   rank or a array of dimension d+1
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

@@ -22,7 +22,7 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %       [v,ev]=dmrg_eigb(mat,20,1e-6); %5 lowest eigenvalues 
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

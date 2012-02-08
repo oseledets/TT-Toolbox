@@ -3,7 +3,7 @@ function [nrm]=dot2(tt1,tt2)
 %   [rm]=DOT2(TT1,TT2) --- rm is a vector of length d
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

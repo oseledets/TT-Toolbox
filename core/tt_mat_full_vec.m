@@ -5,7 +5,7 @@ function [y]=tt_mat_full_vec(tt,x)
 %   object-oriented TT2 format. Will be removed in future releases.
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

@@ -5,7 +5,7 @@ function [res]=tt_mm(mat1,mat2)
 %   future releases. Use * operator from the object-oriented version.
 %
 %
-% TT Toolbox 2.1, 2009-2011
+% TT-Toolbox 2.2, 2009-2011
 %
 %This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
 %Institute of Numerical Mathematics, Moscow, Russia

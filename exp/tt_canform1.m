@@ -5,7 +5,7 @@ function [core_int,ind_l,ind_r,ind_left,ind_right]=tt_canform1(tt)
 %   & compute right index set and also the interpolation sets
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

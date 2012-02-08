@@ -5,7 +5,7 @@ function [x]=als_solve_rx_2(mat, rhs, tol, maxit, x0, drx, nswp)
 %   with rank rx, but the RHS and X are represented as full vectors.
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

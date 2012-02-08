@@ -18,7 +18,7 @@ function t = qtt_tucker(varargin)
 %   (i.e., the mode sizes of the original TT-tensor are a power of 2)
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

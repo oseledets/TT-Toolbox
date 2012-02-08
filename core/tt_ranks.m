@@ -5,7 +5,7 @@ function [rks]=tt_ranks(tt)
 %   future releases. Use rank() from the object-oriented version.
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

@@ -6,7 +6,7 @@ function [ttm12] = tt_mmk2(ttm1, ttm2, eps, max_r, max_swp)
 %   the next release
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

@@ -5,7 +5,7 @@ function [mem] = tt_save(filename, tt, precision)
 %   the bytes written to a file, -1 in case of errors.
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

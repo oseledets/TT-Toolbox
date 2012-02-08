@@ -3,7 +3,7 @@ function [b]=conj(a)
 %   [B]=CONJ(A) Complex conjugate of a tt_matrix A
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
