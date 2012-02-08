@@ -13,13 +13,26 @@ function [y]=dmrg_cross(d,n,fun,eps,varargin)
 %   The list of option names and default values are:
 %       o nswp - number of DMRG sweeps [10]
 %       o vec  - Fun is vectorized [ true | {false} ]
-%       o verb - output debug information [ true | {false} ]
+%       o verb - output debug information [ {true} | false ]
 %       o y0   - initial approximation [random rank-2]
 %       o radd - minimal rank change [0]
 %       o rmin - minimal rank that is allows [1]
 %       o kickrank - stabilization parameter [2]
-%       
-
+%
+%   Example:
+%       d=10; n=2; fun = @(ind) sum(ind);
+%       tt=dmrg_cross(d,n,fun,1e-7);
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 %Default parameters
 rmin=1;
 verb=true;

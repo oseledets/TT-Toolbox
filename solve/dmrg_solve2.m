@@ -22,6 +22,11 @@ function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)
 %       o use_self_prec - Use self_prec [ true | {false} ]
 %       o gmres_iters - number of local gmres restarts [2]
 %       o nrestart - dimension of local gmres [40]
+%       Example:
+%           d=8; f=8; 
+%           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
+%           rhs=tt_ones(2,d*f); Right-hand side of all ones
+%           sol=dmrg_solve2(mat,rhs,1e-6);
 %
 %
 % TT Toolbox 2.1, 2009-2012
@@ -589,7 +594,7 @@ for swp=1:nswp
             if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
                 resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
             else
-                resid = B*full(tt_tensor(tt_mv(B,cur_sol)),rxm1*m1*m2*rxm3)-rhs;
+                resid = tt_matrix(B)*full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)-rhs;
                 %resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
             end;
             while (r<min(size(s,1), rmax))
@@ -600,7 +605,7 @@ for swp=1:nswp
                 if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
                     resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
                 else
-                    resid = B*full(tt_tensor(tt_mv(B,cur_sol)),rxm1*m1*m2*rxm3)-rhs;
+                    resid = tt_matrix(B)*full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)-rhs;
                 end;
                 normres = norm(resid)/norm(rhs);
                 %             if ( verb>1 )
