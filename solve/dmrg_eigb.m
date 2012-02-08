@@ -16,6 +16,10 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %       o verb - print debug info [ {true} | false ]
 %       o msize - the size of local matrix when the iterative solver is
 %       used
+%   Example:
+%       d=8; f=3;
+%       mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
+%       [v,ev]=dmrg_eigb(mat,20,1e-6); %5 lowest eigenvalues 
 %
 %
 % TT Toolbox 2.1, 2009-2012
