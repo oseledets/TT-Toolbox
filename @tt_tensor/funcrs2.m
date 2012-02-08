@@ -248,6 +248,9 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      s=diag(s);
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
      s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+     
+     v = conj(v); % <- bug was here
+     
      %Make it standard
      u=u*diag(s);
 
