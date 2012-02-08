@@ -1,11 +1,27 @@
 function [y]=mvrk(A, x, eps, varargin)
-% function [y]=mvrk(A, x, eps, varargin)
+% Computes matvec in the QTT-Tucker "rake" format 
+%   [Y]=MVRK(A, X, EPS, OPTIONS)
 % Computes the MatVec y=Ax in the qtt_tucker "rake" format using the DMRG
-% approach. varargins are:
-%   nswp (20)
-%   y0 (rand-rank2)
-%   verb (1)
-%   kickrank (2)
+% approach. Options are provided in form
+%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+%   on. The parameters are set to default (in brackets in the following) 
+%   The list of option names and default values is:
+%       o kickrank -- the additional ranks, the larger the more robust the
+%       method is, but the complexity increases [2]
+%       o nswp - maximal number of DMRG sweeps [20]
+%       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
+%       o y0 - initial approximation to the product [random-rank 2
+%
+%
+% TT Toolbox 2.1, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 nswp = 20;
 kickrank = 2;
@@ -155,28 +171,13 @@ for swp=1:nswp
         curxc = permute(curxc, [2, 1, 3]);
         curxc = reshape(curxc, rtx(i), rcx(i)*rcx(i+1));
 
-        %!!!!!!!!!!!!!!!!!!!!!!!!!! Bad things are here !!!!!!!!!!!!!!!!!!!!
-        % That's why I hate excessive overloads of "operator*" (like mtimes).
-        % It has no chance
-        % to determine my wished correctly. In this case, I would like to
-        % multiply the last block by the matrix curxc. However, if curxc is
-        % a constant, it calls tt_tensor-by-scalar routine instead, which
-        % multiplies the first core, but not the last. As a result, the
-        % method will never converge, as the last block is not scaled
-        % properly. So, I had to write the explicit call to the
-        % last_block-by-matrix function tt_dum1. Which turns all efforts to
-        % write overloaded operators and constructors to shit. Probably, we
-        % need a convention, say, if a number is at right position, scale
-        % the last core, etc. Or just use overloading of operator* inside
-        % a class only for one absolutly clear operation.
-        %!!!!!!!!!!!!!!!!!!!!!!!!!!
-        curx = tt_dum1(curx,curxc); % Last block is of size m(L), rc1*rc2
+        curx = curx*curxc; % Last block is of size m(L), rc1*rc2
 
         % reshape [last_mode,last_rank] -> [last_mode*last_rank, 1]
         curx = tt_reshape(curx, (curx.n).*[ones(L(i)-1,1); curx.r(L(i)+1)]);
         curyc = permute(curyc, [2, 1, 3]);
-        curyc = reshape(curyc, rty(i), rcy(i)*rcy(i+1));
-        cury = tt_dum1(cury,curyc); % Last block is of size n(L), rc1*rc2
+        curyc = reshape(curyc, rty(i), rcy(i)*rcy(i+1));        
+        cury = cury*curyc; % Last block is of size n(L), rc1*rc2
         % reshape [last_mode,last_rank] -> [last_mode*last_rank, 1]
         cury = tt_reshape(cury, (cury.n).*[ones(L(i)-1,1); cury.r(L(i)+1)]);
 
@@ -194,7 +195,7 @@ for swp=1:nswp
         curac = permute(curac, [3, 1, 4, 2, 5]);
         curac = reshape(curac, rta(i), rcy(i)*rcy(i+1)*rcx(i)*rcx(i+1));
         cura = tt_tensor(cura);
-        cura = tt_dum1(cura, curac); % New last block
+        cura = cura*curac; % New last block
         lasta = cura{L(i)};
         lasta = reshape(lasta, rfa{i}(L(i)), n{i}(L(i)), m{i}(L(i)), rcy(i)*rcy(i+1), rcx(i)*rcx(i+1));
         lasta = permute(lasta, [1, 2, 4, 3, 5]);
