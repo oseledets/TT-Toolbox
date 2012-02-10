@@ -1,17 +1,20 @@
 function [x]=tt_xtr(L,K,s)
-%[X]=TT_XTR(L,K,S)
-%Computes QTT-representation of the vector X_s in the
-%transposed permutation with 2^L points in each mode 
-%and K variables. Ranks are still 2 here.
+%The X_s coordinate in the transposed QTT permutation of indices
+%   [X]=TT_XTR(L,K,S)Computes QTT-representation of the vector X_s in the
+%   transposed permutation with 2^L points in each mode 
+%   and K variables. Ranks are still 2 here.
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
-%The natural permutation is
-%i11 i12 i13 ... i1L i21 i22 ... i2L ... iK1 ... iKL
-%The transposed:
-%i11 i21 ..
-%For x:
-%e e e e e ...  x1 x2 ... xd ... e e e e ... e
-%For transposed:
-%e .... 
 d=L*K;
 r=2*ones(d+1,1);
 r(1)=1;

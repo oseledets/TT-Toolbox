@@ -1,9 +1,20 @@
 function [y]=mvk(a,x,eps,nswp,z,rmax)
-%[Y]=MVK(A,X,EPS,NSWP,Y,RMAX)
-%Matrix-by-vector product of a TT-matrix A, by TT-tensor X,
-%with accuracy EPS, number of sweeps NSWP and initial approximation Y
-%Matrix a is n(i) x m(i), thus x is m(i) and y is n(i)
-%MVK is a two-sided method
+%DMRG fast matrix-by-vector product, Method 1 (less accurate)
+%   [Y]=MVK(A,X,EPS,NSWP,Y,RMAX) Matrix-by-vector product of a TT-matrix A
+%   by a TT-tensor X with accuracy EPS. Also, one can specify the number of
+%   sweeps NSWP, initial approximation Z and the maximal TT-rank RMAX (if
+%   they become too large)
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 n=a.n;
 m=a.m;
 att=a.tt;

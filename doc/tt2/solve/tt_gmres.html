@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_gmres</title>
+  <meta name="keywords" content="tt_gmres">
+  <meta name="description" content="TT-GMRES method">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">solve</a> &gt; tt_gmres.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/solve&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_gmres
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>TT-GMRES method</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">TT-GMRES method
+   [x] = TT_GMRES(A, B, TOL, MAXOUT, MAXIN, EPS_X, 
+   EPS_Z, M1, M2, M3, X0, VERBOSE, VARARGIN)
+   GMRES in TT format. Solve a system A*x=b, up to the accuracy tol,
+   with maximum number of outer iterations maxout, the size of Krylov basis
+   maxin, compression of solution eps_x, compression of Krylov vectors
+   eps_z, optional LEFT preconditioner: [M1*[M2]*[M3]], initial guess [x0]
+   (default is 1e-308*b), [verbose] - if 1 or unspecified - print messages,
+   if 0 - silent mode
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/tt_axpy2.html" class="code" title="function [res] = tt_axpy2(log_a, sign_a, x, log_p, sign_p, y, eps, max_rank)">tt_axpy2</a>	Returns A*X+P*Y in the TT-format (stabilized version)</li><li><a href="../../tt2/core/tt_dist3.html" class="code" title="function [res]=tt_dist3(tt1,tt2)">tt_dist3</a>	Accurate distance between two tensors in TT1.0 format</li><li><a href="../../tt2/core/tt_dot.html" class="code" title="function [res] = tt_dot(tt1,tt2)">tt_dot</a>	Scalar product of two TT-tensors in the TT1.0 format</li><li><a href="../../tt2/core/tt_dot2.html" class="code" title="function [res,sgn] = tt_dot2(tt1,tt2)">tt_dot2</a>	Logarithm of the scalar product of two tensor (to avoid overflow)</li><li><a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>	Compute all ranks of the TT-decomposition in TT1.0 format</li><li><a href="../../tt2/core/tt_scal2.html" class="code" title="function [res]=tt_scal2(tt, log_a, sign_a)">tt_scal2</a>	Stabilized multiplication of a scalar by vector</li><li><a href="../../tt2/core/tt_size.html" class="code" title="function [sz]=tt_size(tt)">tt_size</a>	Mode dimensions of a TT-tensor in TT1.0 format</li><li><a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>	Tensor of all zeros</li><li><a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>	Apply TT matrix operator to TT vector and error gracefully.</li><li><a href="tt_iterchk.html" class="code" title="function [atype,afun,afcnstr] = tt_iterchk(A)">tt_iterchk</a>	Checks arguments to iterative methods. A is a TT object.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dmrg_rake_solve2.html" class="code" title="function [x]=dmrg_rake_solve2(A, y, tol, varargin)">dmrg_rake_solve2</a>	DMRG-type method for the solution of linear systems in QTT-Tucker format</li><li><a href="dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 
+0003 <a name="_sub0" href="#_subfunctions" class="code">function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin)</a>
+0004 <span class="comment">%TT-GMRES method</span>
+0005 <span class="comment">%   [x] = TT_GMRES(A, B, TOL, MAXOUT, MAXIN, EPS_X,</span>
+0006 <span class="comment">%   EPS_Z, M1, M2, M3, X0, VERBOSE, VARARGIN)</span>
+0007 <span class="comment">%   GMRES in TT format. Solve a system A*x=b, up to the accuracy tol,</span>
+0008 <span class="comment">%   with maximum number of outer iterations maxout, the size of Krylov basis</span>
+0009 <span class="comment">%   maxin, compression of solution eps_x, compression of Krylov vectors</span>
+0010 <span class="comment">%   eps_z, optional LEFT preconditioner: [M1*[M2]*[M3]], initial guess [x0]</span>
+0011 <span class="comment">%   (default is 1e-308*b), [verbose] - if 1 or unspecified - print messages,</span>
+0012 <span class="comment">%   if 0 - silent mode</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0018 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0019 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0022 <span class="comment">%ivan.oseledets@gmail.com</span>
+0023 <span class="comment">%---------------------------</span>
+0024 
+0025 [atype,afun,afcnstr] = <a href="tt_iterchk.html" class="code" title="function [atype,afun,afcnstr] = tt_iterchk(A)">tt_iterchk</a>(A);
+0026 
+0027 <span class="comment">%%%%%%%%%%%%% parameters %%%%%%%%%%%%%%%%%%%</span>
+0028 max_swp=12; <span class="comment">% maximum sweeps in mvk2 allowed</span>
+0029 max_sp_factor = 1.5; <span class="comment">% maximum stagpoints (as a part of Krylov basis size) allowed</span>
+0030 max_zrank_factor = 4; <span class="comment">% maximum rank of Krylov vectors with respect to the rank of X.</span>
+0031 derr_tol_for_sp = 1.0; <span class="comment">% minimal jump of residual at one iteration, which is considered as</span>
+0032                        <span class="comment">% a stagnation.</span>
+0033 use_err_trunc = 1; <span class="comment">% use compression accuracy eps_z/err for Krylov vectors</span>
+0034 err_trunc_power = 0.8; <span class="comment">% theoretical estimate - 1 - sometimes sucks</span>
+0035 compute_real_res = 0; <span class="comment">% Compute the real residual on each step (expensive!)</span>
+0036 <span class="comment">% extra param in tt_iterapp.m: matvec_alg</span>
+0037 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0038 
+0039 t0 = tic;
+0040 
+0041 existsM1=1;
+0042 existsM2=1;
+0043 existsM3=1;
+0044 existsx0=1;
+0045 <span class="keyword">if</span> ((nargin&lt;8)||(isempty(M1)))
+0046     existsM1=0;
+0047 <span class="keyword">end</span>;
+0048 <span class="keyword">if</span> ((nargin&lt;9)||(isempty(M2)))
+0049     existsM2=0;
+0050 <span class="keyword">end</span>;
+0051 <span class="keyword">if</span> ((nargin&lt;10)||(isempty(M3)))
+0052     existsM3=0;
+0053 <span class="keyword">end</span>;
+0054 <span class="keyword">if</span> ((nargin&lt;11)||(isempty(x0)))
+0055     existsx0=0;
+0056 <span class="keyword">end</span>;
+0057 
+0058 <span class="keyword">if</span> ((nargin&lt;12)||(isempty(verbose)))
+0059     verbose=1;
+0060 <span class="keyword">end</span>;
+0061 
+0062 pre_b = b;
+0063 max_rank=[];
+0064 
+0065 <span class="keyword">if</span> (compute_real_res==1)
+0066     pre_b2 = b;
+0067 <span class="keyword">end</span>;
+0068 
+0069 <span class="keyword">if</span> (existsM1)
+0070     [m1type,m1fun,m1fcnstr] = <a href="tt_iterchk.html" class="code" title="function [atype,afun,afcnstr] = tt_iterchk(A)">tt_iterchk</a>(M1);
+0071     <span class="keyword">if</span> (compute_real_res==1)
+0072     pre_b2 = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m1fun,m1type,m1fcnstr,pre_b2,min(eps_z, 0.5), max_rank, max_swp,varargin{:});
+0073     <span class="keyword">end</span>;
+0074 <span class="keyword">end</span>;
+0075 <span class="keyword">if</span> (existsM2)
+0076     [m2type,m2fun,m2fcnstr] = <a href="tt_iterchk.html" class="code" title="function [atype,afun,afcnstr] = tt_iterchk(A)">tt_iterchk</a>(M2);
+0077     <span class="keyword">if</span> (compute_real_res==1)
+0078     pre_b2 = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m2fun,m2type,m2fcnstr,pre_b2,min(eps_z, 0.5), max_rank, max_swp,varargin{:});    
+0079     <span class="keyword">end</span>;
+0080 <span class="keyword">end</span>;
+0081 <span class="keyword">if</span> (existsM3)
+0082     [m3type,m3fun,m3fcnstr] = <a href="tt_iterchk.html" class="code" title="function [atype,afun,afcnstr] = tt_iterchk(A)">tt_iterchk</a>(M3);
+0083     <span class="keyword">if</span> (compute_real_res==1)
+0084     pre_b2 = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m3fun,m3type,m3fcnstr,pre_b2,min(eps_z, 0.5), max_rank, max_swp,varargin{:});    
+0085     <span class="keyword">end</span>;
+0086 <span class="keyword">end</span>;
+0087 <span class="comment">% pre_b = tt_stabilize(pre_b,0);</span>
+0088 
+0089 norm_f = <a href="../../tt2/core/tt_dot2.html" class="code" title="function [res,sgn] = tt_dot2(tt1,tt2)">tt_dot2</a>(pre_b,pre_b)*0.5;
+0090 mod_norm_f = sign(norm_f)*mod(abs(norm_f), 10);
+0091 order_norm_f = norm_f - mod_norm_f;
+0092 cur_norm_f = exp(mod_norm_f);
+0093 
+0094 <span class="keyword">if</span> (existsx0)
+0095     x = x0;
+0096 <span class="keyword">else</span>
+0097 <span class="comment">%     x = pre_b;</span>
+0098 <span class="comment">%     x = tt_scal2(b, log(1e-308), 1);</span>
+0099     x = <a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>(max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(b)), <a href="../../tt2/core/tt_size.html" class="code" title="function [sz]=tt_size(tt)">tt_size</a>(b));
+0100 <span class="keyword">end</span>;
+0101 
+0102 <span class="comment">% x_old = x;</span>
+0103 
+0104 H = zeros(maxin+1, maxin);
+0105 v = cell(maxin, 1);
+0106 
+0107 <span class="keyword">if</span> (nargout&gt;1)
+0108     RESVEC = ones(maxout, maxin);
+0109 <span class="keyword">end</span>;
+0110 <span class="keyword">if</span> (nargout&gt;2)
+0111     rw = zeros(maxout,maxin);
+0112 <span class="keyword">end</span>;
+0113 <span class="keyword">if</span> (nargout&gt;2)
+0114     rx = zeros(maxout,maxin);
+0115 <span class="keyword">end</span>;
+0116 <span class="comment">% z = cell(maxin, 1);</span>
+0117 
+0118 err=2;
+0119 max_err=Inf;
+0120 old_err = 1;
+0121 stagpoints=0;
+0122 
+0123 <span class="keyword">for</span> nitout=1:maxout
+0124     max_rank=[];
+0125     err_for_trunc=1;    
+0126     Ax = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mtimes'</span>,afun,atype,afcnstr,x,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0127     r = <a href="../../tt2/core/tt_axpy2.html" class="code" title="function [res] = tt_axpy2(log_a, sign_a, x, log_p, sign_p, y, eps, max_rank)">tt_axpy2</a>(0,1, pre_b, 0,-1, Ax, min(eps_z/err_for_trunc, 0.5), max_rank);
+0128     <span class="keyword">if</span> (existsM1)
+0129         r = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m1fun,m1type,m1fcnstr,r,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0130 <span class="comment">%         Ax = tt_stabilize(Ax,0);</span>
+0131         <span class="keyword">if</span> (existsM2)
+0132             r = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m2fun,m2type,m2fcnstr,r,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0133 <span class="comment">%             Ax = tt_stabilize(Ax,0);</span>
+0134         <span class="keyword">end</span>;
+0135         <span class="keyword">if</span> (existsM3)
+0136             r = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m3fun,m3type,m3fcnstr,r,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0137 <span class="comment">%             Ax = tt_stabilize(Ax,0);</span>
+0138         <span class="keyword">end</span>;
+0139     <span class="keyword">end</span>;        
+0140 <span class="comment">%     Ax = tt_stabilize(Ax,0);</span>
+0141 <span class="comment">%     r = tt_add(pre_b, tt_scal(Ax, -1));</span>
+0142 <span class="comment">%     r = tt_compr2(r, min(eps_z/err, 0.5), max_rank);</span>
+0143 <span class="comment">%     beta = sqrt(tt_dot(r, r))</span>
+0144     beta = <a href="../../tt2/core/tt_dot2.html" class="code" title="function [res,sgn] = tt_dot2(tt1,tt2)">tt_dot2</a>(r,r)*0.5;
+0145     mod_beta = sign(beta)*mod(abs(beta), 10);
+0146     order_beta = beta - mod_beta;    
+0147     cur_beta = exp(mod_beta);    
+0148     <span class="keyword">if</span> (verbose==1)
+0149         real_beta = exp(beta);
+0150         fprintf(<span class="string">'   cur_beta = %g, real_beta = %g\n'</span>, cur_beta, real_beta);
+0151     <span class="keyword">end</span>;
+0152 <span class="comment">%     if (beta&lt;tol) break; end;</span>
+0153     <span class="keyword">if</span> (nitout==1) 
+0154         cur_normb = cur_beta; 
+0155         order_normb = order_beta;
+0156 <span class="comment">%         normb = beta;</span>
+0157     <span class="keyword">end</span>;    
+0158     v{1} = <a href="../../tt2/core/tt_scal2.html" class="code" title="function [res]=tt_scal2(tt, log_a, sign_a)">tt_scal2</a>(r, -beta, 1);
+0159 <span class="comment">%     v{1}=tt_stabilize(v{1},0);</span>
+0160     <span class="keyword">for</span> j=1:maxin
+0161         max_w_rank = 0;
+0162         w = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mtimes'</span>,afun,atype,afcnstr,v{j},min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});                
+0163         max_w_rank = max([max_w_rank; <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(w)]);
+0164 <span class="comment">%         w=tt_stabilize(w,0);</span>
+0165 <span class="comment">%         max_Mx_rank = max(tt_ranks(w))</span>
+0166         <span class="keyword">if</span> (existsM1)
+0167             w = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m1fun,m1type,m1fcnstr,w,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0168             max_w_rank = max([max_w_rank; <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(w)]);
+0169 <span class="comment">%             w=tt_stabilize(w,0);</span>
+0170             <span class="keyword">if</span> (existsM2)
+0171                 w = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m2fun,m2type,m2fcnstr,w,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0172                 max_w_rank = max([max_w_rank; <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(w)]);
+0173 <span class="comment">%                 w=tt_stabilize(w,0);</span>
+0174 <span class="comment">%                 max_Px_rank = max(tt_ranks(w))</span>
+0175             <span class="keyword">end</span>;
+0176             <span class="keyword">if</span> (existsM3)
+0177                 w = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m3fun,m3type,m3fcnstr,w,min(eps_z/err_for_trunc, 0.5), max_rank, max_swp,varargin{:});
+0178                 max_w_rank = max([max_w_rank; <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(w)]);
+0179 <span class="comment">%                 w=tt_stabilize(w,0);</span>
+0180             <span class="keyword">end</span>;            
+0181         <span class="keyword">end</span>;
+0182         
+0183         max_wrank = max(<a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(w));
+0184                 
+0185 <span class="comment">%         wnew = w;</span>
+0186         <span class="keyword">for</span> i=1:j
+0187             H(i,j)=<a href="../../tt2/core/tt_dot.html" class="code" title="function [res] = tt_dot(tt1,tt2)">tt_dot</a>(w, v{i});
+0188 <span class="comment">%             w = tt_axpy2(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, min(eps_z/err_for_trunc, 0.5), max_rank);</span>
+0189             max_w_rank = max([max_w_rank; <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(w)]);
+0190             w = <a href="../../tt2/core/tt_axpy2.html" class="code" title="function [res] = tt_axpy2(log_a, sign_a, x, log_p, sign_p, y, eps, max_rank)">tt_axpy2</a>(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, eps_z, max_rank);
+0191             <span class="comment">% Orthogonality muss sein!</span>
+0192 <span class="comment">%             w = tt_axpy3(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i});</span>
+0193         <span class="keyword">end</span>;
+0194 <span class="comment">%         w = tt_wround([], w, min(eps_z/err_for_trunc,0.5), 'rmax', max_rank, 'nswp', max_swp, 'verb', 1);</span>
+0195 <span class="comment">%         for i=1:j</span>
+0196 <span class="comment">%             wv = abs(tt_dot(w, v{i}));</span>
+0197 <span class="comment">%             if (wv&gt;eps_z)</span>
+0198 <span class="comment">%                 fprintf('Warning: dot(w,v{%d}) = %3.3e\n', i, wv);</span>
+0199 <span class="comment">%             end;</span>
+0200 <span class="comment">%         end;</span>
+0201 <span class="comment">%         w=wnew;</span>
+0202         <span class="keyword">if</span> (nargout&gt;2)
+0203             rw(nitout,j)=max_w_rank;
+0204         <span class="keyword">end</span>;
+0205         
+0206         H(j+1,j) = sqrt(<a href="../../tt2/core/tt_dot.html" class="code" title="function [res] = tt_dot(tt1,tt2)">tt_dot</a>(w, w));
+0207         <span class="keyword">if</span> (j&lt;maxin)
+0208             v{j+1}=<a href="../../tt2/core/tt_scal2.html" class="code" title="function [res]=tt_scal2(tt, log_a, sign_a)">tt_scal2</a>(w, -log(H(j+1,j)), 1);
+0209 <span class="comment">%             v{j+1}=tt_stabilize(v{j+1},0);</span>
+0210         <span class="keyword">end</span>;        
+0211         
+0212         [UH,SH,VH]=svd(H(1:j+1, 1:j), 0);
+0213         SH = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(SH);
+0214         sigma_min_H = min(SH);
+0215         sigma_max_H = max(SH);
+0216         <span class="keyword">if</span> (verbose==1)       
+0217             fprintf(<span class="string">'   min(sigma(H)) = %g\n'</span>, sigma_min_H);
+0218         <span class="keyword">end</span>;
+0219         SH(1:numel(find(SH&gt;1e-100)))=1./SH(1:numel(find(SH&gt;1e-100))); <span class="comment">%pseudoinv(SH)</span>
+0220         SH = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(SH);
+0221         y = cur_beta*VH*SH*(UH(1,:)'); <span class="comment">% y = pinv(H)*(beta*e1)</span>
+0222 <span class="comment">%         y = beta*VH*SH*(UH(1,:)'); % y = pinv(H)*(beta*e1)</span>
+0223 
+0224 <span class="comment">%         err = norm(H(1:j+1, 1:j)*y-[beta zeros(1,j)]', 'fro')/normb;</span>
+0225 <span class="comment">%         err = log(norm(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', 'fro')/cur_normb+1e-308);</span>
+0226 <span class="comment">%         err = err+order_beta-order_normb;</span>
+0227         err = log(<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', <span class="string">'fro'</span>)/cur_norm_f+1e-308);
+0228         err = err+order_beta-order_norm_f;        
+0229         err = exp(err);
+0230         <span class="keyword">if</span> (use_err_trunc==1)
+0231 <span class="comment">%             err_for_trunc=err;</span>
+0232             err_for_trunc = log(<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', <span class="string">'fro'</span>)/cur_beta+1e-308);
+0233             err_for_trunc = exp(err_for_trunc);
+0234             err_for_trunc = (err_for_trunc*maxin*sigma_max_H/sigma_min_H)^(err_trunc_power);
+0235             err_for_trunc = min(err_for_trunc, 1);
+0236 <span class="comment">%             err_for_trunc = err;</span>
+0237         <span class="keyword">end</span>;
+0238 <span class="comment">%         err_to_f = log(norm(H(1:j+1, 1:j)*y-[cur_beta zeros(1,j)]', 'fro')/cur_norm_f+1e-308);</span>
+0239 <span class="comment">%         err_to_f = err_to_f+order_beta-order_norm_f;</span>
+0240 <span class="comment">%         err_to_f = exp(err_to_f);</span>
+0241         
+0242         <span class="keyword">if</span> (nargout&gt;1)
+0243             RESVEC(nitout,j)=err;
+0244         <span class="keyword">end</span>;
+0245         
+0246         
+0247         x_new = x;
+0248         max_x_rank = 0;
+0249 <span class="comment">%         dx = tt_scal2(v{j}, log(abs(y(j))+1e-308)+order_beta, sign(y(j)));</span>
+0250         <span class="keyword">for</span> i=j:-1:1
+0251 <span class="comment">%             dx = tt_add(dx, tt_scal2(v{i}, log(abs(y(i))+1e-308)+order_beta, sign(y(i))));</span>
+0252 <span class="comment">%             dx = tt_axpy2(0,1, dx, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);</span>
+0253             x_new = <a href="../../tt2/core/tt_axpy2.html" class="code" title="function [res] = tt_axpy2(log_a, sign_a, x, log_p, sign_p, y, eps, max_rank)">tt_axpy2</a>(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i}, eps_x);
+0254 <span class="comment">%             x_new = tt_axpy3(0,1, x_new, log(abs(y(i))+1e-308)+order_beta, sign(y(i)), v{i});</span>
+0255             max_x_rank = max([max_x_rank; <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(x_new)]);            
+0256         <span class="keyword">end</span>;
+0257 <span class="comment">%         x_new = tt_axpy2(0,1,x,0,1,dx,eps_x);</span>
+0258         <span class="keyword">if</span> (nargout&gt;3)
+0259             rx(nitout,j)=max_x_rank;
+0260         <span class="keyword">end</span>;
+0261 <span class="comment">%         x_new = tt_wround([], x_new, eps_x, 'verb', 1);</span>
+0262 <span class="comment">%         x_new = tt_add(x, dx);</span>
+0263 <span class="comment">%         x_new = tt_compr2(x_new, eps_x);</span>
+0264 <span class="comment">%         x_new = tt_axpy2(0,1,x,0,1,dx,eps_x);</span>
+0265        
+0266         max_xrank = max(<a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(x_new));
+0267         max_rank = max_zrank_factor*max_xrank;
+0268         
+0269         <span class="keyword">if</span> (compute_real_res==1)
+0270             res = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mtimes'</span>,afun,atype,afcnstr,x_new,eps_z, max_rank, max_swp,varargin{:});
+0271             <span class="keyword">if</span> (existsM1)
+0272                 res = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m1fun,m1type,m1fcnstr,res,eps_z, max_rank, max_swp,varargin{:});
+0273                 <span class="keyword">if</span> (existsM2)
+0274                     res = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m2fun,m2type,m2fcnstr,res,eps_z, max_rank, max_swp,varargin{:});
+0275                 <span class="keyword">end</span>;
+0276                 <span class="keyword">if</span> (existsM3)
+0277                     res = <a href="tt_iterapp.html" class="code" title="function y = tt_iterapp(op,afun,atype,afcnstr,x,eps,max_rank,max_swp,varargin)">tt_iterapp</a>(<span class="string">'mldivide'</span>,m3fun,m3type,m3fcnstr,res,eps_z, max_rank, max_swp,varargin{:});
+0278                 <span class="keyword">end</span>;
+0279             <span class="keyword">end</span>;
+0280             res = <a href="../../tt2/core/tt_dist3.html" class="code" title="function [res]=tt_dist3(tt1,tt2)">tt_dist3</a>(res, pre_b2)/sqrt(<a href="../../tt2/core/tt_dot.html" class="code" title="function [res] = tt_dot(tt1,tt2)">tt_dot</a>(pre_b2,pre_b2));
+0281         <span class="keyword">end</span>;
+0282         
+0283         derr = old_err/err;
+0284         old_err = err;
+0285 <span class="comment">%         dx = tt_add(x_new, tt_scal(x_old, -1));</span>
+0286 <span class="comment">%         normx = sqrt(tt_dot(x_new,x_new));</span>
+0287 <span class="comment">%         x_old=x_new;</span>
+0288 <span class="comment">%         dx_norm = sqrt(tt_dot(dx, dx))/normx;</span>
+0289         <span class="keyword">if</span> (derr&lt;derr_tol_for_sp) stagpoints=stagpoints+1; <span class="keyword">end</span>;       
+0290         <span class="keyword">if</span> (verbose==1)
+0291 <span class="comment">%             err_for_trunc</span>
+0292             <span class="keyword">if</span> (compute_real_res==1)
+0293                 fprintf(<span class="string">'iter = [%d,%d], derr = %3.2f, resid=%3.2e, real_res=%3.2e, rank_w=%d, rank_x=%d, sp=%d, time=%g\n'</span>, nitout, j, derr, err, res, max_wrank, max_xrank, stagpoints, toc(t0));
+0294             <span class="keyword">else</span>                
+0295                 fprintf(<span class="string">'iter = [%d,%d], derr = %3.2f, resid=%3.2e, rank_w=%d, rank_x=%d, sp=%d, time=%g\n'</span>, nitout, j, derr, err, max_w_rank, max_x_rank, stagpoints, toc(t0));
+0296             <span class="keyword">end</span>;
+0297         <span class="keyword">end</span>;
+0298         <span class="keyword">if</span> (err&lt;max_err)
+0299             x_good = x_new;
+0300             max_err=err;
+0301         <span class="keyword">end</span>;
+0302         <span class="keyword">if</span> (err&lt;tol) <span class="keyword">break</span>; <span class="keyword">end</span>;
+0303         <span class="keyword">if</span> (stagpoints&gt;=maxin*max_sp_factor) <span class="keyword">break</span>; <span class="keyword">end</span>;
+0304     <span class="keyword">end</span>;
+0305     x = x_good;
+0306 
+0307     <span class="keyword">if</span> (err&lt;tol) <span class="keyword">break</span>; <span class="keyword">end</span>;
+0308     <span class="keyword">if</span> (stagpoints&gt;=maxin*max_sp_factor) <span class="keyword">break</span>; <span class="keyword">end</span>;
+0309 <span class="keyword">end</span>;
+0310 
+0311 <span class="keyword">if</span> (nargout&gt;1)
+0312     RESVEC=RESVEC(1:nitout,:);
+0313     <span class="keyword">if</span> (nitout==1)
+0314         RESVEC=RESVEC(:,1:j);
+0315     <span class="keyword">end</span>;
+0316 <span class="keyword">end</span>;
+0317 <span class="keyword">if</span> (nargout&gt;2)
+0318     rw=rw(1:nitout,:);
+0319     <span class="keyword">if</span> (nitout==1)
+0320         rw=rw(:,1:j);
+0321     <span class="keyword">end</span>;
+0322 <span class="keyword">end</span>;
+0323 <span class="keyword">if</span> (nargout&gt;3)
+0324     rx=rx(1:nitout,:);
+0325     <span class="keyword">if</span> (nitout==1)
+0326         rx=rx(:,1:j);
+0327     <span class="keyword">end</span>;
+0328 <span class="keyword">end</span>;
+0329 
+0330 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

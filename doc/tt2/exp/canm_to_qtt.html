@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of canm_to_qtt</title>
+  <meta name="keywords" content="canm_to_qtt">
+  <meta name="description" content="Converts a canonical representation to QTT-format">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; canm_to_qtt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>canm_to_qtt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Converts a canonical representation to QTT-format</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=canm_to_qtt(can,rmax,eps) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Converts a canonical representation to QTT-format
+   [TT]=CANM_TO_QTT(CAN,RMAX,EPS)
+   Converts canonical representation CAN (Cell array of factors)
+   of a matrix
+   to QTT representation with accuracy parameter EPS
+   Mode sizes should be powers of 2
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>	Adds two TT-tensors in TT1 format.</li><li><a href="../../tt2/core/tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="../../tt2/core/tt_erank.html" class="code" title="function [rk]=tt_erank(tt)">tt_erank</a>	Effective rank of the TT-tensor: Approximate memory definition</li><li><a href="../../tt2/core/tt_mat_to_vec.html" class="code" title="function [tt_vec]=tt_mat_to_vec(tt_mat)">tt_mat_to_vec</a>	Flattens TT-matrix into TT-vector in the TT1.0 format</li><li><a href="../../tt2/core/tt_mkron.html" class="code" title="function [res]=tt_mkron(tt_arr)">tt_mkron</a>	Compute Kronecker product of many TT-tensors.</li><li><a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>	Tensor of all zeros</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=canm_to_qtt(can,rmax,eps)</a>
+0002 <span class="comment">%Converts a canonical representation to QTT-format</span>
+0003 <span class="comment">%   [TT]=CANM_TO_QTT(CAN,RMAX,EPS)</span>
+0004 <span class="comment">%   Converts canonical representation CAN (Cell array of factors)</span>
+0005 <span class="comment">%   of a matrix</span>
+0006 <span class="comment">%   to QTT representation with accuracy parameter EPS</span>
+0007 <span class="comment">%   Mode sizes should be powers of 2</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0013 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0014 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0017 <span class="comment">%ivan.oseledets@gmail.com</span>
+0018 <span class="comment">%---------------------------</span>
+0019 
+0020 <span class="keyword">if</span> (<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(can,1) == 1 )
+0021   can=can';
+0022 <span class="keyword">end</span>
+0023 d1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(can,1);
+0024 R=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(can{1},3);
+0025 d=zeros(d1,1);
+0026 <span class="keyword">for</span> i=1:d1
+0027   w1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(can{i},1);
+0028     w=log2(w1); w=<a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(w);
+0029   <span class="keyword">if</span> (2^w ~= w1 )
+0030      fprintf(<span class="string">'can_to_qtt error: mode %d size = %d not a power of two \n'</span>,i,w1);
+0031      <span class="keyword">return</span>
+0032   <span class="keyword">end</span>
+0033   d(i)=w;
+0034 <span class="keyword">end</span>
+0035 tt=<a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>(sum(d),4);
+0036 tt_arr=cell(d1,1);
+0037 <span class="keyword">for</span> i=1:R
+0038   <span class="keyword">for</span> s=1:d1
+0039     <span class="comment">%tt_arr{s}=vec_to_nd(can{s}(:,i),eps,d(s));</span>
+0040     tt_arr{s}=<a href="../../tt2/core/tt_mat_to_vec.html" class="code" title="function [tt_vec]=tt_mat_to_vec(tt_mat)">tt_mat_to_vec</a>(full_to_nd(can{s}(:,:,i),eps,d(s))); 
+0041  <span class="keyword">end</span>
+0042   mat=<a href="../../tt2/core/tt_mkron.html" class="code" title="function [res]=tt_mkron(tt_arr)">tt_mkron</a>(tt_arr);
+0043   tt=<a href="../../tt2/core/tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>(tt,mat);
+0044   <span class="keyword">if</span> ( <a href="../../tt2/core/tt_erank.html" class="code" title="function [rk]=tt_erank(tt)">tt_erank</a>(tt) &gt; rmax )
+0045      tt=<a href="../../tt2/core/tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>(tt,eps);
+0046   <span class="keyword">end</span>
+0047 <span class="keyword">end</span>
+0048 tt=<a href="../../tt2/core/tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>(tt,eps);
+0049 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

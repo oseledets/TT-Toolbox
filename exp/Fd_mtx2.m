@@ -1,6 +1,24 @@
 function [mat]=Fd_mtx2(a)
-%[MAT]=FD_MTX2(a)
-%Generates the diffusion coefficient. [0,1]^2 is supposed;
+%Finite difference approximation of a 2D scalar diffusion equation in QTT
+%   [M]=FD_MTX(D, A, BOUND)
+%   Generate finite difference matrix from diffusion coefficient A(n,n) or A(n,n,n)
+%   M - n^D-by-n^D sparse matrix
+%   D - dimensions, 
+%   BOUND:
+%       0 - Dirichlet,
+%       1 - Neuman
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 n=size(a,1)-1; %The coefficient is (n+1)x(n+1);
 

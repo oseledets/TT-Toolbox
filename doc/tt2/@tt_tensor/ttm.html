@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ttm</title>
+  <meta name="keywords" content="ttm">
+  <meta name="description" content="Tensor by matrix multiplication over a given mode">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; ttm.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>ttm
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Tensor by matrix multiplication over a given mode</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=ttm(tt,k,mat) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Tensor by matrix multiplication over a given mode
+   [TT]=TTM(TT,K,MAT) Multiplies TT-tensor over the K-th mode 
+   with the matrix MAT
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/mtimes.html" class="code" title="function [c] = mtimes(a,b,varargin)">mtimes</a>	C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication</li><li><a href="../../tt2/exp/tt_sparse_for_mv.html" class="code" title="function [sttm] = tt_sparse_for_mv(ttm, cuttol)">tt_sparse_for_mv</a>	Sparsify the TT matrix in TT1.0 matrix format</li><li><a href="../../tt2/misc/tt_Fd_mtx.html" class="code" title="function [ttm] = tt_Fd_mtx(d_phys, tt_a, bound1, bound2, eps)">tt_Fd_mtx</a>	Generates finite-difference diffusion matrix in QTT</li><li><a href="../../tt2/misc/tt_Fd_mtx2.html" class="code" title="function [ttm] = tt_Fd_mtx2(tt_a, bound1, bound2, eps)">tt_Fd_mtx2</a>	TT-representation of the diffusion matrix</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=ttm(tt,k,mat)</a>
+0002 <span class="comment">%Tensor by matrix multiplication over a given mode</span>
+0003 <span class="comment">%   [TT]=TTM(TT,K,MAT) Multiplies TT-tensor over the K-th mode</span>
+0004 <span class="comment">%   with the matrix MAT</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0010 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0011 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0014 <span class="comment">%ivan.oseledets@gmail.com</span>
+0015 <span class="comment">%---------------------------</span>
+0016 
+0017 cr=tt.core; 
+0018 <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(cr,1) == 1)
+0019   cr=cr.'; <span class="comment">%This procedure needs &quot;column&quot; cr</span>
+0020 <span class="keyword">end</span>
+0021 ps=tt.ps;
+0022 d=tt.d;
+0023 n=tt.n;
+0024 r=tt.r;
+0025 m=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(mat,2);
+0026 crx=cr(ps(k):ps(k+1)-1);
+0027 crx=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[r(k),n(k),r(k+1)]);
+0028 crx=permute(crx,[1,3,2]); 
+0029 crx=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[r(k)*r(k+1),n(k)]);
+0030 crx=crx*mat;
+0031 <span class="comment">%crs is r(k)xr(k+1)xm</span>
+0032 crx=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[r(k),r(k+1),m]);
+0033 crx=permute(crx,[1,3,2]);
+0034 cr=[cr(1:ps(k)-1);crx(:);cr(ps(k+1):end)];
+0035 n(k)=m;
+0036 tt.n=n;
+0037 tt.r=r;
+0038 tt.ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
+0039 tt.core=cr;
+0040 <span class="keyword">return</span>
+0041 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

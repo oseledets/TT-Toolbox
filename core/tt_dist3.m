@@ -1,14 +1,15 @@
 function [res]=tt_dist3(tt1,tt2)
-%[RES]=TT_DIST3(TT1,TT2)
-%More accurate and but more expensive than
-%TT_DIST computation of a distance between two tensors
-% TT1 and TT2 in Frobenius norm: just recompression
-% of their difference
+%Accurate distance between two tensors in TT1.0 format
+%   [RES]=TT_DIST3(TT1,TT2) More accurate and but more expensive than
+%   TT_DIST computation of a distance between two tensors
+%   TT1 and TT2 in Frobenius norm: just recompression
+%   of their difference. Please avoid its usage: it will be removed in
+%   future releases. Use norm(a-b) from the object-oriented version
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT-Toolbox 2.2, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

@@ -1,10 +1,15 @@
 function [tt] = tt_zeros(n,varargin)
-%[TT]=TT_ZEROS(N,D)
-%[TT]=TT_ZEROS(N)
-%Creates a zero TT tensor of dimension D and mode size N
+%Tensor of all zeros
+%   [TT]=TT_ZEROS(N,D), computes the d-dimensional TT-tensor of all zeros 
+%   with mode size equal to N
+%
+%   [TT]=TT_ZEROS(N), computes the TT-tensor of all zeros with mode size 
+%   given in the vector N
 %
 %
-% TT Toolbox 2.1, 2009-2012
+%
+%
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

@@ -1,11 +1,11 @@
 function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)
-%[A]=TT_MVK2(A,X,EPS, max_r, max_swp)
-%Matrix-by-vector product by Krylov-type Block algorithm,
-%which tries to compute everything fast, by increasing rank as far as
-%possible
+%Matrix-by-vector product by DMRG/Krylov method
+%   [A]=TT_MVK2(A,X,EPS, max_r, max_swp) Matrix-by-vector product by
+%   DMRG/Krylov method. Try to use tt_mvk3/mvk3 methods: this one is likely
+%   to be outdated and with not correct parameter selection
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
@@ -44,7 +44,6 @@ d=size(a,1);
 %y=tt_mv(a,x);
 y=tt_random(tt_size(a),d,2);
 ph=cell(d,1);
-yold=[];
 %ph will be rx * ra * ry 
 swp=1;
 
@@ -460,11 +459,6 @@ ph{1}=reshape(phi1,[ry,ra,rx]);
  end;
  
  dy_old = dy;
-%  if (~isempty(yold) )
-%    er=tt_dist2(y,yold)/sqrt(tt_dot(yold,yold));
-%    fprintf('er=%3.2e\n',er);
-%  end
-%  yold=y;
   swp=swp+1;
   if (swp==nswp-1)
       last_sweep=true;
@@ -474,6 +468,5 @@ if ( swp == nswp )&&(max(dy)>eps/(d^d_pow_check))
   fprintf('tt_mvk2 warning: error is not fixed for maximal number of sweeps %d, err_max: %3.3e\n', swp, err_max); 
 end
 
-y=tt_tensor(y); %Bydlocode
 return
 end

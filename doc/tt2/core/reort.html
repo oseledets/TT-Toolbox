@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of reort</title>
+  <meta name="keywords" content="reort">
+  <meta name="description" content="Golub-Kahan reorthogonalization">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; reort.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>reort
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Golub-Kahan reorthogonalization</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y]=reort(u,uadd) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Golub-Kahan reorthogonalization
+   [Y]=REORT(U,UADD) Given orthonormal matrix U, orthonormalize UADD to it
+   to get orthogonal basis in [U,UADD]. Faster then the QR-decomposition,
+   using the Golub-Kahan method
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/mvk2.html" class="code" title="function [y,swp]=mvk2(a,x,eps,nswp,z,rmax,varargin)">mvk2</a>	Two-sided DMRG fast matrix-by-vector product</li><li><a href="../../tt2/@tt_tensor/funcrs.html" class="code" title="function [y]=funcrs(tt,fun,eps,y,nswp,varargin)">funcrs</a>	Cross approximation of a function of a TT-tensor, Method 1</li><li><a href="../../tt2/@tt_tensor/funcrs2.html" class="code" title="function [y]=funcrs2(tt,fun,eps,y,nswp)">funcrs2</a>	Cross approximation of a function of a TT-tensor, Method 2</li><li><a href="mvrk.html" class="code" title="function [y]=mvrk(A, x, eps, varargin)">mvrk</a>	Computes matvec in the QTT-Tucker "rake" format</li><li><a href="tt_mvk3.html" class="code" title="function [y,swp]=tt_mvk3(W, x, eps, varargin)">tt_mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="tt_wround.html" class="code" title="function [y,swp]=tt_wround(W, x, eps, varargin)">tt_wround</a>	Approximates a vector in the weighted norm using DMRG iterations</li><li><a href="../../tt2/cross/dmrg_cross.html" class="code" title="function [y]=dmrg_cross(d,n,fun,eps,varargin)">dmrg_cross</a>	DMRG-cross method for the approximation of TT-tensors</li><li><a href="../../tt2/solve/dmrg_rake_solve2.html" class="code" title="function [x]=dmrg_rake_solve2(A, y, tol, varargin)">dmrg_rake_solve2</a>	DMRG-type method for the solution of linear systems in QTT-Tucker format</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y]=reort(u,uadd)</a>
+0002 <span class="comment">%Golub-Kahan reorthogonalization</span>
+0003 <span class="comment">%   [Y]=REORT(U,UADD) Given orthonormal matrix U, orthonormalize UADD to it</span>
+0004 <span class="comment">%   to get orthogonal basis in [U,UADD]. Faster then the QR-decomposition,</span>
+0005 <span class="comment">%   using the Golub-Kahan method</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 <span class="keyword">if</span> (<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(uadd,2)==0)
+0018     y = u;
+0019     <span class="keyword">return</span>;
+0020 <span class="keyword">end</span>;
+0021 <span class="keyword">if</span> (<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1) == <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,2) )
+0022   y=u;
+0023   <span class="keyword">return</span>
+0024 <span class="keyword">end</span>
+0025 <span class="keyword">if</span> (<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,2) + <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(uadd,2) &gt;= <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1) )
+0026   uadd=uadd(:,<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1)-<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,2));
+0027 <span class="keyword">end</span>
+0028 radd=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(uadd,2);
+0029 
+0030 mvr=u'*uadd; unew=uadd-u*mvr; 
+0031 reort_flag=true;
+0032 <span class="keyword">while</span> (reort_flag )
+0033     reort_flag=false;
+0034     j=1;
+0035 <span class="comment">%Nice vectorization!</span>
+0036 norm_unew=sum(unew.^2,1); 
+0037 norm_uadd=sum(uadd.^2,1);
+0038 reort_flag=isempty(norm_unew &lt;= 0.25*norm_uadd);
+0039 [unew,rv_not_used]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(unew,0); <span class="comment">%Here it is ok.</span>
+0040 <span class="keyword">if</span> (reort_flag)
+0041   su=u'*unew;
+0042   uadd=unew;
+0043   unew=unew-u*su; 
+0044 <span class="keyword">end</span>
+0045   
+0046 <span class="keyword">end</span>
+0047 y=[u,unew];
+0048 <span class="keyword">return</span>
+0049 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

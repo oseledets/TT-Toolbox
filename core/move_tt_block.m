@@ -1,13 +1,12 @@
 function [tt] = move_tt_block(tt, spos, epos, eps)
-% function [tt] = move_tt_block(tt, spos, epos, eps)
-% First steps to the TT-permute
-% Performs the bubble movement of the SPOS-th block to the position EPOS,
-% the intermediate blocks shift to the vacant places (i.e. by -1 if spos<epos, 
-% and +1, otherwise)
-% Requires truncation with the L2-norm accuracy EPS.
+%Performs a bubble movement of a block inside a train
+%   [TT] = MOVE_TT_BLOCK(TT, SPOS, EPOS, EPOS) Performs the bubble movement
+%   of the SPOS-th block to the position EPOS, the intermediate blocks
+%   shift to the vacant places, i.e. by (-1) if spos<eps, and +1,
+%   otherwise. Requires truncation with the L2-norm accuracy EPSs
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et. al.
 %Institute of Numerical Mathematics, Moscow, Russia

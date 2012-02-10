@@ -1,12 +1,21 @@
-function [y]=funcrs(tt,fun,eps,y,nswp,vargin)
-%[Y]=FUNCRS(TT,FUN,EPS)
-%[Y]=FUNCRS(TT,FUN,EPS)
-%[Y]=FUNCRS(TT,FUN,EPS,Y)
-%[Y]=FUNCRS(TT,FUN,EPS,Y,NSWP)
-%Computes approximation to the function FUN(TT) with accuracy EPS
-%Auxiliary parameters:  Y (initial approximation), NSWP 
-%(number of sweeps in the method 
-%Much faster then usual cross by vectorized computation of subtensors
+function [y]=funcrs(tt,fun,eps,y,nswp,varargin)
+%Cross approximation of a function of a TT-tensor, Method 1
+%   [Y]=FUNCRS(TT,FUN,EPS,Y,NSWP)
+%   Computes approximation to the function FUN(TT) with accuracy EPS
+%   Auxiliary parameters:  Y (initial approximation), NSWP 
+%   (number of sweeps in the method 
+%   Much faster then usual cross by vectorized computation of subtensors
+%
+%   
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 
 %PARAMETERS SECTION

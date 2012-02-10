@@ -1,22 +1,19 @@
 function [tt_res] = tt_add(tt1,tt2)
-%[TT_RES]=TT_ADD(TT1,TT2)
-% Adds two TT tensors, TT1, TT2
+%Adds two TT-tensors in TT1 format.
+%   [TT_RES]=TT_ADD(TT1,TT2) - adds two tensors in TT1.0 format. Please
+%   avoid the usage: it will be removed from future releases. Use the
+%   object-oriented version.
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT-Toolbox 2.2, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-
-%if (tt_ismatrix(tt1))
-%  tt_res=ttm_add(tt1,tt2);
-%  return
-%end
 
 
 

@@ -1,0 +1,275 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_tensor</title>
+  <meta name="keywords" content="tt_tensor">
+  <meta name="description" content="TT-tensor constructor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; tt_tensor.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_tensor
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>TT-tensor constructor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function t = tt_tensor(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">TT-tensor constructor
+   T=TT_TENSOR(ARRAY,EPS) Converts from a full array with accuracy EPS</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>	Truncation by absolution precision in Frobenius norm</li><li><a href="../../tt2/core/tt_mem.html" class="code" title="function [mem]=tt_mem(tt)">tt_mem</a>	Memory required to store the tensor TT</li><li><a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>	Compute all ranks of the TT-decomposition in TT1.0 format</li><li><a href="../../tt2/core/tt_size.html" class="code" title="function [sz]=tt_size(tt)">tt_size</a>	Mode dimensions of a TT-tensor in TT1.0 format</li><li><a href="../../tt2/misc/qtttucker_to_tt.html" class="code" title="function [tt]=qtttucker_to_tt(fc, cr)">qtttucker_to_tt</a>	function [tt]=qtttucker_to_tt(fc, cr)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/mtimes.html" class="code" title="function [c] = mtimes(a,b)">mtimes</a>	C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/plus.html" class="code" title="function [a]=plus(b,c)">plus</a>	A=B+C</li><li><a href="../../tt2/@qtt_tucker/qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@qtt_tucker/times.html" class="code" title="function [c]=times(a,b)">times</a>	C=A.*B</li><li><a href="../../tt2/@qtt_tucker/vector.html" class="code" title="function [qt]=vector(qt)">vector</a>	Transforms a QTT-Tucker matrix into QTT-Tucker vector</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/kron2.html" class="code" title="function [tt]=kron2(tt1,tt2)">kron2</a>	Kronecker product of two TT-matrices in non-standard ordering</li><li><a href="../../tt2/@tt_matrix/mtimes.html" class="code" title="function [c] = mtimes(a,b,varargin)">mtimes</a>	C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication</li><li><a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="horzcat.html" class="code" title="function [c]=horzcat(a,b)">horzcat</a>	C=[A,B]</li><li><a href="kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="kron2.html" class="code" title="function [c]=kron2(a,b)">kron2</a>	Computes the Pseudokronecker product of TT tensors:</li><li><a href="plus.html" class="code" title="function [a]=plus(b,c)">plus</a>	A=B+C</li><li><a href="squeeze.html" class="code" title="function [tt]=squeeze(tt)">squeeze</a>	Removes singleton dimensions from the TT-tensor</li><li><a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li><li><a href="times.html" class="code" title="function [a]=times(b,c,varargin)">times</a>	A=B.*C</li><li><a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="vertcat.html" class="code" title="function [c]=vertcat(a,b)">vertcat</a>	C=[A;B]</li><li><a href="../../tt2/core/mvrk.html" class="code" title="function [y]=mvrk(A, x, eps, varargin)">mvrk</a>	Computes matvec in the QTT-Tucker "rake" format</li><li><a href="../../tt2/core/qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>	Compute the QTT-Tucker representation of TT</li><li><a href="../../tt2/core/tt_als.html" class="code" title="function [res] = tt_als(x,y,nswp)">tt_als</a>	Several ALS sweeps for the approximation in the TT-format</li><li><a href="../../tt2/core/tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>	Tensor of all ones</li><li><a href="../../tt2/core/tt_qfromfull.html" class="code" title="function [tt]=tt_qfromfull(full,s,d,eps)">tt_qfromfull</a>	Approximates a full-format s-dimensional 2^{d} x...x 2^{d}-tensor</li><li><a href="../../tt2/core/tt_qtofull.html" class="code" title="function [ful]=tt_qtofull(tt,s)">tt_qtofull</a>	Returns a tensor _full_, given in a QTT decomposition _tt_,</li><li><a href="../../tt2/core/tt_rand.html" class="code" title="function [tt]=tt_rand(n,d,r)">tt_rand</a>	Generates a random tensor</li><li><a href="../../tt2/core/tt_rand_pos.html" class="code" title="function [tt]=tt_rand_pos(n, d, r)">tt_rand_pos</a>	Random TT-tensor with positive elements</li><li><a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/core/tt_tuck.html" class="code" title="function [factors,res]=tt_tuck(tt,eps)">tt_tuck</a>	Computes Tucker factors and Tucker core of the TT-tensor</li><li><a href="../../tt2/core/tt_x.html" class="code" title="function [res]=tt_x(n,varargin)">tt_x</a>	Computes X in the QTT-format</li><li><a href="../../tt2/core/tt_zeros.html" class="code" title="function [tt] = tt_zeros(n,varargin)">tt_zeros</a>	Tensor of all zeros</li><li><a href="../../tt2/cross/tt_rc.html" class="code" title="function [y]=tt_rc(d,n,elem_fun,eps,varargin)">tt_rc</a>	[Y]=TT_RC(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])</li><li><a href="../../tt2/exp/tt_minres_selfprec2.html" class="code" title="function [X]=tt_minres_selfprec2(A,  eps, varargin)">tt_minres_selfprec2</a>	Computation of the approximate TT-matrix inverse using self-prec method</li><li><a href="../../tt2/exp/tt_xtr.html" class="code" title="function [x]=tt_xtr(L,K,s)">tt_xtr</a>	The X_s coordinate in the transposed QTT permutation of indices</li><li><a href="../../tt2/misc/linqtt_to_qtttucker.html" class="code" title="function [qtu] = linqtt_to_qtttucker(tt, dims, eps)">linqtt_to_qtttucker</a>	function [qtu] = linqtt_to_qtttucker(tt, dims, eps)</li><li><a href="../../tt2/misc/tt_Fd_mtx1.html" class="code" title="function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)">tt_Fd_mtx1</a>	Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.</li><li><a href="../../tt2/misc/tt_hess.html" class="code" title="function [Hess]=tt_hess(tt, indext, h)">tt_hess</a>	Numerical Hessian in a given point</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li><li><a href="../../tt2/tests/test_cross.html" class="code" title="">test_cross</a>	Simple function to test the cross method</li><li><a href="../../tt2/tests/test_cross2.html" class="code" title="">test_cross2</a>	Simple function to test the cross method</li><li><a href="../../tt2/tests/test_dmrg_cross.html" class="code" title="">test_dmrg_cross</a>	Simple script to test the stabilized dmrg-cross method</li><li><a href="../../tt2/tests/test_full_KN2.html" class="code" title="">test_full_KN2</a>	The test script for the Crank-Nicolson scheme with global time stepping</li><li><a href="../../tt2/tests/test_steps2.html" class="code" title="">test_steps2</a>	Crank-Nicolson scheme with local time-stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function t = tt_tensor(varargin)</a>
+0002 <span class="comment">%TT-tensor constructor</span>
+0003 <span class="comment">%   T=TT_TENSOR(ARRAY,EPS) Converts from a full array with accuracy EPS</span>
+0004 
+0005 <span class="comment">%   T=TT_TENSOR(ARRAY,SZ,R1,R2,EPS) Converts from a full array which is</span>
+0006 <span class="comment">%   treated as an array with mode sizes SZ and tail ranks R1 and R2. The</span>
+0007 <span class="comment">%   accuracy is set to EPS</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   T=TT_TENSOR(TT1) Copies TT1 to TT</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   T=TT_TENSOR(TT_MATRIX) Unfolds a TT-matrix into a TT-tensor</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%   T=TT_TENSOR(TT_ARRAY) Unfolds a TT-array</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%   T=TT_TENSOR(FILENAME) Reads from the SDV format</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%   T=TT_TENSOR(CELL_ARRAY) Converts from TT1 format OR</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%   T=TT_TENSOR(CAN_CELL_ARRAY) Converts from the canonical format, given</span>
+0020 <span class="comment">%   as a cell array of factors</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0026 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0027 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0030 <span class="comment">%ivan.oseledets@gmail.com</span>
+0031 <span class="comment">%---------------------------</span>
+0032 
+0033 <span class="keyword">if</span> (nargin == 0)
+0034     t.d    = 0;
+0035     t.r    = 0;
+0036     t.n    = 0;
+0037     t.core = 0;                    <span class="comment">% empty tensor</span>
+0038     t.ps   = 0;
+0039     t = class(t, <span class="string">'tt_tensor'</span>);
+0040     <span class="keyword">return</span>;
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="comment">% Copy CONSTRUCTOR</span>
+0044 <span class="keyword">if</span> (nargin == 1) &amp;&amp; isa(varargin{1}, <span class="string">'tt_tensor'</span>)
+0045     t = <a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0046     t.d = varargin{1}.d;
+0047     t.r = varargin{1}.r;
+0048     t.n = varargin{1}.n;
+0049     t.core=varargin{1}.core;
+0050     t.ps = varargin{1}.ps;
+0051     <span class="keyword">return</span>;
+0052 <span class="keyword">end</span>
+0053 <span class="comment">%From tt_matrix (unfold)</span>
+0054 <span class="keyword">if</span> ( nargin == 1 ) &amp;&amp; isa(varargin{1},<span class="string">'tt_matrix'</span>);
+0055   tm=varargin{1};
+0056   t=tm.tt;
+0057   <span class="keyword">return</span>;
+0058 <span class="keyword">end</span>
+0059 <span class="comment">%From tt_array (stack)</span>
+0060 <span class="keyword">if</span> ( nargin == 1 ) &amp;&amp; isa(varargin{1},<span class="string">'tt_array'</span>);
+0061   ta=varargin{1};
+0062   t=ta.tt;
+0063   <span class="keyword">return</span>;
+0064 <span class="keyword">end</span>
+0065 <span class="comment">%From old format</span>
+0066 <span class="keyword">if</span> ( nargin == 1 ) &amp;&amp; isa(varargin{1},<span class="string">'cell'</span>) 
+0067     <span class="comment">%Check if it is a canonical format</span>
+0068     tt=varargin{1};
+0069     d=numel(tt);
+0070     rc=zeros(d,1);
+0071     all_2d=true;
+0072     <span class="keyword">for</span> i=1:d
+0073        rc=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(tt{i},2);
+0074        <span class="keyword">if</span> (<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(tt{i},3) ~= 1 )
+0075           all_2d = false;
+0076        <span class="keyword">end</span>
+0077     <span class="keyword">end</span>
+0078     <span class="keyword">if</span> ( numel(unique(rc)) == 1 &amp;&amp; all_2d)
+0079         is_can = true;
+0080         rc=rc(1);
+0081     <span class="keyword">else</span>
+0082         is_can = false;
+0083     <span class="keyword">end</span>
+0084     <span class="keyword">if</span> ( ~is_can )  
+0085         <span class="comment">%t = class(t, 'tt_tensor');</span>
+0086        t=<a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0087        t.d  = d;
+0088        t.r  = <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(tt);
+0089        t.r  = [1;t.r;1];
+0090        t.n=<a href="../../tt2/core/tt_size.html" class="code" title="function [sz]=tt_size(tt)">tt_size</a>(tt);
+0091        t.core=zeros(<a href="../../tt2/core/tt_mem.html" class="code" title="function [mem]=tt_mem(tt)">tt_mem</a>(tt),1);
+0092        ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
+0093        <span class="comment">%ps=zeros(d+1,1);</span>
+0094        t.core(ps(1):ps(2)-1)=tt{1}(:);
+0095        <span class="keyword">for</span> i=2:d-1
+0096           cr=tt{i}; cr=permute(cr,[2,1,3]);
+0097           t.core(ps(i):ps(i+1)-1) = cr(:);      
+0098        <span class="keyword">end</span>
+0099        <span class="comment">%t.ps=ps;</span>
+0100        cr=tt{d}; cr=permute(cr,[2,1]);
+0101        t.core(ps(d):ps(d+1)-1) = cr(:);
+0102        t.ps=ps;
+0103        <span class="keyword">return</span>
+0104     <span class="keyword">else</span>
+0105        t=<a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0106        t.d=d;
+0107        r=rc*ones(d+1,1);
+0108        r(1)=1; r(d+1)=1;
+0109        t.r=r;
+0110        n=zeros(d,1);
+0111        <span class="keyword">for</span> i=1:d
+0112           n(i)=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(tt{i},1);
+0113        <span class="keyword">end</span>
+0114        t.n=n;
+0115        t.ps   = cumsum([1;t.n.*t.r(1:t.d).*t.r(2:t.d+1)]);
+0116        crp=zeros(t.ps(d+1)-1,1);
+0117        cc=tt{1};
+0118        crp(t.ps(1):t.ps(2)-1)=cc(:);
+0119        cc=tt{d};
+0120        cc=cc.';
+0121        crp(t.ps(d):t.ps(d+1)-1)=cc(:);
+0122        <span class="keyword">for</span> i=2:d-1
+0123           cc=tt{i};
+0124           cr=zeros(r(i),n(i),r(i+1));
+0125           <span class="keyword">for</span> j=1:n(i)
+0126              cr(:,j,:)=<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(cc(j,:));
+0127           <span class="keyword">end</span>
+0128           crp(t.ps(i):t.ps(i+1)-1)=cr(:);
+0129        <span class="keyword">end</span>
+0130        t.core=crp;
+0131        <span class="keyword">return</span>
+0132     <span class="keyword">end</span>
+0133 <span class="keyword">end</span>
+0134 
+0135 <span class="comment">% From a simple tt_tensor struct without class definition</span>
+0136 <span class="keyword">if</span> (nargin == 1) &amp;&amp; isa(varargin{1}, <span class="string">'struct'</span>)
+0137     t.d    = varargin{1}.d;
+0138     t.r    = varargin{1}.r;
+0139     t.n    = varargin{1}.n;
+0140     t.core = varargin{1}.core;                    <span class="comment">% empty tensor</span>
+0141     t.ps   = cumsum([1;t.n.*t.r(1:t.d).*t.r(2:t.d+1)]);
+0142     t = class(t, <span class="string">'tt_tensor'</span>);      
+0143     <span class="keyword">return</span>;
+0144 <span class="keyword">end</span>;
+0145 
+0146 <span class="comment">% From a SDV file</span>
+0147 <span class="keyword">if</span> (nargin == 1) &amp;&amp; isa(varargin{1}, <span class="string">'char'</span>)
+0148     [d,r,n,<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>] = tt_read(varargin{1});
+0149     
+0150     <span class="keyword">if</span> (d&lt;1)
+0151         fprintf(<span class="string">'tt_read reported d=%d\n'</span>, d);
+0152         <span class="keyword">return</span>;
+0153     <span class="keyword">end</span>;
+0154     
+0155     t.d = d;
+0156     t.r = r;
+0157     t.n = n;
+0158     t.core = <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>;
+0159     t.ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
+0160     t = class(t, <span class="string">'tt_tensor'</span>);
+0161     <span class="keyword">return</span>
+0162 <span class="keyword">end</span>;
+0163 
+0164 <span class="comment">%From qtt_tucker format</span>
+0165 
+0166 <span class="keyword">if</span> ( nargin == 1 &amp;&amp; isa(varargin{1}, <span class="string">'qtt_tucker'</span>) )
+0167    t=<a href="../../tt2/misc/qtttucker_to_tt.html" class="code" title="function [tt]=qtttucker_to_tt(fc, cr)">qtttucker_to_tt</a>(varargin{1}.tuck,varargin{1}.core);
+0168    <span class="keyword">return</span>
+0169 <span class="keyword">end</span>
+0170 
+0171 <span class="comment">%From full format</span>
+0172 <span class="keyword">if</span> ( (nargin == 1 &amp;&amp; isa(varargin{1},<span class="string">'double'</span>)) || (nargin ==2 &amp;&amp; isa(varargin{1},<span class="string">'double'</span>) &amp;&amp; isa(varargin{2},<span class="string">'double'</span>)))
+0173     t=<a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0174     b=varargin{1};
+0175     
+0176     <span class="keyword">if</span> ( nargin == 2 &amp;&amp; isa(varargin{2},<span class="string">'double'</span>)) 
+0177       eps=varargin{2};
+0178     <span class="keyword">else</span>
+0179       eps=1e-14;
+0180       <span class="comment">%fprintf('Accuracy not specified, using %3.2e \n',eps);</span>
+0181     <span class="keyword">end</span>
+0182     n=<a href="size.html" class="code" title="function [sz] = size(tt,dim)">size</a>(b); n=n(:); d=numel(n); r=ones(d+1,1);
+0183    <span class="keyword">if</span> ( numel(n) == 2 &amp;&amp; n(2) == 1 ) <span class="comment">%Singleton tensor</span>
+0184      d=1; n=n(1:d);
+0185      r=ones(2,1);
+0186      <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=b(:);
+0187      ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
+0188      t.d=d;  
+0189      t.n=n;
+0190      t.r=r;
+0191      t.ps=ps;
+0192      t.core=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>;
+0193      <span class="keyword">return</span>
+0194    <span class="keyword">end</span>
+0195     
+0196 <span class="keyword">end</span>
+0197 <span class="keyword">if</span> ( nargin == 5 &amp;&amp; isa(varargin{1},<span class="string">'double'</span>)  &amp;&amp; isa(varargin{2},<span class="string">'double'</span>) &amp;&amp; numel(varargin{3})==1  &amp;&amp; numel(varargin{4})==1 &amp;&amp; numel(varargin{5})==1)
+0198    t=<a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0199    b=varargin{1}; n=varargin{2}; r(1)=varargin{3}; d=numel(n); r(d+1)=varargin{4}; eps=varargin{5};  
+0200 <span class="keyword">end</span>
+0201 d=numel(n);
+0202 c=b;
+0203 <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=[];
+0204 pos=1;
+0205 ep=eps/sqrt(d-1);
+0206 n=n(:); r=r(:);
+0207 <span class="keyword">for</span> i=1:d-1
+0208   m=n(i)*r(i); c=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(c,[m,numel(c)/m]);
+0209   [u,s,v]=svd(c,<span class="string">'econ'</span>);
+0210   s=<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s); r1=<a href="../../tt2/core/my_chop2.html" class="code" title="function [r] = my_chop2(sv,eps)">my_chop2</a>(s,ep*<a href="norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(s));
+0211   u=u(:,1:r1); s=s(1:r1);
+0212   r(i+1)=r1;
+0213   <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(pos:pos+r(i)*n(i)*r(i+1)-1)=u(:);
+0214   v=v(:,1:r1);
+0215   v=v*<a href="diag.html" class="code" title="function [tm]=diag(tt)">diag</a>(s); c=v';
+0216   pos=pos+r(i)*n(i)*r(i+1);
+0217 <span class="keyword">end</span>
+0218 <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(pos:pos+r(d)*n(d)*r(d+1)-1)=c(:);
+0219 <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(:); 
+0220 ps=cumsum([1;n.*r(1:d).*r(2:d+1)]);
+0221 t.d=d;
+0222 t.n=n;
+0223 t.r=r;
+0224 t.ps=ps;
+0225 t.core=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>;
+0226 
+0227 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

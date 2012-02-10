@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_zeros</title>
+  <meta name="keywords" content="tt_zeros">
+  <meta name="description" content="Tensor of all zeros">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_zeros.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_zeros
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Tensor of all zeros</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt] = tt_zeros(n,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Tensor of all zeros
+   [TT]=TT_ZEROS(N,D), computes the d-dimensional TT-tensor of all zeros 
+   with mode size equal to N
+
+   [TT]=TT_ZEROS(N), computes the TT-tensor of all zeros with mode size 
+   given in the vector N
+
+
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/exp/canm_to_qtt.html" class="code" title="function [tt]=canm_to_qtt(can,rmax,eps)">canm_to_qtt</a>	Converts a canonical representation to QTT-format</li><li><a href="../../tt2/solve/tt_gmres.html" class="code" title="function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin)">tt_gmres</a>	TT-GMRES method</li><li><a href="../../tt2/tests/test_full_KN2.html" class="code" title="">test_full_KN2</a>	The test script for the Crank-Nicolson scheme with global time stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt] = tt_zeros(n,varargin)</a>
+0002 <span class="comment">%Tensor of all zeros</span>
+0003 <span class="comment">%   [TT]=TT_ZEROS(N,D), computes the d-dimensional TT-tensor of all zeros</span>
+0004 <span class="comment">%   with mode size equal to N</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   [TT]=TT_ZEROS(N), computes the TT-tensor of all zeros with mode size</span>
+0007 <span class="comment">%   given in the vector N</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0015 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0016 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0019 <span class="comment">%ivan.oseledets@gmail.com</span>
+0020 <span class="comment">%---------------------------</span>
+0021 <span class="keyword">if</span> (numel(n) == 1)
+0022   d=varargin{1}; 
+0023   n=n*ones(1,d);
+0024 <span class="keyword">else</span>
+0025   d=numel(n);
+0026 <span class="keyword">end</span>
+0027 tt=cell(d,1);
+0028 tt{1}=zeros(n(1),1);
+0029 tt{d}=zeros(n(d),1);
+0030 <span class="keyword">for</span> i=2:d-1
+0031    tt{i}=zeros(n(i),1,1);
+0032 <span class="keyword">end</span>
+0033 tt=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(tt); <span class="comment">%Bydlocode</span>
+0034 <span class="keyword">return</span>
+0035 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

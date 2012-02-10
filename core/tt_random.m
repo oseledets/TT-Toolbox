@@ -1,11 +1,11 @@
 function [tt]=tt_random(n,d,r)
-%[TT]=TT_RANDOM(N,D,R)
-%Generates a random D-dimensional tensor TT with mode sizes N and ranks R
-%N can be either mode vector or a number
-%R can be either mode vector or a number
+%Generates a random tensor
+%   [TT]=TT_RANDOM(N,D,R) Generates a random tensor with dimensions specified
+%   by (N,D), where N can be a number of an array of dimension D, R is a
+%   rank or a array of dimension d+1
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

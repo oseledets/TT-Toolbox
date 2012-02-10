@@ -1,6 +1,25 @@
 function t = tt_matrix(varargin)
-%TT_TENSOR Tensor stored as a TT-operator
-
+%TT_matrix class constructor
+%   [T]=TT_MATRIX(TT_MAT) - copy constructor
+%   
+%   [T]=TT_MATRIX(TT,N,M) - construct TT-matrix from the TT-tensor. N and M
+%   are the row and column mode sizes. N and M can be either numbers, or
+%   array of numbers 
+%
+%   [T]=TT_MATRIX(CELL) - construct TT-matrix from TT1 format
+%
+%   [T]=TT_MATRIX(FULL_ARR) - construct TT-matrix from a full
+%   2d-dimensional array FULL_ARR
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 if (nargin == 0)
     t1=tt_tensor;
     t.tt=t1;

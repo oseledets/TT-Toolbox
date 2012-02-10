@@ -1,12 +1,22 @@
 function [tt]=canm_to_qtt(can,rmax,eps)
-%[TT]=CANM_TO_QTT(CAN,RMAX,EPS)
-% Converts canonical representation CAN (Cell array of factors)
-% of a matrix
-% to QTT representation with accuracy parameter EPS
-% Mode sizes should be powers of 2
+%Converts a canonical representation to QTT-format
+%   [TT]=CANM_TO_QTT(CAN,RMAX,EPS)
+%   Converts canonical representation CAN (Cell array of factors)
+%   of a matrix
+%   to QTT representation with accuracy parameter EPS
+%   Mode sizes should be powers of 2
 %
 %
-% TT Toolbox 1.0
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 if (size(can,1) == 1 )
   can=can';
 end
@@ -22,18 +32,22 @@ for i=1:d1
   end
   d(i)=w;
 end
-tt=tt_zeros(sum(d),4);
+%For each factor generate its qtt-representation
+tt=[];
 tt_arr=cell(d1,1);
 for i=1:R
   for s=1:d1
     %tt_arr{s}=vec_to_nd(can{s}(:,i),eps,d(s));
-    tt_arr{s}=tt_mat_to_vec(full_to_nd(can{s}(:,:,i),eps,d(s))); 
- end
+    can_cur=can{s}(:,:,i); 
+    can_cur=reshape(can_cur,2*ones(1,2*d(s)));
+    tt_arr{s}=tt_tensor(tt_matrix(can_cur,eps));
+  end
   mat=tt_mkron(tt_arr);
-  tt=tt_add(tt,mat);
-  if ( tt_erank(tt) > rmax )
-     tt=tt_compr2(tt,eps);
+  tt=tt+mat;
+  if ( erank(tt) > rmax )
+     tt=round(tt,eps);
   end
 end
-tt=tt_compr2(tt,eps);
+tt=round(tt,eps);
+tt=tt_matrix(tt);
 return

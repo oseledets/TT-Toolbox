@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of qtttucker_to_tt</title>
+  <meta name="keywords" content="qtttucker_to_tt">
+  <meta name="description" content="function [tt]=qtttucker_to_tt(fc, cr)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">misc</a> &gt; qtttucker_to_tt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>qtttucker_to_tt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=qtttucker_to_tt(fc, cr)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=qtttucker_to_tt(fc, cr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function [tt]=qtttucker_to_tt(fc, cr)
+ Builds the TT tensor from the QTT-Tucker representation,
+ where fc is the Tucker factors in QTT (cell array of @tt_tensor),
+ cr is the Tucker core in TT.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/core/tucker_to_tt.html" class="code" title="function [tt] = tucker_to_tt(fc, core)">tucker_to_tt</a>	Build TT-tensor from the QTT-Tucker representation</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=qtttucker_to_tt(fc, cr)</a>
+0002 <span class="comment">% function [tt]=qtttucker_to_tt(fc, cr)</span>
+0003 <span class="comment">% Builds the TT tensor from the QTT-Tucker representation,</span>
+0004 <span class="comment">% where fc is the Tucker factors in QTT (cell array of @tt_tensor),</span>
+0005 <span class="comment">% cr is the Tucker core in TT.</span>
+0006 
+0007 d = cr.d;
+0008 <span class="keyword">for</span> i=1:d
+0009     fc{i} = <a href="../../tt2/core/tt_reshape.html" class="code" title="function [tt2]=tt_reshape(tt1,sz,eps, rl, rr)">tt_reshape</a>(fc{i}, prod(fc{i}.n), [], 1, fc{i}.r(fc{i}.d+1));
+0010     fc{i} = fc{i}{1};
+0011     fc{i} = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(fc{i}, <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(fc{i}, 2), <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(fc{i}, 3));
+0012 <span class="keyword">end</span>;
+0013 tt = <a href="../../tt2/core/tucker_to_tt.html" class="code" title="function [tt] = tucker_to_tt(fc, core)">tucker_to_tt</a>(fc, cr);
+0014 
+0015 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

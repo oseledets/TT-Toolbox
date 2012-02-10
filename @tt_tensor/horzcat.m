@@ -1,9 +1,19 @@
 function [c]=horzcat(a,b)
-%C=HORZCAT(A,B)
 %C=[A,B]
-%Computes "addition of rows" of two TT-tensors A and B
-%The result has r(d+1) = sum(r(d+1,A)+r(d+1,B))
-%r(1) should be equal to the same of A & B
+%   C=HORZCAT(A,B) Horizontal cat of two block-row TT-tensors
+%   The result has r(d+1) = sum(r(d+1,A)+r(d+1,B)). The first ranks 
+%   should be equal for A and B
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 if (isempty(b) )
   c=a;

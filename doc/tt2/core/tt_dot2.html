@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_dot2</title>
+  <meta name="keywords" content="tt_dot2">
+  <meta name="description" content="Logarithm of the scalar product of two tensor (to avoid overflow)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_dot2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_dot2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Logarithm of the scalar product of two tensor (to avoid overflow)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [res,sgn] = tt_dot2(tt1,tt2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Logarithm of the scalar product of two tensor (to avoid overflow)
+   [RES]=TT_DOT2(TT1,TT2) Computes the logarithm of the scalar product of
+   two TT-tensors to avoid overflow. Avoid the usage: use dot2 function
+   from the object-oriented version
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------d=size(tt1,1);</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>	Tensor-by-matrix multiplication of three-dimensional tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="tt_mvk3.html" class="code" title="function [y,swp]=tt_mvk3(W, x, eps, varargin)">tt_mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="tt_wround.html" class="code" title="function [y,swp]=tt_wround(W, x, eps, varargin)">tt_wround</a>	Approximates a vector in the weighted norm using DMRG iterations</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li><li><a href="../../tt2/solve/tt_gmres.html" class="code" title="function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin)">tt_gmres</a>	TT-GMRES method</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [res,sgn] = tt_dot2(tt1,tt2)</a>
+0002 <span class="comment">%Logarithm of the scalar product of two tensor (to avoid overflow)</span>
+0003 <span class="comment">%   [RES]=TT_DOT2(TT1,TT2) Computes the logarithm of the scalar product of</span>
+0004 <span class="comment">%   two TT-tensors to avoid overflow. Avoid the usage: use dot2 function</span>
+0005 <span class="comment">%   from the object-oriented version</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------d=size(tt1,1);</span>
+0017 g0=(tt1{1})'*(tt2{1});
+0018 gd=(tt1{d})'*(tt2{d});
+0019 r1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(gd,1); r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(gd,2);
+0020 factors=zeros(d,1); <span class="comment">%The norm will be represented as a product of numbers</span>
+0021 factors(1) = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(g0,<span class="string">'fro'</span>); g0=g0./factors(1);
+0022 <span class="keyword">if</span> ( abs(factors(1))&lt;1e-200 ) 
+0023    res=1.0;
+0024 <span class="keyword">end</span>
+0025 gd=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(gd,1,r1*r2);
+0026 <span class="keyword">for</span> i=2:d-1
+0027     core1=tt1{i};
+0028     core2=tt2{i};
+0029     <span class="comment">%fprintf('i=%d \n',i);</span>
+0030     core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,2,g0);
+0031     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1); r21=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2); r31=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0032     r22=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core2,2); r32=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core2,3);
+0033     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[ncur*r21,r31]);
+0034     core2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core2,[ncur*r22,r32]);
+0035     g0=core1'*core2;
+0036     factors(i) = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(g0,<span class="string">'fro'</span>);
+0037 <span class="comment">%    fprintf('factors(%d)=%e\n',i,factors(i));</span>
+0038     g0 = g0./factors(i);
+0039 <span class="keyword">end</span>
+0040 r1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(g0,1); r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(g0,2);
+0041 g0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(g0,1,r1*r2);
+0042 <span class="comment">%keyboard;</span>
+0043 factors(d) = abs(g0*gd');
+0044 <span class="comment">%res=g0*gd';</span>
+0045 <span class="comment">%res=prod(factors(1:d));</span>
+0046 res=sum(log(abs(factors)));
+0047 <span class="keyword">if</span> (max(factors)==0)
+0048     res = -inf;
+0049 <span class="keyword">end</span>;
+0050 sgn=prod(sign(factors));
+0051 
+0052 <span class="keyword">return</span>
+0053 
+0054 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

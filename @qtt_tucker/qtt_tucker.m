@@ -1,21 +1,32 @@
 function t = qtt_tucker(varargin)
-%QTT_TUCKER class constructor (mixed TT format for the core + QTT format
-% for the factors
-%QTT_TUCKER(ARRAY,SZ,EPS)
-% two options:
-% 1) split large dimensions into the qtt_tucker: 
-%  in this case, sz is the cell array, containing Q-dimensions of the
-%  factors.
-% example: qtt_tucker(tt, {[2,2,2], [3,3,3], [5,5]}, eps), where tt should
-% be 2^3 x 3^3 x 5^2 tt_tensor.
-% 2) merge: 
-% sz is the ordinary row, containing numbers of dimensions to merge.
-% example: qtt_tucker(qtt, [7,7,2], eps), where qtt should be
-% 7+7+2 = 16-dimensional tt_tensor, the result will be the qtt_tucker
-% with 3D core, and 7,7,2-dimensional tucker factors.
+%QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)
+%   T=QTT_TUCKER(TT,SZ,EPS) Splits large mode sizes of a TT-Tensor TT, if
+%   SZ is a cell array with contain Q-dimensions of the factors. 
+%   Example: qtt_tucker(tt, {[2,2,2], [3,3,3], [5,5]}, eps), where tt should
+%   be a 2^3 x 3^3 x 5^2 tt_tensor.
 %
-% qtt_tucker(tt, eps) is the same as split-variant of
-% QTT_TUCKER(ARRAY,SZ,EPS), assuming sz contains all mode sizes equal to 2.
+%   T=QTT_TUCKER(QTT,SZ,EPS) Merges large several modes and computes
+%   the Tucker decomposition in these long modes. In this case, sz should
+%   be an ordinary row, containing the numbers of dimensions to merge
+%   sz is the ordinary row, containing numbers of dimensions to merge.
+%	Example: qtt_tucker(qtt, [7,7,2], eps), where qtt should be
+%   7+7+2 = 16-dimensional tt_tensor, the result will be the qtt_tucker
+%   with 3D core, and 7,7,2-dimensional tucker factors.
+%
+%   QTT_TUCKER(TT,EPS) is the same as split variant of
+%   QTT_TUCKER(TT,SZ,EPS), assuming that SZ has all mode sizes equal to 2
+%   (i.e., the mode sizes of the original TT-tensor are a power of 2)
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 
 if (nargin == 0)

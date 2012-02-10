@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of plus</title>
+  <meta name="keywords" content="plus">
+  <meta name="description" content="A=B+C">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; plus.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>plus
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>A=B+C</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [a]=plus(b,c) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">A=B+C
+   [A]=PLUS(B,C) Computes the sum of two QTT-Tucker tensors B and C
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>	QTT-Tucker contructor (TT-format for the core+QTT-format for the factors)</li><li><a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	Computes ranks of the QTT-Tucker tensor</li><li><a href="../../tt2/@tt_matrix/rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	All or individual TT-ranks of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>	Returns TT-ranks of the given tensor in TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [a]=plus(b,c)</a>
+0002 <span class="comment">%A=B+C</span>
+0003 <span class="comment">%   [A]=PLUS(B,C) Computes the sum of two QTT-Tucker tensors B and C</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015 <span class="keyword">if</span> ( isempty(b) )
+0016  a=c;
+0017  <span class="keyword">return</span>
+0018 <span class="keyword">elseif</span> ( isempty(c) )
+0019  a=b;
+0020  <span class="keyword">return</span>
+0021 <span class="keyword">end</span>
+0022 a=<a href="qtt_tucker.html" class="code" title="function t = qtt_tucker(varargin)">qtt_tucker</a>;
+0023 cb=b.core; cc=c.core;
+0024 rb=<a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>(cb); rc=<a href="rank.html" class="code" title="function [r]=rank(a,varargin)">rank</a>(cc);
+0025 nb=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cb); nc=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cc);
+0026 tb=b.tuck; tc=c.tuck;
+0027 d=b.dphys;
+0028 <span class="comment">%Determine size of the result</span>
+0029 ra=rb+rc;
+0030 na=nb+nc;
+0031 <span class="keyword">if</span> ( rc(1) == rb(1) )
+0032     ra(1)=rb(1);
+0033 <span class="keyword">else</span>
+0034   error(<span class="string">'Inconsistent sizes in mode 1'</span>);    
+0035 <span class="keyword">end</span>
+0036 <span class="keyword">if</span> ( rc(d+1) == rb(d+1) )
+0037   ra(d+1)=rb(d+1);
+0038 <span class="keyword">else</span>
+0039   error(<span class="string">'Inconsistent sizes in the last mode'</span>);    
+0040 <span class="keyword">end</span>
+0041 corea=[];
+0042 <span class="keyword">for</span> i=1:d
+0043   c1=cb{i}; c2=cc{i};
+0044   c1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(c1,[rb(i),nb(i),rb(i+1)]);
+0045   c2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(c2,[rc(i),nc(i),rc(i+1)]);
+0046   cres=zeros(ra(i),na(i),ra(i+1));
+0047   cres(1:rb(i),1:nb(i),1:rb(i+1))=c1;
+0048   cres((ra(i)-rc(i)+1):ra(i),(na(i)-nc(i)+1):na(i),(ra(i+1)-rc(i+1)+1):ra(i+1))=c2;
+0049   corea=[corea; cres(:)];
+0050 <span class="keyword">end</span>
+0051 ca=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>; 
+0052 ca.d=d;
+0053 ca.n=na;
+0054 ca.core=corea;
+0055 ca.r=ra;
+0056 ca.ps=cumsum([1;ca.n.*ca.r(1:ca.d).*ca.r(2:ca.d+1)]);
+0057 ta = cell(d,1);
+0058 ismatrix = 0;
+0059 <span class="keyword">for</span> i=1:d
+0060    <span class="keyword">if</span> (isa(tb{i}, <span class="string">'tt_matrix'</span>))
+0061        curn = tb{i}.n;
+0062        curm = tb{i}.m;
+0063        tb{i} = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(tb{i});
+0064        tc{i} = <a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>(tc{i});
+0065        ismatrix = 1;
+0066    <span class="keyword">end</span>;
+0067    ta{i}=[tb{i},tc{i}];
+0068    <span class="keyword">if</span> (ismatrix)
+0069        ta{i} = <a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(ta{i}, curn, curm);
+0070    <span class="keyword">end</span>;
+0071 <span class="keyword">end</span>
+0072 a.core=ca;
+0073 a.tuck=ta;
+0074 a.dphys=d;
+0075 a.sz=b.sz;
+0076 <span class="keyword">return</span>
+0077 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

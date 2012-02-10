@@ -1,11 +1,13 @@
 function [res]=tt_mv(mat,vec)
-%[RES]=TT_MV(MAT,VEC)
-%Matrix MAT by vector VEC product in TT format
+%Matrix-by-vector product in the TT1.0 format
+%   [RES]=TT_MV(MAT,VEC) matrix MAT by vector VEC product in TT1.0 format
+%   Please avoid its usage: it will be removed in
+%   future releases. Use * operator from the object-oriented version
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT-Toolbox 2.2, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

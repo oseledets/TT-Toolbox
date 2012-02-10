@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_rc2</title>
+  <meta name="keywords" content="tt_rc2">
+  <meta name="description" content="[Y]=TT_RC2(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">cross</a> &gt; tt_rc2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/cross&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_rc2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>[Y]=TT_RC2(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y]=tt_rc2(d,n,elem_fun,eps,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">[Y]=TT_RC2(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])
+The TT-Renormalization-Cross algorithm
+input is: the dimension of the array d, the 
+size vector n, the function that computes the prescribed element
+of an array, accuracy parameter eps
+and also additional arguments specified as 'rmax',10,'nswp',10
+'verb',true and so on
+ 'x0', x0
+The elem function has syntax elem_fun(ind); all other additional
+information
+has to be passed as &quot;anonymous&quot; arguments</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>	Correct conversion of an index to a multiindex</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [super_core]=compute_supercore(i,elem_fun,d,n,ry,ind_left,ind_right,vec)</a></li><li><a href="#_sub2" class="code">function [i1,i2]=new_cross(mat,i1,i2,eps)</a></li><li><a href="#_sub3" class="code">function [ind_left]=get_multi_left(i_left,r_left,ry)</a></li><li><a href="#_sub4" class="code">function [ind_right]=get_multi_right(i_right,r_right,ry)</a></li><li><a href="#_sub5" class="code">function [ind]=find_fiber_maximum(elem_fun,ind)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y]=tt_rc2(d,n,elem_fun,eps,varargin)</a>
+0002 <span class="comment">%[Y]=TT_RC2(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])</span>
+0003 <span class="comment">%The TT-Renormalization-Cross algorithm</span>
+0004 <span class="comment">%input is: the dimension of the array d, the</span>
+0005 <span class="comment">%size vector n, the function that computes the prescribed element</span>
+0006 <span class="comment">%of an array, accuracy parameter eps</span>
+0007 <span class="comment">%and also additional arguments specified as 'rmax',10,'nswp',10</span>
+0008 <span class="comment">%'verb',true and so on</span>
+0009 <span class="comment">% 'x0', x0</span>
+0010 <span class="comment">%The elem function has syntax elem_fun(ind); all other additional</span>
+0011 <span class="comment">%information</span>
+0012 <span class="comment">%has to be passed as &quot;anonymous&quot; arguments</span>
+0013 
+0014 <span class="comment">%The algorithm. It needs left &amp; right index sets to be initialized.</span>
+0015 <span class="comment">%It needs supecores to be precomputed</span>
+0016 <span class="comment">%It is a good idea to store also the supercores (there will be d-1,</span>
+0017 <span class="comment">%i think) &amp; update them; also certain indices maybe removed from the</span>
+0018 <span class="comment">%index set?? we will not do that;</span>
+0019 <span class="comment">%Two possibilities: current index contains maxvol submatrix;</span>
+0020 <span class="comment">%If not, increase, increase &amp; increase (maybe even beyond the rank!)</span>
+0021 <span class="comment">%rank one subtraction can be made very stable</span>
+0022 
+0023 
+0024 <span class="comment">%Default parameters</span>
+0025 <span class="keyword">if</span> ( numel(n) == 1 )
+0026   n=n*ones(1,d);
+0027 <span class="keyword">end</span>
+0028 nswp=10;
+0029 rmax=1000;
+0030 x0=[];
+0031 verb=true;
+0032 vec=false; <span class="comment">%If there is a vectorization in options, i.e. if elem_fun</span>
+0033 <span class="comment">%supports vectorized computations of many elements at once</span>
+0034 <span class="keyword">for</span> i=1:2:length(varargin)-1
+0035     <span class="keyword">switch</span> lower(varargin{i})
+0036         <span class="keyword">case</span> <span class="string">'nswp'</span>
+0037             nswp=varargin{i+1};
+0038         <span class="keyword">case</span> <span class="string">'rmax'</span>
+0039             rmax=lower(varargin{i+1});
+0040         <span class="keyword">case</span> <span class="string">'x0'</span>
+0041             x0=varargin{i+1};
+0042         <span class="keyword">case</span> <span class="string">'verb'</span>
+0043             verb=varargin{i+1};
+0044         <span class="keyword">case</span> <span class="string">'vec'</span>
+0045             vec=varargin{i+1};
+0046         <span class="keyword">otherwise</span>
+0047             error(<span class="string">'Unrecognized option: %s\n'</span>,varargin{i});
+0048     <span class="keyword">end</span>
+0049 <span class="keyword">end</span>
+0050 
+0051 <span class="comment">%The initial setup is done.</span>
+0052 
+0053 <span class="comment">%We need initial index sets. Say, the vector of all ones (he-he)</span>
+0054 <span class="comment">%i_left;</span>
+0055 <span class="comment">%r_left;</span>
+0056 <span class="comment">%i_right;</span>
+0057 <span class="comment">%r_right;</span>
+0058 i_left=cell(d,1);
+0059 i_right=cell(d,1);
+0060 r_left=cell(d,1);
+0061 r_right=cell(d,1);
+0062 ry=ones(d+1,1); <span class="comment">%Initial ranks</span>
+0063 <span class="comment">%Find fiber maximum</span>
+0064 ind=2*ones(d,1);
+0065 ind=<a href="#_sub5" class="code" title="subfunction [ind]=find_fiber_maximum(elem_fun,ind)">find_fiber_maximum</a>(elem_fun,ind);
+0066 <span class="keyword">for</span> i=1:d
+0067   i_left{i}=ind(i);
+0068   i_right{i}=ind(i);
+0069   r_left{i}=1;
+0070   r_right{i}=1;
+0071 <span class="keyword">end</span>
+0072 
+0073 <span class="comment">%Before we get the multiindex sets (helps to compute s-u-p-e-r-c-o-r-e-s)</span>
+0074 
+0075 ind_left=<a href="#_sub3" class="code" title="subfunction [ind_left]=get_multi_left(i_left,r_left,ry)">get_multi_left</a>(i_left,r_left,ry);
+0076 ind_right=<a href="#_sub4" class="code" title="subfunction [ind_right]=get_multi_right(i_right,r_right,ry)">get_multi_right</a>(i_right,r_right,ry);
+0077 
+0078 <span class="comment">%Now we have to compute s-u-p-e-r-c-o-r-e-s (not cores!) using ind_left &amp;</span>
+0079 <span class="comment">%ind_right</span>
+0080 super_core=cell(d-1,1);
+0081 <span class="keyword">for</span> i=1:d-1 <span class="comment">%There are d-1 s-u-p-e-r-c-o-r-e-s</span>
+0082    <span class="comment">%Compute the index set for the i-th one</span>
+0083    index_set=zeros(d,ry(i),n(i),n(i+1),ry(i+2));
+0084    <span class="keyword">if</span> ( i == 1 )
+0085        ileft=zeros(1,0);
+0086    <span class="keyword">else</span>
+0087       ileft=ind_left{i-1};    
+0088    <span class="keyword">end</span>
+0089    <span class="keyword">if</span> ( i == d - 1 )
+0090       iright = zeros(1,0);
+0091    <span class="keyword">else</span>
+0092       iright=ind_right{i+2};
+0093    <span class="keyword">end</span>
+0094    <span class="keyword">for</span> s1=1:ry(i)
+0095       <span class="keyword">for</span> s2=1:ry(i+2)
+0096         <span class="keyword">for</span> i1=1:n(i)
+0097            <span class="keyword">for</span> i2=1:n(i+1)
+0098               index_set(:,s1,i1,i2,s2)=[ileft(s1,:),i1,i2,iright(s2,:)];
+0099            <span class="keyword">end</span>
+0100         <span class="keyword">end</span>
+0101       <span class="keyword">end</span>
+0102    <span class="keyword">end</span>
+0103    M=ry(i)*n(i)*n(i+1)*ry(i+2);
+0104    index_set=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(index_set,[d,M]);
+0105    <span class="keyword">if</span> ( vec ) 
+0106       super_core{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(elem_fun(index_set),[ry(i),n(i),n(i+1),ry(i+2)]);
+0107    <span class="keyword">else</span>
+0108        cur_core=zeros(M,1);
+0109       <span class="keyword">for</span> k=1:M
+0110          cur_core(k)=elem_fun(index_set(:,k));
+0111       <span class="keyword">end</span>
+0112       super_core{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_core,[ry(i),n(i),n(i+1),ry(i+2)]);
+0113    <span class="keyword">end</span>
+0114    
+0115 <span class="keyword">end</span>
+0116 <span class="comment">%Initialization is done.</span>
+0117 <span class="comment">%Now to the main iteration</span>
+0118 
+0119 <span class="comment">%Through all the s-u-p-e-r-c-o-r-e-s</span>
+0120 swp=1;
+0121 dir=<span class="string">'lr'</span>;
+0122 i=1;
+0123 <span class="keyword">while</span> ( swp &lt;= nswp )
+0124    <span class="comment">%The method acts as follows.</span>
+0125    <span class="comment">%1) Test if the current supercore is well approximated by the</span>
+0126    <span class="comment">%current cross</span>
+0127    <span class="comment">%2) If yes, do nothing.</span>
+0128    <span class="comment">%3) If no, add the required indices to the cross and perform</span>
+0129    <span class="comment">%modifications of the s-u-p-e-r-c-o-r-e-s</span>
+0130    
+0131    <span class="comment">%Nikrena ne soobrajau</span>
+0132    <span class="comment">%Bilo: (i1,i2,i3,i4,i5)</span>
+0133    <span class="comment">%Pofiksili (i1,i2), uvelichili r2. Rashirilos' mnojestvo (i2,i3,i4,i5)</span>
+0134    <span class="comment">%(nikomu ne nujno)</span>
+0135    <span class="comment">%V seredine: (i1,i2) (i3,i4,i5)+ - uvelichilos' mojectvo</span>
+0136    <span class="comment">%Kogda uvelichili (i3,i4,i5) viros ry(3), uvelichilos 1 superyadro</span>
+0137    cur_core=super_core{i}; 
+0138    <span class="comment">%we have to convert the pair i_left{i} &amp; r_left{i} to the</span>
+0139    <span class="comment">%index set for the matrix cur_core</span>
+0140    
+0141    cur_core=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_core,[ry(i)*n(i),n(i+1)*ry(i+2)]);
+0142    <span class="comment">%i1=get_full_ind(i_left{i},r_left{i});</span>
+0143    <span class="comment">%i2=get_full_ind(i_right{i+1},r_right{i+1});</span>
+0144     <span class="comment">%ry(i)*n(i)</span>
+0145     
+0146     i1=r_left{i}+(i_left{i}-1)*ry(i); 
+0147     i2=i_right{i+1}+(r_right{i+1}-1)*n(i+1);
+0148   <span class="comment">% if ( numel(i1)==2)</span>
+0149   <span class="comment">%     if ( i1(1) == 2 &amp;&amp; i1(2) == 2 )</span>
+0150   <span class="comment">%   keyboard;</span>
+0151   <span class="comment">%     end</span>
+0152   <span class="comment">% end</span>
+0153   [i1,i2]=<a href="#_sub2" class="code" title="subfunction [i1,i2]=new_cross(mat,i1,i2,eps)">new_cross</a>(cur_core,i1,i2,eps); 
+0154        <span class="comment">%Increase i_left{i} &amp; i_right{i+1}</span>
+0155        [radd_left,iadd_left]=ind2sub([ry(i);n(i)],i1);
+0156        [iadd_right,radd_right]=ind2sub([n(i+1);ry(i+2)],i2);
+0157        i_left{i}=iadd_left;
+0158        r_left{i}=radd_left;
+0159        <span class="comment">%if ( i == 8 )</span>
+0160        <span class="comment">%    keyboard</span>
+0161        <span class="comment">%end</span>
+0162        i_right{i+1}=iadd_right;
+0163        r_right{i+1}=radd_right;
+0164        ry(i+1)=numel(i1);
+0165        <span class="comment">%Zaglushka</span>
+0166        ind_left=<a href="#_sub3" class="code" title="subfunction [ind_left]=get_multi_left(i_left,r_left,ry)">get_multi_left</a>(i_left,r_left,ry);
+0167        
+0168        ind_right=<a href="#_sub4" class="code" title="subfunction [ind_right]=get_multi_right(i_right,r_right,ry)">get_multi_right</a>(i_right,r_right,ry);
+0169        
+0170       <span class="comment">%   fprintf('Index set in question: \n');</span>
+0171       <span class="comment">%   ind_left{3}</span>
+0172       <span class="comment">% if ( i == 3 &amp;&amp; swp == 2 )</span>
+0173       <span class="comment">%   keyboard;</span>
+0174       <span class="comment">% end</span>
+0175        <span class="comment">%keyboard;</span>
+0176        <span class="keyword">if</span> ( i &gt; 1 ) 
+0177          <span class="comment">%Recompute supercore{i-1}</span>
+0178          super_core{i-1}=<a href="#_sub1" class="code" title="subfunction [super_core]=compute_supercore(i,elem_fun,d,n,ry,ind_left,ind_right,vec)">compute_supercore</a>(i-1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+0179        <span class="keyword">end</span>
+0180        <span class="keyword">if</span> ( i &lt; d - 1)
+0181          super_core{i+1}=<a href="#_sub1" class="code" title="subfunction [super_core]=compute_supercore(i,elem_fun,d,n,ry,ind_left,ind_right,vec)">compute_supercore</a>(i+1,elem_fun,d,n,ry,ind_left,ind_right,vec);
+0182          <span class="comment">%Recompute supercore{i+1};</span>
+0183        <span class="keyword">end</span>
+0184 
+0185    <span class="comment">%Convert iadd1 to i_left and i_right format; compute new</span>
+0186    <span class="comment">%ind_left{i+1},ind_right{i+1}</span>
+0187    <span class="keyword">if</span> ( strcmp(dir,<span class="string">'lr'</span>) )
+0188      <span class="keyword">if</span> ( i == d-1 )
+0189         dir=<span class="string">'rl'</span>;
+0190      <span class="keyword">else</span>
+0191         i=i+1;
+0192      <span class="keyword">end</span>
+0193    <span class="keyword">else</span>
+0194      <span class="keyword">if</span> ( i == 1 )
+0195         dir =<span class="string">'lr'</span>;
+0196         swp=swp+1;
+0197      <span class="keyword">else</span>
+0198         i=i-1;
+0199      <span class="keyword">end</span>
+0200    <span class="keyword">end</span>
+0201    fprintf(<span class="string">'Step %d sweep %d rank=%3.1f \n'</span>,i,swp,mean(ry));
+0202 <span class="keyword">end</span>
+0203 fprintf(<span class="string">'Done! \n'</span>);
+0204 keyboard;
+0205 
+0206 
+0207 
+0208 
+0209 
+0210 
+0211 
+0212 <span class="keyword">return</span>
+0213 <span class="keyword">end</span>
+0214 
+0215 <a name="_sub1" href="#_subfunctions" class="code">function [super_core]=compute_supercore(i,elem_fun,d,n,ry,ind_left,ind_right,vec)</a>
+0216 <span class="comment">%[super_core]=compute_supercore(i,elem_fun,n,ry,ind_left,ind_right)</span>
+0217    index_set=zeros(d,ry(i),n(i),n(i+1),ry(i+2));
+0218    <span class="keyword">if</span> ( i == 1 )
+0219        ileft=zeros(1,0);
+0220    <span class="keyword">else</span>
+0221       ileft=ind_left{i-1};    
+0222    <span class="keyword">end</span>
+0223    <span class="keyword">if</span> ( i == d - 1 )
+0224       iright = zeros(1,0);
+0225    <span class="keyword">else</span>
+0226       iright=ind_right{i+2};
+0227    <span class="keyword">end</span>
+0228    <span class="keyword">for</span> s1=1:ry(i)
+0229       <span class="keyword">for</span> s2=1:ry(i+2)
+0230         <span class="keyword">for</span> i1=1:n(i)
+0231            <span class="keyword">for</span> i2=1:n(i+1)
+0232               index_set(:,s1,i1,i2,s2)=[ileft(s1,:),i1,i2,iright(s2,:)];
+0233            <span class="keyword">end</span>
+0234         <span class="keyword">end</span>
+0235       <span class="keyword">end</span>
+0236    <span class="keyword">end</span>
+0237    M=ry(i)*n(i)*n(i+1)*ry(i+2);
+0238    index_set=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(index_set,[d,M]);
+0239    <span class="keyword">if</span> ( vec ) 
+0240       super_core=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(elem_fun(index_set),[ry(i),n(i),n(i+1),ry(i+2)]);
+0241    <span class="keyword">else</span>
+0242        cur_core=zeros(M,1);
+0243       <span class="keyword">for</span> k=1:M
+0244          cur_core(k)=elem_fun(index_set(:,k));
+0245       <span class="keyword">end</span>
+0246       super_core=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cur_core,[ry(i),n(i),n(i+1),ry(i+2)]);
+0247    <span class="keyword">end</span>
+0248    
+0249 
+0250 <span class="keyword">return</span>
+0251 <span class="keyword">end</span>
+0252 
+0253 <a name="_sub2" href="#_subfunctions" class="code">function [i1,i2]=new_cross(mat,i1,i2,eps)</a>
+0254 <span class="comment">%[i1,i2]=enlarge_cross(mat,i1,i2,eps)</span>
+0255 <span class="comment">%Tests whether the current index set gives a reasonable approximation</span>
+0256 <span class="comment">%to the matrix, and enlarges the basis if necessary.</span>
+0257 <span class="comment">%The method acts as follows.</span>
+0258 
+0259 <span class="comment">%A-C*A11^{-1} R</span>
+0260 
+0261 <span class="comment">%sbm=mat(i1,i2);</span>
+0262 <span class="comment">%[u,s,v]=svd(sbm,'econ');</span>
+0263 <span class="comment">%nrm=norm(mat);s=diag(s);</span>
+0264 <span class="comment">%r=numel(find(</span>
+0265 <span class="comment">%mat_save=mat;</span>
+0266 i1=[];
+0267 i2=[];
+0268 desirata=eps*<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(mat,<span class="string">'fro'</span>);
+0269 er=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(mat,<span class="string">'fro'</span>);
+0270 <span class="keyword">while</span> ( er &gt; desirata )
+0271    <span class="comment">%Find maximal element in mat</span>
+0272    [~,ind]=max(abs(mat(:)));
+0273    ind=<a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(mat),ind);
+0274    i=ind(1); j=ind(2);
+0275     i1=[i1;i];
+0276     i2=[i2;j];
+0277     u1=mat(:,j); u2=mat(i,:);
+0278     u1=u1/mat(i,j);
+0279     mat=mat-u1*u2;
+0280     er=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(mat,<span class="string">'fro'</span>);
+0281 <span class="keyword">end</span>
+0282 <span class="comment">% i0=[i1;iadd1]; j0=[i2;iadd2];</span>
+0283 <span class="comment">% sbm=mat_save(i0,j0);</span>
+0284 <span class="comment">% ss=svd(sbm);</span>
+0285 <span class="comment">% fprintf('%10.10e \n',ss)</span>
+0286 <span class="comment">% sbm=mat_save(i1,i2);</span>
+0287 <span class="comment">% fprintf('AND PREVIOUS \n');</span>
+0288 <span class="comment">% ss=svd(sbm);</span>
+0289 <span class="comment">% fprintf('%10.10e \n',ss)</span>
+0290 
+0291 <span class="keyword">return</span>
+0292 <span class="keyword">end</span>
+0293 
+0294 <a name="_sub3" href="#_subfunctions" class="code">function [ind_left]=get_multi_left(i_left,r_left,ry)</a>
+0295 <span class="comment">%[ind_left]=get_multi_left(i_left,r_left,ry)</span>
+0296 <span class="comment">%Computes (all) left multiindex sets for a given compact representation</span>
+0297   d=numel(i_left);
+0298   ind_left=cell(d,1);
+0299   ind_left{1}=i_left{1};
+0300   <span class="keyword">for</span> i=2:d
+0301       <span class="comment">%ind_cur=zeros(</span>
+0302       <span class="comment">%ind_cur is an array of size ry(i-1) x i</span>
+0303       ind_cur=zeros(ry(i+1),i);
+0304       r_prev=r_left{i};
+0305       ind_prev=ind_left{i-1};
+0306       i_prev=i_left{i};
+0307       <span class="keyword">for</span> s=1:ry(i+1)
+0308           <span class="comment">%ind_prev(p1(s</span>
+0309          ind_cur(s,:)=[ind_prev(r_prev(s),:),i_prev(s)];
+0310       <span class="keyword">end</span>
+0311       ind_left{i}=ind_cur;
+0312   <span class="keyword">end</span>
+0313 <span class="keyword">return</span>
+0314 <span class="keyword">end</span>
+0315 
+0316 <a name="_sub4" href="#_subfunctions" class="code">function [ind_right]=get_multi_right(i_right,r_right,ry)</a>
+0317 <span class="comment">%[ind_right]=get_multi_right(i_right,r_right,ry)</span>
+0318 <span class="comment">%Computes (all) right multiindex sets for a given compact representation</span>
+0319   d=numel(i_right);
+0320   ind_right=cell(d,1);
+0321   ind_right{d}=i_right{d};
+0322   <span class="keyword">for</span> i=d-1:-1:1
+0323       <span class="comment">%ind_cur=zeros(</span>
+0324       <span class="comment">%ind_cur is an array of size ry(i) x i</span>
+0325       ind_cur=zeros(ry(i),d-i+1);
+0326       r_prev=r_right{i};
+0327       ind_prev=ind_right{i+1};
+0328       i_prev=i_right{i};
+0329       <span class="keyword">for</span> s=1:ry(i)
+0330          ind_cur(s,:)=[i_prev(s), ind_prev(r_prev(s),:)];
+0331       <span class="keyword">end</span>
+0332       ind_right{i}=ind_cur;
+0333   <span class="keyword">end</span>
+0334 
+0335 <span class="keyword">return</span>
+0336 <span class="keyword">end</span>
+0337 
+0338 <a name="_sub5" href="#_subfunctions" class="code">function [ind]=find_fiber_maximum(elem_fun,ind)</a>
+0339 <span class="comment">%[ind]=find_fiber_maximum(elem_fun,ind)</span>
+0340 <span class="comment">%Simple ALS method to compute (approximate) maximum in a tensor</span>
+0341 <span class="comment">%In fact, need some non-zero</span>
+0342 <span class="comment">%fact=2; %If the new one &lt;= fact times larger than the previous, stop</span>
+0343 
+0344 <span class="keyword">return</span>
+0345 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

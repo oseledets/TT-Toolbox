@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_axpy</title>
+  <meta name="keywords" content="tt_axpy">
+  <meta name="description" content="Returns A*X+P*Y in the TT-format.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_axpy.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_axpy
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Returns A*X+P*Y in the TT-format.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [res]=tt_axpy(a, x, p, y, eps, max_rank) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Returns A*X+P*Y in the TT-format. 
+   [RES]=TT_AXPY(A,X,P,Y,EPS,MAX_RANK) Returns a*X+p*Y in TT format. 
+   Compress each summand with respect to its norm. Compress the result to 
+   accuracy EPS and (optional) maximal rank MAX_RANK
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------
+ d = size(x, 1);</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>	Adds two TT-tensors in TT1 format.</li><li><a href="tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>	Multiply tensor by a scalar in TT1.0 format</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/exp/tt_minres_selfprec.html" class="code" title="function [X]=tt_minres_selfprec(A, tol, eps, maxit, prec_type)">tt_minres_selfprec</a>	Computation of the approximate TT-matrix inverse using self-prec method</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [res]=tt_axpy(a, x, p, y, eps, max_rank)</a>
+0002 <span class="comment">%Returns A*X+P*Y in the TT-format.</span>
+0003 <span class="comment">%   [RES]=TT_AXPY(A,X,P,Y,EPS,MAX_RANK) Returns a*X+p*Y in TT format.</span>
+0004 <span class="comment">%   Compress each summand with respect to its norm. Compress the result to</span>
+0005 <span class="comment">%   accuracy EPS and (optional) maximal rank MAX_RANK</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 <span class="comment">% d = size(x, 1);</span>
+0018 <span class="keyword">if</span> ((nargin&lt;6)||(isempty(max_rank)))
+0019     max_rank=[];
+0020 <span class="keyword">end</span>;
+0021 
+0022 <span class="comment">% nrmx = tt_dot(x,x);</span>
+0023 <span class="comment">% nrmy = tt_dot(y,y);</span>
+0024 <span class="comment">% eps1 = (abs(a)*nrmx+abs(p)*nrmy)/(abs(a)*nrmx);</span>
+0025 <span class="comment">% eps2 = (abs(a)*nrmx+abs(p)*nrmy)/(abs(p)*nrmy);</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% % aa = abs(a)</span>
+0028 <span class="comment">% % ap = abs(p)</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% if (eps1&gt;2)</span>
+0031 <span class="comment">% %     eps1</span>
+0032 <span class="comment">%     x = tt_compr2(x, min(eps*eps1, 0.5), max_rank);</span>
+0033 <span class="comment">% end;</span>
+0034 <span class="comment">% if (eps2&gt;2)</span>
+0035 <span class="comment">% %     eps2</span>
+0036 <span class="comment">%     y = tt_compr2(y, min(eps*eps2, 0.5), max_rank);</span>
+0037 <span class="comment">% end;</span>
+0038 
+0039 ax = <a href="tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>(x, a);
+0040 py = <a href="tt_scal.html" class="code" title="function [res] = tt_scal(tt,alpha)">tt_scal</a>(y, p);
+0041 
+0042 res = <a href="tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>(ax,py);
+0043 res = <a href="tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>(res, eps, max_rank);
+0044 
+0045 <span class="comment">% res = tt_stabilize(res,0);</span>
+0046 
+0047 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

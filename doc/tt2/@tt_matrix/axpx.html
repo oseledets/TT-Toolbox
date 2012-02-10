@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of axpx</title>
+  <meta name="keywords" content="axpx">
+  <meta name="description" content="Matrix-by-vector multiplication with projection onto the tangent space">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_matrix</a> &gt; axpx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_matrix&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>axpx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Matrix-by-vector multiplication with projection onto the tangent space</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y]=axpx(a,x) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Matrix-by-vector multiplication with projection onto the tangent space
+   [y]=AXPX(A,X) Multiplies matrix A by a vector X and projects the
+   result onto the tangent space of the TT-manifold at point X. This
+   function can be used in the construction of efficient dynamical
+   low-rank TT-approximations
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="conj.html" class="code" title="function [b]=conj(a)">conj</a>	Complex conjugate of a TT-matrix</li><li><a href="size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>	Compute a complex conjugate of TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y]=axpx(a,x)</a>
+0002 <span class="comment">%Matrix-by-vector multiplication with projection onto the tangent space</span>
+0003 <span class="comment">%   [y]=AXPX(A,X) Multiplies matrix A by a vector X and projects the</span>
+0004 <span class="comment">%   result onto the tangent space of the TT-manifold at point X. This</span>
+0005 <span class="comment">%   function can be used in the construction of efficient dynamical</span>
+0006 <span class="comment">%   low-rank TT-approximations</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 d=x.d;
+0018 n=a.n;
+0019 m=a.m;
+0020 rx=x.r;
+0021 psx=x.ps;
+0022 att=a.tt;
+0023 corea=att.core;
+0024 psa=att.ps;
+0025 ra=att.r;
+0026 <span class="comment">%Do right-to-left orthogonalization and computation of psi</span>
+0027 <span class="comment">%matrices</span>
+0028 corex=x.core;
+0029 pos1=psx(d+1);
+0030 psi=cell(d+1,1); <span class="comment">%Psi-matrices</span>
+0031 psi{d+1}=1; psi{1}=1;
+0032 cr1=corex(psx(d):psx(d+1)-1);
+0033 y=x;
+0034 corey=y.core;
+0035 psy=y.ps;
+0036 ry=y.r;
+0037 <span class="keyword">for</span> i=d:-1:2 
+0038    <span class="comment">%  fprintf('i=%d \n');</span>
+0039    cr2=corey(psy(i-1):psy(i)-1);
+0040    cr1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[ry(i),n(i)*ry(i+1)]);
+0041    cr2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[ry(i-1)*n(i-1),ry(i)]);
+0042    cr1=cr1.';
+0043    [q,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr1,0); rn=<a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(q,2); rm=rm.';
+0044    q=q.'; 
+0045    ry(i)=rn;
+0046    corey(pos1-ry(i+1)*n(i)*ry(i):pos1-1)=q(:);
+0047       <span class="comment">%Convolution is now performed for psi(i) using psi(i+1) and corea, and</span>
+0048    <span class="comment">%(new) core q</span>
+0049    cra=corea(psa(i):psa(i+1)-1); cra=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra,[ra(i),n(i),m(i),ra(i+1)]);
+0050    cry=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="conj.html" class="code" title="function [b]=conj(a)">conj</a>(q),[ry(i),n(i),ry(i+1)]);
+0051    crx=corex(psx(i):psx(i+1)-1);
+0052    crx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[rx(i),m(i),rx(i+1)]);
+0053    pscur=psi{i+1}; pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[ra(i+1),rx(i+1),ry(i+1)]); <span class="comment">%ra,rx,ry</span>
+0054    <span class="comment">%First, convolve over rx(i+1)</span>
+0055    crx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[rx(i)*m(i),rx(i+1)]);
+0056     pscur=permute(pscur,[2,1,3]); pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[rx(i+1),ra(i+1)*ry(i+1)]);
+0057    pscur=crx*pscur; <span class="comment">%pscur is now rx(i)*m(i)*ra(i+1)*ry(i+1)</span>
+0058    <span class="comment">%Convolve over m(i),ra(i+1),n(i),ry(i+1)</span>
+0059     pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[rx(i),m(i)*ra(i+1),ry(i+1)]);
+0060     pscur=permute(pscur,[1,3,2]); 
+0061     pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[rx(i)*ry(i+1),m(i)*ra(i+1)]);
+0062     cra=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra,[ra(i)*n(i),m(i)*ra(i+1)]); cra=cra.';  
+0063     pscur=pscur*cra; 
+0064     <span class="comment">%pscur is now rx(i)*ry(i+1)*ra(i)*n(i), it is left to convolve over</span>
+0065     <span class="comment">%n(i)*ry(i+1)</span>
+0066     pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[rx(i),ry(i+1),ra(i),n(i)]);
+0067     pscur=permute(pscur,[3,1,4,2]);
+0068     pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[ra(i)*rx(i),n(i)*ry(i+1)]);
+0069     cry=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry,[ry(i),n(i)*ry(i+1)]); cry=cry.';
+0070     pscur=pscur*cry; <span class="comment">%pscur is ra*rx*ry</span>
+0071     pscur=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(pscur,[rx(i),ra(i),ry(i)]);
+0072     psi{i}=pscur;
+0073    <span class="comment">%End of psi-block</span>
+0074    pos1=pos1-ry(i+1)*n(i)*ry(i);
+0075    cr1=cr2*rm;
+0076 <span class="keyword">end</span>
+0077 corey(pos1-ry(2)*n(1)*ry(1):pos1-1)=cr1(:);
+0078 pos1=pos1-ry(2)*n(1)*ry(1);
+0079 corey=corey(pos1:end); <span class="comment">%Truncate unused elements</span>
+0080 <span class="comment">%Now compute the projection itself while recomputing psi-matrices</span>
+0081  pos1=1;
+0082  psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0083  rm=1;
+0084  <span class="comment">%keyboard;</span>
+0085   <span class="keyword">for</span> i=1:d
+0086           <span class="comment">%Our convolution is</span>
+0087      <span class="comment">%ps1(ra(i),rx(i),ry(i))*cra(ra(i),n(i),m(i),ra(i+1))</span>
+0088      <span class="comment">%*ps2(ra(i+1),rx(i+1),ry(i+1))*crx(rx(i),m(i)*rx(i+1))-&gt;</span>
+0089      <span class="comment">%cry(ry(i),n(i),ry(i+1)</span>
+0090 
+0091      ps1=psi{i}; ps2=psi{i+1};
+0092      cra=corea(psa(i):psa(i+1)-1);
+0093      crx=corex(psx(i):psx(i+1)-1);
+0094 <span class="comment">%     corey(psy(i):psy(i+1)-1)=crx(:);</span>
+0095 <span class="comment">%     y.core=corey;</span>
+0096 <span class="comment">%          psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);</span>
+0097 <span class="comment">%     y.ps=psy;</span>
+0098      ps1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(ps1,[ra(i),rx(i),ry(i)]);
+0099      ps1=permute(ps1,[2,3,1]);
+0100      ps1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(ps1,[rx(i)*ry(i),ra(i)]);
+0101      cra=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra,[ra(i),n(i)*m(i)*ra(i+1)]);
+0102      cry=ps1*cra;      <span class="comment">%cry is rx(i)*ry(i)*n(i)*m(i)*ra(i+1)</span>
+0103      <span class="comment">%convolve over m(i),rx(i) with crx</span>
+0104      cry=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry,[rx(i),ry(i),n(i),m(i),ra(i+1)]);
+0105      cry=permute(cry,[2,3,5,1,4]);
+0106      cry=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry,[ry(i)*n(i)*ra(i+1),rx(i)*m(i)]);
+0107      crx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[rx(i)*m(i),rx(i+1)]);
+0108      cry=cry*crx; cry0=cry;
+0109      <span class="comment">%cry is ry(i)*n(i)*ra(i+1)*rx(i+1)</span>
+0110      cry=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry,[ry(i)*n(i),ra(i+1)*rx(i+1)]);
+0111      ps2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(ps2,[ra(i+1)*rx(i+1),ry(i+1)]);
+0112      <span class="comment">%cry0=cry; %cry0 is ry(i)*n(i)*ra(i+1)*rx(i+1), convolution over ry(i)*n(i) will bring new psi --- not true; new psi will be brought with and</span>
+0113      <span class="comment">%orthogonalization</span>
+0114      cry=cry*ps2;
+0115       corey(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=cry(:);
+0116       y.core=corey;
+0117       psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0118       y.ps=psy;
+0119        <span class="comment">%keyboard;</span>
+0120     
+0121      cry=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry,[ry(i)*n(i),ry(i+1)]);
+0122      [q,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cry,0);
+0123      rn=<a href="size.html" class="code" title="function [sz] = size(tt)">size</a>(q,2);
+0124      ry(i+1)=rn;
+0125      <span class="comment">%q=q*rm;</span>
+0126      corey(pos1:pos1+ry(i)*n(i)*ry(i+1)-1)=q(:);
+0127      pos1=pos1+ry(i)*n(i)*ry(i+1);
+0128      <span class="comment">%And now --- orthogonalization! (of cry) (he-he)</span>
+0129      <span class="comment">%Now compute &quot;new&quot; psi</span>
+0130      <span class="comment">%We need to compute</span>
+0131           <span class="comment">%cry is rx(i)*ry(i)*n(i)*m(i)*ra(i+1)</span>
+0132      <span class="comment">%convolve over m(i),rx(i) with crx</span>
+0133      <span class="comment">%cry0 is ry(i)*n(i)*ra(i+1)*rx(i+1);</span>
+0134      cry0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry0,[ry(i),n(i),ra(i+1),rx(i+1)]);
+0135      cry0=permute(cry0,[3,4,1,2]);
+0136      cry0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry0,[ra(i+1)*rx(i+1),ry(i)*n(i)]);
+0137      q=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="conj.html" class="code" title="function [b]=conj(a)">conj</a>(q),[ry(i)*n(i),ry(i+1)]);
+0138      psi{i+1}=cry0*q;
+0139      
+0140   <span class="keyword">end</span>
+0141   psy=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0142   corey(psy(i):psy(i+1)-1)=corey(psy(i):psy(i+1)-1)*rm;
+0143   y.core=corey;
+0144   y.r=ry;
+0145   y.ps=psy;
+0146   y.n=n;
+0147   y.d=d;
+0148   <span class="keyword">return</span>
+0149 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

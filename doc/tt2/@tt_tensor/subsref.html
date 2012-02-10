@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subsref</title>
+  <meta name="keywords" content="subsref">
+  <meta name="description" content="Evaluate elements, cores of TT-formats and fields of the TT-structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; subsref.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>subsref
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Evaluate elements, cores of TT-formats and fields of the TT-structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [elem] = subsref(tt,s) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Evaluate elements, cores of TT-formats and fields of the TT-structure
+   A=TT{I} computes I-th core of the TT-representation
+
+   ELEM=TT(IND) computes element with index IND of the tensor TT
+   
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li><li><a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_matrix/subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [elem] = subsref(tt,s)</a>
+0002 <span class="comment">% Evaluate elements, cores of TT-formats and fields of the TT-structure</span>
+0003 <span class="comment">%   A=TT{I} computes I-th core of the TT-representation</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   ELEM=TT(IND) computes element with index IND of the tensor TT</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 
+0018 <span class="keyword">switch</span> s(1).type    
+0019     <span class="keyword">case</span> <span class="string">'()'</span>
+0020       <span class="comment">%Evaluate element of a tensor in position s</span>
+0021       d=tt.d; n=tt.n; ps=tt.ps; cr=tt.core; r=tt.r;
+0022       <span class="comment">%ind=double(s);</span>
+0023       pp=s.subs;
+0024       mn=numel(pp); 
+0025       <span class="keyword">if</span> ( mn &lt; d &amp;&amp; mn &gt; 1 || (mn == 1 &amp;&amp; numel(pp{1}) &lt; d) ) 
+0026         error(<span class="string">'Invalid number of indices specified: given %d, need %d \n'</span>,mn,d);
+0027       <span class="keyword">end</span>
+0028       <span class="keyword">if</span> ( mn == 1 ) <span class="comment">%Special case</span>
+0029          ind=pp{1};
+0030          <span class="keyword">if</span> ( isa(ind,<span class="string">'double'</span>) )
+0031            <span class="keyword">for</span> i=1:d
+0032              pp{i}=ind(i);
+0033            <span class="keyword">end</span>
+0034          <span class="keyword">else</span>
+0035             pp=ind; <span class="comment">%Supposedly it was a cell array of index subsets</span>
+0036          <span class="keyword">end</span>
+0037       <span class="keyword">end</span>
+0038       elem=<a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0039       elem.r=r; 
+0040       elem.d=d;
+0041       n0=zeros(d,1);
+0042       <span class="keyword">for</span> i=1:d
+0043         ind=pp{i};
+0044         <span class="keyword">if</span> ( strcmp(ind, <span class="string">':'</span>))
+0045             pp{i}=1:n(i);
+0046             ind=pp{i};
+0047         <span class="keyword">end</span>
+0048         n0(i)=numel(ind);
+0049       <span class="keyword">end</span>
+0050       ps1=cumsum([1;n0.*r(1:d).*r(2:d+1)]);
+0051       cr1=zeros(ps1(d+1)-1,1);
+0052       <span class="keyword">for</span> i=1:d
+0053          ind=pp{i}; 
+0054          crx=cr(ps(i):ps(i+1)-1);
+0055          crx=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[r(i),n(i),r(i+1)]);
+0056          crx=crx(:,ind,:);
+0057          cr1(ps1(i):ps1(i+1)-1)=crx(:);          
+0058       <span class="keyword">end</span>
+0059       <span class="keyword">if</span> ( prod(n0) == 1 ) <span class="comment">%single element</span>
+0060          v=1;
+0061          <span class="keyword">for</span> i=1:d
+0062             crx=cr1(ps1(i):ps1(i+1)-1); crx=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crx,[r(i),r(i+1)]);
+0063             v=v*crx;
+0064          <span class="keyword">end</span>
+0065          elem=v;
+0066       <span class="keyword">else</span>
+0067          elem.n=n0;
+0068          elem.core=cr1;
+0069          elem.ps=ps1;
+0070          
+0071       <span class="keyword">end</span>
+0072     <span class="keyword">case</span> <span class="string">'.'</span>
+0073         <span class="keyword">switch</span> s(1).subs
+0074             <span class="keyword">case</span> <span class="string">'r'</span>
+0075                 elem = tt.r;
+0076                 <span class="keyword">if</span> (numel(s)&gt;1)
+0077                     s = s(2:end);
+0078                     elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0079                 <span class="keyword">end</span>;
+0080 <span class="comment">%                 if (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,'()'))</span>
+0081 <span class="comment">%                     elem = tt.r(s(2).subs{1});</span>
+0082 <span class="comment">%                 else</span>
+0083 <span class="comment">%                     elem=tt.r;</span>
+0084 <span class="comment">%                 end;</span>
+0085             <span class="keyword">case</span> <span class="string">'core'</span>
+0086                 <span class="keyword">if</span> (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,<span class="string">'()'</span>))
+0087                     elem = tt.core(s(2).subs{1});
+0088                 <span class="keyword">else</span>
+0089                     elem=tt.core;
+0090                 <span class="keyword">end</span>;
+0091             <span class="keyword">case</span> <span class="string">'d'</span>
+0092                 elem=tt.d;
+0093             <span class="keyword">case</span> <span class="string">'ps'</span>
+0094                 elem = tt.ps;
+0095                 <span class="keyword">if</span> (numel(s)&gt;1)
+0096                     s = s(2:end);
+0097                     elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0098                 <span class="keyword">end</span>;
+0099 
+0100 <span class="comment">%                 if (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,'()'))</span>
+0101 <span class="comment">%                     elem = tt.ps(s(2).subs{1});</span>
+0102 <span class="comment">%                 else</span>
+0103 <span class="comment">%                     elem=tt.ps;</span>
+0104 <span class="comment">%                 end;</span>
+0105             <span class="keyword">case</span> <span class="string">'n'</span>
+0106                 elem = tt.n;
+0107                 <span class="keyword">if</span> (numel(s)&gt;1)
+0108                     s = s(2:end);
+0109                     elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0110                 <span class="keyword">end</span>;
+0111 
+0112 <span class="comment">%                 if (numel(s)&gt;1)&amp;&amp;(strcmp(s(2).type,'()'))</span>
+0113 <span class="comment">%                     elem = tt.n(s(2).subs{1});</span>
+0114 <span class="comment">%                 else</span>
+0115 <span class="comment">%                     elem=tt.n;</span>
+0116 <span class="comment">%                 end;</span>
+0117             <span class="keyword">otherwise</span>
+0118                 error([<span class="string">'No field '</span>, s.subs, <span class="string">' is here.'</span>]);
+0119         <span class="keyword">end</span>
+0120     <span class="keyword">case</span> <span class="string">'{}'</span>
+0121         <span class="comment">%Return the core in the old (not exactly!!! r1-n-r2 here) format</span>
+0122         pp=s.subs;
+0123         mn=numel(pp);
+0124         <span class="keyword">if</span> ( mn &gt; 1 )
+0125           error(<span class="string">'Invalid number of cores asked'</span>);
+0126         <span class="keyword">end</span>
+0127         elem=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(tt,pp{1});
+0128         
+0129         <span class="keyword">if</span> (numel(s)&gt;1)
+0130             s = s(2:end);
+0131             elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0132         <span class="keyword">end</span>;
+0133 <span class="comment">%         if (pp{1}~=1)</span>
+0134 <span class="comment">%             elem=permute(elem,[2,1,3]);</span>
+0135 <span class="comment">%         end;</span>
+0136         
+0137     <span class="keyword">otherwise</span>
+0138         error(<span class="string">'Invalid subsref.'</span>);
+0139 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

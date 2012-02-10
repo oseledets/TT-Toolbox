@@ -1,20 +1,22 @@
 function [res] = tt_als(x,y,nswp)
-% [RES]=TT_ALS(X,Y,NSWP)
-% This is a special function that computes several ALS sweeps for
-% TT format. 
-% X is given (in TT format), Y is the initial guess (also in TT format)
-% Output: RES --- Improved TT approximation to X
+%Several ALS sweeps for the approximation in the TT-format
+%   [RES]=TT_ALS(X,Y,NSWP) Compute NSWP sweeps of the ALS method for the
+%   approximation of a tensor X, starting from a tensor Y. The output RES is
+%   the improved approximation of X
 %
-% TT Toolbox 1.1, 2009-2010
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-res=0;
+
+%Make old format out of the new one
+x=core(x); y=core(y); 
 d=size(x,1);
 %The first step is to compute left-to-right sweep of summation, yielding
 %phi-matrices
@@ -30,9 +32,9 @@ for i=2:d-1
     ncur=size(y{i},1);
     r2=size(y{i},2);
     r3=size(y{i},3);
-    core=permute(y{i},[1,2,3]);
-    core=reshape(core,[ncur*r2,r3]);
-    [y{i},rv]=qr(core,0);
+    core1=permute(y{i},[1,2,3]);
+    core1=reshape(core1,[ncur*r2,r3]);
+    [y{i},rv]=qr(core1,0);
     rnew=min(r3,ncur*r2);
     y{i}=reshape(y{i},[ncur,r2,rnew]);
     y{i}=permute(y{i},[1,2,3]);
@@ -48,26 +50,16 @@ end
 %mat_x{d} is X(i_d,rx) and phi is  ry x rx
 for s=1:nswp
 
-%fprintf('Last phi-norm %e \n',norm(phi{d-1}(:)));
-%fprintf('phi_true \n');
-%phi{d-1}
 y{d}= x{d}*phi{d-1}';
-%fprintf('y_true \n');
-%y{d}
 
-%res=y;
-%return;
 %Now we can start right-to-left sweep that combines computation of 
 %phi matrices with Y right-to-left orthogonalization
 [q,rv]=qr(y{d},0);
 y{d}=q;
 %mat_x{d} is n x rx, mat_y{d} is n x ry phi will be ry x rx
 phi{d}=y{d}'*x{d};
-%keyboard;
 
 
-%return
-%fprintf('true phi{%d} norm: %e \n',d,norm(phi{d}(:)));
 
 for i=d-1:-1:2
     %fprintf('i=%d/%d \n',i,d-1);
@@ -85,9 +77,9 @@ for i=d-1:-1:2
     ncur=size(y{i},1);
     r2=size(y{i},2);
     r3=size(y{i},3);
-    core=permute(y{i},[1,3,2]);
-    core=reshape(core,[ncur*r3,r2]);
-    [y{i},rv]=qr(core,0);
+    core1=permute(y{i},[1,3,2]);
+    core1=reshape(core1,[ncur*r3,r2]);
+    [y{i},rv]=qr(core1,0);
     rnew=min(r2,ncur*r3);
     y{i}=reshape(y{i},[ncur,r3,rnew]);
     y{i}=permute(y{i},[1,3,2]);
@@ -107,15 +99,7 @@ for i=d-1:-1:2
     %fprintf('true phi{%i} norm: %e \n',i,norm(phi{i}(:)));
 
 end
-%fprintf('True: \n');
-%for i=2:d
-%  fprintf('%e \n',norm(phi{i}(:)));
-%end
 y{1} = x{1}*phi{2}';
-%phi{2}
-%fprintf('true phi{2} norm: %e \n',norm(phi{2}(:)));
-%res=y;
-%return;
 %Now (finally!) we have this left-to-right sweep
 [q,rv]=qr(y{1},0);
 y{1}=q;
@@ -132,9 +116,9 @@ for i=2:d-1
    ncur=size(y{i},1);
    r2=size(y{i},2);
    r3=size(y{i},3);
-   core=permute(y{i},[1,2,3]);
-   core=reshape(core,[ncur*r2,r3]);
-   [y{i},rv]=qr(core,0);
+   core1=permute(y{i},[1,2,3]);
+   core1=reshape(core1,[ncur*r2,r3]);
+   [y{i},rv]=qr(core1,0);
    rnew=min(r3,ncur*r2);
    y{i}=reshape(y{i},[ncur,r2,rnew]);
    y{i}=permute(y{i},[1,2,3]);
@@ -152,5 +136,6 @@ end
 end
 y{d}= x{d}*phi{d-1}';
 res=y;
+res=tt_tensor(res);
 return
 end

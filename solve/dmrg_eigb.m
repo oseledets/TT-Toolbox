@@ -1,63 +1,74 @@
-function [y,ev] = dmrg_eigb(a,k,eps,y0,rmax,nswp)
-%[y,ev]=DMRG_EIGB(A,K,EPS,[Y0],[RMAX],[NSWP])
-%Solves for K minimal eigenvalues of the TT-matrix A 
-%with accuracy EPS by minimizing block Rayleigh quotient
-%by the two-sided DMRG method
-%Y0 is a possible initial guess, RMAX is the maximal rank
-%NSWP is the maximal number of sweeps
-%Currently generalized eigenproblem is not supported (hope to 
-%do it in future)
-n=a.n; %This works only for square matrices :)
-d=a.d;
-if ( nargin <= 3 || isempty(y0) )
-    %Generate a random block tensor with the block dimension on the
-    %right 
-   y=tt_tensor;
-   y.d=d;
-   ry=k*ones(1,d); ry(1)=1; ry(d+1)=k; ry=ry';
-   y.r=ry;
-   y.n=n;
-   y.ps=cumsum([1;y.n.*ry(1:d).*ry(2:d+1)]);
-   psy=y.ps;
-   sz=psy(d+1)-1;
-   cr=randn(1,sz);
-   %cr=ones(sz,1);
-   y.core=cr;
-else
-   y=y0;
-end
-if ( nargin <= 4 || isempty(rmax) )
-  rmax=2500;
-end
-if ( nargin <= 5 || isempty(nswp) )
-  nswp = 4;
-end
-y0=y;
-%            fm=full(a); 
-%            [v,dg]=eig(fm);
-%            ev=diag(dg);
-%            [ev,ind]=sort(ev,'ascend');
-%            v=v(:,ind);
-%           w=v(:,1:k); ww0=w;
-%            ev=ev(1:k);
-%  w=reshape(w,[2*ones(1,d),k]);  
-%  y=tt_tensor(w,1e-8);
-%  y.d=d;
-%  psy=y.ps; 
-%  psy=psy(1:d+1);
-%  cry=y.core; 
-%  cry=cry(1:psy(d+1)-1); 
-%  y.core=cry;
-%  y.n=2*ones(d,1);
-%  ry=y.r; ry=ry(1:d+1); 
-%  y.r=ry;
+function [y,ev] = dmrg_eigb(a,k,eps,varargin)
+%Find several minimal eigenvalues of a TT-matrix using DMRG method
+%   [Y,EV]=DMRG_EIGB(A,K,EPS,OPTIONS) Attempts to find K minimal
+%   eigenvalues of a TT-matrix A with accuracy EPS. We use minimization of
+%   Block-Rayleigh quotient to do this. The solution is returned a block
+%   TT-tensor (i.e, r(d+1) is equal to K).
+%   Options are provided in form
+%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+%   on. The parameters are set to default (in brackets in the following) 
+%   The list of option names and default values are:
+%       o y0 - initial approximation [random rank-5 tensor]
+%       o rmax - maximal  TT-rank of the (block) solution [2500]
+%       o nswp - maximal number of sweeps [4]
+%       o kick_rank - stabilization parameter, the larger, the better
+%       accuracy but the higher complexity [5]
+%       o verb - print debug info [ {true} | false ]
+%       o msize - the size of local matrix when the iterative solver is
+%       used
+%   Example:
+%       d=8; f=3;
+%       mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
+%       [v,ev]=dmrg_eigb(mat,20,1e-6); %5 lowest eigenvalues 
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
-
-%Parameters section
+%Default parameters
+y0=[];
+rmax=2500;
+nswp=4;
 msize=1000;
 max_l_steps=200;
 kick_rank=5;
 verb=true;
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'nswp'
+            nswp=varargin{i+1};
+        case 'rmax'
+            rmax=lower(varargin{i+1});
+        case 'x0'
+            y0=varargin{i+1};
+        case 'msize'
+            msize=varargin{i+1};
+        case 'verb'
+            verb=varargin{i+1};
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+            
+    end
+end
+
+n=a.n; 
+d=a.d;
+if ( isempty(y0) )
+    kk=max(5,k);
+    r=kk*ones(1,d+1);
+    r(d+1)=k;
+    r(1)=1;
+    y0=tt_random(n,d,r);
+end
+y=round(y0,0);
+
 %We start from the orthogonalization of the y vector from left-to-right
 %(it does not influence the TT-ranks)
 

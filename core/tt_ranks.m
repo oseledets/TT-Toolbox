@@ -1,21 +1,20 @@
 function [rks]=tt_ranks(tt)
-%[RKS]=TT_RANKS(TT)
-%Compute all ranks of TT decomposition
-%Input : tensor TT
-%Output: ranks RKS   
-% 
+%Compute all ranks of the TT-decomposition in TT1.0 format
+%   [RKS]=TT_RANKS(TT) Computes all ranks of TT decomposition in TT1.0
+%   format. Please avoid its usage: it will be removed in
+%   future releases. Use rank() from the object-oriented version.
 %
 %
+% TT-Toolbox 2.2, 2009-2012
 %
-% TT Toolbox 1.1, 2009-2010
-%
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
+
 d=size(tt,1);
 if ( d == 1 ) 
   rks=[];

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of core</title>
+  <meta name="keywords" content="core">
+  <meta name="description" content="Converts TT-tensor TT1 to old-cell array format.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; core.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>core
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Converts TT-tensor TT1 to old-cell array format.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt] = core(tt1,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Converts TT-tensor TT1 to old-cell array format.
+   [TT]=CORE(TT1) transforms to the TT1.0 format
+
+   [TT]=CORE(TT1,K) extracts the k-th core 
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/mvk3.html" class="code" title="function [y,swp]=mvk3(a,x,eps,varargin)">mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/@tt_matrix/subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="funcrs.html" class="code" title="function [y]=funcrs(tt,fun,eps,y,nswp,varargin)">funcrs</a>	Cross approximation of a function of a TT-tensor, Method 1</li><li><a href="squeeze.html" class="code" title="function [tt]=squeeze(tt)">squeeze</a>	Removes singleton dimensions from the TT-tensor</li><li><a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li><li><a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li><li><a href="../../tt2/core/qtt_tucker_m.html" class="code" title="function [fc,core]=qtt_tucker_m(tt, sz, tol)">qtt_tucker_m</a>	Compute the QTT-Tucker representation of TT</li><li><a href="../../tt2/core/qtttucker_to_linqtt.html" class="code" title="function [tt] = qtttucker_to_linqtt(qt, eps)">qtttucker_to_linqtt</a>	Compute the standard QTT-representation from the QTT-Tucker</li><li><a href="../../tt2/core/ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>	Tensor-by-matrix multiplication of three-dimensional tensor</li><li><a href="../../tt2/core/tt_add.html" class="code" title="function [tt_res] = tt_add(tt1,tt2)">tt_add</a>	Adds two TT-tensors in TT1 format.</li><li><a href="../../tt2/core/tt_als.html" class="code" title="function [res] = tt_als(x,y,nswp)">tt_als</a>	Several ALS sweeps for the approximation in the TT-format</li><li><a href="../../tt2/core/tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="../../tt2/core/tt_mat_full_vec.html" class="code" title="function [y]=tt_mat_full_vec(tt,x)">tt_mat_full_vec</a>	Multiplication of the TT-matrix by full vector in TT1.0 format</li><li><a href="../../tt2/core/tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>	Compute the (supposedly) maximal in modulus element in a TT-tensor</li><li><a href="../../tt2/core/tt_mvdot.html" class="code" title="function [res] = tt_mvdot(a_tt,x_tt,y_tt)">tt_mvdot</a>	Fast computation of the bilinear form (Ax,y) in the TT-format</li><li><a href="../../tt2/core/tt_mvk2.html" class="code" title="function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)">tt_mvk2</a>	Matrix-by-vector product by DMRG/Krylov method</li><li><a href="../../tt2/core/tt_mvk3.html" class="code" title="function [y,swp]=tt_mvk3(W, x, eps, varargin)">tt_mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/core/tt_qfromfull.html" class="code" title="function [tt]=tt_qfromfull(full,s,d,eps)">tt_qfromfull</a>	Approximates a full-format s-dimensional 2^{d} x...x 2^{d}-tensor</li><li><a href="../../tt2/core/tt_tuck.html" class="code" title="function [factors,res]=tt_tuck(tt,eps)">tt_tuck</a>	Computes Tucker factors and Tucker core of the TT-tensor</li><li><a href="../../tt2/core/tucker_to_tt.html" class="code" title="function [tt] = tucker_to_tt(fc, core)">tucker_to_tt</a>	Build TT-tensor from the QTT-Tucker representation</li><li><a href="../../tt2/cross/tt_crossl.html" class="code" title="function [tt,ind_left]=tt_crossl(d,n,fun,ind_right)">tt_crossl</a>	One left-to-right sweep of the TT-cross method.</li><li><a href="../../tt2/cross/tt_crossr.html" class="code" title="function [tt,ind_right]=tt_crossr(arr,ind_left)">tt_crossr</a>	One right-to-left sweep of the TT-cross method.</li><li><a href="../../tt2/exp/tt_canform1.html" class="code" title="function [core_int,ind_l,ind_r,ind_left,ind_right]=tt_canform1(tt)">tt_canform1</a>	Transforms a TT-tensor into the skeleton form</li><li><a href="../../tt2/exp/tt_minres_selfprec.html" class="code" title="function [X]=tt_minres_selfprec(A, tol, eps, maxit, prec_type)">tt_minres_selfprec</a>	Computation of the approximate TT-matrix inverse using self-prec method</li><li><a href="../../tt2/misc/tt_Fd_mtx1.html" class="code" title="function [M] = tt_Fd_mtx1(tt_a, bound1, bound2, eps)">tt_Fd_mtx1</a>	Generates finite-difference 1D matrix of \nabla(tt_a \nabla) in QTTM format.</li><li><a href="../../tt2/misc/tt_hess.html" class="code" title="function [Hess]=tt_hess(tt, indext, h)">tt_hess</a>	Numerical Hessian in a given point</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li><li><a href="../../tt2/tests/test_full_KN2.html" class="code" title="">test_full_KN2</a>	The test script for the Crank-Nicolson scheme with global time stepping</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt] = core(tt1,varargin)</a>
+0002 <span class="comment">%Converts TT-tensor TT1 to old-cell array format.</span>
+0003 <span class="comment">%   [TT]=CORE(TT1) transforms to the TT1.0 format</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   [TT]=CORE(TT1,K) extracts the k-th core</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 
+0018 <span class="keyword">if</span> (nargin==1)
+0019 d=tt1.d;
+0020 tt=cell(d,1);
+0021 r=tt1.r;
+0022 n=tt1.n;
+0023 <a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=tt1.core;
+0024 pos=tt1.ps;
+0025 mat=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(pos(1):pos(2)-1);
+0026 mat=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(mat,[n(1),r(2)]);
+0027 tt{1}=mat;
+0028 <span class="keyword">for</span> i=2:d-1
+0029   cr=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(pos(i):pos(i+1)-1);
+0030   cr=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[r(i),n(i),r(i+1)]);
+0031   cr=permute(cr,[2,1,3]);
+0032   tt{i}=cr;
+0033 <span class="keyword">end</span>
+0034 mat=<a href="core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(pos(d):pos(d+1)-1);
+0035 mat=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(mat,[r(d),n(d)]);
+0036 mat=permute(mat,[2,1]);
+0037 tt{d}=mat;
+0038 <span class="keyword">else</span>
+0039   i=varargin{1};
+0040 
+0041   <span class="comment">% New version with normal address references</span>
+0042   <span class="comment">% We don't have to extract the whole core and other vars.</span>
+0043   
+0044   tt = tt1.core(tt1.ps(i):tt1.ps(i+1)-1);
+0045   tt = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(tt,[tt1.r(i),tt1.n(i),tt1.r(i+1)]); 
+0046 
+0047 <span class="keyword">end</span>
+0048 <span class="keyword">return</span>
+0049 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

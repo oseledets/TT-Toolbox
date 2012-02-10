@@ -1,10 +1,23 @@
 function [m]=qtt_mg_interp(d)
-%  function [m]=qtt_mg_interp(d)
-% Generates the dumb multigrid interpolator (tt_matrix)
+%The simplest multigrid operator in QTT as a TT-matrix
+%   [M]=QTT_MG_INTERP(D) Computes the simplest MG-operator in the
+%   QTT-format on 2^D grid. Its stencil is
 % 1,	0
 % 0.5,	0.5
 % 0,	1
 % 0,	0.5
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 prol0 = [1 0; 0.5 0.5; 0 1; 0 0.5];
 h0 = [0 0; 0 0; 0 0; 0.5 0];

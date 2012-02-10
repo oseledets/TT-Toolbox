@@ -1,8 +1,20 @@
 function [qt]=matrix(qt, sz1, sz2)
-% function [qt]=matrix(qt, sz1, sz2)
-% Makes factors of qtt_tucker to be tt_matrices
-% sz1 and sz2 are cells with n,m dimensions for each factor
-% If they are absent, the square matrices are assumed
+%Converts a vector to a matrix in the QTT-Tucker format
+%   [QT]=MATRIX(QT, SZ1, SZ2) Makes factors of QTT-Tucker to be TT-matrices
+%   SZ1 and SZ2 are cell arrays with N, M dimensions for each factor
+%   If they are absent, the square matrices are assumed
+% 
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 if (nargin<3)
     sz1 = [];

@@ -1,15 +1,27 @@
 function [x]=als_solve_rx(mat, rhs, tol, drx, nswp, addswp)
-% function [x]=als_solve_rx(mat, rhs, [tol], [rx], [nswp])
-% 
-% Finds a solution to 2D TTM matrix MAT using the ALS to a 2D TT tensor
-% with rank rx, but the RHS and X are represented as full vectors.
-% TOL is the tolerance for ||x_{i+1}-x_i||/||x_i||,
-% DRX is the random kick rank,
-% NSWP - number of ALS sweeps.
-% default values:
+%Computes an approximate low-rank solution for 2D case
+%   [x]=ALS_SOLVE_RX(MAT, RHS, [TOL], [RX], [NSWP])
+%   Finds a solution to 2D TTM matrix MAT using the ALS to a 2D TT tensor
+%   with rank rx, but the RHS and X are represented as full vectors.
+%   TOL is the tolerance for ||x_{i+1}-x_i||/||x_i||,
+%   DRX is the random kick rank,
+%   NSWP - number of ALS sweeps.
+%   default values:
 %   tol: 1e-12
 %   rx: 1
 %   nswp: 10
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 a1 = mat{1}; a2 = mat{2};
 n1 = size(a1,1); m1 = size(a1,2);

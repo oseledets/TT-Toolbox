@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subsref</title>
+  <meta name="keywords" content="subsref">
+  <meta name="description" content="Evaluate fields of the QTT-Tucker structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; subsref.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>subsref
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Evaluate fields of the QTT-Tucker structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [elem] = subsref(tt,s) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Evaluate fields of the QTT-Tucker structure
+[ELEM]=SUBSREF(TT,S)
+Used to evaluate element of a tensor,
+and also --- get fields D,R,N,PS,CORE of the TT tensor</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_matrix/subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="../../tt2/@tt_tensor/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_matrix/subsref.html" class="code" title="function elem = subsref(tt,s)">subsref</a>	Evaluate cores of TT-matrix and fields of the TT-matrix structure</li><li><a href="../../tt2/@tt_tensor/subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>	Evaluate elements, cores of TT-formats and fields of the TT-structure</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [elem] = subsref(tt,s)</a>
+0002 <span class="comment">%Evaluate fields of the QTT-Tucker structure</span>
+0003 <span class="comment">%[ELEM]=SUBSREF(TT,S)</span>
+0004 <span class="comment">%Used to evaluate element of a tensor,</span>
+0005 <span class="comment">%and also --- get fields D,R,N,PS,CORE of the TT tensor</span>
+0006 
+0007 <span class="keyword">switch</span> s(1).type    
+0008     <span class="keyword">case</span> <span class="string">'()'</span>
+0009         error(<span class="string">'Element evaluation not implemented yet!'</span>);
+0010     <span class="keyword">case</span> <span class="string">'.'</span>
+0011         <span class="keyword">switch</span> s(1).subs
+0012             <span class="keyword">case</span> <span class="string">'core'</span>
+0013                 elem = tt.core;
+0014                 <span class="keyword">if</span> (numel(s)&gt;1)
+0015                     s = s(2:end);
+0016                     elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0017                 <span class="keyword">end</span>;                
+0018             <span class="keyword">case</span> <span class="string">'tuck'</span>
+0019                 elem = tt.tuck;
+0020                 <span class="keyword">if</span> (numel(s)&gt;1)
+0021                     s = s(2:end);
+0022                     elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0023                 <span class="keyword">end</span>;
+0024             <span class="keyword">case</span> <span class="string">'d'</span>
+0025                 elem = tt.dphys;
+0026             <span class="keyword">case</span> <span class="string">'dphys'</span>
+0027                 elem = tt.dphys;
+0028             <span class="keyword">case</span> <span class="string">'sz'</span>
+0029                 elem = tt.sz;
+0030                 <span class="keyword">if</span> (numel(s)&gt;1)
+0031                     s = s(2:end);
+0032                     elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(elem, s);
+0033                 <span class="keyword">end</span>;              
+0034             <span class="keyword">otherwise</span>
+0035                 error([<span class="string">'No field '</span>, s.subs, <span class="string">' is here.'</span>]);
+0036         <span class="keyword">end</span>
+0037     <span class="keyword">case</span> <span class="string">'{}'</span>
+0038 <span class="comment">%         %Return the core in the old (not exactly!!! r1-n-r2 here) format</span>
+0039         elem = <a href="subsref.html" class="code" title="function [elem] = subsref(tt,s)">subsref</a>(tt.tuck, s);
+0040 <span class="comment">%         pp=s.subs;</span>
+0041 <span class="comment">%         mn=numel(pp);</span>
+0042 <span class="comment">%         if ( mn &gt; 1 )</span>
+0043 <span class="comment">%           error('Invalid number of cores asked');</span>
+0044 <span class="comment">%         end</span>
+0045 <span class="comment">%         elem=core(tt,pp{1});</span>
+0046 <span class="comment">% %         if (pp{1}~=1)</span>
+0047 <span class="comment">% %             elem=permute(elem,[2,1,3]);</span>
+0048 <span class="comment">% %         end;</span>
+0049         
+0050     <span class="keyword">otherwise</span>        
+0051         error(<span class="string">'Invalid subsref.'</span>);
+0052 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

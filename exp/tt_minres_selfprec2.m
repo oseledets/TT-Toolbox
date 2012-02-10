@@ -1,8 +1,30 @@
 function [X]=tt_minres_selfprec2(A,  eps, varargin)
-%[X]=tt_minres_selfprec2(A,eps,...)
+%Computation of the approximate TT-matrix inverse using self-prec method
+%   [X]=TT_MINRES_SELFPREC2(A,EPS,OPTIONS) Computation of the approximate
+%   TT-matrix inverse using Saad self-prec method. Options are provided 
+%   in form 'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 
+%   and so on. The parameters are set to default (in brackets in the 
+%   following) The list of option names and default values are:
+%       o matvec - type of the local matvec [ {mm+compr} | mmk2 ]
+%       o max_rank - maximal TT-rank bound [1000]
+%       o prec_type - left or right inversion [ {left} | right ]
+%       o maxit - maximal number of iterations [10]
+%       o tol - the requested inversion tolerance [EPS]
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 % matvec='mmk2';
 matvec='mm+compr';
-max_rank=100000;
+max_rank=1000;
 prec_type='left';
 tol=eps;
 maxit=10;

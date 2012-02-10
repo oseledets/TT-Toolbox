@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subsasgn</title>
+  <meta name="keywords" content="subsasgn">
+  <meta name="description" content="Assign fields of the QTT-Tucker structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; subsasgn.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>subsasgn
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Assign fields of the QTT-Tucker structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function t = subsasgn(t,s,b) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Assign fields of the QTT-Tucker structure</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Assign fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_matrix/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li><li><a href="../../tt2/@tt_tensor/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Assign fields of the QTT-Tucker structure</li><li><a href="../../tt2/@tt_tensor/subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>	Indexing of cores of TT-format: T{I}=B</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function t = subsasgn(t,s,b)</a>
+0002 <span class="comment">%Assign fields of the QTT-Tucker structure</span>
+0003  <span class="keyword">switch</span> s(1).type
+0004      <span class="keyword">case</span> <span class="string">'.'</span>
+0005          <span class="keyword">switch</span> s(1).subs
+0006              <span class="keyword">case</span> <span class="string">'dphys'</span>
+0007                  t.dphys = b;
+0008              <span class="keyword">case</span> <span class="string">'d'</span>
+0009                  t.dphys = b;                 
+0010              <span class="keyword">case</span> <span class="string">'core'</span>
+0011                  <span class="keyword">if</span> (numel(s)&gt;1)
+0012                      <span class="comment">% Dispatch extra indexing gracefully</span>
+0013                      t.core = <a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>(t.core, s(2:end), b);
+0014                  <span class="keyword">else</span>
+0015                      t.core = b;
+0016                  <span class="keyword">end</span>;                 
+0017              <span class="keyword">case</span> <span class="string">'tuck'</span>
+0018                  <span class="keyword">if</span> (numel(s)&gt;1)
+0019                      <span class="comment">% Dispatch extra indexing gracefully &lt;-BULLSHIT! IT</span>
+0020                      <span class="comment">% DOESN'T WORK!!!</span>
+0021                      s = s(2:end);
+0022                      <span class="keyword">if</span> (strcmp(s(1).type, <span class="string">'{}'</span>))
+0023                          i = s(1).subs{1};
+0024                          <span class="keyword">if</span> (numel(s)&gt;1)
+0025                              t.tuck{i} = <a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>(t.tuck{i}, s(2:end), b);
+0026                          <span class="keyword">else</span>
+0027                              t.tuck{i} = b;
+0028                          <span class="keyword">end</span>;
+0029                      <span class="keyword">end</span>;
+0030                  <span class="keyword">else</span>
+0031                      t.tuck = b;
+0032                  <span class="keyword">end</span>;
+0033              <span class="keyword">case</span> <span class="string">'sz'</span>
+0034                  <span class="keyword">if</span> (numel(s)&gt;1)
+0035                      <span class="comment">% Dispatch extra indexing gracefully</span>
+0036                      t.sz = <a href="subsasgn.html" class="code" title="function t = subsasgn(t,s,b)">subsasgn</a>(t.sz, s(2:end), b);
+0037                  <span class="keyword">else</span>
+0038                      t.sz = b;
+0039                  <span class="keyword">end</span>;
+0040              <span class="keyword">otherwise</span>
+0041                  error([<span class="string">'Cannot change field '</span>, s.subs, <span class="string">' directly.'</span>]);
+0042          <span class="keyword">end</span>
+0043      <span class="keyword">otherwise</span>
+0044          error(<span class="string">'Invalid subsasgn.'</span>);
+0045  <span class="keyword">end</span>
+0046 
+0047</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

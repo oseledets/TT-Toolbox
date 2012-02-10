@@ -1,13 +1,26 @@
 function [X]=tt_minres_selfprec(A, tol, eps, maxit, prec_type)
+%Computation of the approximate TT-matrix inverse using self-prec method
+%   X=TT_MINRES_SELFPREC(A,TOL,EPS,MAXIT,PREC_TYPE) Computes the
+%   approximate matrix inverse of the TT-matrix A (given in TT1.0 format)
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
-% matvec='mmk2';
 matvec='mm+compr';
 max_rank=10;
 
 d=max(size(A));
 ns=tt_size(A);
 
-I=tt_eye(ns, d);
+I=tt_eye(ns, d); I=core(I); 
 if (strcmp(prec_type, 'left'))
     X=tt_scal(tt_transp(A), 1e-15);
 else

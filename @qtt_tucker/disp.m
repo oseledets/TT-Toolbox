@@ -1,5 +1,5 @@
 function disp(tt,name,varargin)
-%DISP Command window display of a qtt_tucker.
+%Command window display of a QTT_TUCKER
 %
 disp_mode_sizes=false;
 for i=1:2:length(varargin)-1

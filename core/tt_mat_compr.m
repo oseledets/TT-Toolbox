@@ -1,12 +1,13 @@
 function [res]=tt_mat_compr(mat,eps, max_rank)
-%[RES]=TT_MAT_COMPR(MAT,EPS)
-%Compress TT matrix with accuracy EPS
+%Tensor rounding for the TT-matrix in TT1.0 format
+%   [RES]=TT_MAT_COMPR(MAT,EPS) Compress TT matrix with accuracy EPS. Avoid
+%   the usage, use round() function of the object-oriented design. Will be
+%   removed in future releases.
 %
 %
+% TT-Toolbox 2.2, 2009-2012
 %
-% TT Toolbox 1.1, 2009
-%
-%This is TT Toolbox, written by Ivan Oseledets.
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

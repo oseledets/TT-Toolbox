@@ -1,11 +1,13 @@
 function [y]=tt_mat_full_vec(tt,x)
-%[Y]=TT_MAT_FULL_VEC(TT,X)
-%Multiplies full  TT matrix TT  by full vector X
+%Multiplication of the TT-matrix by full vector in TT1.0 format
+%   [Y]=TT_MAT_FULL_VEC(TT,X) Multiplies full TT-matrix TT  by full 
+%   vector X. Please avoid the usage: use "*" operator from the
+%   object-oriented TT2 format. Will be removed in future releases.
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT-Toolbox 2.2, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

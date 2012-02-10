@@ -1,3 +1,3 @@
 function display(t)
-%DISPLAY Command window display of a tt_tensor.
+%Command window display of a QTT-Tucker
 disp(t,inputname(1));

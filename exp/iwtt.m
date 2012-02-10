@@ -1,4 +1,19 @@
 function [w]=iwtt(v,wtt_transform)
+%Inverse WTT transform with previously computed filters
+%   W=IWTT(V,WTT_TRANSFORM) computes the inverse WTT tranformation of a 
+%   given tensor with filters, stored in the WTT_TRANSFORM structure.
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 u=wtt_transform.u;
 r=wtt_transform.rks;
 sz=wtt_transform.sz;

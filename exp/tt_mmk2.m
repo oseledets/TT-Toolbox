@@ -1,9 +1,21 @@
-% function [ttm12] = tt_mmk2(ttm1, ttm2, eps, [max_r, max_swp])
-% Returns multiplication of matrices ttm1, ttm2 in TTM format using DMGR-like mvk2
-% MatVec, with compression accuracy eps, and (optional) max rank max_r and
-% max amount of sweeps max_swp
-
 function [ttm12] = tt_mmk2(ttm1, ttm2, eps, max_r, max_swp)
+%DMRG/Krylov matrix-by-matrix multiplication 
+%   [TTM12] = TT_MMK2(TTM1, TTM2, EPS, [MAX_R, MAX_SWP]) 
+%   Computes DMRG/Krylov matrix-by-matrix multiplication with accuracy EPS.
+%   It just calls the MVK2 code. Uses TT1.0, so it syntax will change in
+%   the next release
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 d = size(ttm1, 1);
 
 exists_max_r=1;

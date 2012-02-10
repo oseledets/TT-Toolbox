@@ -1,13 +1,26 @@
 function [p] = dot(tt1,tt2,do_qr)
-%[PR]=DOT(TT1,TT2)
-%[PR]=DOT(TT1,TT2, DO_QR)
 %Dot  product of two TT tensors
+%   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors
 %
-% if DO_QR==true is specified, perform the left-to-right QRs of TT1,TT2
-% before the scalar product. It increases the  accuracy in some cases.
-% 
+%   [PR]=DOT(TT1,TT2, DO_QR) if DO_QR==true is specified, perform the 
+%   left-to-right QRs of TT1,TT2
+%   before the scalar product. It increases the  accuracy in some cases.
+%
 % In general, returns a 4D tensor of sizes 
 % r0(tt1), r0(tt2), rd(tt1), rd(tt2)
+% If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 if (nargin<3)||(isempty(do_qr))
     do_qr = false;
@@ -79,18 +92,4 @@ end;
 if ( r1(1)*r2(1) == 1 ) %Save the rabbits 
    p=reshape(p,r1(d+1),r2(d+1));
 end
-% for i=1:d
-%   cr1=core1(ps1(i):ps1(i+1)-1);
-%   cr2=core2(ps2(i):ps2(i+1)-1);
-%   cr1=reshape(cr1,[r1(i),n(i)*r1(i+1)]);
-%   p = cr1'*p; % size n*r1+, r2-*r11*r21
-% %   p=p'*cr1; %p is now r2(i)*n(i)*r1(i+1), sum over r2(i)*n(i);
-% %   p=reshape(p,[r2(i)*n(i),r1(i+1)]);
-%   p = reshape(p, r1(i+1), n(i), r2(i), r1(1)*r2(1));
-%   cr2=reshape(cr2,[r2(i)*n(i),r2(i+1)]);
-%   p=p'*cr2;
-% end
-% p = (rv1.')*p;
-% p = p*rv2;
-% return
 end  

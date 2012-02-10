@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_Fd_mtx2</title>
+  <meta name="keywords" content="tt_Fd_mtx2">
+  <meta name="description" content="TT-representation of the diffusion matrix">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">misc</a> &gt; tt_Fd_mtx2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_Fd_mtx2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>TT-representation of the diffusion matrix</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [ttm] = tt_Fd_mtx2(tt_a, bound1, bound2, eps) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">TT-representation of the diffusion matrix
+   [TTM] = TT_FD_MTX2(TT_A, BOUND1, BOUND2, EPS) Computes TT
+   representation of a simplest discretization of the diffusion operator
+   with operator given in the QTT-format (TT_A). 
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>	Tensor by matrix multiplication over a given mode</li><li><a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>	Tensor rounding for the TT-matrix in TT1.0 format</li><li><a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>	Compute all ranks of the TT-decomposition in TT1.0 format</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [ttm] = tt_Fd_mtx2(tt_a, bound1, bound2, eps)</a>
+0002 <span class="comment">%TT-representation of the diffusion matrix</span>
+0003 <span class="comment">%   [TTM] = TT_FD_MTX2(TT_A, BOUND1, BOUND2, EPS) Computes TT</span>
+0004 <span class="comment">%   representation of a simplest discretization of the diffusion operator</span>
+0005 <span class="comment">%   with operator given in the QTT-format (TT_A).</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 
+0018 d = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt_a, 1);
+0019 n = zeros(1,d);
+0020 <span class="keyword">for</span> q=1:d
+0021     n(q)=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt_a{q}, 1);
+0022 <span class="keyword">end</span>;
+0023 
+0024 <span class="keyword">if</span> (max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(bound1))==1) bound1 = bound1*ones(1,d); <span class="keyword">end</span>;
+0025 <span class="keyword">if</span> (max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(bound2))==1) bound2 = bound2*ones(1,d); <span class="keyword">end</span>;
+0026 
+0027 ranks_a = <a href="../../tt2/core/tt_ranks.html" class="code" title="function [rks]=tt_ranks(tt)">tt_ranks</a>(tt_a);
+0028 
+0029 <span class="keyword">for</span> q=1:d
+0030     cur_tt = cell(d,1);
+0031     
+0032     cur_tt{1}=zeros(n(1),n(1),ranks_a(1));
+0033     <span class="keyword">for</span> k=1:ranks_a(1)
+0034             lp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(-1*ones(n(1)-1,1), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(2*ones(n(1), 1), [0])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(-1*ones(n(1)-1,1), [1]);
+0035             Mp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((1/6)*ones(n(1)-1,1), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((4/6)*ones(n(1), 1), [0])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((1/6)*ones(n(1)-1,1), [1]);                        
+0036             <span class="keyword">if</span> (bound1(1)==1) lp1(1,1)=1; <span class="keyword">end</span>;
+0037             <span class="keyword">if</span> (bound2(1)==1) lp1(n(1),n(1))=1; <span class="keyword">end</span>;
+0038             h = 1/(n(1)+1);
+0039             <span class="keyword">if</span> ((bound1(1)==1)||(bound2(1)==1)) h = 1/n(1); <span class="keyword">end</span>;
+0040             <span class="keyword">if</span> ((bound1(1)==1)&amp;&amp;(bound2(1)==1)) h = 1/(n(1)-1); <span class="keyword">end</span>;
+0041             Mlp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{1}(2:n(1),k), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{1}(2:n(1),k), [1]);
+0042             Mlp1 = Mlp1 + <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{1}(1:n(1),k)+[tt_a{1}(2:n(1),k)' tt_a{1}(n(1),k)]', [0])*0.5;
+0043         <span class="keyword">if</span> (q==1)            
+0044             cur_tt{1}(:,:,k) = Mlp1.*(lp1/h^2);
+0045         <span class="keyword">else</span>            
+0046             cur_tt{1}(:,:,k) = Mlp1.*Mp1;
+0047 <span class="comment">%             cur_tt{1}(:,:,k) = diag(tt_a{1}(1:n(1),k)+[tt_a{1}(2:n(1),k)' tt_a{1}(n(1),k)]', [0])*0.5;</span>
+0048         <span class="keyword">end</span>;
+0049     <span class="keyword">end</span>;
+0050     
+0051     <span class="keyword">for</span> p=2:d-1
+0052         cur_tt{p}=zeros(n(p),n(p),ranks_a(p-1),ranks_a(p));
+0053         <span class="keyword">for</span> k1=1:ranks_a(p-1)
+0054             <span class="keyword">for</span> k2=1:ranks_a(p)
+0055                     lp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(-1*ones(n(p)-1,1), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(2*ones(n(p), 1), [0])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(-1*ones(n(p)-1,1), [1]);
+0056                     Mp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((1/6)*ones(n(1)-1,1), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((4/6)*ones(n(1), 1), [0])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((1/6)*ones(n(1)-1,1), [1]);                                        
+0057                     <span class="keyword">if</span> (bound1(p)==1) lp1(1,1)=1; <span class="keyword">end</span>;
+0058                     <span class="keyword">if</span> (bound2(p)==1) lp1(n(p),n(p))=1; <span class="keyword">end</span>;
+0059                     h = 1/(n(p)+1);
+0060                     <span class="keyword">if</span> ((bound1(p)==1)||(bound2(p)==1)) h = 1/n(p); <span class="keyword">end</span>;
+0061                     <span class="keyword">if</span> ((bound1(p)==1)&amp;&amp;(bound2(p)==1)) h = 1/(n(p)-1); <span class="keyword">end</span>;
+0062                     Mlp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{p}(2:n(p),k1,k2), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{p}(2:n(p),k1,k2), [1]);
+0063                     Mlp1 = Mlp1 + <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{p}(1:n(p),k1,k2)+[tt_a{p}(2:n(p),k1,k2)' tt_a{p}(n(p),k1,k2)]', [0])*0.5;
+0064                 <span class="keyword">if</span> (p==q)                           
+0065                     cur_tt{p}(:,:,k1,k2) = Mlp1.*(lp1/h^2);             
+0066                 <span class="keyword">else</span>
+0067                     cur_tt{p}(:,:,k1,k2) = Mlp1.*Mp1;
+0068 <span class="comment">%                     cur_tt{p}(:,:,k1,k2) = diag(tt_a{p}(1:n(p),k1,k2)+[tt_a{p}(2:n(p),k1,k2)' tt_a{p}(n(p),k1,k2)]', [0])*0.5;</span>
+0069                 <span class="keyword">end</span>;
+0070             <span class="keyword">end</span>;
+0071         <span class="keyword">end</span>;
+0072     <span class="keyword">end</span>;
+0073     
+0074     cur_tt{d}=zeros(n(d),n(d),ranks_a(d-1));
+0075     <span class="keyword">for</span> k=1:ranks_a(d-1)
+0076             lp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(-1*ones(n(d)-1,1), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(2*ones(n(d), 1), [0])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(-1*ones(n(d)-1,1), [1]);
+0077             Mp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((1/6)*ones(n(1)-1,1), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((4/6)*ones(n(1), 1), [0])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>((1/6)*ones(n(1)-1,1), [1]);                                                    
+0078             <span class="keyword">if</span> (bound1(d)==1) lp1(1,1)=1; <span class="keyword">end</span>;
+0079             <span class="keyword">if</span> (bound2(d)==1) lp1(n(d),n(d))=1; <span class="keyword">end</span>;
+0080             h = 1/(n(d)+1);
+0081             <span class="keyword">if</span> ((bound1(d)==1)||(bound2(d)==1)) h = 1/n(d); <span class="keyword">end</span>;
+0082             <span class="keyword">if</span> ((bound1(d)==1)&amp;&amp;(bound2(d)==1)) h = 1/(n(d)-1); <span class="keyword">end</span>;
+0083             Mlp1 = <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{d}(2:n(d),k), [-1])+<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{d}(2:n(d),k), [1]);
+0084             Mlp1 = Mlp1 + <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(tt_a{d}(1:n(d),k)+[tt_a{d}(2:n(d),k)' tt_a{d}(n(d),k)]', [0])*0.5;
+0085         <span class="keyword">if</span> (q==d)            
+0086             cur_tt{d}(:,:,k) = Mlp1.*(lp1/h^2);
+0087         <span class="keyword">else</span>
+0088             cur_tt{d}(:,:,k) = Mlp1.*Mp1;
+0089 <span class="comment">%             cur_tt{d}(:,:,k) = diag(tt_a{d}(1:n(d),k)+[tt_a{d}(2:n(d),k)' tt_a{d}(n(d),k)]', [0])*0.5;</span>
+0090         <span class="keyword">end</span>;
+0091     <span class="keyword">end</span>;    
+0092     
+0093     <span class="keyword">if</span> (q==1)
+0094         <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a> = cur_tt;
+0095     <span class="keyword">else</span>
+0096         <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a> = ttm_add(<a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>, cur_tt);
+0097         <a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a> = <a href="../../tt2/core/tt_mat_compr.html" class="code" title="function [res]=tt_mat_compr(mat,eps, max_rank)">tt_mat_compr</a>(<a href="../../tt2/@tt_tensor/ttm.html" class="code" title="function [tt]=ttm(tt,k,mat)">ttm</a>, eps);
+0098     <span class="keyword">end</span>;
+0099 <span class="keyword">end</span>;
+0100 
+0101 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

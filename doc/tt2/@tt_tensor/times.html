@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of times</title>
+  <meta name="keywords" content="times">
+  <meta name="description" content="A=B.*C">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; times.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>times
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>A=B.*C</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [a]=times(b,c,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">A=B.*C
+   [A]=TIMES(B,C) Hadamard product of two TT-tensors
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>	Dot product of two QTT-Tuckers</li><li><a href="../../tt2/@tt_matrix/dot.html" class="code" title="function [p] = dot(tt1,tt2)">dot</a>	Frobenius dot product of two TT-matrices</li><li><a href="dot.html" class="code" title="function [p] = dot(tt1,tt2,do_qr)">dot</a>	Dot  product of two TT tensors</li><li><a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [a]=times(b,c,varargin)</a>
+0002 <span class="comment">%A=B.*C</span>
+0003 <span class="comment">%   [A]=TIMES(B,C) Hadamard product of two TT-tensors</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015 
+0016 <span class="keyword">if</span> (nargin == 2 )
+0017     d=b.d; n=b.n; crb=b.core; crc=c.core; rb=b.r; rc=c.r;
+0018     psb=b.ps; psc=c.ps;
+0019     <span class="comment">%Ranks are just a product</span>
+0020     a=<a href="tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0021     ra=rb.*rc;
+0022     psa=cumsum([1;n(1:d).*ra(1:d).*ra(2:d+1)]);
+0023     sz=<a href="dot.html" class="code" title="function [p] = dot(tt1,tt2,do_qr)">dot</a>(n(1:d).*ra(1:d),ra(2:d+1));
+0024     cra=zeros(sz,1);
+0025     <span class="keyword">for</span> i=1:d
+0026        cr1=crb(psb(i):psb(i+1)-1);
+0027        cr2=crc(psc(i):psc(i+1)-1);
+0028        cr1=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1,[rb(i),n(i),rb(i+1)]);       
+0029        cr2=<a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2,[rc(i),n(i),rc(i+1)]);
+0030        <span class="comment">% rewrite in in the vectorized form</span>
+0031        cr1 = permute(cr1, [2, 1, 3]);
+0032        cr1 = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1, n(i)*rb(i)*rb(i+1), 1);
+0033        ons = ones(1, rc(i)*rc(i+1));
+0034        cr1 = cr1*ons;
+0035        cr1 = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1, n(i), rb(i), rb(i+1), rc(i), rc(i+1));
+0036        cr1 = permute(cr1, [1, 2, 4, 3, 5]);
+0037        cr1 = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr1, n(i), rb(i)*rc(i)*rb(i+1)*rc(i+1));
+0038        cr2 = permute(cr2, [2, 1, 3]);
+0039        cr2 = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, n(i)*rc(i)*rc(i+1), 1);
+0040        ons = ones(1, rb(i)*rb(i+1));
+0041        cr2 = cr2*ons;
+0042        cr2 = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, n(i), rc(i), rc(i+1), rb(i), rb(i+1));
+0043        cr2 = permute(cr2, [1, 4, 2, 5, 3]);
+0044        cr2 = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr2, n(i), rb(i)*rc(i)*rb(i+1)*rc(i+1));       
+0045        cr = cr1.*cr2;
+0046        cr = <a href="reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr, n(i), rb(i)*rc(i), rb(i+1)*rc(i+1));
+0047        cr = permute(cr, [2, 1, 3]);
+0048 <span class="comment">%        cr=zeros(ra(i),n(i),ra(i+1));</span>
+0049 <span class="comment">%        for j=1:n(i)</span>
+0050 <span class="comment">%           cr(:,j,:)=kron(reshape(cr1(:,j,:),rb(i),rb(i+1)),reshape(cr2(:,j,:),rc(i),rc(i+1)));</span>
+0051 <span class="comment">%        end</span>
+0052        cra(psa(i):psa(i+1)-1)=cr(:);
+0053     <span class="keyword">end</span>
+0054     a.d=d;
+0055     a.n=n;
+0056     a.r=ra;
+0057     a.ps=psa;
+0058     a.core=cra;
+0059 <span class="keyword">elseif</span> (nargin == 3)
+0060      error(<span class="string">'Krylov method is not yet supported, come again later'</span>);
+0061 <span class="keyword">end</span>
+0062 <span class="keyword">return</span>
+0063 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

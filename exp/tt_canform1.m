@@ -1,8 +1,20 @@
 function [core_int,ind_l,ind_r,ind_left,ind_right]=tt_canform1(tt)
-%[CORE_INT,IND_L,IND_R]=TT_CANFORM1(TT)
-%Transforms a TT tensor to canonical skeleton-based form
-%Compute left index set & compute right index set and compute
-%interpolation sets;
+%Transforms a TT-tensor into the skeleton form
+%   [CORE_INT,IND_L,IND_R]=TT_CANFORM1(TT) Transforms a TT tensor to 
+%   canonical skeleton-based form. The function computes left index set 
+%   & compute right index set and also the interpolation sets
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+tt=core(tt);
 d=size(tt,1);
 tt1=tt;
 mat=tt1{1};

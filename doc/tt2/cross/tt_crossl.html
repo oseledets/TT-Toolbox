@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_crossl</title>
+  <meta name="keywords" content="tt_crossl">
+  <meta name="description" content="One left-to-right sweep of the TT-cross method.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">cross</a> &gt; tt_crossl.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/cross&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_crossl
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>One left-to-right sweep of the TT-cross method.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt,ind_left]=tt_crossl(d,n,fun,ind_right) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">One left-to-right sweep of the TT-cross method.
+   [TT,IND_LEFT]=TT_CROSSL(D,N,FUN,IND_RIGHT) Computes one QR-maxvol sweep
+   of the TT-cross method. The input is the pair (D,N) that determines the
+   size of the tensor, FUN is the function handle to evaluate a particular
+   element of the tensor, i.e., VAL=FUN(IND). To pass parameters, please
+   use anonymous function handles in MATLAB
+ 
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>	Maximal volume submatrix in an tall matrix</li><li><a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>	Correct conversion of an index to a multiindex</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt,ind_left]=tt_crossl(d,n,fun,ind_right)</a>
+0002 <span class="comment">%One left-to-right sweep of the TT-cross method.</span>
+0003 <span class="comment">%   [TT,IND_LEFT]=TT_CROSSL(D,N,FUN,IND_RIGHT) Computes one QR-maxvol sweep</span>
+0004 <span class="comment">%   of the TT-cross method. The input is the pair (D,N) that determines the</span>
+0005 <span class="comment">%   size of the tensor, FUN is the function handle to evaluate a particular</span>
+0006 <span class="comment">%   element of the tensor, i.e., VAL=FUN(IND). To pass parameters, please</span>
+0007 <span class="comment">%   use anonymous function handles in MATLAB</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0014 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0015 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0018 <span class="comment">%ivan.oseledets@gmail.com</span>
+0019 <span class="comment">%---------------------------</span>
+0020 
+0021 <span class="keyword">if</span> ( numel(n) == 1 )
+0022   n=n*ones(d,1);
+0023 <span class="keyword">end</span>
+0024 sz=n;
+0025 tt=cell(d,1);
+0026 ind_left=cell(d,1); <span class="comment">%Computed ind_left</span>
+0027 ind_r=ind_right{1};
+0028 r1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ind_r,2);
+0029 ncur=sz(1);
+0030 mat=zeros(ncur,r1);
+0031 <span class="keyword">for</span> i=1:ncur
+0032    <span class="keyword">for</span> s=1:r1
+0033       ind_f=[i,ind_r(:,s)'];
+0034       val=fun(ind_f);
+0035       mat(i,s)=val;
+0036    <span class="keyword">end</span>
+0037 <span class="keyword">end</span>
+0038 [qs,~]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(mat,0);
+0039 ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(qs);
+0040 ind_left{1}=ind;
+0041 mat=qs/qs(ind,:);
+0042 tt{1}=mat;
+0043 
+0044 <span class="keyword">for</span> k=2:d-1
+0045      ncur=sz(k);
+0046      ind_l=ind_left{k-1};
+0047      ind_r=ind_right{k};
+0048      r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ind_l,2);
+0049      r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ind_r,2);
+0050      <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=zeros(ncur,r2,r3);
+0051      <span class="keyword">for</span> i=1:ncur
+0052          <span class="keyword">for</span> s2=1:r2
+0053              <span class="keyword">for</span> s3=1:r3
+0054                  ind_f=[ind_l(:,s2)',i,ind_r(:,s3)'];
+0055                  val=fun(ind_f,arr);
+0056                  <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(i,s2,s3)=val;
+0057              <span class="keyword">end</span>
+0058          <span class="keyword">end</span>
+0059      <span class="keyword">end</span>
+0060      <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=permute(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[2,1,3]); <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[r2*ncur,r3]);
+0061      rnew=min(r2*ncur,r3);
+0062      [qs,rs]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,0);
+0063      ind=<a href="../../tt2/core/maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(qs);
+0064      ind_old=ind_left{k-1};
+0065      ind_new=zeros(k,rnew);
+0066      ncur=sz(k);
+0067      <span class="keyword">for</span> s=1:rnew
+0068         f_in=ind(s);
+0069         w1=<a href="../../tt2/core/tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([r2,ncur],f_in);
+0070         rs=w1(1); js=w1(2);
+0071         ind_new(:,s)=[ind_old(:,rs)',js];
+0072      <span class="keyword">end</span>
+0073      ind_left{k}=ind_new;
+0074      <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=qs/qs(ind,:);
+0075      <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[r2,ncur,rnew]); <a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>=permute(<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>,[2,1,3]);
+0076    
+0077     tt{k}=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>;
+0078 <span class="keyword">end</span>
+0079 ncur=sz(d);
+0080 ind_l=ind_left{d-1};
+0081 r=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ind_l,2);
+0082 mat=zeros(ncur,r);
+0083 <span class="keyword">for</span> j=1:ncur
+0084     <span class="keyword">for</span> s=1:r
+0085       ind_f=[ind_l(:,s)',j];
+0086       val=fun(ind_f,arr);
+0087       mat(j,s)=val;
+0088     <span class="keyword">end</span>
+0089 <span class="keyword">end</span>
+0090 tt{d}=mat;
+0091 <span class="keyword">return</span>
+0092 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

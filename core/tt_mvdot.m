@@ -1,12 +1,12 @@
 function [res] = tt_mvdot(a_tt,x_tt,y_tt)
-%[RES]=TT_MVDOT(A_TT,X_TT,Y_TT)
-% Computes scalar product(AX,Y)
-% A_TT is a matrix, X_TT is a vector, Y_TT  is a vector
+%Fast computation of the bilinear form (Ax,y) in the TT-format
+%   [RES]=TT_MVDOT(A_TT,X_TT,Y_TT) Computes scalar product(AX,Y), where 
+%   A_TT is a matrix, X_TT is a vector, Y_TT  is a vector
 %
 %
-% TT Toolbox 1.0, 2009
+% TT-Toolbox 2.2, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets.
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %

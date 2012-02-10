@@ -1,24 +1,43 @@
 function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)
-%  function [x, sweeps]=dmrg_solve2(A, y, eps, options)
-% Solves the system P(k,n)*A(n,m)*x(m)=P(k,n)*y(n)
-% options include (default values are given to the right)
-% x0 --- initial value, default: random rank-2
-% tol --- local solution tolerance, default: eps
-% rmax --- maximal solution rank, default: 1000
-% nswp --- number of dmrg sweeps, default: 10
-% P --- preconditioner, default: identity matrix
-% verb --- verbosity (0,1,2), default: 1
-% max_full_size --- maximal size of the local matrix to full solver,
-% default: 2500
-% local_prec: which local preconditioner to use,
-% two options: 'als' (for the ALS-Richardson iteration) and
-% 'selfprec' (for the Saad selfpreconditioner). Default is 'als'
-% prec_compr --- for local precs, default: 1e-3
-% prec_tol --- for local precs,   default: 1e-1
-% prec_iters --- for local precs, default: 15
-% use_self_prec --- use (or not) self-prec, default: false
-% gmres_iters --- number of gmres restarts, default: 2
-% nrestart --- dimension of the local GMRES, default: 40
+%Solution of linear systems in TT-format via DMRG iteration
+%   [X,SWEEPS]=DMRG_SOLVE2(A,Y,EPS,OPTIONS) Attempts to solve the linear
+%   system A*X = Y with accuracy EPS using the two-sided DMRG iteration.
+%   Matrix A has to be given in the TT-format, right-hand side Y should be
+%   given in the TT-format also. Options are provided in form
+%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+%   on. The parameters are set to default (in brackets in the following) 
+%   The list of option names and default values are:
+%       o x0 - initial approximation [random rank-2 tensor] 
+%       o P - preconditioner  [I]
+%       o nswp - maximal number of DMRG sweeps [10]
+%       o rmax - maximal TT-rank of the solution [1000]
+%       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
+%       o max_full_size - maximal size of the local matrix to full solver 
+%       [2500]
+%       o local_prec: Local preconditioner, 'als' - ALS-Richardson
+%       iteration, 'selfprec' (Saad selfpreconditioner) ['als']
+%       o prec_compr - compression for local precs [1e-3]
+%       o prec_tol - tolerance for local precs [1e-1]
+%       o prec_iters - number of local iterations [15]
+%       o use_self_prec - Use self_prec [ true | {false} ]
+%       o gmres_iters - number of local gmres restarts [2]
+%       o nrestart - dimension of local gmres [40]
+%       Example:
+%           d=8; f=8; 
+%           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
+%           rhs=tt_ones(2,d*f); Right-hand side of all ones
+%           sol=dmrg_solve2(mat,rhs,1e-6);
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
 
 
 % Inner parameters
@@ -145,7 +164,6 @@ end
 %nrmF=sqrt(tt_dot(y,y));
 
 d=size(A,1);
-tau=1*ones(d+1,1);
 
 if ( isempty(P) )
    P = core(tt_eye(tt_size(y), d));
@@ -381,10 +399,10 @@ for swp=1:nswp
         else
             if (strcmp(MatVec, 'bfun2'))
                 mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
-                mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
+                %mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
             else
                 mv = @(vec)(B*vec);
-                mv1 = @(vec)(B*vec+tau(i)*vec);
+                %mv1 = @(vec)(B*vec+tau(i)*vec);
             end;
         end;
 
@@ -573,9 +591,11 @@ for swp=1:nswp
             cursol{1}=u(:,1:r);
             cursol{2}=conj(v(:,1:r))*diag(s(1:r));
             if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-                resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;
+                resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)-rhs;
+                %resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1)-rhs;                
             else
-                resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
+                resid = full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)-rhs;
+                %resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)-rhs;
             end;
             while (r<min(size(s,1), rmax))
                 r=r+1;
@@ -583,9 +603,13 @@ for swp=1:nswp
                 cursol{1}=u(:,r);
                 cursol{2}=conj(v(:,r))*s(r);
                 if (strcmp(MatVec,'full')||strcmp(MatVec,'half-full'))
-                    resid = resid + B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1);
+                    resid = B*full(tt_tensor(cursol),rxm1*m1*m2*rxm3)+resid;
+                    %resid = B*reshape(tt_to_full(cursol), rxm1*m1*m2*rxm3, 1) + resid;
+
                 else
-                    resid = resid + reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1);
+                    resid = full(tt_tensor(tt_mv(B,cursol)),rxm1*m1*m2*rxm3)+resid;
+                    %resid = reshape(tt_to_full(tt_mv(B,cursol)), rxm1*m1*m2*rxm3, 1)+resid;
+
                 end;
                 normres = norm(resid)/norm(rhs);
                 %             if ( verb>1 )

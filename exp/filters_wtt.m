@@ -1,9 +1,22 @@
 function [wtt_transform] = filters_wtt (a,rmax,eps,sz)
-%[wtt_transform]=FILTERS_WTT(A,RMAX,EPS,SZ)
-%Computes the set of filters for transform of A, A should be given 
-%either as d-dimensional array, or as by size-vector sz
-%wtt_transform is a structure with two fields: 
-%u and rks
+%Computes the WTT transform filters for a given tensor
+%   [WTT_TRANSFORM]=FILTERS_WTT(A,RMAX,EPS,SZ)
+%   Computes the set of filters for transform of A, A should be given 
+%   either as d-dimensional array, or as by size-vector SZ
+%   WTT_TRANSFORM is a structure with two fields: 
+%   u and rks
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 if ( nargin == 1 )
 sz=size(a); d = numel(sz);
 else

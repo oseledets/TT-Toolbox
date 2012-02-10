@@ -1,0 +1,198 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Fd_mtx</title>
+  <meta name="keywords" content="Fd_mtx">
+  <meta name="description" content="Finite difference approximation of scalar diffusion equation in QTT">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; Fd_mtx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>Fd_mtx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Finite difference approximation of scalar diffusion equation in QTT</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [M]=Fd_mtx(d, a, bound) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Finite difference approximation of scalar diffusion equation in QTT
+   [M]=FD_MTX(D, A, BOUND)
+   Generate finite difference matrix from diffusion coefficient A(n,n) or A(n,n,n)
+   M - n^D-by-n^D sparse matrix
+   D - dimensions, 
+   BOUND:
+       0 - Dirichlet,
+       1 - Neuman</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 
+0003 <a name="_sub0" href="#_subfunctions" class="code">function [M]=Fd_mtx(d, a, bound)</a>
+0004 <span class="comment">%Finite difference approximation of scalar diffusion equation in QTT</span>
+0005 <span class="comment">%   [M]=FD_MTX(D, A, BOUND)</span>
+0006 <span class="comment">%   Generate finite difference matrix from diffusion coefficient A(n,n) or A(n,n,n)</span>
+0007 <span class="comment">%   M - n^D-by-n^D sparse matrix</span>
+0008 <span class="comment">%   D - dimensions,</span>
+0009 <span class="comment">%   BOUND:</span>
+0010 <span class="comment">%       0 - Dirichlet,</span>
+0011 <span class="comment">%       1 - Neuman</span>
+0012 
+0013 <span class="comment">%</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0018 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0019 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0022 <span class="comment">%ivan.oseledets@gmail.com</span>
+0023 <span class="comment">%---------------------------</span>
+0024 
+0025 
+0026 n = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(a, 1)-2;
+0027 <span class="keyword">if</span> (d==1) 
+0028   bar_a = zeros(n,3);
+0029   <span class="keyword">for</span> i=1:n
+0030      
+0031      bar_a(i,2)=(a(i+2)+2*a(i+1)+a(i))*0.25;
+0032      bar_a(i,1)=(a(i)+a(i+1))*0.5;
+0033      bar_a(i,3)=(a(i+1)+a(i+2))*0.5;
+0034   <span class="keyword">end</span>
+0035   D1=2*eye(n)-<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(ones(n-1,1),1)-<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(ones(n-1,1),-1);
+0036   <span class="comment">%M=D1*(n+1)^2;</span>
+0037   M=D1;
+0038   bar_a_M=spdiags(bar_a,[-1,0,1],n,n);
+0039   M = M.*bar_a_M;
+0040   <span class="keyword">return</span>;
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="keyword">if</span> (d==2)
+0044     <span class="keyword">if</span> (bound==0)
+0045         bar_a = zeros(n^2, 5);
+0046         <span class="keyword">for</span> i=1:n
+0047             <span class="keyword">for</span> j=1:n
+0048                 bar_a((i-1)*n+j, 3) = (a(i+1,j+1)+a(i+2,j+1)+a(i+1,j+2)+a(i+2,j+2))*0.25;
+0049                 <span class="keyword">if</span> (j&gt;1) bar_a((i-1)*n+j-1, 2) = (a(i+1,j+1)+a(i+2,j+1))*0.5; <span class="keyword">end</span>;
+0050                 <span class="keyword">if</span> (j&lt;n) bar_a((i-1)*n+j+1, 4) = (a(i+1,j+2)+a(i+2,j+2))*0.5; <span class="keyword">end</span>;
+0051                 <span class="keyword">if</span> (i&gt;1) bar_a((i-1-1)*n+j, 1) = (a(i+1,j+1)+a(i+1,j+2))*0.5; <span class="keyword">end</span>;
+0052                 <span class="keyword">if</span> (i&lt;n) bar_a((i+1-1)*n+j, 5) = (a(i+2,j+1)+a(i+2,j+2))*0.5; <span class="keyword">end</span>;
+0053             <span class="keyword">end</span>;
+0054         <span class="keyword">end</span>;
+0055         D1 = spdiags(-1*ones(n,1), [-1], n, n)+spdiags(2*ones(n,1), [0], n, n)+spdiags(-1*ones(n,1), [1], n, n);
+0056         M = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(D1*(n+1)^2, speye(n))+<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(speye(n), D1*(n+1)^2);
+0057         bar_a_M = spdiags(bar_a, [-n, -1, 0, 1, n], n^2, n^2);
+0058         M = M.*bar_a_M;
+0059     <span class="keyword">else</span>
+0060         wa = zeros(n+3,n+3);
+0061         wa(1:n+2,1:n+2)=a;
+0062         wa(n+3,1:n+2)=a(n+2,:);
+0063         wa(1:n+2,n+3)=a(:,n+2);
+0064         wa(n+3,n+3)=a(n+2,n+2);
+0065         n = n+2;
+0066         bar_a = zeros(n^2, 5);
+0067         <span class="keyword">for</span> i=1:n
+0068             <span class="keyword">for</span> j=1:n
+0069                 bar_a((i-1)*n+j, 3) = (wa(i,j)+wa(i+1,j)+wa(i,j+1)+wa(i+1,j+1))*0.25;
+0070                 <span class="keyword">if</span> (j&gt;1) bar_a((i-1)*n+j-1, 2) = (wa(i,j)+wa(i+1,j))*0.5; <span class="keyword">end</span>;
+0071                 <span class="keyword">if</span> (j&lt;n) bar_a((i-1)*n+j+1, 4) = (wa(i,j+1)+wa(i+1,j+1))*0.5; <span class="keyword">end</span>;
+0072                 <span class="keyword">if</span> (i&gt;1) bar_a((i-1-1)*n+j, 1) = (wa(i,j)+wa(i,j+1))*0.5; <span class="keyword">end</span>;
+0073                 <span class="keyword">if</span> (i&lt;n) bar_a((i+1-1)*n+j, 5) = (wa(i+1,j)+wa(i+1,j+1))*0.5; <span class="keyword">end</span>;
+0074             <span class="keyword">end</span>;
+0075         <span class="keyword">end</span>;        
+0076         D1 = spdiags(-1*ones(n,1), [-1], n, n)+spdiags(2*ones(n,1), [0], n, n)+spdiags(-1*ones(n,1), [1], n, n);
+0077         D1(1,1)=1;
+0078         D1(n,n)=1;
+0079         M = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(D1*(n-1)^2, speye(n))+<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(speye(n), D1*(n-1)^2);
+0080         bar_a_M = spdiags(bar_a, [-n, -1, 0, 1, n], n^2, n^2);
+0081         M = M.*bar_a_M;
+0082     <span class="keyword">end</span>;
+0083 <span class="keyword">end</span>;
+0084 
+0085 <span class="keyword">if</span> (d==3)
+0086     <span class="keyword">if</span> (bound==0)
+0087         bar_a = zeros(n^3, 7);
+0088         wa=a;
+0089         <span class="keyword">for</span> i=1:n
+0090             <span class="keyword">for</span> j=1:n
+0091                 <span class="keyword">for</span> k=1:n
+0092                     bar_a((i-1)*n^2+(j-1)*n+k, 4) = (wa(i+1,j+1,k+1)+wa(i+2,j+1,k+1)+wa(i+1,j+2,k+1)+wa(i+2,j+2,k+1)+wa(i+1,j+1,k+2)+wa(i+2,j+1,k+2)+wa(i+1,j+2,k+2)+wa(i+2,j+2,k+2))*0.125;
+0093                     <span class="keyword">if</span> (k&gt;1) bar_a((i-1)*n^2+(j-1)*n+k-1, 3) = (wa(i+1,j+1,k+1)+wa(i+2,j+1,k+1)+wa(i+1,j+2,k+1)+wa(i+2,j+2,k+1))*0.25; <span class="keyword">end</span>;
+0094                     <span class="keyword">if</span> (k&lt;n) bar_a((i-1)*n^2+(j-1)*n+k+1, 5) = (wa(i+1,j+1,k+2)+wa(i+2,j+1,k+2)+wa(i+1,j+2,k+2)+wa(i+2,j+2,k+2))*0.25; <span class="keyword">end</span>;
+0095                     
+0096                     <span class="keyword">if</span> (j&gt;1) bar_a((i-1)*n^2+(j-1-1)*n+k, 2) = (wa(i+1,j+1,k+1)+wa(i+2,j+1,k+1)+wa(i+1,j+1,k+2)+wa(i+2,j+1,k+2))*0.25; <span class="keyword">end</span>;
+0097                     <span class="keyword">if</span> (j&lt;n) bar_a((i-1)*n^2+(j+1-1)*n+k, 6) = (wa(i+1,j+2,k+1)+wa(i+2,j+2,k+1)+wa(i+1,j+2,k+2)+wa(i+2,j+2,k+2))*0.25; <span class="keyword">end</span>;
+0098                     
+0099                     <span class="keyword">if</span> (i&gt;1) bar_a((i-1-1)*n^2+(j-1)*n+k, 1) = (wa(i+1,j+1,k+1)+wa(i+1,j+2,k+1)+wa(i+1,j+1,k+2)+wa(i+1,j+2,k+2))*0.25; <span class="keyword">end</span>;
+0100                     <span class="keyword">if</span> (i&lt;n) bar_a((i+1-1)*n^2+(j-1)*n+k, 7) = (wa(i+2,j+1,k+1)+wa(i+2,j+2,k+1)+wa(i+2,j+1,k+2)+wa(i+2,j+2,k+2))*0.25; <span class="keyword">end</span>;                    
+0101                 <span class="keyword">end</span>;
+0102             <span class="keyword">end</span>;
+0103         <span class="keyword">end</span>;        
+0104         D1 = spdiags(-1*ones(n,1), [-1], n, n)+spdiags(2*ones(n,1), [0], n, n)+spdiags(-1*ones(n,1), [1], n, n);
+0105         M = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(D1*(n+1)^2, speye(n)), speye(n))+<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(speye(n), D1*(n+1)^2), speye(n)) + <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(speye(n), speye(n)), D1*(n+1)^2);
+0106         bar_a_M = spdiags(bar_a, [-n^2, -n, -1, 0, 1, n, n^2], n^3, n^3);
+0107         M = M.*bar_a_M;
+0108     <span class="keyword">else</span>
+0109         wa = zeros(n+3,n+3,n+3);
+0110         wa(1:n+2, 1:n+2, 1:n+2) = a;
+0111         wa(n+3, 1:n+2, 1:n+2) = a(n+2, :, :);
+0112         wa(1:n+2, n+3, 1:n+2) = a(:, n+2, :);
+0113         wa(1:n+2, 1:n+2, n+3) = a(:, :, n+2);
+0114         wa(1:n+2, n+3, n+3) = a(:, n+2, n+2);
+0115         wa(n+3, 1:n+2, n+3) = a(n+2, :, n+2);
+0116         wa(n+3, n+3, 1:n+2) = a(n+2, n+2, :);
+0117         wa(n+3,n+3,n+3)=a(n+2,n+2,n+2);
+0118         n = n+2;
+0119         bar_a = zeros(n^3, 7);
+0120         <span class="keyword">for</span> i=1:n
+0121             <span class="keyword">for</span> j=1:n
+0122                 <span class="keyword">for</span> k=1:n
+0123                     bar_a((i-1)*n^2+(j-1)*n+k, 4) = (wa(i,j,k)+wa(i+1,j,k)+wa(i,j+1,k)+wa(i+1,j+1,k)+wa(i,j,k+1)+wa(i+1,j,k+1)+wa(i,j+1,k+1)+wa(i+1,j+1,k+1))*0.125;
+0124                     <span class="keyword">if</span> (k&gt;1) bar_a((i-1)*n^2+(j-1)*n+k-1, 3) = (wa(i,j,k)+wa(i+1,j,k)+wa(i,j+1,k)+wa(i+1,j+1,k))*0.25; <span class="keyword">end</span>;
+0125                     <span class="keyword">if</span> (k&lt;n) bar_a((i-1)*n^2+(j-1)*n+k+1, 5) = (wa(i,j,k+1)+wa(i+1,j,k+1)+wa(i,j+1,k+1)+wa(i+1,j+1,k+1))*0.25; <span class="keyword">end</span>;
+0126                     
+0127                     <span class="keyword">if</span> (j&gt;1) bar_a((i-1)*n^2+(j-1-1)*n+k, 2) = (wa(i,j,k)+wa(i+1,j,k)+wa(i,j,k+1)+wa(i+1,j,k+1))*0.25; <span class="keyword">end</span>;
+0128                     <span class="keyword">if</span> (j&lt;n) bar_a((i-1)*n^2+(j+1-1)*n+k, 6) = (wa(i,j+1,k)+wa(i+1,j+1,k)+wa(i,j+1,k+1)+wa(i+1,j+1,k+1))*0.25; <span class="keyword">end</span>;
+0129                     
+0130                     <span class="keyword">if</span> (i&gt;1) bar_a((i-1-1)*n^2+(j-1)*n+k, 1) = (wa(i,j,k)+wa(i,j+1,k)+wa(i,j,k+1)+wa(i,j+1,k+1))*0.25; <span class="keyword">end</span>;
+0131                     <span class="keyword">if</span> (i&lt;n) bar_a((i+1-1)*n^2+(j-1)*n+k, 7) = (wa(i+1,j,k)+wa(i+1,j+1,k)+wa(i+1,j,k+1)+wa(i+1,j+1,k+1))*0.25; <span class="keyword">end</span>;                    
+0132                 <span class="keyword">end</span>;
+0133             <span class="keyword">end</span>;
+0134         <span class="keyword">end</span>;        
+0135         D1 = spdiags(-1*ones(n,1), [-1], n, n)+spdiags(2*ones(n,1), [0], n, n)+spdiags(-1*ones(n,1), [1], n, n);
+0136         D1(1,1)=1;
+0137         D1(n,n)=1;
+0138         M = <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(D1*(n-1)^2, speye(n)), speye(n))+<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(speye(n), D1*(n-1)^2), speye(n)) + <a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(speye(n), speye(n)), D1*(n-1)^2);
+0139         bar_a_M = spdiags(bar_a, [-n^2, -n, -1, 0, 1, n, n^2], n^3, n^3);
+0140         M = M.*bar_a_M;
+0141     <span class="keyword">end</span>;    
+0142 <span class="keyword">end</span>;
+0143 
+0144 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

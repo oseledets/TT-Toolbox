@@ -1,12 +1,27 @@
-% function [x] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin)
-% GMRES in TT format. Solve a system A*x=b, up to the accuracy tol,
-% with maximum number of outer iterations maxout, the size of Krylov basis
-% maxin, compression of solution eps_x, compression of Krylov vectors
-% eps_z, optional LEFT preconditioner: [M1*[M2]*[M3]], initial guess [x0]
-% (default is 1e-308*b), [verbose] - if 1 or unspecified - print messages,
-% if 0 - silent mode
+
 
 function [x,RESVEC,rw,rx] = tt_gmres(A, b, tol, maxout, maxin, eps_x, eps_z, M1, M2, M3, x0, verbose, varargin)
+%TT-GMRES method
+%   [x] = TT_GMRES(A, B, TOL, MAXOUT, MAXIN, EPS_X, 
+%   EPS_Z, M1, M2, M3, X0, VERBOSE, VARARGIN)
+%   GMRES in TT format. Solve a system A*x=b, up to the accuracy tol,
+%   with maximum number of outer iterations maxout, the size of Krylov basis
+%   maxin, compression of solution eps_x, compression of Krylov vectors
+%   eps_z, optional LEFT preconditioner: [M1*[M2]*[M3]], initial guess [x0]
+%   (default is 1e-308*b), [verbose] - if 1 or unspecified - print messages,
+%   if 0 - silent mode
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 [atype,afun,afcnstr] = tt_iterchk(A);
 
 %%%%%%%%%%%%% parameters %%%%%%%%%%%%%%%%%%%

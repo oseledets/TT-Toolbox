@@ -2,6 +2,6 @@ Add to path this directory
 by 
 addpath(pwd)
 and
-core/ exp/ core/
+solve/ exp/ core/ cross/ misc/ tests/
 subdirectories
 (also use addpath)

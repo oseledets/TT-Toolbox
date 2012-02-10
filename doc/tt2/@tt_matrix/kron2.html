@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of kron2</title>
+  <meta name="keywords" content="kron2">
+  <meta name="description" content="Kronecker product of two TT-matrices in non-standard ordering">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_matrix</a> &gt; kron2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_matrix&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>kron2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Kronecker product of two TT-matrices in non-standard ordering</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt]=kron2(tt1,tt2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Kronecker product of two TT-matrices in non-standard ordering
+   [TT]=KRON2(TT1,TT2) Computes Kronecker product of two TT-matrices in
+   non-standard ordering: row indices of TT1 and TT2 are &quot;mixed&quot;. The
+   ranks are multiplied after this operation. It can be useful for the
+   matrix inversion
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>	Dot product of two QTT-Tuckers</li><li><a href="dot.html" class="code" title="function [p] = dot(tt1,tt2)">dot</a>	Frobenius dot product of two TT-matrices</li><li><a href="tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/dot.html" class="code" title="function [p] = dot(tt1,tt2,do_qr)">dot</a>	Dot  product of two TT tensors</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>	TT-tensor constructor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt]=kron2(tt1,tt2)</a>
+0002 <span class="comment">%Kronecker product of two TT-matrices in non-standard ordering</span>
+0003 <span class="comment">%   [TT]=KRON2(TT1,TT2) Computes Kronecker product of two TT-matrices in</span>
+0004 <span class="comment">%   non-standard ordering: row indices of TT1 and TT2 are &quot;mixed&quot;. The</span>
+0005 <span class="comment">%   ranks are multiplied after this operation. It can be useful for the</span>
+0006 <span class="comment">%   matrix inversion</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0012 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0013 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0016 <span class="comment">%ivan.oseledets@gmail.com</span>
+0017 <span class="comment">%---------------------------</span>
+0018 
+0019 <span class="comment">%Zaglushka!</span>
+0020 n1=tt1.n; m1=tt1.m; n2=tt2.n; m2=tt2.m;
+0021 t1=tt1.tt; t2=tt2.tt;
+0022 cr1=t1.core; cr2=t2.core; r1=t1.r; r2=t2.r; ps1=t1.ps; ps2=t2.ps;
+0023 d=t1.d;
+0024 r=r1.*r2;
+0025 n=n1.*n2;  
+0026 m=m1.*m2;
+0027 sz=<a href="dot.html" class="code" title="function [p] = dot(tt1,tt2)">dot</a>(n.*r(1:d),r(2:d+1));
+0028 p=n.*m;
+0029   pos=cumsum([1;p.*r(1:d).*r(2:d+1)]);
+0030 
+0031 cr=zeros(sz,1);
+0032 <span class="keyword">for</span> i=1:d
+0033    core1=cr1(ps1(i):ps1(i+1)-1);
+0034    core2=cr2(ps2(i):ps2(i+1)-1);
+0035    core1=core1(:);
+0036    core2=core2(:);
+0037    cr0=core1*core2.';
+0038    cr0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr0,[r1(i),n1(i),m1(i),r1(i+1),r2(i),n2(i),m2(i),r2(i+1)]);
+0039    cr0=permute(cr0,[1,5,2,6,3,7,4,8]);
+0040    cr(pos(i):pos(i+1)-1)=cr0(:);
+0041 <span class="keyword">end</span>
+0042 t=<a href="../../tt2/@tt_tensor/tt_tensor.html" class="code" title="function t = tt_tensor(varargin)">tt_tensor</a>;
+0043 t.core=cr;
+0044 t.ps=pos;
+0045 t.r=r;
+0046 t.n=p;
+0047 t.d=d;
+0048 tt=<a href="tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>;
+0049 tt.tt=t;
+0050 tt.n=n;
+0051 tt.m=m;
+0052 <span class="keyword">return</span>
+0053 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

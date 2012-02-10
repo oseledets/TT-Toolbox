@@ -1,13 +1,19 @@
 function [a]=times(b,c,varargin)
-%[A]=TIMES(B,C)
-%[A]=TIMES(B,C,EPS)
-%Hadamard product of two TT-tensors
-%If optional parameter EPS is specified, use Krylov method
+%A=B.*C
+%   [A]=TIMES(B,C) Hadamard product of two TT-tensors
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 if (nargin == 2 )
-    %Put zaglushka in it
-%     a=tt_tensor(tt_hdm(core(b),core(c)));
-%     return
-    %Replace zaglushka by a code
     d=b.d; n=b.n; crb=b.core; crc=c.core; rb=b.r; rc=c.r;
     psb=b.ps; psc=c.ps;
     %Ranks are just a product

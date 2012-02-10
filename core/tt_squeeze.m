@@ -1,17 +1,21 @@
 function [tt]=tt_squeeze(tt)
-%[RES]=TT_SQUEEZE(TT)
-%Removes singleton dimensions in TT and returns reduced tensor RES
+%Removes singleton dimensions from the TT-tensor
+%   [TT]=TT_SQUEEZE(TT) Removes singleton dimensions from the TT-tensor.
+%   Uses TT1.0 format. Please avoid its usage: it will be removed in
+%   future releases. Use reshape() and squeeze() from the object-oriented 
+%   version
 %
 %
-% TT Toolbox 1.1, 2009-2010
+% TT-Toolbox 2.2, 2009-2012
 %
-%This is TT Toolbox, written by Ivan Oseledets, Olga Lebedeva
+%This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
+
 % 
 % If a singleton dimension is in the middle of a train - everything breakes
 % Use tt_reshape instead!

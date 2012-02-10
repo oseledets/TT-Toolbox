@@ -1,0 +1,619 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dmrg_eigb</title>
+  <meta name="keywords" content="dmrg_eigb">
+  <meta name="description" content="Find several minimal eigenvalues of a TT-matrix using DMRG method">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">solve</a> &gt; dmrg_eigb.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/solve&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dmrg_eigb
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Find several minimal eigenvalues of a TT-matrix using DMRG method</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y,ev] = dmrg_eigb(a,k,eps,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Find several minimal eigenvalues of a TT-matrix using DMRG method
+   [Y,EV]=DMRG_EIGB(A,K,EPS,OPTIONS) Attempts to find K minimal
+   eigenvalues of a TT-matrix A with accuracy EPS. We use minimization of
+   Block-Rayleigh quotient to do this. The solution is returned a block
+   TT-tensor (i.e, r(d+1) is equal to K).
+   Options are provided in form
+   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
+   on. The parameters are set to default (in brackets in the following) 
+   The list of option names and default values are:
+       o y0 - initial approximation [random rank-5 tensor]
+       o rmax - maximal  TT-rank of the (block) solution [2500]
+       o nswp - maximal number of sweeps [4]
+       o kick_rank - stabilization parameter, the larger, the better
+       accuracy but the higher complexity [5]
+       o verb - print debug info [ {true} | false ]
+       o msize - the size of local matrix when the iterative solver is
+       used
+   Example:
+       d=8; f=3;
+       mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
+       [v,ev]=dmrg_eigb(mat,20,1e-6); %5 lowest eigenvalues 
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>	Command window display of a QTT_TUCKER</li><li><a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/disp.html" class="code" title="function disp(tt,name)">disp</a>	Command window display of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/disp.html" class="code" title="function disp(tt,name)">disp</a>	Command window display of a TT-tensor.</li><li><a href="../../tt2/@tt_tensor/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/sv.html" class="code" title="function [sval]=sv(tt)">sv</a>	Computes singular values of all unfoldings of a TT-tensor</li><li><a href="../../tt2/core/tt_random.html" class="code" title="function [tt]=tt_random(n,d,r)">tt_random</a>	Generates a random tensor</li><li><a href="../../tt2/exp/lobpcg.html" class="code" title="function [blockVectorX,lambda,varargout] =lobpcg(blockVectorX,operatorA,varargin)">lobpcg</a>	LOBPCG solves Hermitian partial eigenproblems using preconditioning</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [x]=bfun(a,x)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y,ev] = dmrg_eigb(a,k,eps,varargin)</a>
+0002 <span class="comment">%Find several minimal eigenvalues of a TT-matrix using DMRG method</span>
+0003 <span class="comment">%   [Y,EV]=DMRG_EIGB(A,K,EPS,OPTIONS) Attempts to find K minimal</span>
+0004 <span class="comment">%   eigenvalues of a TT-matrix A with accuracy EPS. We use minimization of</span>
+0005 <span class="comment">%   Block-Rayleigh quotient to do this. The solution is returned a block</span>
+0006 <span class="comment">%   TT-tensor (i.e, r(d+1) is equal to K).</span>
+0007 <span class="comment">%   Options are provided in form</span>
+0008 <span class="comment">%   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so</span>
+0009 <span class="comment">%   on. The parameters are set to default (in brackets in the following)</span>
+0010 <span class="comment">%   The list of option names and default values are:</span>
+0011 <span class="comment">%       o y0 - initial approximation [random rank-5 tensor]</span>
+0012 <span class="comment">%       o rmax - maximal  TT-rank of the (block) solution [2500]</span>
+0013 <span class="comment">%       o nswp - maximal number of sweeps [4]</span>
+0014 <span class="comment">%       o kick_rank - stabilization parameter, the larger, the better</span>
+0015 <span class="comment">%       accuracy but the higher complexity [5]</span>
+0016 <span class="comment">%       o verb - print debug info [ {true} | false ]</span>
+0017 <span class="comment">%       o msize - the size of local matrix when the iterative solver is</span>
+0018 <span class="comment">%       used</span>
+0019 <span class="comment">%   Example:</span>
+0020 <span class="comment">%       d=8; f=3;</span>
+0021 <span class="comment">%       mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format</span>
+0022 <span class="comment">%       [v,ev]=dmrg_eigb(mat,20,1e-6); %5 lowest eigenvalues</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0028 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0029 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0032 <span class="comment">%ivan.oseledets@gmail.com</span>
+0033 <span class="comment">%---------------------------</span>
+0034 
+0035 <span class="comment">%Default parameters</span>
+0036 y0=[];
+0037 rmax=2500;
+0038 nswp=4;
+0039 msize=1000;
+0040 max_l_steps=200;
+0041 kick_rank=5;
+0042 verb=true;
+0043 <span class="keyword">for</span> i=1:2:length(varargin)-1
+0044     <span class="keyword">switch</span> lower(varargin{i})
+0045         <span class="keyword">case</span> <span class="string">'nswp'</span>
+0046             nswp=varargin{i+1};
+0047         <span class="keyword">case</span> <span class="string">'rmax'</span>
+0048             rmax=lower(varargin{i+1});
+0049         <span class="keyword">case</span> <span class="string">'x0'</span>
+0050             y0=varargin{i+1};
+0051         <span class="keyword">case</span> <span class="string">'msize'</span>
+0052             msize=varargin{i+1};
+0053         <span class="keyword">case</span> <span class="string">'verb'</span>
+0054             verb=varargin{i+1};
+0055         <span class="keyword">otherwise</span>
+0056             error(<span class="string">'Unrecognized option: %s\n'</span>,varargin{i});
+0057             
+0058     <span class="keyword">end</span>
+0059 <span class="keyword">end</span>
+0060 
+0061 n=a.n; 
+0062 d=a.d;
+0063 <span class="keyword">if</span> ( isempty(y0) )
+0064     kk=max(5,k);
+0065     r=kk*ones(1,d+1);
+0066     r(d+1)=k;
+0067     r(1)=1;
+0068     y0=<a href="../../tt2/core/tt_random.html" class="code" title="function [tt]=tt_random(n,d,r)">tt_random</a>(n,d,r);
+0069 <span class="keyword">end</span>
+0070 y=<a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(y0,0);
+0071 
+0072 <span class="comment">%We start from the orthogonalization of the y vector from left-to-right</span>
+0073 <span class="comment">%(it does not influence the TT-ranks)</span>
+0074 
+0075 psy=y.ps;
+0076 ry=y.r;
+0077 tta=a.tt;
+0078 psa=tta.ps;
+0079 ra=tta.r;
+0080 cra=tta.core;
+0081 cry=y.core;
+0082 rm=1; 
+0083 <span class="comment">%Also we will need to compute phi-matrices</span>
+0084 phi=cell(d+1,1);
+0085 phi{1}=1; <span class="comment">%This one is right now unchanged</span>
+0086 phi{d+1}=1; <span class="comment">%Seems to be unchanged also</span>
+0087 pos1=1;
+0088 <span class="keyword">for</span> i=1:d
+0089     cr=cry(psy(i):psy(i+1)-1);
+0090     cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i),n(i)*ry(i+1)]);
+0091     cr=rm*cr; 
+0092     ry(i)=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(cr,1); 
+0093     cr=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cr,[ry(i)*n(i),ry(i+1)]);
+0094     [u,rm]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(cr,0);
+0095     rnew=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,2); 
+0096     <span class="comment">%ry(i+1)=rnew;</span>
+0097     cry(pos1:pos1+ry(i)*n(i)*rnew-1)=u(:); 
+0098     pos1=pos1+ry(i)*n(i)*rnew;
+0099     <span class="comment">%With this new core compute (Ax,x) to the phi matrix</span>
+0100     <span class="comment">%u=reshape(u,[ry(i),n(i),ry(i+1)]);</span>
+0101     crm=cra(psa(i):psa(i+1)-1);
+0102     crm=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crm,[ra(i),n(i),n(i),ra(i+1)]); 
+0103     phx=phi{i};
+0104     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ra(i),ry(i),ry(i)]); phx=permute(phx,[1,3,2]);
+0105     x0=u;
+0106     x0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x0,[ry(i),n(i)*rnew]);
+0107     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ra(i)*ry(i),ry(i)]);
+0108     phx=phx*x0; <span class="comment">%phx is ra(i)*ry(i)*n(i)*ry(i+1)</span>
+0109     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ra(i),ry(i),n(i),rnew]);
+0110     crm=permute(crm,[1,3,2,4]); crm=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(crm,[ra(i)*n(i),n(i)*ra(i+1)]);
+0111     <span class="comment">%Convolve over (ak-1) j with the matrix</span>
+0112     phx=permute(phx,[2,4,1,3]); 
+0113     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ry(i)*rnew,ra(i)*n(i)]);
+0114     phx=phx*crm; <span class="comment">%ry(i)*ry(i+1)*n(i)*ra(i+1)</span>
+0115     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ry(i),rnew,n(i),ra(i+1)]);
+0116     phx=permute(phx,[2,4,1,3]);
+0117     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[rnew*ra(i+1),ry(i)*n(i)]);
+0118     x0=u;
+0119     x0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x0,[ry(i)*n(i),rnew]);
+0120     phx=phx*x0; 
+0121     phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[rnew,ra(i+1),rnew]); 
+0122     phx=permute(phx,[2,1,3]);
+0123     phi{i+1}=phx;
+0124     <span class="comment">%phi{i+1}=permute(phi{i+1},[1,3,2]);</span>
+0125 <span class="keyword">end</span>
+0126 
+0127 ry(d+1)=rnew; <span class="comment">%This value should not be modified :(((</span>
+0128 <span class="comment">%Truncate the core</span>
+0129 cry=cry(1:pos1-1);
+0130 y.r=ry;
+0131 y.core=cry;
+0132 y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0133  <span class="comment">%Test back transform</span>
+0134 <span class="comment">%  y0=y;</span>
+0135 <span class="comment">%  y0.n=[2*ones(d,1);k];</span>
+0136 <span class="comment">%  y0.r=[y.r;1];</span>
+0137 <span class="comment">%  y0.d=d;</span>
+0138 <span class="comment">%  e0=eye(ry(d));</span>
+0139 <span class="comment">%  cry=[cry,e0(:)'];</span>
+0140 <span class="comment">%  y0.core=cry;</span>
+0141 <span class="comment">%  ww1=full(y0); ww1=reshape(ww1,[numel(ww1)/k,k]);</span>
+0142 <span class="comment">%  bm=ww0'*ww1;</span>
+0143 <span class="comment">%  norm(ww1-ww0*bm)</span>
+0144 <span class="comment">%keyboard;</span>
+0145 phi{d+1}=1; <span class="comment">%Bydlocode, but seems necessary</span>
+0146 y.r=ry;
+0147 y.core=cry;
+0148 y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0149 psy=y.ps;
+0150 <span class="comment">%Now start the main DMRG sweep</span>
+0151 swp=1;
+0152 not_converged=true;
+0153 <span class="comment">%ry(1)=1;</span>
+0154 ry(d+1)=1;
+0155 dir=<span class="string">'rl'</span>;
+0156 i=d-1;
+0157 cry_left=cry(1:psy(d)-1);
+0158 cry_right=cry(psy(d):psy(d+1)-1);
+0159 <span class="keyword">while</span> ( swp &lt;= nswp &amp;&amp; not_converged )
+0160        <span class="comment">%As usual, compute (local) B-matrix in the TT-format</span>
+0161        cra1=cra(psa(i):psa(i+1)-1); 
+0162        cra2=cra(psa(i+1):psa(i+2)-1);
+0163        px1=phi{i}; px1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(px1,[ra(i),ry(i),ry(i)]); 
+0164        <span class="comment">%px1=permute(px1,[1,2,3]);</span>
+0165        px1=permute(px1,[1,3,2]);
+0166        px1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(px1,[ra(i),ry(i)*ry(i)]);
+0167        px2=phi{i+2}; 
+0168        px2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(px2,[ra(i+2),ry(i+2),ry(i+2)]);
+0169        <span class="comment">%px2=permute(px2,[1,3,2]);</span>
+0170        <span class="comment">%Compute the local matrix just by putting px1 into cra1, px2 into</span>
+0171        <span class="comment">%cra2</span>
+0172        cra2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra2,[ra(i+1)*n(i+1)*n(i+1),ra(i+2)]);
+0173        px2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(px2,[ra(i+2),ry(i+2)*ry(i+2)]);
+0174        b2=cra2*px2; <span class="comment">%</span>
+0175        b1=px1.'*<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cra1,[ra(i),numel(cra1)/ra(i)]);
+0176        b1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b1,[ry(i),ry(i),n(i),n(i),ra(i+1)]); b1_save=b1; <span class="comment">%Save for phi computations</span>
+0177        b1=permute(b1,[1,3,2,4,5]); 
+0178        b1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b1,[ry(i)*n(i),ry(i)*n(i),ra(i+1)]);
+0179        b2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b2,[ra(i+1),n(i+1),n(i+1),ry(i+2),ry(i+2)]);
+0180        b2_save=b2; <span class="comment">%Save for phi computations</span>
+0181        b2=permute(b2,[2,4,3,5,1]); 
+0182        b2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b2,[n(i+1)*ry(i+2),n(i+1)*ry(i+2),ra(i+1)]);
+0183        mm=cell(2,1); mm{1}=b1; mm{2}=b2;
+0184        cry=[cry_left(:);cry_right(:)];
+0185        y.r=ry;
+0186        y.core=cry;
+0187        y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0188        <span class="comment">%mm1=tt_matrix(mm);</span>
+0189        <span class="comment">%Now setup the initial guess: i the core</span>
+0190        <span class="keyword">if</span> ( strcmp(dir,<span class="string">'rl'</span>) ) <span class="comment">%The block index is in the second core</span>
+0191          pos=numel(cry_left);
+0192          cry1=cry_left(pos-ry(i)*n(i)*ry(i+1)+1:pos);
+0193          cry2=cry_right(1:ry(i+1)*n(i+1)*k*ry(i+2));
+0194          cry1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry1,[ry(i)*n(i),ry(i+1)]);
+0195          cry2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry2,[ry(i+1),n(i+1)*k*ry(i+2)]);
+0196          w=cry1*cry2; w=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(w,[ry(i),n(i),n(i+1),k,ry(i+2)]);
+0197          w=permute(w,[1,2,3,5,4]); w=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(w,[numel(w)/k,k]);
+0198        <span class="keyword">else</span> <span class="comment">%The block index is in the first core</span>
+0199            pos=numel(cry_left); 
+0200            cry1=cry_left(pos-ry(i)*n(i)*k*ry(i+1)+1:pos);
+0201            cry2=cry_right(1:ry(i+1)*n(i+1)*ry(i+2));
+0202            cry1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry1,[ry(i)*n(i)*k,ry(i+1)]);
+0203            cry2=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(cry2,[ry(i+1),n(i+1)*ry(i+2)]);
+0204            w=cry1*cry2; w=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(w,[ry(i),n(i),k,n(i+1),ry(i+2)]);
+0205            w=permute(w,[1,2,4,5,3]); w=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(w,[numel(w)/k,k]);
+0206        <span class="keyword">end</span>
+0207        <span class="comment">%Now run the eigenvalue solver</span>
+0208         bw=<a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,w); ev=bw'*w; 
+0209            <span class="comment">%er0=norm(bw-w*ev,'fro')/norm(w,'fro');</span>
+0210            er_old=bw-w*ev; 
+0211         erc=zeros(1,<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(w,2));
+0212         <span class="keyword">for</span> j=1:<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(w,2)
+0213             erc(j)=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(er_old(:,j));
+0214         <span class="keyword">end</span>
+0215            er0=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(er_old,<span class="string">'fro'</span>)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(w,<span class="string">'fro'</span>);
+0216        <span class="keyword">if</span> ( <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(w,1) &gt;= max(5*k,msize) )
+0217            matvec=<span class="string">'bfun'</span>;
+0218            [wnew,ev,fail_flag]=<a href="../../tt2/exp/lobpcg.html" class="code" title="function [blockVectorX,lambda,varargout] =lobpcg(blockVectorX,operatorA,varargin)">lobpcg</a>(w,@(x) <a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,x),eps,max_l_steps);
+0219        <span class="keyword">else</span>
+0220           matvec=<span class="string">'full'</span>;
+0221           fm=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(<a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(mm)); 
+0222           [v,dg]=eig(fm);
+0223           <span class="comment">%[v,dg]=eigs(sparse(fm),k+1);</span>
+0224           <span class="comment">%keyboard;</span>
+0225           ev=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(dg);
+0226           [ev,ind]=sort(ev,<span class="string">'ascend'</span>);
+0227           v=v(:,ind);
+0228           wnew=v(:,1:k);
+0229           ev=ev(1:k);
+0230        <span class="keyword">end</span>
+0231        er1=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(<a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,wnew)-wnew*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(ev),<span class="string">'fro'</span>)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(wnew,<span class="string">'fro'</span>);
+0232 
+0233        fv=sum(ev); <span class="comment">%The functional we minimize;</span>
+0234        fprintf(<span class="string">'sweep=%d block=%d fv=%10.15f loc solve=%3.2e old_solve=%3.2e \n'</span>,swp,i,fv,er1,er0);
+0235         <a href="../../tt2/@qtt_tucker/disp.html" class="code" title="function disp(tt,name,varargin)">disp</a>(erc);
+0236        <span class="keyword">if</span> ( strcmp(dir,<span class="string">'rl'</span>) ) <span class="comment">%Implant the auxiliary core into the i-th core</span>
+0237            <span class="comment">%(a1,i1,a2,a2,i2*g,a3)-&gt; (a1,i1*g,a2,a2,i2,a3)</span>
+0238            <span class="comment">%Delete old block from the core_left, add new block to the core</span>
+0239            <span class="comment">%right</span>
+0240            
+0241            <span class="comment">%Prepare the truncation block</span>
+0242            rhs=wnew*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(ev); 
+0243             <span class="keyword">if</span> (strcmp(matvec,<span class="string">'full'</span>))
+0244                 res_true = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(fm*wnew-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0245             <span class="keyword">else</span>
+0246                 res_true = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(<a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,wnew)-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0247             <span class="keyword">end</span>;
+0248 
+0249            
+0250            wnew=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]);
+0251            wnew=permute(wnew,[1,2,5,3,4]); wnew=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(wnew,[ry(i)*n(i)*k,n(i+1)*ry(i+2)]);
+0252            [u,s,v]=svd(wnew,<span class="string">'econ'</span>); s=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s); 
+0253            <span class="comment">%Truncation block</span>
+0254            <span class="comment">%rnew=my_chop2(s,eps*norm(s));</span>
+0255            <span class="comment">%u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';</span>
+0256            <span class="comment">%u=u*diag(s); %u has to be reshaped</span>
+0257            r0=1; r1=min(numel(s),rmax);
+0258            r=1;
+0259            
+0260            <span class="keyword">while</span> ( (r ~= r0 || r ~= r1) &amp;&amp; r0 &lt;= r1)
+0261             r=min(floor((r0+r1)/2),rmax);
+0262             <span class="comment">%er0=norm(s(r+1:numel(s)));</span>
+0263             u1=u(:,1:r)*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s(1:r)); 
+0264             <span class="comment">%Sonate u1</span>
+0265             u1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u1,[ry(i)*n(i),k,r]);
+0266             u1=permute(u1,[1,3,2]);
+0267             u1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u1,[numel(u1)/k,k]);
+0268             [u2,~,v2]=svd(u1,<span class="string">'econ'</span>);
+0269             u1=u2*v2';
+0270             u1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u1,[ry(i)*n(i),r,k]);
+0271             u1=permute(u1,[1,3,2]);
+0272             u1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u1,[numel(u1)/r,r]);
+0273             sol = u1*(v(:,1:r))';
+0274             
+0275             sol = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(sol,[ry(i),n(i),k,n(i+1),ry(i+2)]);
+0276             sol=permute(sol,[1,2,4,5,3]); sol=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(sol,[numel(sol)/k,k]);
+0277             <span class="comment">%if ( norm(sol'*sol-eye(k))&gt;1e-3 )</span>
+0278             <span class="comment">%  keyboard</span>
+0279             <span class="comment">%end</span>
+0280             <span class="keyword">if</span> (strcmp(matvec,<span class="string">'full'</span>))
+0281                 resid = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(fm*sol-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0282             <span class="keyword">else</span>
+0283                 resid = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(<a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,sol)-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0284             <span class="keyword">end</span>;
+0285             <span class="keyword">if</span> ( verb )
+0286             fprintf(<span class="string">'sweep %d, block %d, r0=%d, r1=%d, r=%d, resid=%g, MatVec=%s\n'</span>, swp, i, r0, r1, r, resid,matvec);
+0287             <span class="keyword">end</span>
+0288             <span class="keyword">if</span> ((resid&lt;max(res_true*1.2, eps)) ) <span class="comment">%Value of the rank is OK</span>
+0289               r1=r;
+0290             <span class="keyword">else</span> <span class="comment">%Is not OK.</span>
+0291               r0=min(r+1,rmax);
+0292             <span class="keyword">end</span>;
+0293             
+0294            <span class="keyword">end</span>
+0295            rnew=r;
+0296            <span class="keyword">if</span> ( <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(sol'*sol-eye(k)) &gt; 1e-7 )
+0297              keyboard;
+0298            <span class="keyword">end</span>
+0299            <span class="comment">%u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';</span>
+0300            <span class="comment">%u=u*diag(s); %u has to be reshaped</span>
+0301            u=u1; v=v(:,1:rnew);
+0302            
+0303            
+0304            <span class="comment">%Random restart block</span>
+0305            radd=min(kick_rank,<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v,1)-rnew);
+0306            rnew=rnew+radd;
+0307            <span class="keyword">if</span> ( radd &gt;  0 )
+0308              vr=randn(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v,1),radd);
+0309              ur=zeros(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1),radd); 
+0310              <span class="comment">%Orthogonalize vr to v by Golub-Kahan reorth</span>
+0311              mvr=v'*vr; vnew=vr-v*mvr; 
+0312              reort_flag=false;
+0313              <span class="keyword">for</span> j=1:radd
+0314                 <span class="keyword">if</span> ( <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(vnew(:,j)) &lt;= 0.5*<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(vr(:,j)))
+0315                    reort_flag=true;
+0316                 <span class="keyword">end</span>
+0317              <span class="keyword">end</span>
+0318              <span class="keyword">if</span> (reort_flag)
+0319                  <a href="../../tt2/@tt_tensor/sv.html" class="code" title="function [sval]=sv(tt)">sv</a>=v'*vnew;
+0320                  <span class="comment">%mvr=mvr+v'*vnew;</span>
+0321                  vnew=vnew-v*<a href="../../tt2/@tt_tensor/sv.html" class="code" title="function [sval]=sv(tt)">sv</a>; 
+0322              <span class="keyword">end</span>
+0323              [vnew,~]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(vnew,0); 
+0324              
+0325              v=[v,vnew];
+0326              u=[u,ur];
+0327              <span class="comment">%norm(u*v'-u1*v1');</span>
+0328              <span class="comment">%keyboard;</span>
+0329              <span class="comment">%keyboard;</span>
+0330            <span class="keyword">end</span>
+0331            v=v';
+0332            
+0333            
+0334            
+0335            
+0336            <span class="comment">%Memory stuff</span>
+0337            pos=numel(cry_left);
+0338            cry_left(pos-ry(i)*n(i)*ry(i+1)+1:pos)=[];
+0339            cry_right(1:ry(i+1)*n(i+1)*k*ry(i+2))=[]; <span class="comment">%Delete the top core from cry_right</span>
+0340            cry_right=[u(:)', v(:)',cry_right]; <span class="comment">%Simply add new block to cry_right</span>
+0341            ry(i+1)=rnew;
+0342            
+0343            <span class="comment">%Recalculate phi block; we need to recalculate phi{i+1} here</span>
+0344            <span class="comment">%using phi{i+2}</span>
+0345            <span class="comment">%px2(ra(i+2),ry(i+2),ry(i+2))*cra2(ra(i+1),n(i),m(i),ra(i+2)*v(ry(i+1),n(i+1),ry(i+2))*v(ry(i+1),n(i+1),ry(i+2))</span>
+0346            <span class="comment">%we already have b2 ---  (b2_save)</span>
+0347            <span class="comment">%(ra(i+1),n(i+1),n(i+1),ry(i+2),ry(i+2)), convolve over the</span>
+0348            <span class="comment">%n(i+1),ry(i+2)</span>
+0349            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b2_save,[ra(i+1),n(i+1),n(i+1),ry(i+2),ry(i+2)]); 
+0350            phx=permute(phx,[2,4,1,3,5]);
+0351            <span class="comment">%phx=permute(phx,[3,4,1,2,5]);</span>
+0352            <span class="comment">%phx=permute(phx,[3,5,1,2,4]);</span>
+0353            <span class="comment">% phx=permute(phx,[2,5,1,3,4]);</span>
+0354            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[n(i+1)*ry(i+2),ra(i+1)*n(i+1)*ry(i+2)]);
+0355            v0=v;
+0356            v0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v0,[ry(i+1),n(i+1)*ry(i+2)]);
+0357            phx=v0*phx;
+0358            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ry(i+1),ra(i+1),n(i+1),ry(i+2)]);
+0359            phx=permute(phx,[3,4,1,2]); 
+0360            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[n(i+1)*ry(i+2),ry(i+1)*ra(i+1)]);
+0361            phx=v0*phx;
+0362            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ry(i+1),ry(i+1),ra(i+1)]);
+0363            <span class="comment">%phx=permute(phx,[3,2,1]);</span>
+0364            phx=permute(phx,[3,2,1]);
+0365            phi{i+1}=phx; 
+0366        <span class="keyword">else</span> <span class="comment">%Implant the auxiliary core from the left block to the right block</span>
+0367   
+0368            <span class="comment">%Prepare the truncation block</span>
+0369            rhs=wnew*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(ev); 
+0370             <span class="keyword">if</span> (strcmp(matvec,<span class="string">'full'</span>))
+0371                 res_true = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(fm*wnew-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0372             <span class="keyword">else</span>
+0373                 res_true = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(<a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,wnew)-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0374             <span class="keyword">end</span>;  
+0375            wnew=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]); 
+0376            wnew=permute(wnew,[1,2,3,5,4]); wnew=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(wnew,[ry(i)*n(i),n(i+1)*k*ry(i+2)]);
+0377            [u,s,v]=svd(wnew,<span class="string">'econ'</span>); s=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s);
+0378            r0=1; r1=min(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(s,1),rmax);
+0379            r=1;
+0380            
+0381            <span class="keyword">while</span> ( (r ~= r0 || r ~= r1) &amp;&amp; r0 &lt;= r1)
+0382             r=min(floor((r0+r1)/2),rmax);
+0383             <span class="comment">%er0=norm(s(r+1:numel(s)));</span>
+0384             v1=v(:,1:r)*<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(s(1:r)); 
+0385             <span class="comment">%Sonate v1</span>
+0386             v1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v1,[n(i+1),k,ry(i+2),r]);
+0387             v1=permute(v1,[1,3,4,2]);
+0388             v1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v1,[numel(v1)/k,k]);
+0389             [u2,~,v2]=svd(v1,<span class="string">'econ'</span>);
+0390             v1=u2*v2';
+0391             v1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v1,[n(i+1),ry(i+2),r,k]);
+0392             v1=permute(v1,[1,4,2,3]);
+0393             v1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v1,[numel(v1)/r,r]);
+0394             sol=u(:,1:r)*v1';
+0395             sol = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(sol,[ry(i),n(i),n(i+1),k,ry(i+2)]);
+0396             sol=permute(sol,[1,2,3,5,4]); sol=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(sol,[numel(sol)/k,k]);
+0397             <span class="keyword">if</span> (strcmp(matvec,<span class="string">'full'</span>))
+0398                 resid = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(fm*sol-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0399             <span class="keyword">else</span>
+0400                 resid = <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(<a href="#_sub1" class="code" title="subfunction [x]=bfun(a,x)">bfun</a>(mm,sol)-rhs)/<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0401             <span class="keyword">end</span>;
+0402             <span class="keyword">if</span> ( verb )
+0403             fprintf(<span class="string">'sweep %d, block %d, r0=%d r1=%d r=%d, resid=%g, MatVec=%s\n'</span>, swp, i, r0, r1, r, resid,matvec);
+0404             <span class="keyword">end</span>
+0405             <span class="keyword">if</span> ((resid&lt;max(res_true*1.2, eps)) ) <span class="comment">%Value of the rank is OK</span>
+0406               r1=r;
+0407             <span class="keyword">else</span> <span class="comment">%Is not OK.</span>
+0408               r0=min(r+1,rmax);
+0409             <span class="keyword">end</span>;
+0410            <span class="keyword">end</span>
+0411            rnew=r;         
+0412          
+0413            
+0414            
+0415            <span class="comment">%Truncation block</span>
+0416            <span class="comment">%rnew=my_chop2(s,eps*norm(s));</span>
+0417            u=u(:,1:rnew); v=v1;
+0418            
+0419            <span class="comment">%Random restart block</span>
+0420            radd=min(kick_rank,<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1)-rnew);
+0421            rnew=rnew+radd;
+0422            <span class="keyword">if</span> ( radd &gt;  0 )
+0423              vr=zeros(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v,1),radd);
+0424              ur=randn(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(u,1),radd); 
+0425              <span class="comment">%Orthogonalize vr to v by Golub-Kahan reorth</span>
+0426              mur=u'*ur; unew=ur-u*mur; 
+0427              reort_flag=false;
+0428              <span class="keyword">for</span> j=1:radd
+0429                 <span class="keyword">if</span> ( <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(unew(:,j)) &lt;= 0.5*<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(ur(:,j)))
+0430                    reort_flag=true;
+0431                 <span class="keyword">end</span>
+0432              <span class="keyword">end</span>
+0433              <span class="keyword">if</span> (reort_flag)
+0434                  <a href="../../tt2/@tt_tensor/sv.html" class="code" title="function [sval]=sv(tt)">sv</a>=u'*unew;
+0435                  <span class="comment">%mvr=mvr+v'*vnew;</span>
+0436                  unew=unew-u*<a href="../../tt2/@tt_tensor/sv.html" class="code" title="function [sval]=sv(tt)">sv</a>; 
+0437              <span class="keyword">end</span>
+0438              [unew,~]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(unew,0); 
+0439              
+0440              u=[u,unew];
+0441              v=[v,vr];
+0442            <span class="keyword">end</span>
+0443            v=v';
+0444            
+0445            
+0446            
+0447            cry_right(1:ry(i+1)*n(i+1)*ry(i+2))=[];
+0448            pos=numel(cry_left);
+0449            cry_left(pos-ry(i)*n(i)*k*ry(i+1)+1:pos)=[];
+0450            cry_left=[cry_left,u(:)',v(:)'];
+0451            
+0452            
+0453            
+0454            
+0455            
+0456            
+0457            
+0458            ry(i+1)=rnew;
+0459            
+0460            
+0461            
+0462            
+0463            <span class="comment">%Recalculate phi block; we need to recalculate phi{i+1} using</span>
+0464            <span class="comment">%phi{i}</span>
+0465            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(b1_save,[ry(i),ry(i),n(i),n(i),ra(i+1)]);
+0466            u0=u; u0=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(u0,[ry(i)*n(i),ry(i+1)]);
+0467            phx=permute(phx,[1,3,5,2,4]); 
+0468            <span class="comment">%phx=permute(phx,[2,4,5,1,3]);</span>
+0469            <span class="comment">%phx=permute(phx,[1,4,5,2,3]);</span>
+0470            <span class="comment">%phx=permute(phx,[2,3,5,1,4]);</span>
+0471            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ry(i)*n(i)*ra(i+1),ry(i)*n(i)]);
+0472            phx=phx*u0; 
+0473            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ry(i),n(i),ra(i+1),ry(i+1)]);
+0474            phx=permute(phx,[3,4,1,2]); 
+0475            phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ra(i+1)*ry(i+1),ry(i)*n(i)]);
+0476            phx=phx*u0; phx=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(phx,[ra(i+1),ry(i+1),ry(i+1)]);
+0477            phx=permute(phx,[1,2,3]);
+0478            phi{i+1}=phx;
+0479        <span class="keyword">end</span>
+0480    <span class="comment">%Choose the next direction block; now implement the simple case</span>
+0481    <span class="keyword">if</span> ( strcmp(dir,<span class="string">'rl'</span>) )
+0482      <span class="keyword">if</span> ( i &gt; 1 )
+0483        i=i-1;
+0484      <span class="keyword">else</span> <span class="comment">%Change direction %The last optimization was for (1,2) core</span>
+0485        dir=<span class="string">'lr'</span>;
+0486        <span class="comment">%One block should go from cry_right to cry_left</span>
+0487        cry_left=cry_right(1:ry(1)*n(1)*ry(2)*k); <span class="comment">%This seems correct</span>
+0488        cry_right(1:ry(1)*n(1)*ry(2)*k)=[];
+0489        swp=swp+1;
+0490      <span class="keyword">end</span>
+0491    <span class="keyword">else</span>
+0492     <span class="keyword">if</span> ( i &lt; d-1 )
+0493         i=i+1;
+0494      <span class="keyword">else</span>
+0495        dir=<span class="string">'rl'</span>;
+0496        pos=numel(cry_left);
+0497        cry_right=cry_left(pos-ry(d)*n(d)*ry(d+1)*k+1:pos); 
+0498        cry_left(pos-ry(d)*n(d)*ry(d+1)*k+1:pos)=[];
+0499        swp=swp+1;
+0500        <span class="comment">%One block should go from cry_left to cry_right (?) --- seems no :)</span>
+0501      <span class="keyword">end</span>
+0502    <span class="keyword">end</span>
+0503  
+0504 
+0505 <span class="keyword">end</span>
+0506   <span class="comment">%Gather the solution</span>
+0507    
+0508    ry(d+1)=k; <span class="comment">%This is the final</span>
+0509    y.r=ry;
+0510    cry=[cry_left,cry_right];
+0511    y.core=cry;
+0512    y.r=ry; 
+0513    y.d=d;
+0514    y.ps=cumsum([1;n.*ry(1:d).*ry(2:d+1)]);
+0515 <span class="keyword">end</span>
+0516 
+0517     <a name="_sub1" href="#_subfunctions" class="code">function [x]=bfun(a,x)</a>
+0518     <span class="comment">%[Y]=BFUN(A,X,K)</span>
+0519     <span class="comment">%a is given as U(i1,j1,s)*V(i2,j2,s)</span>
+0520     <span class="comment">%\sum_{j1,j2,s} U(i1,j1,s)*V(i2,j2,s)*X(j1,j2,q)</span>
+0521     re=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(x,2);
+0522     ul=a{1}; vl=a{2};
+0523     n1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ul,1);m1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ul,2); ral=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(ul,3);
+0524     n2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(vl,1); m2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(vl,2);
+0525     ul=permute(ul,[1,3,2]); ul=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(ul,[numel(ul)/m1,m1]);
+0526     x=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x,[m1,numel(x)/m1]);
+0527     x=ul*x; <span class="comment">%x is i1xsxj2xq s,j2</span>
+0528     x=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x,[n1,ral,m2,re]);
+0529     x=permute(x,[3,2,1,4]); 
+0530     x=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x,[m2*ral,n1*re]);
+0531     vl=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(vl,[n2,m2*ral]); 
+0532     x=vl*x; <span class="comment">%is n2*n1*k</span>
+0533     x=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x,[n2,n1,re]); 
+0534     x=permute(x,[2,1,3]); 
+0535     x=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(x,[numel(x)/re,re]);
+0536     <span class="keyword">return</span>
+0537     <span class="keyword">end</span>
+0538 
+0539</pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

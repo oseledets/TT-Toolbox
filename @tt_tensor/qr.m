@@ -1,8 +1,22 @@
 function [tt,rm]=qr(tt,op)
-%[TT,RM]=QR(TT,OP)
-%Implements the TT-QR algorithm for the orthogonalization of the
-%TT-representation. OP can be 'LR' (for the left-right orthogonalization)
-%and 'RL' for the right-left orthogonalization
+%Left and right orthogonalization of the TT-format
+%   [TT,RM]=QR(TT,OP) Implements the TT-QR algorithm for the 
+%   orthogonalization of the TT-representation. OP can be 'LR' 
+%   (for the left-right orthogonalization) and 'RL' for the 
+%   right-left orthogonalization. Also returns R matrix for the block case,
+%   when r(d) or r(1) are not equal to 1.     
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 d=tt.d;
 r=tt.r;
 cr=tt.core;

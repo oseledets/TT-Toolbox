@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of als_solve2</title>
+  <meta name="keywords" content="als_solve2">
+  <meta name="description" content="A greedy method to solve a linear system">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">solve</a> &gt; als_solve2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/solve&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>als_solve2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>A greedy method to solve a linear system</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [sol1]=als_solve2(mat,rhs,eps,sol,niter) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">A greedy method to solve a linear system
+   [SOL]=ALS_SOLVE2(MAT,RHS,EPS,[SOL],[NITER]) Computes approximate 
+   solution to the linear system MAT*SOL=RHS
+   such as the residue is bounded by ||MAT*SOL-RHS||&lt;EPS*||RHS||
+   or maximum number of iterations is achieved
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two QTT_Tuckers</li><li><a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the QTT-Tucker</li><li><a href="../../tt2/@tt_matrix/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>	TT_matrix class constructor</li><li><a href="../../tt2/@tt_tensor/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>	Kronecker product of two TT-tensors</li><li><a href="../../tt2/@tt_tensor/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>	Frobenius norm of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="als_solve.html" class="code" title="function [x,y]=als_solve(mat,rhs,y,niter)">als_solve</a>	Computes an approximate rank-1 solution to the linear system</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [sol1]=als_solve2(mat,rhs,eps,sol,niter)</a>
+0002 <span class="comment">%A greedy method to solve a linear system</span>
+0003 <span class="comment">%   [SOL]=ALS_SOLVE2(MAT,RHS,EPS,[SOL],[NITER]) Computes approximate</span>
+0004 <span class="comment">%   solution to the linear system MAT*SOL=RHS</span>
+0005 <span class="comment">%   such as the residue is bounded by ||MAT*SOL-RHS||&lt;EPS*||RHS||</span>
+0006 <span class="comment">%   or maximum number of iterations is achieved</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0012 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0013 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0016 <span class="comment">%ivan.oseledets@gmail.com</span>
+0017 <span class="comment">%---------------------------</span>
+0018 
+0019 
+0020 
+0021 <span class="keyword">if</span> ( nargin &lt; 4 || isempty(sol) )
+0022    sol=zeros(numel(rhs),1);   
+0023 <span class="keyword">end</span>
+0024 <span class="keyword">if</span> ( nargin &lt; 5 || isempty(niter) )
+0025   niter=1000;
+0026 <span class="keyword">end</span>
+0027 <span class="comment">%Magic parameters</span>
+0028 loc_slv=10;
+0029 m0=<a href="../../tt2/@tt_matrix/tt_matrix.html" class="code" title="function t = tt_matrix(varargin)">tt_matrix</a>(mat);
+0030 nrm=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs);
+0031 
+0032 rhs1=rhs-m0*sol;
+0033 <span class="keyword">if</span> ( <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a> ( rhs1 ) &gt; <a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a> (rhs ) )
+0034   sol1=zeros(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(sol));
+0035   rhs1=rhs;
+0036 <span class="keyword">else</span>
+0037   sol1=sol;    
+0038 <span class="keyword">end</span>
+0039 i=1;
+0040 er=2*eps*nrm;
+0041 m=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(mat{2},1);
+0042 <span class="keyword">while</span> ( i &lt; niter &amp;&amp; er &gt; eps*nrm )
+0043 
+0044    [x,y]=<a href="als_solve.html" class="code" title="function [x,y]=als_solve(mat,rhs,y,niter)">als_solve</a>(mat,rhs1,randn(m,1),loc_slv); rhs1=rhs1-(m0*<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(y,x)); 
+0045    sol1=sol1+<a href="../../tt2/@qtt_tucker/kron.html" class="code" title="function [c] = kron(a,b)">kron</a>(y,x);
+0046    er=<a href="../../tt2/@qtt_tucker/norm.html" class="code" title="function [nrm] = norm(tt)">norm</a>(rhs1); 
+0047    fprintf(<span class="string">'i=%d, er=%3.2e \n'</span>,i,er/nrm);
+0048    <span class="comment">%keyboard;</span>
+0049    i=i+1;
+0050    
+0051 <span class="keyword">end</span>
+0052     
+0053 
+0054 <span class="keyword">return</span>
+0055 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

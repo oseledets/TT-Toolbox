@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of maxvol2</title>
+  <meta name="keywords" content="maxvol2">
+  <meta name="description" content="Maximal volume submatrix in an tall matrix">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; maxvol2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>maxvol2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Maximal volume submatrix in an tall matrix</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [ind]=maxvol2(a,ind) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Maximal volume submatrix in an tall matrix
+   [IND]=MAXVOL2(A) computes maximal volume submatrix in n x r matrix A
+   Returns rows indices that contain maximal volume submatrix
+
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_tensor/funcrs.html" class="code" title="function [y]=funcrs(tt,fun,eps,y,nswp,varargin)">funcrs</a>	Cross approximation of a function of a TT-tensor, Method 1</li><li><a href="../../tt2/@tt_tensor/funcrs2.html" class="code" title="function [y]=funcrs2(tt,fun,eps,y,nswp)">funcrs2</a>	Cross approximation of a function of a TT-tensor, Method 2</li><li><a href="tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>	Compute the (supposedly) maximal in modulus element in a TT-tensor</li><li><a href="../../tt2/cross/dmrg_cross.html" class="code" title="function [y]=dmrg_cross(d,n,fun,eps,varargin)">dmrg_cross</a>	DMRG-cross method for the approximation of TT-tensors</li><li><a href="../../tt2/cross/tt_crossl.html" class="code" title="function [tt,ind_left]=tt_crossl(d,n,fun,ind_right)">tt_crossl</a>	One left-to-right sweep of the TT-cross method.</li><li><a href="../../tt2/cross/tt_crossr.html" class="code" title="function [tt,ind_right]=tt_crossr(arr,ind_left)">tt_crossr</a>	One right-to-left sweep of the TT-cross method.</li><li><a href="../../tt2/cross/tt_rc.html" class="code" title="function [y]=tt_rc(d,n,elem_fun,eps,varargin)">tt_rc</a>	[Y]=TT_RC(D,N,ARR,ELEM_FUN,EPS,[OPTIONS])</li><li><a href="../../tt2/exp/tt_canform1.html" class="code" title="function [core_int,ind_l,ind_r,ind_left,ind_right]=tt_canform1(tt)">tt_canform1</a>	Transforms a TT-tensor into the skeleton form</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [ind]=maxvol2(a,ind)</a>
+0002 <span class="comment">%Maximal volume submatrix in an tall matrix</span>
+0003 <span class="comment">%   [IND]=MAXVOL2(A) computes maximal volume submatrix in n x r matrix A</span>
+0004 <span class="comment">%   Returns rows indices that contain maximal volume submatrix</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 n=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(a,1); r=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(a,2);
+0018 <span class="keyword">if</span> ( n &lt;= r ) 
+0019     ind = 1:n;
+0020     <span class="keyword">return</span>
+0021 <span class="keyword">end</span>
+0022 
+0023 <span class="comment">%Initialize</span>
+0024 <span class="keyword">if</span> ( nargin &lt; 2 || isempty(ind) )
+0025 [l_shit,u_shit,p]=lu(a,<span class="string">'vector'</span>);
+0026 <span class="comment">%p=randperm(n);</span>
+0027 ind=p(1:r);
+0028 b=a(p,:);
+0029 sbm=a(ind,:);
+0030 z=b(r+1:n,:)/sbm; <span class="comment">%Watch for this later on please</span>
+0031 <span class="keyword">end</span>
+0032 <span class="comment">%Start iterations</span>
+0033 niters=100;
+0034 eps=5e-2; <span class="comment">%Stopping accuracy</span>
+0035 iter=0;
+0036 <span class="keyword">while</span> (iter &lt;= niters);
+0037 <span class="comment">% [mx,pv]=max((abs(z))');</span>
+0038 [mx,pv]=max(abs(z), [], 2);
+0039 [mx0,pv0]=max(mx);
+0040 <span class="keyword">if</span> ( mx0 &lt;= 1 + eps ) 
+0041     ind=sort(ind);
+0042     <span class="keyword">return</span>
+0043     
+0044 <span class="keyword">end</span> 
+0045 <span class="comment">%Swap i0-th row with j0-th row</span>
+0046 i0=pv0;
+0047 j0=pv(i0);
+0048 i=p(i0+r);
+0049 p(i0+r)=p(j0);
+0050 p(j0)=i;
+0051 bb=z(:,j0);
+0052 bb(i0)=bb(i0)+1;
+0053 cc=z(i0,:);
+0054 cc(j0)=cc(j0)-1;
+0055 z=z-bb*cc./z(i0,j0);
+0056 iter=iter+1;
+0057 ind=p(1:r);
+0058 ind=sort(ind);
+0059 <span class="keyword">end</span>
+0060 
+0061 <span class="keyword">return</span>
+0062 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

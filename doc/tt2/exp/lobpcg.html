@@ -1,0 +1,1201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lobpcg</title>
+  <meta name="keywords" content="lobpcg">
+  <meta name="description" content="LOBPCG solves Hermitian partial eigenproblems using preconditioning">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; lobpcg.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>lobpcg
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>LOBPCG solves Hermitian partial eigenproblems using preconditioning</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [blockVectorX,lambda,varargout] =lobpcg(blockVectorX,operatorA,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">LOBPCG solves Hermitian partial eigenproblems using preconditioning
+
+ [blockVectorX,lambda]=lobpcg(blockVectorX,operatorA)
+
+ outputs the array of algebraic smallest eigenvalues lambda and
+ corresponding matrix of orthonormalized eigenvectors blockVectorX of the
+ Hermitian (full or sparse) operator operatorA using input matrix
+ blockVectorX as an initial guess, without preconditioning, somewhat
+ similar to 
+
+ opts.issym=1;opts.isreal=1;K=size(blockVectorX,2);
+ [blockVectorX,lambda]=eigs(operatorA,K,'SR',opts);
+
+ for real symmetric operator operatorA, or
+
+ K=size(blockVectorX,2);[blockVectorX,lambda]=eigs(operatorA,K,'SR');
+ for Hermitian operator operatorA. 
+
+ [blockVectorX,lambda,failureFlag]=lobpcg(blockVectorX,operatorA) 
+ also returns a convergence flag.  
+ If failureFlag is 0 then all the eigenvalues converged; otherwise not all
+ converged.
+
+ [blockVectorX,lambda,failureFlag,lambdaHistory,residualNormsHistory]=...
+ lobpcg(blockVectorX,'operatorA','operatorB','operatorT',blockVectorY,...
+ residualTolerance,maxIterations,verbosityLevel);
+
+ computes smallest eigenvalues lambda and corresponding eigenvectors
+ blockVectorX of the generalized eigenproblem Ax=lambda Bx, where 
+ Hermitian operators operatorA and operatorB are given as functions, as
+ well as a preconditioner, operatorT. The operators operatorB and
+ operatorT must be in addition POSITIVE DEFINITE. To compute the largest
+ eigenpairs of operatorA, simply apply the code to operatorA multiplied by
+ -1. The code does not involve ANY matrix factorizations of operratorA and
+ operatorB, thus, e.g., it preserves the sparsity and the structure of
+ operatorA and operatorB. 
+
+ residualTolerance and maxIterations control tolerance and max number of
+ steps, and verbosityLevel = 0, 1, or 2 controls the amount of printed
+ info. lambdaHistory is a matrix with all iterative lambdas, and
+ residualNormsHistory are matrices of the history of 2-norms of residuals
+
+ Required input: 
+   blockVectorX - initial approximation to eigenvectors, full or sparse
+   matrix n-by-blockSize. blockVectorX must be full rank. 
+   operatorA - the operator of the problem, can be given as a matrix or as
+   an M-file 
+
+ Optional function input:
+   operatorB - the second operator, if solving a generalized eigenproblem, 
+       can be given as a matrix or as an M-file; by default, or if empty,
+       operatorB=I.
+   operatorT - preconditioner, must be given by an M-file; by default,
+   operatorT=I.
+
+ Optional constraints input: 
+   blockVectorY - a full or sparse n-by-sizeY matrix of constraints, where
+   sizeY &lt; n. The iterations will be performed in the (operatorB-)
+   orthogonal complement of the column-space of blockVectorY. blockVectorY
+   must be full rank. 
+
+ Optional scalar input parameters:
+   residualTolerance - tolerance, by default,
+   residualTolerance=n*sqrt(eps) maxIterations - max number of iterations,
+   by default, maxIterations = min(n,20) verbosityLevel - either 0 (no
+   info), 1, or 2 (with pictures); by default, verbosityLevel = 0.
+
+ Required output: blockVectorX and lambda are computed blockSize
+ eigenpairs, where blockSize=size(blockVectorX,2) for the initial guess
+ blockVectorX if it is full rank.  
+
+ Optional output: failureFlag, lambdaHistory and residualNormsHistory are
+ described above.
+
+ Functions operatorA(blockVectorX), operatorB(blockVectorX) and
+ operatorT(blockVectorX) must support blockVectorX being a matrix, not
+ just a column vector.
+
+ Every iteration involves one application of operatorA and operatorB, and
+ one of operatorT. 
+
+ Main memory requirements: 6 (9 if isempty(operatorB)=0) matrices of the
+ same size as blockVectorX, 2 matrices of the same size as blockVectorY
+ (if present), and two square matrices of the size 3*blockSize. 
+
+ The following
+ Example:
+
+ operatorA = 100.*delsq(numgrid('S',21)); [n,n]=size(operatorA);
+ [blockVectorX,lambda,failureFlag]=lobpcg(randn(n,10),operatorA,1e-5,50,2);
+
+ attempts to compute 10 first eigenpairs of the Poisson operator 
+ in a 2x2 square with the mesh size 1/10 without preconditioning,
+ but not all eigenpairs converge after 50 steps, so failureFlag=1.  
+
+ The next 
+ Example:
+
+ operatorA = 100.*delsq(numgrid('S',21)); [n,n]=size(operatorA);
+ blockVectorY=[];lambda_all=[];
+ for j=1:5
+   [blockVectorX,lambda]=...
+                    lobpcg(randn(n,2),operatorA,blockVectorY,1e-5,200,2);
+   blockVectorY=[blockVectorY,blockVectorX];
+   lambda_all=[lambda_all' lambda']';
+ end
+
+ attemps to compute the same eigenpairs by calling the code 5 times 
+ with blockSize=2 using orthogonalization to the previously founded
+ eigenvectors.  
+
+The following M-script:
+
+ global R_cholinc
+ operatorA = 100.*delsq(numgrid('S',21)); [n,n]=size(operatorA);
+ R_cholinc=cholinc(operatorA,1e-3);
+ [blockVectorX,lambda,failureFlag]=...
+                   lobpcg(randn(n,10),operatorA,[],'precsol',1e-5,50,2);
+ 
+ computes the same eigenpairs in less then 25 steps, so that failureFlag=0
+ using the preconditioner function precsol:
+
+ function blockVectorX=precsol(V)
+ global R_cholinc 
+ blockVectorX=R_cholinc\(R_cholinc'\V);
+ In this example, operatorB=[] must be present in the input parameters. 
+ [blockVectorX,lambda,failureFlag]=...
+              lobpcg(randn(n,10),operatorA,speye(n),'precsol',1e-5,50,2);
+
+produces similar answers, but is somewhat slower and needs more memory.  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ This main function LOBPCG is a version of 
+ the preconditioned conjugate gradient method (Algorithm 5.1) described in
+ A. V. Knyazev, Toward the Optimal Preconditioned Eigensolver:
+ Locally Optimal Block Preconditioned Conjugate Gradient Method,
+ SIAM Journal on Scientific Computing 23 (2001), no. 2, pp. 517-541. 
+ http://dx.doi.org/10.1137/S1064827500366124
+
+ Known bugs/features:
+
+ - an excessively small requested tolerance may result in often restarts
+ and instability. The code is not written to produce an eps-level
+ accuracy! Use common sense.  
+
+ - the code may be very sensitive to the number of eigenpairs computed,
+ if there is a cluster of eigenvalues not completely included, cf. 
+
+ operatorA=diag([1 1.99 2:99]);
+ [blockVectorX,lambda]=lobpcg(randn(100,1),operatorA,1e-10,80,2);
+ [blockVectorX,lambda]=lobpcg(randn(100,2),operatorA,1e-10,80,2);
+ [blockVectorX,lambda]=lobpcg(randn(100,3),operatorA,1e-10,80,2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ The main distribution site: 
+ http://math.ucdenver.edu/~aknyazev/
+
+ A C-version of this code is a part of the 
+ http://code.google.com/p/blopex/
+ package and is directly available, e.g., in PETSc and HYPRE.  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>	Diagonal of a matrix or diagonal matrix from a vector in QTT-Tucker</li><li><a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts a QTT-Tucker tensor the full tensor</li><li><a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate QTT-Tucker with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>	Complex conjugate of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/diag.html" class="code" title="function [tt]=diag(tm)">diag</a>	Extract the diagonal of the TT-matrix</li><li><a href="../../tt2/@tt_matrix/full.html" class="code" title="function [a] = full(tt)">full</a>	Transform TT-matrix to a full rectangular matrix</li><li><a href="../../tt2/@tt_matrix/round.html" class="code" title="function [tt]=round(tt,eps,rmax)">round</a>	Approximate TT-matrix with another one with specified accuracy</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>	Compute a complex conjugate of TT-tensor</li><li><a href="../../tt2/@tt_tensor/diag.html" class="code" title="function [tm]=diag(tt)">diag</a>	Constructs diagonal TT-matrix from TT-tensor</li><li><a href="../../tt2/@tt_tensor/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>	Converts TT-tensor to the full tensor</li><li><a href="../../tt2/@tt_tensor/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>	Approximate TT-tensor with another one with specified accuracy</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/solve/dmrg_eigb.html" class="code" title="function [y,ev] = dmrg_eigb(a,k,eps,varargin)">dmrg_eigb</a>	Find several minimal eigenvalues of a TT-matrix using DMRG method</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [blockVectorX,lambda,varargout] = </a><span class="keyword">...</span>
+0002     lobpcg(blockVectorX,operatorA,varargin)
+0003 <span class="comment">%LOBPCG solves Hermitian partial eigenproblems using preconditioning</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% [blockVectorX,lambda]=lobpcg(blockVectorX,operatorA)</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% outputs the array of algebraic smallest eigenvalues lambda and</span>
+0008 <span class="comment">% corresponding matrix of orthonormalized eigenvectors blockVectorX of the</span>
+0009 <span class="comment">% Hermitian (full or sparse) operator operatorA using input matrix</span>
+0010 <span class="comment">% blockVectorX as an initial guess, without preconditioning, somewhat</span>
+0011 <span class="comment">% similar to</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% opts.issym=1;opts.isreal=1;K=size(blockVectorX,2);</span>
+0014 <span class="comment">% [blockVectorX,lambda]=eigs(operatorA,K,'SR',opts);</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% for real symmetric operator operatorA, or</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% K=size(blockVectorX,2);[blockVectorX,lambda]=eigs(operatorA,K,'SR');</span>
+0019 <span class="comment">% for Hermitian operator operatorA.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% [blockVectorX,lambda,failureFlag]=lobpcg(blockVectorX,operatorA)</span>
+0022 <span class="comment">% also returns a convergence flag.</span>
+0023 <span class="comment">% If failureFlag is 0 then all the eigenvalues converged; otherwise not all</span>
+0024 <span class="comment">% converged.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% [blockVectorX,lambda,failureFlag,lambdaHistory,residualNormsHistory]=...</span>
+0027 <span class="comment">% lobpcg(blockVectorX,'operatorA','operatorB','operatorT',blockVectorY,...</span>
+0028 <span class="comment">% residualTolerance,maxIterations,verbosityLevel);</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% computes smallest eigenvalues lambda and corresponding eigenvectors</span>
+0031 <span class="comment">% blockVectorX of the generalized eigenproblem Ax=lambda Bx, where</span>
+0032 <span class="comment">% Hermitian operators operatorA and operatorB are given as functions, as</span>
+0033 <span class="comment">% well as a preconditioner, operatorT. The operators operatorB and</span>
+0034 <span class="comment">% operatorT must be in addition POSITIVE DEFINITE. To compute the largest</span>
+0035 <span class="comment">% eigenpairs of operatorA, simply apply the code to operatorA multiplied by</span>
+0036 <span class="comment">% -1. The code does not involve ANY matrix factorizations of operratorA and</span>
+0037 <span class="comment">% operatorB, thus, e.g., it preserves the sparsity and the structure of</span>
+0038 <span class="comment">% operatorA and operatorB.</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% residualTolerance and maxIterations control tolerance and max number of</span>
+0041 <span class="comment">% steps, and verbosityLevel = 0, 1, or 2 controls the amount of printed</span>
+0042 <span class="comment">% info. lambdaHistory is a matrix with all iterative lambdas, and</span>
+0043 <span class="comment">% residualNormsHistory are matrices of the history of 2-norms of residuals</span>
+0044 <span class="comment">%</span>
+0045 <span class="comment">% Required input:</span>
+0046 <span class="comment">%   blockVectorX - initial approximation to eigenvectors, full or sparse</span>
+0047 <span class="comment">%   matrix n-by-blockSize. blockVectorX must be full rank.</span>
+0048 <span class="comment">%   operatorA - the operator of the problem, can be given as a matrix or as</span>
+0049 <span class="comment">%   an M-file</span>
+0050 <span class="comment">%</span>
+0051 <span class="comment">% Optional function input:</span>
+0052 <span class="comment">%   operatorB - the second operator, if solving a generalized eigenproblem,</span>
+0053 <span class="comment">%       can be given as a matrix or as an M-file; by default, or if empty,</span>
+0054 <span class="comment">%       operatorB=I.</span>
+0055 <span class="comment">%   operatorT - preconditioner, must be given by an M-file; by default,</span>
+0056 <span class="comment">%   operatorT=I.</span>
+0057 <span class="comment">%</span>
+0058 <span class="comment">% Optional constraints input:</span>
+0059 <span class="comment">%   blockVectorY - a full or sparse n-by-sizeY matrix of constraints, where</span>
+0060 <span class="comment">%   sizeY &lt; n. The iterations will be performed in the (operatorB-)</span>
+0061 <span class="comment">%   orthogonal complement of the column-space of blockVectorY. blockVectorY</span>
+0062 <span class="comment">%   must be full rank.</span>
+0063 <span class="comment">%</span>
+0064 <span class="comment">% Optional scalar input parameters:</span>
+0065 <span class="comment">%   residualTolerance - tolerance, by default,</span>
+0066 <span class="comment">%   residualTolerance=n*sqrt(eps) maxIterations - max number of iterations,</span>
+0067 <span class="comment">%   by default, maxIterations = min(n,20) verbosityLevel - either 0 (no</span>
+0068 <span class="comment">%   info), 1, or 2 (with pictures); by default, verbosityLevel = 0.</span>
+0069 <span class="comment">%</span>
+0070 <span class="comment">% Required output: blockVectorX and lambda are computed blockSize</span>
+0071 <span class="comment">% eigenpairs, where blockSize=size(blockVectorX,2) for the initial guess</span>
+0072 <span class="comment">% blockVectorX if it is full rank.</span>
+0073 <span class="comment">%</span>
+0074 <span class="comment">% Optional output: failureFlag, lambdaHistory and residualNormsHistory are</span>
+0075 <span class="comment">% described above.</span>
+0076 <span class="comment">%</span>
+0077 <span class="comment">% Functions operatorA(blockVectorX), operatorB(blockVectorX) and</span>
+0078 <span class="comment">% operatorT(blockVectorX) must support blockVectorX being a matrix, not</span>
+0079 <span class="comment">% just a column vector.</span>
+0080 <span class="comment">%</span>
+0081 <span class="comment">% Every iteration involves one application of operatorA and operatorB, and</span>
+0082 <span class="comment">% one of operatorT.</span>
+0083 <span class="comment">%</span>
+0084 <span class="comment">% Main memory requirements: 6 (9 if isempty(operatorB)=0) matrices of the</span>
+0085 <span class="comment">% same size as blockVectorX, 2 matrices of the same size as blockVectorY</span>
+0086 <span class="comment">% (if present), and two square matrices of the size 3*blockSize.</span>
+0087 <span class="comment">%</span>
+0088 <span class="comment">% The following</span>
+0089 <span class="comment">% Example:</span>
+0090 <span class="comment">%</span>
+0091 <span class="comment">% operatorA = 100.*delsq(numgrid('S',21)); [n,n]=size(operatorA);</span>
+0092 <span class="comment">% [blockVectorX,lambda,failureFlag]=lobpcg(randn(n,10),operatorA,1e-5,50,2);</span>
+0093 <span class="comment">%</span>
+0094 <span class="comment">% attempts to compute 10 first eigenpairs of the Poisson operator</span>
+0095 <span class="comment">% in a 2x2 square with the mesh size 1/10 without preconditioning,</span>
+0096 <span class="comment">% but not all eigenpairs converge after 50 steps, so failureFlag=1.</span>
+0097 <span class="comment">%</span>
+0098 <span class="comment">% The next</span>
+0099 <span class="comment">% Example:</span>
+0100 <span class="comment">%</span>
+0101 <span class="comment">% operatorA = 100.*delsq(numgrid('S',21)); [n,n]=size(operatorA);</span>
+0102 <span class="comment">% blockVectorY=[];lambda_all=[];</span>
+0103 <span class="comment">% for j=1:5</span>
+0104 <span class="comment">%   [blockVectorX,lambda]=...</span>
+0105 <span class="comment">%                    lobpcg(randn(n,2),operatorA,blockVectorY,1e-5,200,2);</span>
+0106 <span class="comment">%   blockVectorY=[blockVectorY,blockVectorX];</span>
+0107 <span class="comment">%   lambda_all=[lambda_all' lambda']';</span>
+0108 <span class="comment">% end</span>
+0109 <span class="comment">%</span>
+0110 <span class="comment">% attemps to compute the same eigenpairs by calling the code 5 times</span>
+0111 <span class="comment">% with blockSize=2 using orthogonalization to the previously founded</span>
+0112 <span class="comment">% eigenvectors.</span>
+0113 <span class="comment">%</span>
+0114 <span class="comment">%The following M-script:</span>
+0115 <span class="comment">%</span>
+0116 <span class="comment">% global R_cholinc</span>
+0117 <span class="comment">% operatorA = 100.*delsq(numgrid('S',21)); [n,n]=size(operatorA);</span>
+0118 <span class="comment">% R_cholinc=cholinc(operatorA,1e-3);</span>
+0119 <span class="comment">% [blockVectorX,lambda,failureFlag]=...</span>
+0120 <span class="comment">%                   lobpcg(randn(n,10),operatorA,[],'precsol',1e-5,50,2);</span>
+0121 <span class="comment">%</span>
+0122 <span class="comment">% computes the same eigenpairs in less then 25 steps, so that failureFlag=0</span>
+0123 <span class="comment">% using the preconditioner function precsol:</span>
+0124 <span class="comment">%</span>
+0125 <span class="comment">% function blockVectorX=precsol(V)</span>
+0126 <span class="comment">% global R_cholinc</span>
+0127 <span class="comment">% blockVectorX=R_cholinc\(R_cholinc'\V);</span>
+0128 <span class="comment">% In this example, operatorB=[] must be present in the input parameters.</span>
+0129 <span class="comment">% [blockVectorX,lambda,failureFlag]=...</span>
+0130 <span class="comment">%              lobpcg(randn(n,10),operatorA,speye(n),'precsol',1e-5,50,2);</span>
+0131 <span class="comment">%</span>
+0132 <span class="comment">%produces similar answers, but is somewhat slower and needs more memory.</span>
+0133 <span class="comment">%</span>
+0134 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0135 <span class="comment">%</span>
+0136 <span class="comment">% This main function LOBPCG is a version of</span>
+0137 <span class="comment">% the preconditioned conjugate gradient method (Algorithm 5.1) described in</span>
+0138 <span class="comment">% A. V. Knyazev, Toward the Optimal Preconditioned Eigensolver:</span>
+0139 <span class="comment">% Locally Optimal Block Preconditioned Conjugate Gradient Method,</span>
+0140 <span class="comment">% SIAM Journal on Scientific Computing 23 (2001), no. 2, pp. 517-541.</span>
+0141 <span class="comment">% http://dx.doi.org/10.1137/S1064827500366124</span>
+0142 <span class="comment">%</span>
+0143 <span class="comment">% Known bugs/features:</span>
+0144 <span class="comment">%</span>
+0145 <span class="comment">% - an excessively small requested tolerance may result in often restarts</span>
+0146 <span class="comment">% and instability. The code is not written to produce an eps-level</span>
+0147 <span class="comment">% accuracy! Use common sense.</span>
+0148 <span class="comment">%</span>
+0149 <span class="comment">% - the code may be very sensitive to the number of eigenpairs computed,</span>
+0150 <span class="comment">% if there is a cluster of eigenvalues not completely included, cf.</span>
+0151 <span class="comment">%</span>
+0152 <span class="comment">% operatorA=diag([1 1.99 2:99]);</span>
+0153 <span class="comment">% [blockVectorX,lambda]=lobpcg(randn(100,1),operatorA,1e-10,80,2);</span>
+0154 <span class="comment">% [blockVectorX,lambda]=lobpcg(randn(100,2),operatorA,1e-10,80,2);</span>
+0155 <span class="comment">% [blockVectorX,lambda]=lobpcg(randn(100,3),operatorA,1e-10,80,2);</span>
+0156 <span class="comment">%</span>
+0157 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0158 <span class="comment">% The main distribution site:</span>
+0159 <span class="comment">% http://math.ucdenver.edu/~aknyazev/</span>
+0160 <span class="comment">%</span>
+0161 <span class="comment">% A C-version of this code is a part of the</span>
+0162 <span class="comment">% http://code.google.com/p/blopex/</span>
+0163 <span class="comment">% package and is directly available, e.g., in PETSc and HYPRE.</span>
+0164 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0165 
+0166 <span class="comment">%   License: GNU LGPL ver 2.1 or above</span>
+0167 <span class="comment">%   Copyright (c) 2000-2010 A.V. Knyazev, BLOPEX team</span>
+0168 <span class="comment">%   $Revision: 4.12 $  $Date: 14-Mar-2010</span>
+0169 <span class="comment">%   Tested in MATLAB 6.5-7.9.0.529 and Octave 3.2.3.</span>
+0170 
+0171 
+0172 <span class="comment">%Begin</span>
+0173 
+0174 <span class="comment">% Check if we are in MATLAB or Octave.  ver('MATLAB') will return an empty</span>
+0175 <span class="comment">% struct if we are in Octave. Used below to suppress the graphics.</span>
+0176 <span class="comment">% version=ver('MATLAB');</span>
+0177 <span class="comment">% if all(size(version)==0)</span>
+0178 <span class="comment">%     matlabFlag=0;</span>
+0179 <span class="comment">% else</span>
+0180 <span class="comment">%     matlabFlag=1;</span>
+0181 <span class="comment">% end</span>
+0182 matlabFlag=1;
+0183 
+0184 
+0185 <span class="comment">% constants</span>
+0186 
+0187 CONVENTIONAL_CONSTRAINTS = 1;
+0188 SYMMETRIC_CONSTRAINTS = 2;
+0189 
+0190 <span class="comment">%Initial settings</span>
+0191 
+0192 failureFlag = 1;
+0193 <span class="keyword">if</span> nargin &lt; 2
+0194     error(<span class="string">'BLOPEX:lobpcg:NotEnoughInputs'</span>,<span class="keyword">...</span>
+0195     strcat(<span class="string">'There must be at least 2 input agruments: '</span>,<span class="keyword">...</span>
+0196         <span class="string">'blockVectorX and operatorA'</span>));
+0197 <span class="keyword">end</span>
+0198 <span class="keyword">if</span> nargin &gt; 8
+0199     warning(<span class="string">'BLOPEX:lobpcg:TooManyInputs'</span>,<span class="keyword">...</span>
+0200         strcat(<span class="string">'There must be at most 8 input agruments '</span>,<span class="keyword">...</span>
+0201         <span class="string">'unless arguments are passed to a function'</span>));
+0202 <span class="keyword">end</span>
+0203 
+0204 <span class="keyword">if</span> ischar(blockVectorX)
+0205     error(<span class="string">'BLOPEX:lobpcg:FirstInputString'</span>,<span class="keyword">...</span>
+0206         <span class="string">'The first input argument blockVectorX cannot be a string'</span>);
+0207 <span class="keyword">end</span>
+0208 [n,blockSize]=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(blockVectorX);
+0209 <span class="keyword">if</span> blockSize &gt; n
+0210     error(<span class="string">'BLOPEX:lobpcg:FirstInputFat'</span>,<span class="keyword">...</span>
+0211     <span class="string">'The first input argument blockVectorX must be tall, not fat'</span>);
+0212 <span class="keyword">end</span>
+0213 <span class="keyword">if</span> n &lt; 6
+0214     error(<span class="string">'BLOPEX:lobpcg:MatrixTooSmall'</span>,<span class="keyword">...</span>
+0215         <span class="string">'The code does not work for matrices of small sizes'</span>);
+0216 <span class="keyword">end</span>
+0217 
+0218 <span class="keyword">if</span> ischar(operatorA)
+0219     nA = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(operatorA,1);
+0220     <span class="keyword">if</span> any(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(operatorA) ~= nA)
+0221         error(<span class="string">'BLOPEX:lobpcg:MatrixNotSquare'</span>,<span class="keyword">...</span>
+0222             <span class="string">'operatorA must be a square matrix or a string'</span>);
+0223     <span class="keyword">end</span>
+0224     <span class="keyword">if</span> <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(operatorA) ~= n
+0225         error(<span class="string">'BLOPEX:lobpcg:MatrixWrongSize'</span>,<span class="keyword">...</span>
+0226         [<span class="string">'The size '</span> int2str(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(operatorA))<span class="keyword">...</span>
+0227             <span class="string">' of operatorA is not the same as '</span> int2str(n)<span class="keyword">...</span>
+0228             <span class="string">' - the number of rows of blockVectorX'</span>]);
+0229     <span class="keyword">end</span>
+0230 <span class="keyword">end</span>
+0231 
+0232 count_string = 0;
+0233 
+0234 operatorT = [];
+0235 operatorB = [];
+0236 residualTolerance = [];
+0237 maxIterations = [];
+0238 verbosityLevel = [];
+0239 blockVectorY = []; sizeY = 0;
+0240 <span class="keyword">for</span> j = 1:nargin-2
+0241     <span class="keyword">if</span> isequal(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(varargin{j}),[n,n])
+0242         <span class="keyword">if</span> isempty(operatorB)
+0243             operatorB = varargin{j};
+0244         <span class="keyword">else</span>
+0245             error(<span class="string">'BLOPEX:lobpcg:TooManyMatrixInputs'</span>,<span class="keyword">...</span>
+0246         strcat(<span class="string">'Too many matrix input arguments. '</span>,<span class="keyword">...</span>
+0247         <span class="string">'Preconditioner operatorT must be an M-function'</span>));
+0248         <span class="keyword">end</span>
+0249     <span class="keyword">elseif</span> isequal(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(varargin{j},1),n) &amp;&amp; <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(varargin{j},2) &lt; n
+0250         <span class="keyword">if</span> isempty(blockVectorY)
+0251             blockVectorY = varargin{j};
+0252             sizeY=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(blockVectorY,2);
+0253         <span class="keyword">else</span>
+0254             error(<span class="string">'BLOPEX:lobpcg:WrongConstraintsFormat'</span>,<span class="keyword">...</span>
+0255             <span class="string">'Something wrong with blockVectorY input argument'</span>);
+0256         <span class="keyword">end</span>
+0257     <span class="keyword">elseif</span> ischar(varargin{j})
+0258         <span class="keyword">if</span> count_string == 0
+0259             <span class="keyword">if</span> isempty(operatorB)
+0260                 operatorB = varargin{j};
+0261                 count_string = count_string + 1;
+0262             <span class="keyword">else</span>
+0263                 operatorT = varargin{j};
+0264             <span class="keyword">end</span>
+0265         <span class="keyword">elseif</span> count_string == 1
+0266             operatorT = varargin{j};
+0267         <span class="keyword">else</span>
+0268             error(<span class="string">'BLOPEX:lobpcg:TooManyStringInputs'</span>,<span class="keyword">...</span>
+0269                 <span class="string">'Too many string input arguments'</span>);
+0270         <span class="keyword">end</span>
+0271     <span class="keyword">elseif</span> isequal(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(varargin{j}),[n,n])
+0272         error(<span class="string">'BLOPEX:lobpcg:WrongPreconditionerFormat'</span>,<span class="keyword">...</span>
+0273         <span class="string">'Preconditioner operatorT must be an M-function'</span>);
+0274     <span class="keyword">elseif</span> max(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(varargin{j})) == 1
+0275         <span class="keyword">if</span> isempty(residualTolerance)
+0276             residualTolerance = varargin{j};
+0277         <span class="keyword">elseif</span> isempty(maxIterations)
+0278             maxIterations = varargin{j};
+0279         <span class="keyword">elseif</span> isempty(verbosityLevel)
+0280             verbosityLevel = varargin{j};
+0281         <span class="keyword">else</span>
+0282             error(<span class="string">'BLOPEX:lobpcg:TooManyScalarInputs'</span>,<span class="keyword">...</span>
+0283                 <span class="string">'Too many scalar parameters, need only three'</span>);
+0284         <span class="keyword">end</span>
+0285     <span class="keyword">elseif</span> isempty(varargin{j})
+0286         <span class="keyword">if</span> isempty(operatorB)
+0287             count_string = count_string + 1;
+0288         <span class="keyword">elseif</span> ~isempty(operatorT)
+0289             count_string = count_string + 1;
+0290         <span class="keyword">elseif</span> ~isempty(blockVectorY)
+0291             error(<span class="string">'BLOPEX:lobpcg:UnrecognizedEmptyInput'</span>,<span class="keyword">...</span>
+0292                [<span class="string">'Unrecognized empty input argument number '</span> int2str(j+2)]);
+0293         <span class="keyword">end</span>
+0294     <span class="keyword">else</span>
+0295         error(<span class="string">'BLOPEX:lobpcg:UnrecognizedInput'</span>,<span class="keyword">...</span>
+0296             [<span class="string">'Input argument number '</span> int2str(j+2) <span class="string">' not recognized.'</span>]);
+0297     <span class="keyword">end</span>
+0298 <span class="keyword">end</span>
+0299 <span class="keyword">if</span> verbosityLevel
+0300     <span class="keyword">if</span> issparse(blockVectorX)
+0301         fprintf([<span class="string">'The sparse initial guess with %i colunms '</span><span class="keyword">...</span>
+0302         <span class="string">'and %i raws is detected  \n'</span>],n,blockSize);
+0303     <span class="keyword">else</span>
+0304         fprintf([<span class="string">'The full initial guess with %i colunms '</span><span class="keyword">...</span>
+0305             <span class="string">'and %i raws is detected  \n'</span>],n,blockSize);
+0306     <span class="keyword">end</span>
+0307     <span class="keyword">if</span> ischar(operatorA)
+0308         fprintf(<span class="string">'The main operator is detected as an M-function %s \n'</span>,<span class="keyword">...</span>
+0309             operatorA);
+0310     <span class="keyword">elseif</span> issparse(operatorA)
+0311         fprintf(<span class="string">'The main operator is detected as a sparse matrix \n'</span>);
+0312     <span class="keyword">else</span>
+0313         fprintf(<span class="string">'The main operator is detected as a full matrix \n'</span>);
+0314     <span class="keyword">end</span>
+0315     <span class="keyword">if</span> isempty(operatorB)
+0316         fprintf(<span class="string">'Solving standard eigenvalue problem, not generalized \n'</span>);
+0317     <span class="keyword">elseif</span> ischar(operatorB)
+0318         fprintf([<span class="string">'The second operator of the generalized eigenproblem \n'</span><span class="keyword">...</span>
+0319         <span class="string">'is detected as an M-function %s \n'</span>],operatorB);
+0320     <span class="keyword">elseif</span> issparse(operatorB)
+0321         fprintf(strcat(<span class="string">'The second operator of the generalized'</span>,<span class="keyword">...</span><span class="comment"> </span>
+0322             <span class="string">'eigenproblem \n is detected as a sparse matrix \n'</span>));
+0323     <span class="keyword">else</span>
+0324         fprintf(strcat(<span class="string">'The second operator of the generalized'</span>,<span class="keyword">...</span><span class="comment"> </span>
+0325             <span class="string">'eigenproblem \n is detected as a full matrix \n'</span>));        
+0326     <span class="keyword">end</span>
+0327     <span class="keyword">if</span> isempty(operatorT)
+0328         fprintf(<span class="string">'No preconditioner is detected \n'</span>);
+0329     <span class="keyword">else</span>
+0330         fprintf(<span class="string">'The preconditioner is detected as an M-function %s \n'</span>,<span class="keyword">...</span>
+0331             operatorT);
+0332     <span class="keyword">end</span>
+0333     <span class="keyword">if</span> isempty(blockVectorY)
+0334         fprintf(<span class="string">'No matrix of constraints is detected \n'</span>)
+0335     <span class="keyword">elseif</span> issparse(blockVectorY)
+0336         fprintf(<span class="string">'The sparse matrix of %i constraints is detected \n'</span>,sizeY);
+0337     <span class="keyword">else</span>
+0338         fprintf(<span class="string">'The full matrix of %i constraints is detected \n'</span>,sizeY);
+0339     <span class="keyword">end</span>
+0340     <span class="keyword">if</span> issparse(blockVectorY) ~= issparse(blockVectorX)
+0341         warning(<span class="string">'BLOPEX:lobpcg:SparsityInconsistent'</span>,<span class="keyword">...</span>
+0342             strcat(<span class="string">'The sparsity formats of the initial guess and '</span>,<span class="keyword">...</span>
+0343             <span class="string">'the constraints are inconsistent'</span>));
+0344     <span class="keyword">end</span>
+0345 <span class="keyword">end</span>
+0346 
+0347 <span class="comment">% Set defaults</span>
+0348 
+0349 <span class="keyword">if</span> isempty(residualTolerance)
+0350     residualTolerance = sqrt(eps)*n;
+0351 <span class="keyword">end</span>
+0352 <span class="keyword">if</span> isempty(maxIterations)
+0353     maxIterations = min(n,20);
+0354 <span class="keyword">end</span>
+0355 <span class="keyword">if</span> isempty(verbosityLevel)
+0356     verbosityLevel = 0;
+0357 <span class="keyword">end</span>
+0358 
+0359 <span class="keyword">if</span> verbosityLevel
+0360     fprintf(<span class="string">'Tolerance %e and maximum number of iterations %i \n'</span>,<span class="keyword">...</span>
+0361         residualTolerance,maxIterations)
+0362 <span class="keyword">end</span>
+0363 
+0364 <span class="comment">%constraints preprocessing</span>
+0365 <span class="keyword">if</span> isempty(blockVectorY)
+0366     constraintStyle = 0;
+0367 <span class="keyword">else</span>
+0368     <span class="comment">%    constraintStyle = SYMMETRIC_CONSTRAINTS; % more accurate?</span>
+0369     constraintStyle = CONVENTIONAL_CONSTRAINTS;
+0370 <span class="keyword">end</span>
+0371 
+0372 <span class="keyword">if</span> constraintStyle == CONVENTIONAL_CONSTRAINTS
+0373     
+0374     <span class="keyword">if</span> isempty(operatorB)
+0375         gramY = blockVectorY'*blockVectorY;
+0376     <span class="keyword">else</span>
+0377         <span class="keyword">if</span> ~ischar(operatorB)
+0378             blockVectorBY = operatorB*blockVectorY;
+0379         <span class="keyword">else</span>
+0380             blockVectorBY = feval(operatorB,blockVectorY);
+0381         <span class="keyword">end</span>
+0382         gramY=blockVectorY'*blockVectorBY;
+0383     <span class="keyword">end</span>
+0384     gramY=(gramY'+gramY)*0.5;
+0385     <span class="keyword">if</span> isempty(operatorB)
+0386         blockVectorX = blockVectorX - <span class="keyword">...</span>
+0387             blockVectorY*(gramY\(blockVectorY'*blockVectorX));
+0388     <span class="keyword">else</span>
+0389         blockVectorX =blockVectorX - <span class="keyword">...</span>
+0390             blockVectorY*(gramY\(blockVectorBY'*blockVectorX));
+0391     <span class="keyword">end</span>
+0392     
+0393 <span class="keyword">elseif</span> constraintStyle == SYMMETRIC_CONSTRAINTS
+0394     
+0395     <span class="keyword">if</span> ~isempty(operatorB)
+0396         <span class="keyword">if</span> ~ischar(operatorB)
+0397             blockVectorY = operatorB*blockVectorY;
+0398         <span class="keyword">else</span>
+0399             blockVectorY = feval(operatorB,blockVectorY);
+0400         <span class="keyword">end</span>
+0401     <span class="keyword">end</span>
+0402     <span class="keyword">if</span> isempty(operatorT)
+0403         gramY = blockVectorY'*blockVectorY;
+0404     <span class="keyword">else</span>
+0405         blockVectorTY = feval(operatorT,blockVectorY);
+0406         gramY = blockVectorY'*blockVectorTY;
+0407     <span class="keyword">end</span>
+0408     gramY=(gramY'+gramY)*0.5;
+0409     <span class="keyword">if</span> isempty(operatorT)
+0410         blockVectorX = blockVectorX - <span class="keyword">...</span>
+0411             blockVectorY*(gramY\(blockVectorY'*blockVectorX));
+0412     <span class="keyword">else</span>
+0413         blockVectorX = blockVectorX - <span class="keyword">...</span>
+0414             blockVectorTY*(gramY\(blockVectorY'*blockVectorX));
+0415     <span class="keyword">end</span>
+0416     
+0417 <span class="keyword">end</span>
+0418 
+0419 <span class="comment">%Making the initial vectors (operatorB-) orthonormal</span>
+0420 <span class="keyword">if</span> isempty(operatorB)
+0421     <span class="comment">%[blockVectorX,gramXBX] = qr(blockVectorX,0);</span>
+0422     gramXBX=blockVectorX'*blockVectorX;
+0423     <span class="keyword">if</span> ~isreal(gramXBX)
+0424         gramXBX=(gramXBX+gramXBX')*0.5;
+0425     <span class="keyword">end</span>
+0426     [gramXBX,cholFlag]=chol(gramXBX);
+0427     <span class="keyword">if</span>  cholFlag ~= 0
+0428         error(<span class="string">'BLOPEX:lobpcg:ConstraintsTooTight'</span>,<span class="keyword">...</span>
+0429            <span class="string">'The initial approximation after constraints is not full rank'</span>);
+0430     <span class="keyword">end</span>
+0431     blockVectorX = blockVectorX/gramXBX;
+0432 <span class="keyword">else</span>
+0433     <span class="comment">%[blockVectorX,blockVectorBX] = orth(operatorB,blockVectorX);</span>
+0434     <span class="keyword">if</span> ~ischar(operatorB)
+0435         blockVectorBX = operatorB*blockVectorX;
+0436     <span class="keyword">else</span>
+0437         blockVectorBX = feval(operatorB,blockVectorX);
+0438     <span class="keyword">end</span>
+0439     gramXBX=blockVectorX'*blockVectorBX;
+0440     <span class="keyword">if</span> ~isreal(gramXBX)
+0441         gramXBX=(gramXBX+gramXBX')*0.5;
+0442     <span class="keyword">end</span>
+0443     [gramXBX,cholFlag]=chol(gramXBX);
+0444     <span class="keyword">if</span>  cholFlag ~= 0
+0445         error(<span class="string">'BLOPEX:lobpcg:InitialNotFullRank'</span>,<span class="keyword">...</span>
+0446             sprintf(<span class="string">'%s\n%s'</span>, <span class="keyword">...</span>
+0447             <span class="string">'The initial approximation after constraints is not full rank'</span>,<span class="keyword">...</span>
+0448             <span class="string">'or/and operatorB is not positive definite'</span>));
+0449     <span class="keyword">end</span>
+0450     blockVectorX = blockVectorX/gramXBX;
+0451     blockVectorBX = blockVectorBX/gramXBX;
+0452 <span class="keyword">end</span>
+0453 
+0454 <span class="comment">% Checking if the problem is big enough for the algorithm,</span>
+0455 <span class="comment">% i.e. n-sizeY &gt; 5*blockSize</span>
+0456 <span class="comment">% Theoretically, the algorithm should be able to run if</span>
+0457 <span class="comment">% n-sizeY &gt; 3*blockSize,</span>
+0458 <span class="comment">% but the extreme cases might be unstable, so we use 5 instead of 3 here.</span>
+0459 <span class="keyword">if</span> n-sizeY &lt; 5*blockSize
+0460     error(<span class="string">'BLOPEX:lobpcg:MatrixTooSmall'</span>,<span class="keyword">...</span>
+0461         sprintf(<span class="string">'%s\n%s'</span>, <span class="keyword">...</span>
+0462     <span class="string">'The problem size is too small, relative to the block size.'</span>,<span class="keyword">...</span><span class="comment"> </span>
+0463     <span class="string">'Try using eig() or eigs() instead.'</span>));
+0464 <span class="keyword">end</span>
+0465 
+0466 <span class="comment">% Preallocation</span>
+0467 residualNormsHistory=zeros(blockSize,maxIterations);
+0468 lambdaHistory=zeros(blockSize,maxIterations+1);
+0469 condestGhistory=zeros(1,maxIterations+1);
+0470 
+0471 blockVectorBR=zeros(n,blockSize);
+0472 blockVectorAR=zeros(n,blockSize);
+0473 blockVectorP=zeros(n,blockSize);
+0474 blockVectorAP=zeros(n,blockSize);
+0475 blockVectorBP=zeros(n,blockSize);
+0476 
+0477 <span class="comment">%Initial settings for the loop</span>
+0478 <span class="comment">%keyboard;</span>
+0479 <span class="keyword">if</span> ischar(operatorA)
+0480     blockVectorAX = operatorA*blockVectorX;
+0481 <span class="keyword">else</span>
+0482     blockVectorAX = feval(operatorA,blockVectorX);
+0483 <span class="keyword">end</span>
+0484 
+0485 gramXAX = <a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorAX);
+0486 gramXAX = (gramXAX + gramXAX')*0.5;
+0487 <span class="comment">% eig(...,'chol') uses only the diagonal and upper triangle -</span>
+0488 <span class="comment">% not true in MATLAB</span>
+0489 <span class="comment">% Octave v3.2.3, eig() does not support inputting 'chol'</span>
+0490 [coordX,gramXAX]=eig(gramXAX,eye(blockSize));
+0491 
+0492 lambda=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(gramXAX); <span class="comment">%eig returms eigenvalues on the diagonal</span>
+0493 
+0494 <span class="keyword">if</span> issparse(blockVectorX)
+0495     coordX=sparse(coordX);
+0496 <span class="keyword">end</span>
+0497 
+0498 blockVectorX  =  blockVectorX*coordX;
+0499 blockVectorAX = blockVectorAX*coordX;
+0500 <span class="keyword">if</span> ~isempty(operatorB)
+0501     blockVectorBX = blockVectorBX*coordX;
+0502 <span class="keyword">end</span>
+0503 clear coordX
+0504 
+0505 condestGhistory(1)=-log10(eps)/2;  <span class="comment">%if too small cause unnecessary restarts</span>
+0506 
+0507 lambdaHistory(1:blockSize,1)=lambda;
+0508 
+0509 activeMask = true(blockSize,1);
+0510 <span class="comment">% currentBlockSize = blockSize; %iterate all</span>
+0511 <span class="comment">%</span>
+0512 <span class="comment">% restart=1;%steepest descent</span>
+0513 
+0514 <span class="comment">%The main part of the method is the loop of the CG method: begin</span>
+0515 <span class="keyword">for</span> iterationNumber=1:maxIterations
+0516     
+0517     <span class="comment">%     %Computing the active residuals</span>
+0518     <span class="comment">%     if isempty(operatorB)</span>
+0519     <span class="comment">%         if currentBlockSize &gt; 1</span>
+0520     <span class="comment">%             blockVectorR(:,activeMask)=blockVectorAX(:,activeMask) - ...</span>
+0521     <span class="comment">%                 blockVectorX(:,activeMask)*spdiags(lambda(activeMask),0,currentBlockSize,currentBlockSize);</span>
+0522     <span class="comment">%         else</span>
+0523     <span class="comment">%             blockVectorR(:,activeMask)=blockVectorAX(:,activeMask) - ...</span>
+0524     <span class="comment">%                 blockVectorX(:,activeMask)*lambda(activeMask);</span>
+0525     <span class="comment">%                   %to make blockVectorR full when lambda is just a scalar</span>
+0526     <span class="comment">%         end</span>
+0527     <span class="comment">%     else</span>
+0528     <span class="comment">%         if currentBlockSize &gt; 1</span>
+0529     <span class="comment">%             blockVectorR(:,activeMask)=blockVectorAX(:,activeMask) - ...</span>
+0530     <span class="comment">%                 blockVectorBX(:,activeMask)*spdiags(lambda(activeMask),0,currentBlockSize,currentBlockSize);</span>
+0531     <span class="comment">%         else</span>
+0532     <span class="comment">%             blockVectorR(:,activeMask)=blockVectorAX(:,activeMask) - ...</span>
+0533     <span class="comment">%                 blockVectorBX(:,activeMask)*lambda(activeMask);</span>
+0534     <span class="comment">%                       %to make blockVectorR full when lambda is just a scalar</span>
+0535     <span class="comment">%         end</span>
+0536     <span class="comment">%     end</span>
+0537     
+0538     <span class="comment">%Computing all residuals</span>
+0539     <span class="keyword">if</span> isempty(operatorB)
+0540         <span class="keyword">if</span> blockSize &gt; 1
+0541             blockVectorR = blockVectorAX - <span class="keyword">...</span>
+0542                 blockVectorX*spdiags(lambda,0,blockSize,blockSize);
+0543         <span class="keyword">else</span>
+0544             blockVectorR = blockVectorAX - blockVectorX*lambda;
+0545             <span class="comment">%to make blockVectorR full when lambda is just a scalar</span>
+0546         <span class="keyword">end</span>
+0547     <span class="keyword">else</span>
+0548         <span class="keyword">if</span> blockSize &gt; 1
+0549             blockVectorR=blockVectorAX - <span class="keyword">...</span>
+0550                 blockVectorBX*spdiags(lambda,0,blockSize,blockSize);
+0551         <span class="keyword">else</span>
+0552             blockVectorR = blockVectorAX - blockVectorBX*lambda;
+0553             <span class="comment">%to make blockVectorR full when lambda is just a scalar</span>
+0554         <span class="keyword">end</span>
+0555     <span class="keyword">end</span>
+0556     
+0557     <span class="comment">%Satisfying the constraints for the active residulas</span>
+0558     <span class="keyword">if</span> constraintStyle == SYMMETRIC_CONSTRAINTS
+0559         <span class="keyword">if</span> isempty(operatorT)
+0560             blockVectorR(:,activeMask) = blockVectorR(:,activeMask) - <span class="keyword">...</span>
+0561                 blockVectorY*(gramY\(blockVectorY'*<span class="keyword">...</span>
+0562                 blockVectorR(:,activeMask)));
+0563         <span class="keyword">else</span>
+0564             blockVectorR(:,activeMask) = blockVectorR(:,activeMask) - <span class="keyword">...</span>
+0565                 blockVectorY*(gramY\(blockVectorTY'*<span class="keyword">...</span>
+0566                 blockVectorR(:,activeMask)));
+0567         <span class="keyword">end</span>
+0568     <span class="keyword">end</span>
+0569     
+0570     residualNorms=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(sqrt(sum(<a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>(blockVectorR).*blockVectorR)'));
+0571     residualNormsHistory(1:blockSize,iterationNumber)=residualNorms;
+0572     
+0573     <span class="comment">%index antifreeze</span>
+0574     activeMask = <a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(residualNorms &gt; residualTolerance) &amp; activeMask;
+0575     <span class="comment">%activeMask = full(residualNorms &gt; residualTolerance);</span>
+0576     <span class="comment">%above allows vectors back into active, which causes problems with frosen Ps</span>
+0577     <span class="comment">%activeMask = full(residualNorms &gt; 0);      %iterate all, ignore freeze</span>
+0578     
+0579     currentBlockSize = sum(activeMask);
+0580     <span class="keyword">if</span>  currentBlockSize == 0
+0581         failureFlag=0; <span class="comment">%all eigenpairs converged</span>
+0582         <span class="keyword">break</span>
+0583     <span class="keyword">end</span>
+0584     
+0585     <span class="comment">%Applying the preconditioner operatorT to the active residulas</span>
+0586     <span class="keyword">if</span> ~isempty(operatorT)
+0587         blockVectorR(:,activeMask) = <span class="keyword">...</span>
+0588             feval(operatorT,blockVectorR(:,activeMask));
+0589     <span class="keyword">end</span>
+0590     
+0591     <span class="keyword">if</span> constraintStyle == CONVENTIONAL_CONSTRAINTS
+0592         <span class="keyword">if</span> isempty(operatorB)
+0593             blockVectorR(:,activeMask) = blockVectorR(:,activeMask) - <span class="keyword">...</span>
+0594                 blockVectorY*(gramY\(blockVectorY'*<span class="keyword">...</span>
+0595                 blockVectorR(:,activeMask)));
+0596         <span class="keyword">else</span>
+0597             blockVectorR(:,activeMask) = blockVectorR(:,activeMask) - <span class="keyword">...</span>
+0598                 blockVectorY*(gramY\(blockVectorBY'*<span class="keyword">...</span>
+0599                 blockVectorR(:,activeMask)));
+0600         <span class="keyword">end</span>
+0601     <span class="keyword">end</span>
+0602     
+0603     <span class="comment">%Making active (preconditioned) residuals orthogonal to blockVectorX</span>
+0604     <span class="keyword">if</span> isempty(operatorB)
+0605         blockVectorR(:,activeMask) = blockVectorR(:,activeMask) - <span class="keyword">...</span>
+0606             blockVectorX*(blockVectorX'*blockVectorR(:,activeMask));
+0607     <span class="keyword">else</span>
+0608         blockVectorR(:,activeMask) = blockVectorR(:,activeMask) - <span class="keyword">...</span>
+0609             blockVectorX*(blockVectorBX'*blockVectorR(:,activeMask));
+0610     <span class="keyword">end</span>
+0611     
+0612     <span class="comment">%Making active residuals orthonormal</span>
+0613     <span class="keyword">if</span> isempty(operatorB)
+0614         <span class="comment">%[blockVectorR(:,activeMask),gramRBR]=...</span>
+0615         <span class="comment">%qr(blockVectorR(:,activeMask),0); %to increase stability</span>
+0616         gramRBR=blockVectorR(:,activeMask)'*blockVectorR(:,activeMask);
+0617         <span class="keyword">if</span> ~isreal(gramRBR)
+0618             gramRBR=(gramRBR+gramRBR')*0.5; 
+0619         <span class="keyword">end</span>
+0620         [gramRBR,cholFlag]=chol(gramRBR);
+0621         <span class="keyword">if</span>  cholFlag == 0
+0622             blockVectorR(:,activeMask) = blockVectorR(:,activeMask)/gramRBR;
+0623         <span class="keyword">else</span>
+0624             warning(<span class="string">'BLOPEX:lobpcg:ResidualNotFullRank'</span>,<span class="keyword">...</span>
+0625                 <span class="string">'The residual is not full rank.'</span>);
+0626             <span class="keyword">break</span>
+0627         <span class="keyword">end</span>
+0628     <span class="keyword">else</span>
+0629         <span class="keyword">if</span> ~ischar(operatorB)
+0630             blockVectorBR(:,activeMask) = <span class="keyword">...</span>
+0631                 operatorB*blockVectorR(:,activeMask);
+0632         <span class="keyword">else</span>
+0633             blockVectorBR(:,activeMask) = <span class="keyword">...</span>
+0634                 feval(operatorB,blockVectorR(:,activeMask));
+0635         <span class="keyword">end</span>
+0636         gramRBR=blockVectorR(:,activeMask)'*blockVectorBR(:,activeMask);
+0637         <span class="keyword">if</span> ~isreal(gramRBR)
+0638             gramRBR=(gramRBR+gramRBR')*0.5; 
+0639         <span class="keyword">end</span>
+0640         [gramRBR,cholFlag]=chol(gramRBR);
+0641         <span class="keyword">if</span>  cholFlag == 0
+0642             blockVectorR(:,activeMask) = <span class="keyword">...</span>
+0643                 blockVectorR(:,activeMask)/gramRBR;
+0644             blockVectorBR(:,activeMask) = <span class="keyword">...</span>
+0645                 blockVectorBR(:,activeMask)/gramRBR;
+0646         <span class="keyword">else</span>
+0647             warning(<span class="string">'BLOPEX:lobpcg:ResidualNotFullRankOrElse'</span>,<span class="keyword">...</span>
+0648             strcat(<span class="string">'The residual is not full rank or/and operatorB '</span>,<span class="keyword">...</span>
+0649             <span class="string">'is not positive definite.'</span>));
+0650             <span class="keyword">break</span>
+0651         <span class="keyword">end</span>
+0652         
+0653     <span class="keyword">end</span>
+0654     clear gramRBR;
+0655     
+0656     <span class="keyword">if</span> ischar(operatorA)
+0657         blockVectorAR(:,activeMask) = operatorA*blockVectorR(:,activeMask);
+0658     <span class="keyword">else</span>
+0659         blockVectorAR(:,activeMask) = <span class="keyword">...</span>
+0660             feval(operatorA,blockVectorR(:,activeMask));
+0661     <span class="keyword">end</span>
+0662     
+0663     <span class="keyword">if</span> iterationNumber &gt; 1
+0664         
+0665         <span class="comment">%Making active conjugate directions orthonormal</span>
+0666         <span class="keyword">if</span> isempty(operatorB)
+0667             <span class="comment">%[blockVectorP(:,activeMask),gramPBP] = qr(blockVectorP(:,activeMask),0);</span>
+0668             gramPBP=blockVectorP(:,activeMask)'*blockVectorP(:,activeMask);
+0669             <span class="keyword">if</span> ~isreal(gramPBP)
+0670                 gramPBP=(gramPBP+gramPBP')*0.5; 
+0671             <span class="keyword">end</span>
+0672             [gramPBP,cholFlag]=chol(gramPBP);
+0673             <span class="keyword">if</span>  cholFlag == 0
+0674                 blockVectorP(:,activeMask) = <span class="keyword">...</span>
+0675                     blockVectorP(:,activeMask)/gramPBP;
+0676                 blockVectorAP(:,activeMask) = <span class="keyword">...</span>
+0677                     blockVectorAP(:,activeMask)/gramPBP;
+0678             <span class="keyword">else</span>
+0679                 warning(<span class="string">'BLOPEX:lobpcg:DirectionNotFullRank'</span>,<span class="keyword">...</span>
+0680                     <span class="string">'The direction matrix is not full rank.'</span>);
+0681                 <span class="keyword">break</span>
+0682             <span class="keyword">end</span>
+0683         <span class="keyword">else</span>
+0684             gramPBP=blockVectorP(:,activeMask)'*blockVectorBP(:,activeMask);
+0685             <span class="keyword">if</span> ~isreal(gramPBP)
+0686                 gramPBP=(gramPBP+gramPBP')*0.5; 
+0687             <span class="keyword">end</span>
+0688             [gramPBP,cholFlag]=chol(gramPBP);
+0689             <span class="keyword">if</span>  cholFlag == 0
+0690                 blockVectorP(:,activeMask) = <span class="keyword">...</span>
+0691                     blockVectorP(:,activeMask)/gramPBP;
+0692                 blockVectorAP(:,activeMask) = <span class="keyword">...</span>
+0693                     blockVectorAP(:,activeMask)/gramPBP;
+0694                 blockVectorBP(:,activeMask) = <span class="keyword">...</span>
+0695                     blockVectorBP(:,activeMask)/gramPBP;
+0696             <span class="keyword">else</span>
+0697                 warning(<span class="string">'BLOPEX:lobpcg:DirectionNotFullRank'</span>,<span class="keyword">...</span>
+0698                strcat(<span class="string">'The direction matrix is not full rank '</span>,<span class="keyword">...</span>
+0699             <span class="string">'or/and operatorB is not positive definite.'</span>));
+0700                 <span class="keyword">break</span>
+0701             <span class="keyword">end</span>
+0702         <span class="keyword">end</span>
+0703         clear gramPBP
+0704     <span class="keyword">end</span>
+0705     
+0706     condestGmean = mean(condestGhistory(max(1,iterationNumber-10-<span class="keyword">...</span>
+0707         <a href="../../tt2/@qtt_tucker/round.html" class="code" title="function [tt]=round(tt,varargin)">round</a>(log(currentBlockSize))):iterationNumber));
+0708     
+0709     <span class="comment">%  restart=1;</span>
+0710     
+0711     <span class="comment">% The Raileight-Ritz method for [blockVectorX blockVectorR blockVectorP]</span>
+0712     
+0713     <span class="keyword">if</span>  residualNorms &gt; eps^0.6
+0714         explicitGramFlag = 0;
+0715     <span class="keyword">else</span>
+0716         explicitGramFlag = 1;  <span class="comment">%suggested by Garrett Moran, private</span>
+0717     <span class="keyword">end</span>
+0718     
+0719     activeRSize=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(blockVectorR(:,activeMask),2);
+0720     <span class="keyword">if</span> iterationNumber == 1
+0721         activePSize=0;
+0722         restart=1;
+0723     <span class="keyword">else</span>
+0724         activePSize=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(blockVectorP(:,activeMask),2);
+0725         restart=0;
+0726     <span class="keyword">end</span>
+0727     
+0728     gramXAR=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorAX'*blockVectorR(:,activeMask));
+0729     gramRAR=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorAR(:,activeMask)'*blockVectorR(:,activeMask));
+0730     gramRAR=(gramRAR'+gramRAR)*0.5;
+0731     
+0732     <span class="keyword">if</span> explicitGramFlag
+0733         gramXAX=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorAX'*blockVectorX);
+0734         gramXAX=(gramXAX'+gramXAX)*0.5;
+0735         <span class="keyword">if</span> isempty(operatorB)
+0736             gramXBX=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorX);
+0737             gramRBR=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorR(:,activeMask)'*<span class="keyword">...</span>
+0738                 blockVectorR(:,activeMask));
+0739             gramXBR=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorR(:,activeMask));
+0740         <span class="keyword">else</span>
+0741             gramXBX=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorBX'*blockVectorX);
+0742             gramRBR=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorBR(:,activeMask)'*<span class="keyword">...</span>
+0743                 blockVectorR(:,activeMask));
+0744             gramXBR=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorBX'*blockVectorR(:,activeMask));
+0745         <span class="keyword">end</span>
+0746         gramXBX=(gramXBX'+gramXBX)*0.5;
+0747         gramRBR=(gramRBR'+gramRBR)*0.5;
+0748         
+0749     <span class="keyword">end</span>
+0750     
+0751     <span class="keyword">for</span> cond_try=1:2,           <span class="comment">%cond_try == 2 when restart</span>
+0752         
+0753         <span class="keyword">if</span> ~restart
+0754             gramXAP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorAX'*blockVectorP(:,activeMask));
+0755             gramRAP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorAR(:,activeMask)'*<span class="keyword">...</span>
+0756                 blockVectorP(:,activeMask));
+0757             gramPAP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorAP(:,activeMask)'*<span class="keyword">...</span>
+0758                 blockVectorP(:,activeMask));
+0759             gramPAP=(gramPAP'+gramPAP)*0.5;
+0760             
+0761             <span class="keyword">if</span> explicitGramFlag
+0762                 gramA = [ gramXAX     gramXAR     gramXAP
+0763                     gramXAR'    gramRAR     gramRAP
+0764                     gramXAP'     gramRAP'    gramPAP ];
+0765             <span class="keyword">else</span>
+0766                 gramA = [ <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(lambda)  gramXAR  gramXAP
+0767                     gramXAR'      gramRAR  gramRAP
+0768                     gramXAP'      gramRAP'  gramPAP ];
+0769             <span class="keyword">end</span>
+0770             
+0771             clear gramXAP  gramRAP gramPAP
+0772             
+0773             <span class="keyword">if</span> isempty(operatorB)
+0774                 gramXBP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorP(:,activeMask));
+0775                 gramRBP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorR(:,activeMask)'*<span class="keyword">...</span>
+0776                     blockVectorP(:,activeMask));
+0777             <span class="keyword">else</span>
+0778                 gramXBP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorBX'*blockVectorP(:,activeMask));
+0779                 gramRBP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorBR(:,activeMask)'*<span class="keyword">...</span>
+0780                     blockVectorP(:,activeMask));
+0781                 <span class="comment">%or blockVectorR(:,activeMask)'*blockVectorBP(:,activeMask);</span>
+0782             <span class="keyword">end</span>
+0783             
+0784             <span class="keyword">if</span> explicitGramFlag
+0785                 <span class="keyword">if</span> isempty(operatorB)
+0786                     gramPBP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorP(:,activeMask)'*<span class="keyword">...</span>
+0787                         blockVectorP(:,activeMask));
+0788                 <span class="keyword">else</span>
+0789                     gramPBP=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorBP(:,activeMask)'*<span class="keyword">...</span>
+0790                         blockVectorP(:,activeMask));
+0791                 <span class="keyword">end</span>
+0792                 gramPBP=(gramPBP'+gramPBP)*0.5;
+0793                 gramB = [ gramXBX  gramXBR  gramXBP
+0794                     gramXBR' gramRBR  gramRBP
+0795                     gramXBP' gramRBP' gramPBP ];
+0796                 clear   gramPBP
+0797             <span class="keyword">else</span>
+0798                 gramB=[eye(blockSize) zeros(blockSize,activeRSize) gramXBP
+0799                     zeros(blockSize,activeRSize)' eye(activeRSize) gramRBP
+0800                     gramXBP' gramRBP' eye(activePSize) ];
+0801             <span class="keyword">end</span>
+0802             
+0803             clear gramXBP  gramRBP;
+0804             
+0805         <span class="keyword">else</span>
+0806             
+0807             <span class="keyword">if</span> explicitGramFlag
+0808                 gramA = [ gramXAX   gramXAR
+0809                     gramXAR'    gramRAR  ];
+0810                 gramB = [ gramXBX  gramXBR
+0811                     gramXBR' eye(activeRSize)  ];
+0812                 clear gramXAX gramXBX gramXBR
+0813             <span class="keyword">else</span>
+0814                 gramA = [ <a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(lambda)  gramXAR
+0815                     gramXAR'        gramRAR  ];
+0816                 gramB = eye(blockSize+activeRSize);
+0817             <span class="keyword">end</span>
+0818             
+0819             clear gramXAR gramRAR;
+0820             
+0821         <span class="keyword">end</span>
+0822         
+0823         condestG = log10(cond(gramB))+1;
+0824         <span class="keyword">if</span> (condestG/condestGmean &gt; 2 &amp;&amp; condestG &gt; 2 )|| condestG &gt; 8
+0825             <span class="comment">%black magic - need to guess the restart</span>
+0826             <span class="keyword">if</span> verbosityLevel
+0827                 fprintf(<span class="string">'Restart on step %i as condestG %5.4e \n'</span>,<span class="keyword">...</span>
+0828                     iterationNumber,condestG);
+0829             <span class="keyword">end</span>
+0830             <span class="keyword">if</span> cond_try == 1 &amp;&amp; ~restart
+0831                 restart=1; <span class="comment">%steepest descent restart for stability</span>
+0832             <span class="keyword">else</span>
+0833                 warning(<span class="string">'BLOPEX:lobpcg:IllConditioning'</span>,<span class="keyword">...</span>
+0834                     <span class="string">'Gramm matrix ill-conditioned: results unpredictable'</span>);
+0835             <span class="keyword">end</span>
+0836         <span class="keyword">else</span>
+0837             <span class="keyword">break</span>
+0838         <span class="keyword">end</span>
+0839         
+0840     <span class="keyword">end</span>
+0841     
+0842     [gramA,gramB]=eig(gramA,gramB);
+0843     lambda=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(gramB(1:blockSize,1:blockSize)); 
+0844     coordX=gramA(:,1:blockSize);
+0845     
+0846     clear gramA gramB
+0847     
+0848     <span class="keyword">if</span> issparse(blockVectorX)
+0849         coordX=sparse(coordX);
+0850     <span class="keyword">end</span>
+0851     
+0852     <span class="keyword">if</span> ~restart
+0853         blockVectorP =  blockVectorR(:,activeMask)*<span class="keyword">...</span>
+0854             coordX(blockSize+1:blockSize+activeRSize,:) + <span class="keyword">...</span>
+0855             blockVectorP(:,activeMask)*<span class="keyword">...</span>
+0856             coordX(blockSize+activeRSize+1:blockSize + <span class="keyword">...</span>
+0857             activeRSize+activePSize,:);
+0858         blockVectorAP = blockVectorAR(:,activeMask)*<span class="keyword">...</span>
+0859             coordX(blockSize+1:blockSize+activeRSize,:) + <span class="keyword">...</span>
+0860             blockVectorAP(:,activeMask)*<span class="keyword">...</span>
+0861             coordX(blockSize+activeRSize+1:blockSize + <span class="keyword">...</span>
+0862             activeRSize+activePSize,:);
+0863         <span class="keyword">if</span> ~isempty(operatorB)
+0864             blockVectorBP = blockVectorBR(:,activeMask)*<span class="keyword">...</span>
+0865                 coordX(blockSize+1:blockSize+activeRSize,:) + <span class="keyword">...</span>
+0866                 blockVectorBP(:,activeMask)*<span class="keyword">...</span>
+0867                 coordX(blockSize+activeRSize+1:blockSize+activeRSize+activePSize,:);
+0868         <span class="keyword">end</span>
+0869     <span class="keyword">else</span> <span class="comment">%use block steepest descent</span>
+0870         blockVectorP =   blockVectorR(:,activeMask)*<span class="keyword">...</span>
+0871             coordX(blockSize+1:blockSize+activeRSize,:);
+0872         blockVectorAP = blockVectorAR(:,activeMask)*<span class="keyword">...</span>
+0873             coordX(blockSize+1:blockSize+activeRSize,:);
+0874         <span class="keyword">if</span> ~isempty(operatorB)
+0875             blockVectorBP = blockVectorBR(:,activeMask)*<span class="keyword">...</span>
+0876                 coordX(blockSize+1:blockSize+activeRSize,:);
+0877         <span class="keyword">end</span>
+0878     <span class="keyword">end</span>
+0879     
+0880     blockVectorX = blockVectorX*coordX(1:blockSize,:) + blockVectorP;
+0881     blockVectorAX=blockVectorAX*coordX(1:blockSize,:) + blockVectorAP;
+0882     <span class="keyword">if</span> ~isempty(operatorB)
+0883         blockVectorBX=blockVectorBX*coordX(1:blockSize,:) + blockVectorBP;
+0884     <span class="keyword">end</span>
+0885     clear coordX
+0886     <span class="comment">%%end RR</span>
+0887     
+0888     lambdaHistory(1:blockSize,iterationNumber+1)=lambda;
+0889     condestGhistory(iterationNumber+1)=condestG;
+0890     
+0891     <span class="keyword">if</span> verbosityLevel
+0892         fprintf(<span class="string">'Iteration %i current block size %i \n'</span>,<span class="keyword">...</span>
+0893             iterationNumber,currentBlockSize);
+0894         fprintf(<span class="string">'Eigenvalues lambda %17.16e \n'</span>,lambda);
+0895         fprintf(<span class="string">'Residual Norms %e \n'</span>,residualNorms');
+0896     <span class="keyword">end</span>
+0897 <span class="keyword">end</span>
+0898 <span class="comment">%The main step of the method was the CG cycle: end</span>
+0899 
+0900 <span class="comment">%Postprocessing</span>
+0901 
+0902 <span class="comment">%Making sure blockVectorX's &quot;exactly&quot; satisfy the blockVectorY constrains??</span>
+0903 
+0904 <span class="comment">%Making sure blockVectorX's are &quot;exactly&quot; othonormalized by final &quot;exact&quot; RR</span>
+0905 <span class="keyword">if</span> isempty(operatorB)
+0906     gramXBX=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorX);
+0907 <span class="keyword">else</span>
+0908     <span class="keyword">if</span> ~ischar(operatorB)
+0909         blockVectorBX = operatorB*blockVectorX;
+0910     <span class="keyword">else</span>
+0911         blockVectorBX = feval(operatorB,blockVectorX);
+0912     <span class="keyword">end</span>
+0913     gramXBX=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorBX);
+0914 <span class="keyword">end</span>
+0915 gramXBX=(gramXBX'+gramXBX)*0.5;
+0916 
+0917 <span class="keyword">if</span> ischar(operatorA)
+0918     blockVectorAX = operatorA*blockVectorX;
+0919 <span class="keyword">else</span>
+0920     blockVectorAX = feval(operatorA,blockVectorX);
+0921 <span class="keyword">end</span>
+0922 gramXAX = <a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(blockVectorX'*blockVectorAX);
+0923 gramXAX = (gramXAX + gramXAX')*0.5;
+0924 
+0925 <span class="comment">%Raileigh-Ritz for blockVectorX, which is already operatorB-orthonormal</span>
+0926 [coordX,gramXBX] = eig(gramXAX,gramXBX);
+0927 lambda=<a href="../../tt2/@qtt_tucker/diag.html" class="code" title="function [qt]=diag(qt)">diag</a>(gramXBX);
+0928 
+0929 <span class="keyword">if</span> issparse(blockVectorX)
+0930     coordX=sparse(coordX);
+0931 <span class="keyword">end</span>
+0932 
+0933 blockVectorX  =   blockVectorX*coordX;
+0934 blockVectorAX  =  blockVectorAX*coordX;
+0935 <span class="keyword">if</span> ~isempty(operatorB)
+0936     blockVectorBX  =  blockVectorBX*coordX;
+0937 <span class="keyword">end</span>
+0938 
+0939 <span class="comment">%Computing all residuals</span>
+0940 <span class="keyword">if</span> isempty(operatorB)
+0941     <span class="keyword">if</span> blockSize &gt; 1
+0942         blockVectorR = blockVectorAX - <span class="keyword">...</span>
+0943             blockVectorX*spdiags(lambda,0,blockSize,blockSize);
+0944     <span class="keyword">else</span>
+0945         blockVectorR = blockVectorAX - blockVectorX*lambda;
+0946         <span class="comment">%to make blockVectorR full when lambda is just a scalar</span>
+0947     <span class="keyword">end</span>
+0948 <span class="keyword">else</span>
+0949     <span class="keyword">if</span> blockSize &gt; 1
+0950         blockVectorR=blockVectorAX - <span class="keyword">...</span>
+0951             blockVectorBX*spdiags(lambda,0,blockSize,blockSize);
+0952     <span class="keyword">else</span>
+0953         blockVectorR = blockVectorAX - blockVectorBX*lambda;
+0954         <span class="comment">%to make blockVectorR full when lambda is just a scalar</span>
+0955     <span class="keyword">end</span>
+0956 <span class="keyword">end</span>
+0957 
+0958 residualNorms=<a href="../../tt2/@qtt_tucker/full.html" class="code" title="function [a] = full(tt, sizes)">full</a>(sqrt(sum(<a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>(blockVectorR).*blockVectorR)'));
+0959 residualNormsHistory(1:blockSize,iterationNumber)=residualNorms;
+0960 
+0961 <span class="keyword">if</span> verbosityLevel
+0962     fprintf(<span class="string">'Final Eigenvalues lambda %17.16e \n'</span>,lambda);
+0963     fprintf(<span class="string">'Final Residual Norms %e \n'</span>,residualNorms');
+0964 <span class="keyword">end</span>
+0965 
+0966 <span class="keyword">if</span> verbosityLevel == 2
+0967     whos
+0968     <span class="keyword">if</span> matlabFlag==1;
+0969         figure(491)
+0970         semilogy((residualNormsHistory(1:blockSize,1:iterationNumber-1))');
+0971         title(<span class="string">'Residuals for Different Eigenpairs'</span>,<span class="string">'fontsize'</span>,16);
+0972         ylabel(<span class="string">'Eucledian norm of residuals'</span>,<span class="string">'fontsize'</span>,16);
+0973         xlabel(<span class="string">'Iteration number'</span>,<span class="string">'fontsize'</span>,16);
+0974         axis tight;
+0975         <span class="comment">%axis([0 maxIterations+1 1e-15 1e3])</span>
+0976         set(gca,<span class="string">'FontSize'</span>,14);
+0977         figure(492);
+0978         semilogy((lambdaHistory(1:blockSize,1:iterationNumber)-<span class="keyword">...</span>
+0979             repmat(lambda,1,iterationNumber))');
+0980         title(<span class="string">'Eigenvalue errors for Different Eigenpairs'</span>,<span class="string">'fontsize'</span>,16);
+0981         ylabel(<span class="string">'Estimated eigenvalue errors'</span>,<span class="string">'fontsize'</span>,16);
+0982         xlabel(<span class="string">'Iteration number'</span>,<span class="string">'fontsize'</span>,16);
+0983         axis tight;
+0984         <span class="comment">%axis([0 maxIterations+1 1e-15 1e3])</span>
+0985         set(gca,<span class="string">'FontSize'</span>,14);
+0986         drawnow;
+0987     <span class="keyword">end</span>
+0988 <span class="keyword">end</span>
+0989 
+0990 varargout(1)={failureFlag};
+0991 varargout(2)={lambdaHistory(1:blockSize,1:iterationNumber)};
+0992 varargout(3)={residualNormsHistory(1:blockSize,1:iterationNumber-1)};
+0993 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

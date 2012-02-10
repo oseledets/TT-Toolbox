@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of wtt</title>
+  <meta name="keywords" content="wtt">
+  <meta name="description" content="Inverse WTT transform with previously computed filters">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">exp</a> &gt; wtt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/exp&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>wtt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Inverse WTT transform with previously computed filters</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [w]=wtt(v,wtt_transform) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Inverse WTT transform with previously computed filters
+   W=IWTT(V,WTT_TRANSFORM) computes the forward WTT tranformation of a 
+   given tensor with filters, stored in the WTT_TRANSFORM structure.
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [w]=wtt_loc(v,u,r,sz)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [w]=wtt(v,wtt_transform)</a>
+0002 <span class="comment">%Inverse WTT transform with previously computed filters</span>
+0003 <span class="comment">%   W=IWTT(V,WTT_TRANSFORM) computes the forward WTT tranformation of a</span>
+0004 <span class="comment">%   given tensor with filters, stored in the WTT_TRANSFORM structure.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0010 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0011 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0014 <span class="comment">%ivan.oseledets@gmail.com</span>
+0015 <span class="comment">%---------------------------</span>
+0016 u=wtt_transform.u;
+0017 r=wtt_transform.rks;
+0018 sz=wtt_transform.sz;
+0019 
+0020 w=<a href="#_sub1" class="code" title="subfunction [w]=wtt_loc(v,u,r,sz)">wtt_loc</a>(v,u,r,sz);
+0021 
+0022 <span class="keyword">return</span>
+0023 <span class="keyword">end</span>
+0024 
+0025 <a name="_sub1" href="#_subfunctions" class="code">function [w]=wtt_loc(v,u,r,sz)</a>
+0026 <span class="keyword">if</span> ( nargin == 1 )
+0027   sz=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(v); <span class="comment">%d=numel(sz);</span>
+0028 <span class="keyword">else</span>
+0029   <span class="comment">%d=numel(sz);</span>
+0030 <span class="keyword">end</span>
+0031   N=numel(v);
+0032   v=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(v,[r(1)*sz(1),N/(r(1)*sz(1))]);
+0033 <span class="keyword">if</span> ( numel(u) == 1 )
+0034     w=u{1}'*v;
+0035     w=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(w,[r(1),N/(r(1))]);
+0036 <span class="keyword">else</span>
+0037   <span class="comment">%Simplest one is recursion</span>
+0038   w=u{1}'*v;
+0039   w0=w(1:r(2),:);
+0040   unew=u(2:numel(u)); rnew=r(2:numel(r)); sznew=[sz(2),sz(3:numel(sz))];
+0041   w0=<a href="#_sub1" class="code" title="subfunction [w]=wtt_loc(v,u,r,sz)">wtt_loc</a>(w0,unew,rnew,sznew);
+0042   w(1:r(2),:)=w0;
+0043   w=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(w,[r(1),N/r(1)]);
+0044 <span class="keyword">end</span>
+0045 <span class="keyword">return</span>
+0046 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

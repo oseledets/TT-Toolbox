@@ -1,8 +1,27 @@
-%Seconds technical function that tries to mimic the skeleton decomposition
-%of the TT-tensor directly using properly computed index sets
-function [tt,ind_left]=tt_crossl(arr,ind_right)
-d=arr{1};
-sz=arr{2};
+function [tt,ind_left]=tt_crossl(d,n,fun,ind_right)
+%One left-to-right sweep of the TT-cross method.
+%   [TT,IND_LEFT]=TT_CROSSL(D,N,FUN,IND_RIGHT) Computes one QR-maxvol sweep
+%   of the TT-cross method. The input is the pair (D,N) that determines the
+%   size of the tensor, FUN is the function handle to evaluate a particular
+%   element of the tensor, i.e., VAL=FUN(IND). To pass parameters, please
+%   use anonymous function handles in MATLAB
+% 
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
+if ( numel(n) == 1 )
+  n=n*ones(d,1);
+end
+sz=n;
 tt=cell(d,1);
 ind_left=cell(d,1); %Computed ind_left
 ind_r=ind_right{1};
@@ -12,11 +31,11 @@ mat=zeros(ncur,r1);
 for i=1:ncur
    for s=1:r1
       ind_f=[i,ind_r(:,s)'];
-      val=my_elem(ind_f,arr);
+      val=fun(ind_f);
       mat(i,s)=val;
    end
 end
-[qs,rs]=qr(mat,0);
+[qs,~]=qr(mat,0);
 ind=maxvol2(qs);
 ind_left{1}=ind;
 mat=qs/qs(ind,:);
@@ -33,7 +52,7 @@ for k=2:d-1
          for s2=1:r2
              for s3=1:r3
                  ind_f=[ind_l(:,s2)',i,ind_r(:,s3)'];
-                 val=my_elem(ind_f,arr);
+                 val=fun(ind_f,arr);
                  core(i,s2,s3)=val;
              end
          end
@@ -52,7 +71,6 @@ for k=2:d-1
         ind_new(:,s)=[ind_old(:,rs)',js];
      end
      ind_left{k}=ind_new;
-     %core=core*inv(core(ind,:)); 
      core=qs/qs(ind,:);
      core=reshape(core,[r2,ncur,rnew]); core=permute(core,[2,1,3]);
    
@@ -65,16 +83,10 @@ mat=zeros(ncur,r);
 for j=1:ncur
     for s=1:r
       ind_f=[ind_l(:,s)',j];
-      val=my_elem(ind_f,arr);
+      val=fun(ind_f,arr);
       mat(j,s)=val;
-      %mat(j,s)=arr1(sub_to_ind(ind_f,sz));
     end
 end
 tt{d}=mat;
-%for k=1:d
-%     res=tt{k}-tt_true{k};
-%    res=res(:);
-%    fprintf('k=%d, approximation error: %e \n',k,norm(res));
-%end
 return
 end

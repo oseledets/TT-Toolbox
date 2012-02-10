@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of conj</title>
+  <meta name="keywords" content="conj">
+  <meta name="description" content="Compute a complex conjugate of TT-tensor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@tt_tensor</a> &gt; conj.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@tt_tensor&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>conj
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Compute a complex conjugate of TT-tensor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [tt1]=conj(tt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Compute a complex conjugate of TT-tensor 
+   [TT1]=CONJ(TT)
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>	Complex conjugate of a TT-matrix</li><li><a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>	Compute a complex conjugate of TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/axpx.html" class="code" title="function [y]=axpx(a,x)">axpx</a>	Matrix-by-vector multiplication with projection onto the tangent space</li><li><a href="../../tt2/@tt_matrix/conj.html" class="code" title="function [b]=conj(a)">conj</a>	Complex conjugate of a TT-matrix</li><li><a href="../../tt2/@tt_matrix/ctranspose.html" class="code" title="function [tt1]=ctranspose(tt)">ctranspose</a>	A=B'</li><li><a href="../../tt2/@tt_matrix/mvk.html" class="code" title="function [y]=mvk(a,x,eps,nswp,z,rmax)">mvk</a>	DMRG fast matrix-by-vector product, Method 1 (less accurate)</li><li><a href="../../tt2/@tt_matrix/mvk2.html" class="code" title="function [y,swp]=mvk2(a,x,eps,nswp,z,rmax,varargin)">mvk2</a>	Two-sided DMRG fast matrix-by-vector product</li><li><a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>	Compute a complex conjugate of TT-tensor</li><li><a href="dot.html" class="code" title="function [p] = dot(tt1,tt2,do_qr)">dot</a>	Dot  product of two TT tensors</li><li><a href="funcrs.html" class="code" title="function [y]=funcrs(tt,fun,eps,y,nswp,varargin)">funcrs</a>	Cross approximation of a function of a TT-tensor, Method 1</li><li><a href="funcrs2.html" class="code" title="function [y]=funcrs2(tt,fun,eps,y,nswp)">funcrs2</a>	Cross approximation of a function of a TT-tensor, Method 2</li><li><a href="../../tt2/core/mvrk.html" class="code" title="function [y]=mvrk(A, x, eps, varargin)">mvrk</a>	Computes matvec in the QTT-Tucker "rake" format</li><li><a href="../../tt2/core/tt_compr2.html" class="code" title="function [tt] = tt_compr2(tt,eps, max_r)">tt_compr2</a>	Tensor rounding in TT1.0 format</li><li><a href="../../tt2/core/tt_mvk2.html" class="code" title="function [y,swp]=tt_mvk2(a,x,eps, max_r, max_swp)">tt_mvk2</a>	Matrix-by-vector product by DMRG/Krylov method</li><li><a href="../../tt2/core/tt_mvk3.html" class="code" title="function [y,swp]=tt_mvk3(W, x, eps, varargin)">tt_mvk3</a>	Two-sided DMRG fast matrix-by-vector product, the best version</li><li><a href="../../tt2/core/tt_wround.html" class="code" title="function [y,swp]=tt_wround(W, x, eps, varargin)">tt_wround</a>	Approximates a vector in the weighted norm using DMRG iterations</li><li><a href="../../tt2/exp/lobpcg.html" class="code" title="function [blockVectorX,lambda,varargout] =lobpcg(blockVectorX,operatorA,varargin)">lobpcg</a>	LOBPCG solves Hermitian partial eigenproblems using preconditioning</li><li><a href="../../tt2/exp/tt_minres_selfprec2.html" class="code" title="function [X]=tt_minres_selfprec2(A,  eps, varargin)">tt_minres_selfprec2</a>	Computation of the approximate TT-matrix inverse using self-prec method</li><li><a href="../../tt2/misc/axpx.html" class="code" title="function [y]=axpx(a,x)">axpx</a>	[y]=AXPX(A,X)</li><li><a href="../../tt2/solve/als_solve_rx.html" class="code" title="function [x]=als_solve_rx(mat, rhs, tol, drx, nswp, addswp)">als_solve_rx</a>	Computes an approximate low-rank solution for 2D case</li><li><a href="../../tt2/solve/dmrg_rake_solve2.html" class="code" title="function [x]=dmrg_rake_solve2(A, y, tol, varargin)">dmrg_rake_solve2</a>	DMRG-type method for the solution of linear systems in QTT-Tucker format</li><li><a href="../../tt2/solve/dmrg_solve2.html" class="code" title="function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)">dmrg_solve2</a>	Solution of linear systems in TT-format via DMRG iteration</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tt1]=conj(tt)</a>
+0002 <span class="comment">%Compute a complex conjugate of TT-tensor</span>
+0003 <span class="comment">%   [TT1]=CONJ(TT)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0009 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0010 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0013 <span class="comment">%ivan.oseledets@gmail.com</span>
+0014 <span class="comment">%---------------------------</span>
+0015 
+0016 tt1=tt;
+0017 tt1.core=<a href="conj.html" class="code" title="function [tt1]=conj(tt)">conj</a>(tt.core);
+0018 <span class="keyword">return</span>
+0019 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,7 +1,20 @@
 function [sval]=sv(tt)
-%[SVAL]=SV(TT)
 %Computes singular values of all unfoldings of a TT-tensor
-%SVAL is a cell array of length d-1 with all singular values
+%   [SVAL]=SV(TT) Computes all nonzero singular values of all unfoldings 
+%    and returns result as a cell array
+%    
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 d=tt.d;
 n=tt.n;
 r=tt.r;

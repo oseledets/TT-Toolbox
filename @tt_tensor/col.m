@@ -1,8 +1,20 @@
 function [y]=col(x, k, varargin)
-%[Y]=COL(X,K)
-%Computes the subcolumns of a 
-%It is useful for block algorithms when r(d+1) is not equal to 1
-%For analogous thing on r(1) see ROW(X,K)
+%Computes the columns of a block TT-tensor 
+%   [Y]=COL(X,K)
+%   It is useful for block algorithms when r(d+1) is not equal to 1
+%   For analogous thing on r(1) see ROW(X,K)
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 d=x.d;
 r=x.r;
 

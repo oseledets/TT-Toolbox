@@ -1,9 +1,20 @@
 function [Hess]=tt_hess(tt, indext, h)
-% function [Hess]=tt_hess(tt, indext, h)
-% Returns the numerical Hessian of the TT 1.0 vector tt computed in the
-% index indext, with the grid size h
-% Note: at least 2 neighbouring indices around indext must be available
-
+%Numerical Hessian in a given point
+%   [HESS]=TT_HESS(TT, INDEXT, H) Computes the numerical Hessian of the
+%   TT-tensor TT computed at INDEXT. The grid size is supposed to be equal
+%   to H
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+tt=core(tt); 
 d = max(size(tt));
 if (max(size(h))==1)
     h = h*ones(d,1);
@@ -38,7 +49,7 @@ for i=1:d
                     curhess{k}=curhess{k}(indext(k),:,:);
                 end;
             end;
-            Hess(i,i)=tt_to_full(curhess);
+            Hess(i,i)=full(tt_tensor(curhess));
         else % Grad_i * Grad_j
 %             corei=tt{i};
 %             ni = size(corei,1); r1i=size(corei,2); r2i=size(corei,3);

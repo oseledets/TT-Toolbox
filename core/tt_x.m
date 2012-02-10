@@ -1,14 +1,14 @@
 function [res]=tt_x(n,varargin)
-%[RES]=TT_X(N)
-%[RES]=TT_X(N,D)
-% Vector with elements 0:N(1)*...*N(D)-1 is transformed into a tensor
-% of size N(1) x N(2) x ... x N(D)
-% This function returns its TT-decomposition with rank 2
-% This function is useful for the computation of the QTT-decomposition
-% of the function y=x
+%Computes X in the QTT-format
+%   [RES]=TT_X(N,D), or [RES]=TT_X(N): Vector with elements 
+%   0:N(1)*...*N(D)-1 is transformed into a tensor of size 
+%   N(1) x N(2) x ... x N(D)
+%   This function returns its TT-decomposition with rank 2
+%   This function is useful for the computation of the QTT-decomposition
+%   of the function y=x
 %
 %
-% TT Toolbox 2.1, 2009-2012
+% TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia

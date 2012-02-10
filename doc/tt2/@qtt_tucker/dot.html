@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dot</title>
+  <meta name="keywords" content="dot">
+  <meta name="description" content="Dot product of two QTT-Tuckers">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">@qtt_tucker</a> &gt; dot.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/@qtt_tucker&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dot
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Dot product of two QTT-Tuckers</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [p] = dot(qt1,qt2, do_qr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Dot product of two QTT-Tuckers
+   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors
+
+   [PR]=DOT(TT1,TT2, DO_QR) if DO_QR==true is specified, perform the 
+   left-to-right QRs of TT1,TT2
+   before the scalar product. It increases the  accuracy in some cases.
+
+ In general, returns a 4D tensor of sizes 
+ r0(tt1), r0(tt2), rd(tt1), rd(tt2)
+ If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>	Dot product of two QTT-Tuckers</li><li><a href="../../tt2/@tt_matrix/dot.html" class="code" title="function [p] = dot(tt1,tt2)">dot</a>	Frobenius dot product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/dot.html" class="code" title="function [p] = dot(tt1,tt2,do_qr)">dot</a>	Dot  product of two TT tensors</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/squeeze.html" class="code" title="function [tt]=squeeze(tt)">squeeze</a>	Removes singleton dimensions from the TT-tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>	Dot product of two QTT-Tuckers</li><li><a href="../../tt2/@tt_matrix/dot.html" class="code" title="function [p] = dot(tt1,tt2)">dot</a>	Frobenius dot product of two TT-matrices</li><li><a href="../../tt2/@tt_matrix/kron2.html" class="code" title="function [tt]=kron2(tt1,tt2)">kron2</a>	Kronecker product of two TT-matrices in non-standard ordering</li><li><a href="../../tt2/@tt_matrix/norm.html" class="code" title="function [nrm] = norm(t,varargin)">norm</a>	Matrix norm of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/erank.html" class="code" title="function [er]=erank(tt)">erank</a>	Effective rank of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/mem.html" class="code" title="function [mm]=mem(tt)">mem</a>	Computes memory for TT-tensor (only for cores)</li><li><a href="../../tt2/@tt_tensor/plus.html" class="code" title="function [a]=plus(b,c)">plus</a>	A=B+C</li><li><a href="../../tt2/@tt_tensor/times.html" class="code" title="function [a]=times(b,c,varargin)">times</a>	A=B.*C</li><li><a href="../../tt2/core/sub_to_ind.html" class="code" title="function [mult]=sub_to_ind(ind,sz1)">sub_to_ind</a>	Converts a multiindex to a linear index</li><li><a href="../../tt2/exp/tt_minres_selfprec2.html" class="code" title="function [X]=tt_minres_selfprec2(A,  eps, varargin)">tt_minres_selfprec2</a>	Computation of the approximate TT-matrix inverse using self-prec method</li><li><a href="../../tt2/misc/lars.html" class="code" title="function [y]=lars(p,ind,mat,rhs,n,d,smin,h,i0,j0)">lars</a>	The dimension is p^2 (thus w</li><li><a href="../../tt2/tests/lars.html" class="code" title="function [y]=lars(p,ind,mat,rhs,n,d,smin,h,i0,j0)">lars</a>	The dimension is p^2 (thus w</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [p] = dot(qt1,qt2, do_qr)</a>
+0002 <span class="comment">%Dot product of two QTT-Tuckers</span>
+0003 <span class="comment">%   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   [PR]=DOT(TT1,TT2, DO_QR) if DO_QR==true is specified, perform the</span>
+0006 <span class="comment">%   left-to-right QRs of TT1,TT2</span>
+0007 <span class="comment">%   before the scalar product. It increases the  accuracy in some cases.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% In general, returns a 4D tensor of sizes</span>
+0010 <span class="comment">% r0(tt1), r0(tt2), rd(tt1), rd(tt2)</span>
+0011 <span class="comment">% If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0017 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0018 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0021 <span class="comment">%ivan.oseledets@gmail.com</span>
+0022 <span class="comment">%---------------------------</span>
+0023 
+0024 
+0025 <span class="keyword">if</span> (nargin&lt;3)||(isempty(do_qr))
+0026     do_qr = false;
+0027 <span class="keyword">end</span>;
+0028 
+0029 d=qt1.dphys;
+0030 <span class="keyword">for</span> i=1:d
+0031     <span class="comment">% dot product of factors gives rt1 times rt2 matrix, to be convolved</span>
+0032     <span class="comment">% between cores</span>
+0033     <span class="comment">% Make it more precise by QRs? &lt;-- already inside @tt_tensor/dot</span>
+0034 <span class="comment">%     [qt1.tuck{i}, rv1]=qr(qt1.tuck{i}, 'lr');</span>
+0035 <span class="comment">%     [qt2.tuck{i}, rv2]=qr(qt2.tuck{i}, 'lr');</span>
+0036 <span class="comment">%     rv1 = eye(qt1.tuck{i}.r(end));</span>
+0037 <span class="comment">%     rv2 = eye(qt2.tuck{i}.r(end));</span>
+0038     Pfac = <a href="../../tt2/@tt_tensor/squeeze.html" class="code" title="function [tt]=squeeze(tt)">squeeze</a>(<a href="dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>(qt1.tuck{i}, qt2.tuck{i}, do_qr)); <span class="comment">% size rt1,rt2</span>
+0039 <span class="comment">%     rt1 = size(rv1, 2); rt2 = size(rv2, 2);</span>
+0040 <span class="comment">%     rt1new = size(rv1,1); rt2new = size(rv2,1);</span>
+0041     <span class="comment">% Now, merge Pfac to the core of qt1</span>
+0042     curcr = qt2.core{i};
+0043     rc1 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(curcr, 1); rt2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(curcr, 2); rc2 = <a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(curcr, 3);
+0044     curcr = permute(curcr, [1, 3, 2]);
+0045     curcr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr, rc1*rc2, rt2);
+0046 <span class="comment">%     curcr = curcr*(rv1.');</span>
+0047     curcr = curcr*(Pfac.'); <span class="comment">% Now, core2 has the tucker ranks of qt1</span>
+0048     curcr = <a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(curcr, rc1, rc2, qt1.core.n(i));
+0049     qt2.core{i} = permute(curcr, [1, 3, 2]);
+0050     
+0051 <span class="comment">%     curcr = qt2.core{i};</span>
+0052 <span class="comment">%     rc1 = size(curcr, 1); rc2 = size(curcr, 3);</span>
+0053 <span class="comment">%     curcr = permute(curcr, [1, 3, 2]);</span>
+0054 <span class="comment">%     curcr = reshape(curcr, rc1*rc2, rt2);</span>
+0055 <span class="comment">%     curcr = curcr*(rv2.');</span>
+0056 <span class="comment">%     curcr = reshape(curcr, rc1, rc2, rt2new);</span>
+0057 <span class="comment">%     qt2.core{i} = permute(curcr, [1, 3, 2]);</span>
+0058 <span class="keyword">end</span>;
+0059 <span class="comment">% Finaly, dot product of cores. It is consistent, since we merged Pfacs</span>
+0060 p = <a href="dot.html" class="code" title="function [p] = dot(qt1,qt2, do_qr)">dot</a>(qt1.core, qt2.core, do_qr);
+0061 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

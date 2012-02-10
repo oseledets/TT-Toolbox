@@ -1,4 +1,4 @@
-function [full]=tt_qtofull(tt,s)
+function [ful]=tt_qtofull(tt,s)
 
 % Returns a tensor _full_, given in a QTT decomposition _tt_,
 % k-th core of which is indexed by
@@ -19,8 +19,9 @@ d=size(tt,1);
 sz=tt_qsize(tt,s);
 
 tt=tt_qreshape(tt,s,prod(sz,2));
-full=tt_to_full(tt);
-full=reshape(full,reshape(sz',1,numel(sz)));
+ful=full(tt_tensor(tt));
+
+ful=reshape(ful,reshape(sz',1,numel(sz)));
 
 prm=zeros(1,s*d);
 for k=1:d
@@ -29,8 +30,8 @@ for k=1:d
 	end
 end
 
-full=ipermute(full,prm);
-full=reshape(full,[prod(sz,1),1]);
+ful=ipermute(ful,prm);
+ful=reshape(ful,[prod(sz,1),1]);
 
 return
 end

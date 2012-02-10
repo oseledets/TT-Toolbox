@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tt_max</title>
+  <meta name="keywords" content="tt_max">
+  <meta name="description" content="Compute the (supposedly) maximal in modulus element in a TT-tensor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_max.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>tt_max
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Compute the (supposedly) maximal in modulus element in a TT-tensor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [mx,ind_full]=tt_max(tt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">Compute the (supposedly) maximal in modulus element in a TT-tensor
+   [MX,IND_FULL]=TT_MAX(TT) Compute element quasi-maximal in modulus in 
+   a TT tensor TT by computing. It return the value MX and the multiindex
+   IND_FULL where this element is located.
+
+
+ TT-Toolbox 2.2, 2009-2012
+
+This is TT Toolbox, written by Ivan Oseledets et al.
+Institute of Numerical Mathematics, Moscow, Russia
+webpage: http://spring.inm.ras.ru/osel
+
+For all questions, bugs and suggestions please mail
+ivan.oseledets@gmail.com
+---------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>	Maximal volume submatrix in an tall matrix</li><li><a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>	Tensor-by-matrix multiplication of three-dimensional tensor</li><li><a href="tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>	Correct conversion of an index to a multiindex</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="tt_min.html" class="code" title="function [res,ind]=tt_min(tt)">tt_min</a>	Computes approximation to the minimal absolute value in a TT-tensor</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mx,ind_full]=tt_max(tt)</a>
+0002 <span class="comment">%Compute the (supposedly) maximal in modulus element in a TT-tensor</span>
+0003 <span class="comment">%   [MX,IND_FULL]=TT_MAX(TT) Compute element quasi-maximal in modulus in</span>
+0004 <span class="comment">%   a TT tensor TT by computing. It return the value MX and the multiindex</span>
+0005 <span class="comment">%   IND_FULL where this element is located.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% TT-Toolbox 2.2, 2009-2012</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%This is TT Toolbox, written by Ivan Oseledets et al.</span>
+0011 <span class="comment">%Institute of Numerical Mathematics, Moscow, Russia</span>
+0012 <span class="comment">%webpage: http://spring.inm.ras.ru/osel</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%For all questions, bugs and suggestions please mail</span>
+0015 <span class="comment">%ivan.oseledets@gmail.com</span>
+0016 <span class="comment">%---------------------------</span>
+0017 
+0018 <span class="comment">%Algorithm: Compute left index set, compute right index set</span>
+0019 <span class="comment">%compute submatrices of a tensors, compute maximal element in them</span>
+0020 tt=<a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>(tt); <span class="comment">%From the TT2 format</span>
+0021 d=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt,1);
+0022 
+0023 <span class="comment">%NEW version</span>
+0024 tt1=tt;
+0025 mat=tt1{1};
+0026 [q,r]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(mat,0);
+0027 tt1{1}=q; 
+0028 <span class="keyword">for</span> i=2:d-1
+0029     core1=tt1{i};
+0030     core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,2,r');
+0031     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1);
+0032     r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2);
+0033     r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0034     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[ncur*r2,r3]);
+0035     [tt1{i},r]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core1,0);
+0036     rnew=min(ncur*r2,r3);
+0037     tt1{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(tt1{i},[ncur,r2,rnew]);
+0038 <span class="keyword">end</span>
+0039 mat=tt1{1};
+0040 ind_left=cell(d,1);
+0041 [ind]=<a href="maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(mat);
+0042 ind_left{1}=ind;
+0043 ind_l=cell(d,1);
+0044 r1=mat(ind,:);
+0045 tt1{1}=mat/r1;
+0046 ind_l{1}=ind;
+0047 <span class="keyword">for</span> i=2:d-1
+0048     core1=tt1{i};
+0049     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1);
+0050     r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2);
+0051     r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0052     core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,2,r1');
+0053     core1=permute(core1,[2,1,3]);
+0054     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[r2*ncur,r3]);
+0055     ind=<a href="maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(core1);
+0056     <span class="comment">%ind(k) varies from 1 to ncur*r2 and we need to</span>
+0057     <span class="comment">%convert it to two-dimensional index</span>
+0058     rnew=min(ncur*r2,r3);
+0059     ind_new=zeros(i,r3);
+0060     ind_old=ind_left{i-1};
+0061      <span class="keyword">for</span> s=1:rnew
+0062         f_in=ind(s);
+0063         w1=<a href="tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([r2,ncur],f_in);
+0064         rs=w1(1); js=w1(2);
+0065         ind_new(:,s)=[ind_old(:,rs)',js];
+0066      <span class="keyword">end</span>
+0067     ind_left{i}=ind_new;
+0068     r1=core1(ind,:);
+0069     ind_l{i}=ind;
+0070     tt1{i}=core1/r1;
+0071     rnew=min(r2*ncur,rnew);
+0072     tt1{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(tt1{i},[r2,ncur,rnew]);
+0073     tt1{i}=permute(tt1{i},[2,1,3]);
+0074 <span class="keyword">end</span>
+0075 <span class="comment">%Compute right-to-left qr &amp; maxvol</span>
+0076 tt2=tt;
+0077 mat=tt2{d};
+0078 [q,rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(mat,0);
+0079 tt2{d}=q;
+0080 <span class="keyword">for</span> i=(d-1):-1:2
+0081     core1=tt2{i};
+0082     core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,3,rv');
+0083     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1);
+0084     r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2);
+0085     r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0086     core1=permute(core1,[1,3,2]);
+0087     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[ncur*r3,r2]);
+0088     [tt2{i},rv]=<a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>(core1,0);
+0089     rnew=min(r2,ncur*r3);
+0090     tt2{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(tt2{i},[ncur,r3,rnew]);
+0091     tt2{i}=permute(tt2{i},[1,3,2]);
+0092 <span class="keyword">end</span>
+0093 tt2{1}=tt2{1}*rv';
+0094 <span class="comment">%keyboard;</span>
+0095 <span class="comment">%Now compute right-to-left maxvol</span>
+0096 <span class="comment">%sbm_tmp=cell(i,1);</span>
+0097 mat=tt2{d};
+0098 ind_right=cell(d,1);
+0099 [ind]=<a href="maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(mat);
+0100 ind_right{d-1}=ind;
+0101 r1=mat(ind,:);
+0102 <span class="comment">%sbm_r=cell(d,1);</span>
+0103 ind_r=cell(d,1);
+0104 tt2{d}=mat/r1;
+0105 ind_r{d-1}=ind;
+0106 <span class="comment">%sbm_tmp{d}=r1;</span>
+0107 <span class="keyword">for</span> i=(d-1):-1:2
+0108     core1=tt2{i};
+0109     ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1);
+0110     r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2);
+0111     r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0112     core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,3,r1');
+0113     core1=permute(core1,[3,1,2]);
+0114     core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(core1,[r3*ncur,r2]);
+0115     [ind]=<a href="maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>(core1); 
+0116     ind_old=ind_right{i};
+0117     rnew=min(ncur*r3,r2);
+0118     ind_new=zeros(d-i+1,rnew);
+0119     <span class="comment">%ncur=sz(k);</span>
+0120      <span class="keyword">for</span> s=1:rnew
+0121         f_in=ind(s);
+0122         w1=<a href="tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([r3,ncur],f_in);
+0123         rs=w1(1); js=w1(2);
+0124         ind_new(:,s)=[js,ind_old(:,rs)'];
+0125      <span class="keyword">end</span>
+0126      ind_right{i-1}=ind_new;
+0127     r1=core1(ind,:);
+0128     <span class="comment">%sbm_r{i-1}=r1;</span>
+0129     ind_r{i-1}=ind;
+0130     <span class="comment">%sbm_tmp{i}=r1;</span>
+0131     tt2{i}=core1/r1;
+0132     rnew=min(ncur*r3,r2);
+0133     tt2{i}=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(tt2{i},[r3,ncur,rnew]);
+0134     tt2{i}=permute(tt2{i},[2,3,1]);
+0135 <span class="comment">%    keyboard;</span>
+0136 <span class="keyword">end</span>
+0137 <span class="comment">%keyboard;</span>
+0138 <span class="comment">%Compute subtensors</span>
+0139 <span class="comment">%A(ind_left{k},ind_right{k})</span>
+0140 <span class="comment">% sbm=cell(d-1,1);</span>
+0141 <span class="comment">% %ind=zeros(d,1);</span>
+0142 <span class="comment">% mx=-1.0;</span>
+0143 <span class="comment">% pos=0;</span>
+0144 <span class="comment">% for k=1:d</span>
+0145 <span class="comment">%    r=size(ind_left{k},2);</span>
+0146 <span class="comment">%    sbm{k}=zeros(r);</span>
+0147 <span class="comment">%    for i=1:r</span>
+0148 <span class="comment">%      for j=1:r</span>
+0149 <span class="comment">%         ind=[ind_left{k}(:,i)',ind_right{k}(:,j)'];</span>
+0150 <span class="comment">%         sbm{k}(i,j)=tt_elem(tt,ind);</span>
+0151 <span class="comment">%         el=tt_elem(tt,ind);</span>
+0152 <span class="comment">%         if ( abs(el) &gt; mx )</span>
+0153 <span class="comment">%            mx=abs(el);</span>
+0154 <span class="comment">%            pos=ind;</span>
+0155 <span class="comment">%         end</span>
+0156 <span class="comment">%      end</span>
+0157 <span class="comment">%    end</span>
+0158 <span class="comment">%    fprintf('k=%d \n',k);</span>
+0159 <span class="comment">% %   keyboard;</span>
+0160 <span class="comment">% end</span>
+0161 <span class="comment">%Compute left &amp; right submatrices in U and V</span>
+0162 sbm_l=cell(d-1,1);
+0163 sbm_r=cell(d-1,1);
+0164 sbm_l{1}=tt{1}(ind_l{1},:);
+0165 <span class="keyword">for</span> k=2:d-1
+0166   core1=tt{k};
+0167   core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,2,sbm_l{k-1}');
+0168   ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1); r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2); r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0169   core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(permute(core1,[2,1,3]),[r2*ncur,r3]);
+0170   sbm_l{k}=core1(ind_l{k},:);
+0171 <span class="keyword">end</span>
+0172 sbm_r{d-1}=tt{d}(ind_r{d-1},:);
+0173 <span class="keyword">for</span> k=d-1:-1:2
+0174   core1 = tt{k};
+0175   core1=<a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>(core1,3,sbm_r{k}');
+0176   ncur=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,1); r2=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,2); r3=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(core1,3);
+0177   core1=<a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>(permute(core1,[3,1,2]),[r3*ncur,r2]);
+0178   sbm_r{k-1}=core1(ind_r{k-1},:);
+0179 <span class="keyword">end</span>
+0180 mx=-1.0;
+0181 ind_full=zeros(1,d-1);
+0182 <span class="keyword">for</span> k=1:d-1
+0183     sbm_new=sbm_l{k}*sbm_r{k}';
+0184     r1=<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(sbm_new,1);
+0185     <span class="comment">%Find position</span>
+0186     sbm_new=abs(sbm_new(:));
+0187     [mx1,is]=max(sbm_new);
+0188     w=<a href="tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>([r1,r1],is);
+0189     <span class="keyword">if</span> ( mx1 &gt; mx )
+0190      ind_full=[ind_left{k}(:,w(1))',ind_right{k}(:,w(2))'];
+0191       mx=mx1;
+0192     <span class="keyword">end</span> 
+0193     <span class="comment">%mx=max(mx,mx1);</span>
+0194 <span class="keyword">end</span>
+0195 <span class="comment">%keyboard;</span>
+0196 
+0197 <span class="keyword">return</span>
+0198 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 08-Feb-2012 18:20:24 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

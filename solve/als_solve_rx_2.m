@@ -1,5 +1,20 @@
 function [x]=als_solve_rx_2(mat, rhs, tol, maxit, x0, drx, nswp)
-% function [x]=als_solve_rx_2(mat, rhs, [tol], [maxit], [x0], [drx], [nswp])
+%Computes an approximate low-rank solution for 2D case (Method 2)
+%   [x]=ALS_SOLVE_RX(MAT, RHS, [TOL], [MAXIT],[X0],[DRX], [NSWP])
+%   Finds a solution to 2D TTM matrix MAT using the ALS to a 2D TT tensor
+%   with rank rx, but the RHS and X are represented as full vectors.
+%
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 nrmf = norm(rhs);
 
