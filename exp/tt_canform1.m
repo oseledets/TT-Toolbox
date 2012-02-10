@@ -141,13 +141,13 @@ for k=d-1:-1:2
 end
 %Finally, compute the core1s (well,interpolation points are interesting
 %also)
-core1_int=cell(d,1);
-core1_int{1}=tt{1}*sbm_r{1}';
-core1_int{d}=tt{d}*sbm_l{d-1}';
+core_int=cell(d,1);
+core_int{1}=tt{1}*sbm_r{1}';
+core_int{d}=tt{d}*sbm_l{d-1}';
 for k=2:d-1
   core1=tt{k}; core1=ten_conv(core1,2,sbm_l{k-1}');
   core1=ten_conv(core1,3,sbm_r{k}');
-  core1_int{k}=core1;
+  core_int{k}=core1;
 end
 return
 end
