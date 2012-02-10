@@ -1,4 +1,4 @@
-function [tt,ind_right]=tt_crossr(arr,ind_left)
+function [tt,ind_right]=tt_crossr(d,n,fun,ind_left)
 %One right-to-left sweep of the TT-cross method.
 %   [TT,IND_RIGHT]=TT_CROSSR(D,N,FUN,IND_LEFT) Computes one QR-maxvol sweep
 %   of the TT-cross method. The input is the pair (D,N) that determines the
@@ -17,10 +17,10 @@ function [tt,ind_right]=tt_crossr(arr,ind_left)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-
-d=arr{1};
-sz=arr{2};
-%arr1=arr(:);
+if ( numel(n) == 1 )
+  n=n*ones(d,1);
+end
+sz=n;
 tt=cell(d,1);
 ind_right=cell(d,1); %Computed ind_right
 ind_l=ind_left{d-1};
@@ -30,8 +30,7 @@ mat=zeros(ncur,r1);
 for j=1:ncur
    for s=1:r1
       ind_f=[ind_l(:,s)',j];
-      %mat(j,s)=arr1(sub_to_ind(ind_f,sz));
-      val=my_elem(ind_f,arr); 
+      val=fun(ind_f); 
       mat(j,s)=val;
    end
 end
@@ -39,7 +38,7 @@ end
 ind=maxvol2(qs);
 ind_right{d-1}=ind;
 %mat=mat*inv(mat(ind,:));
-mat=qs*inv(qs(ind,:));
+mat=qs/qs(ind,:);
 tt{d}=mat;
 
 for k=(d-1):-1:2
@@ -54,9 +53,8 @@ for k=(d-1):-1:2
          for s2=1:r2
              for s3=1:r3
                  ind_f=[ind_l(:,s2)',i,ind_r(:,s3)'];
-                 val=my_elem(ind_f,arr); 
+                 val=fun(ind_f); 
                  core(i,s2,s3)=val;
-                 %core(i,s2,s3)=arr1(sub_to_ind(ind_f,sz));
 
              end
          end
@@ -78,11 +76,8 @@ for k=(d-1):-1:2
         ind_new(:,s)=[js,ind_old(:,rs)'];
      end
      ind_right{k-1}=ind_new;
-     %core=core*inv(core(ind,:)); 
-     core=qs*inv(qs(ind,:));
+     core=qs/(qs(ind,:));
      
-     % core=reshape(core,[r2,ncur,r3]); core=permute(core,[2,1,3]);
-     % core=reshape(core,[ncur,r3,r2]); core=permute(core,[1,3,2]);
      core=reshape(core,[r3,ncur,rnew]); core=permute(core,[2,3,1]);
    
     tt{k}=core;
@@ -94,16 +89,12 @@ mat=zeros(ncur,r);
 for i=1:ncur
     for s=1:r
       ind_f=[i,ind_r(:,s)'];
-      val=my_elem(ind_f,arr);
+      val=fun(ind_f);
       mat(i,s)=val;
-      %mat(i,s)=arr1(sub_to_ind(ind_f,sz));
     end
 end
 tt{1}=mat;
-%for k=1:d
-%     res=tt{k}-tt_true{k};
-%    res=res(:);
-%    fprintf('k=%d, approximation error: %e \n',k,norm(res));
-%end
+
+tt=tt_tensor(tt);
 return
 end

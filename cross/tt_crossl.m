@@ -52,7 +52,7 @@ for k=2:d-1
          for s2=1:r2
              for s3=1:r3
                  ind_f=[ind_l(:,s2)',i,ind_r(:,s3)'];
-                 val=fun(ind_f,arr);
+                 val=fun(ind_f);
                  core(i,s2,s3)=val;
              end
          end
@@ -83,10 +83,11 @@ mat=zeros(ncur,r);
 for j=1:ncur
     for s=1:r
       ind_f=[ind_l(:,s)',j];
-      val=fun(ind_f,arr);
+      val=fun(ind_f);
       mat(j,s)=val;
     end
 end
 tt{d}=mat;
+tt=tt_tensor(tt);
 return
 end
