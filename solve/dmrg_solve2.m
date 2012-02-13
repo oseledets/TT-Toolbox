@@ -316,6 +316,57 @@ for swp=1:nswp
         else
             B=1;
         end;
+        
+        if (strcmp(local_prec, 'jacobi'))&&(rxn1*k1*k2*rxn3>=max_full_size)
+            B = reshape(B, rxn1, rp1, ra1, rxm1);
+            B = reshape(permute(B, [1 4 2 3]), rxn1*rxm1*rp1, ra1);
+            a1 = reshape(permute(A{i-1}, [3 2 1 4]), ra1, m1*n1*ra2);
+            B = B*a1; % size rxn1*rxm1*rp1*m1*n1*ra2
+            B = reshape(B, rxn1,rxm1,rp1,m1,n1,ra2);
+            B = permute(B, [1, 5, 2, 4, 3, 6]);
+            B = reshape(B, rxn1*n1*rxm1*m1, ra2);
+            a2 = permute(A{i}, [3, 1, 2, 4]);
+            a2 = reshape(a2, ra2, n2*m2*ra3);
+            B = B*a2;
+            B = reshape(B, rxn1*n1, rxm1*m1, n2, m2, ra3);
+            B = permute(B, [1, 3, 2, 4, 5]);
+            B = reshape(B, rxn1*n1*n2, rxm1*m1*m2, ra3);
+            
+            B2 = permute(phAold, [1 4 2 3]);
+            B2 = reshape(B2, rxn3*rxm3, ra3);
+            
+            tic;
+            ind = (1:rxn3) + (0:rxn3-1)*rxn3;
+            diagB2 = B2(ind, :);
+            B2 = reshape(B2, rxn3, rxm3, ra3);
+            Bjac = speye(rxn1*n1*n2*rxn3)*0;
+            for k=1:ra3
+                Bjac = Bjac + kron(spdiags(diagB2(:,k), 0, rxn3, rxn3), B(:,:,k));
+            end;
+            for k=1:rxn3
+                curBjac = Bjac((1:rxn1*n1*n1)+(k-1)*(rxn1*n1*n1), (1:rxn1*n1*n1)+(k-1)*(rxn1*n1*n1));
+                Bjac((1:rxn1*n1*n1)+(k-1)*(rxn1*n1*n1), (1:rxn1*n1*n1)+(k-1)*(rxn1*n1*n1)) = inv(curBjac);
+            end;
+            toc;
+            
+            BB = cell(2,1);
+            BB{1} = B;
+            BB{2} = B2;
+            
+            keyboard;
+            
+            tic;
+            sol = gmres(@(v)bfun2(BB, v, rxm1,m1*m2, 1,rxm3,rxn1,k1*k2, 1,rxn3), rhs, nrestart, (tol/(d^dpows(i)))/trunc_to_true, 2, @(v)(Bjac*v));
+            toc;
+            keyboard;
+        end;
+        
+        if (i>2)
+            B = phA{i-2};
+        else
+            B=1;
+        end;        
+        
         B = reshape(B, rxn1, rp1, ra1, rxm1);
         B = reshape(permute(B, [1 4 2 3]), rxn1*rxm1*rp1, ra1);
         a1 = reshape(permute(A{i-1}, [3 2 1 4]), ra1, m1*n1*ra2);
