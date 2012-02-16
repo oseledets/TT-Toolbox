@@ -13,7 +13,8 @@ function [res,sgn] = tt_dot2(tt1,tt2)
 %
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
-%---------------------------d=size(tt1,1);
+%---------------------------
+d=size(tt1,1);
 g0=(tt1{1})'*(tt2{1});
 gd=(tt1{d})'*(tt2{d});
 r1=size(gd,1); r2=size(gd,2);
