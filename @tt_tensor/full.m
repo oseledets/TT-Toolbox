@@ -25,9 +25,9 @@ for i=2:d
   a=a*cr;
 end
 if ( r(1) ~= 1 )
-  a=reshape(a,[r(1),n',r(d+1)]);
+  a=reshape(a,[r(1); n(:);r(d+1)]');
 else
-  a=reshape(a,[n',r(d+1)]);    
+  a=reshape(a,[n(:); r(d+1)]');    
 end
 
 if (nargin>1)&&(~isempty(sizes))

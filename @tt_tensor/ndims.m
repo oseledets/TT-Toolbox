@@ -1,6 +1,6 @@
-function d = ndims(tt)
+function [d] = ndims(tt)
 %Number of dimensions of a tensor
-%   [d]=NDIMS(TT)
+%   [D]=NDIMS(TT)
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -14,5 +14,5 @@ function d = ndims(tt)
 %---------------------------
 
 d=tt.d;
-return
+
 end

@@ -82,7 +82,6 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
         is_can = false;
     end
     if ( ~is_can )  
-        %t = class(t, 'tt_tensor');
        t=tt_tensor;
        t.d  = d;
        t.r  = tt_ranks(tt);
@@ -90,13 +89,11 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
        t.n=tt_size(tt);
        t.core=zeros(tt_mem(tt),1);
        ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
-       %ps=zeros(d+1,1);
        t.core(ps(1):ps(2)-1)=tt{1}(:);
        for i=2:d-1
           cr=tt{i}; cr=permute(cr,[2,1,3]);
           t.core(ps(i):ps(i+1)-1) = cr(:);      
        end
-       %t.ps=ps;
        cr=tt{d}; cr=permute(cr,[2,1]);
        t.core(ps(d):ps(d+1)-1) = cr(:);
        t.ps=ps;

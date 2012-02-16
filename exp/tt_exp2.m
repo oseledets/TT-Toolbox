@@ -16,15 +16,10 @@ function [tt]=tt_exp2(mat,eps,N,rmax)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-%d=size(tt,1);
-%n=size(tt{1},1); %Warning: only equal sizes are valid here
-%e=tt_eye(n,d);
-%xs=tt_random(n*n,d,rmax); 
-%xs=tt_vec_to_mat(xs,n,n);
 if ( nargin == 3) 
   rmax=1000;
 end
-nrm=abs(norm2(mat));
+nrm=abs(norm(mat,2));
 
 n0=floor(max(floor(log2(10*nrm)),0))+1;
 w0=mat*(1.0/2^n0);

@@ -57,7 +57,6 @@ cr=cr(1:pos1); %Truncate storage if required
 pos=cumsum([1;n.*r(1:d).*r(2:d+1)]); 
 core0=cr(pos1-r(d)*n(d)*r(d+1)+1:pos1);
  for i=d:-1:2
-     %core0=core(pos(i):pos(i+1)-1);
      core1=cr(pos(i-1):pos(i)-1); 
      core0=reshape(core0,[r(i),n(i)*r(i+1)]);
      core1=reshape(core1,[r(i-1)*n(i-1),r(i)]);
@@ -71,7 +70,6 @@ core0=cr(pos1-r(d)*n(d)*r(d+1)+1:pos1);
      core0=v';
      cr(pos1-r(i)*n(i)*r(i+1)+1:pos1)=core0(:);
      cr(pos1-r(i)*n(i)*r(i+1)-r(i-1)*n(i-1)*r(i)+1:pos1-r(i)*n(i)*r(i+1))=core1(:);
-     %cr=core(pos(i):pos(i+1)-1); 
      pos1=pos1-r(i)*n(i)*r(i+1);
      core0=core1;
  end

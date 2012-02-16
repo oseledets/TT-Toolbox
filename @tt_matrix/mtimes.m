@@ -34,10 +34,6 @@ if (isa(a,'tt_matrix') && isa(b,'double') && numel(b) == 1 || (isa(b,'tt_matrix'
       c.n=b.n; c.m=b.m; c.tt=a*(b.tt);
    end
 elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin == 2)
-    %Put "zaglushka" in it
-    %c=tt_tensor(tt_mv(core(a),core(b)));
-    % return
-     %Replace zaglushka
      c=tt_tensor;
      n=a.n; m=a.m; crm=a.tt.core; ttm=a.tt; psm=ttm.ps; d=ttm.d; rm=ttm.r;
      rv=b.r; crv=b.core; psv=b.ps; 
@@ -84,12 +80,11 @@ elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
     end
     c=c(:); c=reshape(c,[rb,numel(c)/rb]);
     c=c.';
+    
+    
     elseif ( isa(a,'tt_matrix') && isa(b,'tt_matrix') && nargin == 2)
-    %fprintf('matrix-by-matrix not implemented yet \n');
-%     c=tt_matrix(tt_mm(core(a),core(b)));
-    % Time to write something working here
     c = tt_matrix;
-    d = a.tt.d;
+    d = ndims(a.tt);
     n = a.n; m = b.m; p = a.m;
     c.n = n; c.m = m;
     tt = tt_tensor;
