@@ -27,6 +27,8 @@ if ( nargin == 5)
     tt2=tt_reshape(tt1,sz,eps,rl,rr);
 elseif (  nargin == 4 ) 
     tt2=tt_reshape(tt1,sz,eps,rl);
-else
+elseif (nargin==3)
    tt2=tt_reshape(tt1,sz,eps);
+else
+    tt2 = tt_reshape(tt1, sz);
 end

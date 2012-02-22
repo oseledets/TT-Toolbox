@@ -1,4 +1,4 @@
-function [x]=dmrg_solve3(A, y, tol, varargin)
+function [x]=als_adapt_solve(A, y, tol, varargin)
 %Solution of linear systems in TT-format via DMRG iteration
 %   [X,SWEEPS]=DMRG_SOLVE3(A,Y,TOL,OPTIONS) Attempts to solve the linear
 %   system A*X = Y with accuracy/residual TOL using the two-sided DMRG iteration.
@@ -65,7 +65,7 @@ local_solver = 'gmres';
 % local_solver = 'pcg';
 
 verb=1;
-kickrank = 2;
+kickrank = 5;
 x=[];
 block_order = [];
 
@@ -123,7 +123,7 @@ if (isempty(x))
 end;
 
 if (isempty(block_order))
-    block_order = [+(d-1), -(d-1)];
+    block_order = [+(d), -(d)];
 end;
 
 ry = y.r;
@@ -180,44 +180,36 @@ dir = sign(cur_order(order_index));
 % DMRG sweeps
 while (swp<=nswp)
     % Extract elements - matrix
-    Phi1 = phia{i}; Phi2 = phia{i+2};
-    A1 = A{i}; A2 = A{i+1};
+    Phi1 = phia{i}; Phi2 = phia{i+1};
+    A1 = A{i};
     % RHS
     rhs = phiy{i};
     rhs = rhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
     rhs = reshape(rhs, rx(i)*n(i), ry(i+1));
-    rhs = rhs*reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
-    rhs = reshape(rhs, rx(i)*n(i)*n(i+1), ry(i+2));
-    rhs = rhs*(phiy{i+2}.');
-    rhs = reshape(rhs, rx(i)*n(i)*n(i+1)*rx(i+2),1);
+    rhs = rhs*(phiy{i+1}.');
+    rhs = reshape(rhs, rx(i)*n(i)*rx(i+1),1);
     norm_rhs = norm(rhs);
     % sol_prev
-    sol_prev = reshape(x{i}, rx(i)*n(i), rx(i+1));
-    sol_prev = sol_prev*reshape(x{i+1}, rx(i+1), n(i+1)*rx(i+2));
-    sol_prev = reshape(sol_prev, rx(i)*n(i)*n(i+1)*rx(i+2),1);
+    sol_prev = reshape(x{i}, rx(i)*n(i)*rx(i+1), 1);
     
     real_tol = (tol/(d^dpows(i)))/resid_damp;
     if (last_sweep)
         real_tol = (tol/sqrt(d))/resid_damp;
     end;
     
-    if (rx(i)*n(i)*n(i+1)*rx(i+2)<max_full_size) % Full solution
-        %      |     |    |     |
-        % B = Phi1 - A1 - A2 - Phi2
-        %      |     |    |     |
+    if (rx(i)*n(i)*rx(i+1)<max_full_size) % Full solution
+        %      |     |    |
+        % B = Phi1 - A1 - Phi2
+        %      |     |    |
         B = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
         B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
         B = reshape(B, rx(i), rx(i), n(i), n(i), ra(i+1));
         B = permute(B, [1, 3, 2, 4, 5]);
         B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
-        B = B*reshape(A2, ra(i+1), n(i+1)*n(i+1)*ra(i+2));
-        B = reshape(B, rx(i)*n(i), rx(i)*n(i), n(i+1), n(i+1), ra(i+2));
-        B = permute(B, [1, 3, 2, 4, 5]);
-        B = reshape(B, rx(i)*n(i)*n(i+1)*rx(i)*n(i)*n(i+1), ra(i+2));
-        B = B*reshape(permute(Phi2, [2, 1, 3]), ra(i+2), rx(i+2)*rx(i+2));
-        B = reshape(B, rx(i)*n(i)*n(i+1), rx(i)*n(i)*n(i+1), rx(i+2), rx(i+2));
+        B = B*reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
+        B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
         B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*n(i+1)*rx(i+2), rx(i)*n(i)*n(i+1)*rx(i+2));
+        B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
         if (res_prev>real_tol)
@@ -236,7 +228,7 @@ while (swp<=nswp)
         
     else % Structured solution.
         
-        res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
+        res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
         
         if (res_prev>real_tol)
             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel'))&&(~last_sweep)
@@ -290,35 +282,31 @@ while (swp<=nswp)
 %                     
 %                 else
                     
-                    jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+2), rx(i+2)*rx(i+2));
-                    ind = (1:rx(i+2)) + (0:rx(i+2)-1)*rx(i+2); % diagonal elements
+                    jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
+                    ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
                     jacPhi = jacPhi2(:,ind);
                     % The second block, unfortunately, to compute explicitly
                     jacB = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
                     jacB = jacB*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
                     jacB = reshape(jacB, rx(i), rx(i), n(i), n(i), ra(i+1));
                     jacB = permute(jacB, [1, 3, 2, 4, 5]);
-                    jacB = reshape(jacB, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
-                    jacB = jacB*reshape(A2, ra(i+1), n(i+1)*n(i+1)*ra(i+2));
-                    jacB = reshape(jacB, rx(i)*n(i), rx(i)*n(i), n(i+1), n(i+1), ra(i+2));
-                    jacB = permute(jacB, [1, 3, 2, 4, 5]);
-                    jacB = reshape(jacB, rx(i)*n(i)*n(i+1), rx(i)*n(i)*n(i+1), ra(i+2));
+                    jacB = reshape(jacB, rx(i)*n(i), rx(i)*n(i), ra(i+1));
                     
                     % Lower and upper triangular parts for Gauss-Seidel
                     if (strcmp(local_prec, 'seidel'))
                         gsL = Phi2;
-                        for k=1:rx(i+2)
+                        for k=1:rx(i+1)
                             gsL(1:k, :, k)=0;
                         end;
                     end;
                     
-                    jacBlocks = cell(rx(i+2),1);
-                    for k=1:rx(i+2)
-                        jacBlocks{k}=zeros(rx(i)*n(i)*n(i+1), rx(i)*n(i)*n(i+1));
+                    jacBlocks = cell(rx(i+1),1);
+                    for k=1:rx(i+1)
+                        jacBlocks{k}=zeros(rx(i)*n(i), rx(i)*n(i));
                     end;
                     % Sum over ra
-                    for k=1:ra(i+2)
-                        for m=1:rx(i+2)
+                    for k=1:ra(i+1)
+                        for m=1:rx(i+1)
                             jacBlocks{m} = jacBlocks{m} + jacB(:,:,k)*jacPhi(k,m);
                         end;
                     end;
@@ -326,7 +314,7 @@ while (swp<=nswp)
                     
                     jacdir = 1;
                     % Stuff into the prec
-                    for m=1:rx(i+2)
+                    for m=1:rx(i+1)
                         jacBlocks{m} = inv(jacBlocks{m});
                     end;
 %                 end; % of rx(i)<rx(i+2)
@@ -334,14 +322,14 @@ while (swp<=nswp)
                 jacBlocks = [];
             end;
             
-            drhs = rhs - bfun3(Phi1, A1, A2, Phi2, sol_prev);
+            drhs = rhs - bfun3(Phi1, A1, Phi2, sol_prev);
             if (isempty(jacBlocks))
-                mvfun = @(v)bfun3(Phi1, A1, A2, Phi2, v);
+                mvfun = @(v)bfun3(Phi1, A1, Phi2, v);
             else
                 if (strcmp(local_prec, 'seidel'))
-                    mvfun = @(v)bfun3(Phi1, A1, A2, Phi2, gsfun(jacBlocks, gsL, A1, A2, Phi1, v,jacdir));
+                    mvfun = @(v)bfun3(Phi1, A1, Phi2, gsfun(jacBlocks, gsL, A1, Phi1, v,jacdir));
                 else
-                    mvfun = @(v)bfun3(Phi1, A1, A2, Phi2, jacfun(jacBlocks,v,jacdir));
+                    mvfun = @(v)bfun3(Phi1, A1, Phi2, jacfun(jacBlocks,v,jacdir));
                 end;
             end;
             
@@ -355,7 +343,7 @@ while (swp<=nswp)
             
             if (~isempty(jacBlocks))
                 if (strcmp(local_prec, 'seidel'))
-                    dsol = gsfun(jacBlocks, gsL, A1, A2, Phi1,  dsol ,jacdir);
+                    dsol = gsfun(jacBlocks, gsL, A1, Phi1,  dsol ,jacdir);
                 else
                     dsol = jacfun(jacBlocks,dsol,jacdir);
                 end;
@@ -363,7 +351,7 @@ while (swp<=nswp)
             
             sol = sol_prev + dsol;
             
-            res_new = norm(bfun3(Phi1, A1, A2, Phi2, sol) - rhs)/norm_rhs;
+            res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
             
         else
             sol = sol_prev;
@@ -400,23 +388,27 @@ while (swp<=nswp)
     end;
     
     % Check the residual
-    cPhi1 = cphia{i}; cPhi2 = cphia{i+2};
+    cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
     crhs = cphiy{i};
     crhs = crhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
     crhs = reshape(crhs, n(i), ry(i+1));
-    crhs = crhs*reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
-    crhs = reshape(crhs, n(i)*n(i+1), ry(i+2));
-    crhs = crhs*(cphiy{i+2}.');
-    cAsol = bfun3(cPhi1, A1, A2, cPhi2, sol);
+    crhs = crhs*(cphiy{i+1}.');
+    cAsol = bfun3(cPhi1, A1, cPhi2, sol);
     chkres = norm(cAsol-crhs)/norm(crhs);
     
     
+    chkres = res_prev;
     max_res = max(max_res, chkres);
 %     max_res = max(max_res, res_prev);
     max_iter = max(max_iter, iter);
     
     % Truncation
-    sol = reshape(sol, rx(i)*n(i), n(i+1)*rx(i+2));
+    if (dir>0) % left-to-right
+        sol = reshape(sol, rx(i)*n(i), rx(i+1));
+    else
+        sol = reshape(sol, rx(i), n(i)*rx(i+1));
+    end;
+    
     [u,s,v]=svd(sol, 'econ');
     s = diag(s);
     
@@ -427,10 +419,10 @@ while (swp<=nswp)
         r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
         while (r2-r1>1)
             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-            if (rx(i)*n(i)*n(i+1)*rx(i+2)<max_full_size)
+            if (rx(i)*n(i)*rx(i+1)<max_full_size)
                 res = norm(B*cursol(:)-rhs)/norm_rhs;
             else
-                res = norm(bfun3(Phi1, A1, A2, Phi2, cursol)-rhs)/norm_rhs;
+                res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
             end;
             if (res<max(tol/(d^dpows(i)), res_new*resid_damp))
                 r2 = r;
@@ -442,10 +434,10 @@ while (swp<=nswp)
         % More accurate Linear search
         while (r<=numel(s))
             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-            if (rx(i)*n(i)*n(i+1)*rx(i+2)<max_full_size)
+            if (rx(i)*n(i)*rx(i+1)<max_full_size)
                 res = norm(B*cursol(:)-rhs)/norm_rhs;
             else
-                res = norm(bfun3(Phi1, A1, A2, Phi2, cursol)-rhs)/norm_rhs;
+                res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
             end;
             if (res<max(tol/(d^dpows(i)), res_new*resid_damp))
                 break;
@@ -462,8 +454,8 @@ while (swp<=nswp)
     if (verb>1)
         fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), chkres, iter, r);
     end;
-    
-    if (dir>0) % left-to-right
+        
+    if (dir>0)&&(i<d) % left-to-right, kickrank, etc
         u = u(:,1:r);
         v = v(:,1:r)*diag(s(1:r));
         % kick
@@ -471,12 +463,15 @@ while (swp<=nswp)
             u = reort(u, randn(rx(i)*n(i), kickrank));
         end;
         radd = size(u, 2)-r;
-        v = [v, zeros(n(i+1)*rx(i+2), radd)];
+        v = [v, zeros(rx(i+1), radd)];
+        cr2 = x{i+1};
+        cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
+        v = (v')*cr2; % size r+radd, n2, r3
         
         r = r+radd;
         
         u = reshape(u, rx(i), n(i), r);
-        v = reshape(v', r, n(i+1), rx(i+2));
+        v = reshape(v, r, n(i+1), rx(i+2));
         
         % Recompute phi. Left ones, so permute them appropriately
         phia{i+1} = compute_next_Phi(phia{i}, u, A{i}, u, 'lr');
@@ -485,34 +480,47 @@ while (swp<=nswp)
         % residual-check
         cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), A{i}, u, 'lr');
         cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], y{i}, 'lr');
-        
-    else % right-to-left
+                
+        % Stuff back
+        rx(i+1) = r;
+        x{i} = u;
+        x{i+1} = v;
+    elseif (dir<0)&&(i>1) % right-to-left
         u = u(:,1:r)*diag(s(1:r));
         v = v(:,1:r);
         % kick
         if (~last_sweep)
-            v = reort(v, randn(n(i+1)*rx(i+2), kickrank));
+            v = reort(v, randn(n(i)*rx(i+1), kickrank));
         end;
         radd = size(v, 2)-r;
-        u = [u, zeros(rx(i)*n(i), radd)];
+        u = [u, zeros(rx(i), radd)];
+        cr2 = x{i-1};
+        cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
+        u = cr2*u;
         
         r = r+radd;
         
-        u = reshape(u, rx(i), n(i), r);
-        v = reshape(v', r, n(i+1), rx(i+2));
+        u = reshape(u, rx(i-1), n(i-1), r);
+        v = reshape(v', r, n(i), rx(i+1));
         
         % Recompute phi. Here are right phis
-        phia{i+1} = compute_next_Phi(phia{i+2}, v, A{i+1}, v, 'rl');
-        phiy{i+1} = compute_next_Phi(phiy{i+2}, v, [], y{i+1}, 'rl');        
+        phia{i} = compute_next_Phi(phia{i+1}, v, A{i}, v, 'rl');
+        phiy{i} = compute_next_Phi(phiy{i+1}, v, [], y{i}, 'rl');        
         % Residual check
-        cphia{i+1} = compute_next_Phi(cphia{i+2}, ones(1,n(i+1)), A{i+1}, v, 'rl');
-        cphiy{i+1} = compute_next_Phi(cphiy{i+2}, ones(1,n(i+1)), [], y{i+1}, 'rl');        
+        cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), A{i}, v, 'rl');
+        cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], y{i}, 'rl');        
+        
+        % Stuff back
+        rx(i) = r;
+        x{i-1} = u;
+        x{i} = v;
+    elseif ((dir>0)&&(i==d))||((dir<0)&&(i==1))
+        % Just stuff back the last core
+        sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+        sol = reshape(sol, rx(i), n(i), rx(i+1));
+        x{i} = sol;
     end;
     
-    % Stuff back
-    rx(i+1) = r;
-    x{i} = u;
-    x{i+1} = v;
     
     i = i+dir;
     
@@ -529,11 +537,7 @@ while (swp<=nswp)
         if (last_sweep)
             break;
         end;
-        
-        if (order_index>numel(cur_order)) % New global sweep
-            cur_order = block_order;
-            order_index = 1;
-            %residue
+
             if (strcmp(trunc_norm, 'fro'))
                 if (max_dx<tol)
                     last_sweep=true;
@@ -542,7 +546,12 @@ while (swp<=nswp)
                 if (max_res<tol)
                     last_sweep=true;
                 end;
-            end;
+            end;        
+        
+        if (order_index>numel(cur_order)) % New global sweep
+            cur_order = block_order;
+            order_index = 1;
+            %residue
             if (last_sweep)
                 cur_order = d-1;
             end;
@@ -608,40 +617,33 @@ end
 end
 
 
-function [y]=bfun3(Phi1,B1,B2,Phi2, x)
-% Computes (Phi1 * B1 * B2 * Phi2)*x
+function [y]=bfun3(Phi1,B1,Phi2, x)
+% Computes (Phi1 * B1 * Phi2)*x
 % Phi1 is of sizes ry1, rB1, rx1
 % B1 is of sizes rB1, k1, m1, rB2
-% B2 is of sizes rB2, k2, m2, rB3
-% Phi2 is of sizes ry3, rB3, rx3
-ry1 = size(Phi1,1); ry3 = size(Phi2,1);
-rx1 = size(Phi1,3); rx3 = size(Phi2,3);
-rb1=size(B1,1); rb2=size(B1,4); rb3 = size(B2, 4);
-m1 = size(B1,3); m2 = size(B2,3);
-k1 = size(B1,2); k2 = size(B2,2);
+% Phi2 is of sizes ry2, rB2, rx2
+ry1 = size(Phi1,1); ry2 = size(Phi2,1);
+rx1 = size(Phi1,3); rx2 = size(Phi2,3);
+rb1=size(B1,1); rb2=size(B1,4); 
+m1 = size(B1,3);
+k1 = size(B1,2);
 
-y = reshape(x, rx1, m1*m2*rx3);
+y = reshape(x, rx1, m1*rx2);
 Phi1 = reshape(Phi1, ry1*rb1, rx1);
-y = Phi1*y; % size ry1*rb1,m1*m2*rx3 % cplx rb*rx^3*m^2
-y = reshape(y, ry1, rb1*m1, m2, rx3);
-y = permute(y, [2, 1, 3, 4]);
-y = reshape(y, rb1*m1, ry1*m2*rx3);
+y = Phi1*y; % size ry1*rb1,m1*rx2 % cplx rb*rx^3*m^2
+y = reshape(y, ry1, rb1*m1, rx2);
+y = permute(y, [2, 1, 3]);
+y = reshape(y, rb1*m1, ry1*rx2);
 B1 = permute(B1, [2, 4, 1, 3]);
 B1 = reshape(B1, k1*rb2, rb1*m1);
-y = B1*y; % size k1*rb2, ry1*m2*rx3 % cplx rb^2*rx^2*n^3
-y = reshape(y, k1, rb2, ry1, m2, rx3);
-y = permute(y, [2, 4, 3, 1, 5]);
-y = reshape(y, rb2*m2, ry1*k1*rx3);
-B2 = permute(B2, [2, 4, 1, 3]);
-B2 = reshape(B2, k2*rb3, rb2*m2);
-y = B2*y; % size k2*rb3, ry1*k1*rx3 % cplx rb^2*rx^2*n^3
-y = reshape(y, k2, rb3, ry1*k1, rx3);
+y = B1*y; % size k1*rb2, ry1*rx2 % cplx rb^2*rx^2*n^3
+y = reshape(y, k1, rb2, ry1, rx2);
 y = permute(y, [2, 4, 3, 1]);
-y = reshape(y, rb3*rx3, ry1*k1*k2);
-Phi2 = reshape(Phi2, ry3, rb3*rx3);
-y = Phi2*y; % size ry3, ry1*k1*k2 % cplx rb*rx^3*n^2
+y = reshape(y, rb2*rx2, ry1*k1);
+Phi2 = reshape(Phi2, ry2, rb2*rx2);
+y = Phi2*y; % size ry2, ry1*k1 % cplx rb*rx^3*n^2
 y = y.';
-y = reshape(y, ry1*k1*k2*ry3, 1);
+y = reshape(y, ry1*k1*ry2, 1);
 end
 
 
@@ -666,7 +668,7 @@ end;
 y = y(:);
 end
 
-function [y] = gsfun(jacs, gsL, A1, A2, Phi_full, x, dir) % Gauss-seidel prec
+function [y] = gsfun(jacs, gsL, A1, Phi_full, x, dir) % Gauss-seidel prec
 m = numel(jacs);
 n = size(jacs{1},1);
 if (dir==1)
@@ -676,7 +678,7 @@ if (dir==1)
     rhs = reshape(rhs, n, m);
     
     for i=1:m
-        yprev = bfun3(Phi_full, A1, A2, gsL(i,:,1:i-1), y(:, 1:i-1)); % L*y^1
+        yprev = bfun3(Phi_full, A1, gsL(i,:,1:i-1), y(:, 1:i-1)); % L*y^1
         y(:,i) = jacs{i}*(rhs(:,i) - yprev);
     end;   
 else
@@ -686,7 +688,7 @@ else
     rhs = reshape(rhs, m, n);
         
     for i=1:m
-        yprev = bfun3(gsL(i,:,1:i-1), A1, A2, Phi_full, y(1:i-1, :)); % L*y^1
+        yprev = bfun3(gsL(i,:,1:i-1), A1, Phi_full, y(1:i-1, :)); % L*y^1
         y(i, :) = (rhs(i, :) - yprev)*jacs{i};
     end;      
 end;

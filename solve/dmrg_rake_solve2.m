@@ -43,6 +43,9 @@ checkrank = 1;
 resid_damp_glob = 1.1;
 resid_damp_loc = 1.1;
 rmax = Inf;
+trunc_norm = 'matrix';
+
+tol2 = tol/100;
 
 x = [];
 
@@ -67,7 +70,9 @@ for i=1:2:length(varargin)-1
         case  'max_full_size'
             max_full_size=varargin{i+1};
         case  'resid_damp'
-            resid_damp_loc=varargin{i+1};            
+            resid_damp_loc=varargin{i+1};       
+        case  'trunc_norm'
+            trunc_norm=varargin{i+1};            
 %         case 'prec_compr'
 %             prec_compr=varargin{i+1};
 %         case 'prec_tol'
@@ -549,7 +554,7 @@ for swp=1:nswp
             % new
             [u,s,v,r,dx_max,res_max]=local_solve(Phi1,a1, a2, Phi2, y1, y2, x1, x2, ...
                 currx(j-1), curn(j-1), curn(j), currx(j+1), curra(j), ...
-                tol/sqrt(L(i))/sqrt(d), res_max, dx_max, resid_damp_loc, ...
+                tol2/sqrt(L(i))/sqrt(d)/2, res_max, dx_max, resid_damp_loc, trunc_norm, ...
                 local_format, max_full_size, nrestart, gmres_iters, verb);
 	    r = min(rmax, r);
 	    u = u(:,1:r); s = s(1:r,1:r); v = v(:,1:r);
@@ -565,7 +570,7 @@ for swp=1:nswp
 %                 Axprev = reshape(Axprev, currx(j-1)*curn(j-1), curn(j)*currx(j+1));
 %                 [unew,snew,vnew]=svd(Axprev, 'econ');
 %                 v = reort(v, vnew(:,1:min(kickrank, size(vnew,2))));
-                v = reort(v, randn(curn(j)*currx(j+1), kickrank));
+                v = reort(v, rand(curn(j)*currx(j+1), kickrank));
             end;
             radd = size(v,2)-r;
             u = [u, zeros(currx(j-1)*curn(j-1), radd)];
@@ -672,7 +677,7 @@ for swp=1:nswp
                 if (verb>1)
                     fprintf('=rake_solve2= swp %d, tuckerrank {%d}, res: %3.3e, r: %d\n', swp, i, res, r);
                 end;
-		r = min(rmax, r);
+                r = min(rmax, r);
                 u = u(:,1:r);
                 v = conj(v(:,1:r));
                 s = s(1:r,1:r);
@@ -682,7 +687,7 @@ for swp=1:nswp
 %                     Axprev = reshape(Axprev, rfx(j,i)*n(j,i), rcx(i)*rcx(i+1));
 %                     [unew,snew,vnew]=svd(Axprev, 'econ');
 %                     u = reort(u, unew(:,1:min(kickrank, size(unew,2))));                
-                    u = reort(u, randn(rfx(j,i)*n(j,i), kickrank));
+                    u = reort(u, rand(rfx(j,i)*n(j,i), kickrank));
                 end;
                 radd = size(u,2)-r;
                 v = [v, zeros(rcx(i)*rcx(i+1), radd)];
@@ -778,7 +783,7 @@ for swp=1:nswp
             % new
             [u,s,v,r,dx_max,res_max]=local_solve(Phi1, a1, a2, Phi2, y1, y2, x1, x2, ...
                 rx1, rtx, rtx2, rx3, ra2, ...
-                tol/sqrt(d), res_max, dx_max, resid_damp_loc,...
+                tol2/sqrt(d)/2, res_max, dx_max, resid_damp_loc, trunc_norm, ...
                 local_format, max_full_size, nrestart, gmres_iters, verb);
             % old
 %             [u,s,v,r,dx_max,res_max]=local_solve(a1, a2, y1, y2, x1, x2, ...
@@ -806,7 +811,7 @@ for swp=1:nswp
 %                 Axprev = reshape(Axprev, rx1*rtx, rtx2*rx3);
 %                 [unew,snew,vnew]=svd(Axprev, 'econ');    
 %                 u = reort(u, unew(:,1:min(kickrank, size(unew,2))));                
-                u = reort(u, randn(rx1*rtx, kickrank));
+                u = reort(u, rand(rx1*rtx, kickrank));
             end;
             radd = size(u,2)-r;
             v = [v, zeros(rtx2*rx3, radd)];
@@ -890,10 +895,14 @@ for swp=1:nswp
     if (last_sweep)
         break;
     end;
-    if (chk_res_max<tol)||(swp==nswp-1)
-%      if (res_max<tol*resid_damp_glob)||(swp==nswp-1)
-%          last_sweep = true;
-        break;
+    if (strcmp(trunc_norm, 'fro'))
+        if (dx_max<tol)||(swp==nswp-1)
+            break;
+        end;
+    else
+        if (chk_res_max<tol)||(swp==nswp-1)
+            break;
+        end;
     end;
 end;
 
@@ -1049,7 +1058,7 @@ end
 % new
 function [u,s,v,r,dx_max,res_max]=local_solve(Phi1,a1, a2, Phi2, y1, y2, x1, x2, ...
     rx1, n1, n2, rx3, ra2, ...
-    real_tol, res_max, dx_max,  resid_damp, ...
+    real_tol, res_max, dx_max,  resid_damp, trunc_norm, ...
     local_format, max_full_size, nrestart, gmres_iters, verb)
 
 if (strcmp(local_format, 'full'))
@@ -1083,20 +1092,37 @@ if (strcmp(local_format, 'full'))
 %         B = permute(B, [1, 3, 2, 4]);
 
         B = reshape(B, rx1*n1*n2*rx3, rx1*n1*n2*rx3);
-         sol = (B'*B) \ (B'*rhs);
-%          sol = B \ rhs;
-         
-         % If the direct solution sucked
-        [sol,flg]=gmres(B, rhs, ...
-            nrestart, real_tol/resid_damp, gmres_iters, [], [], sol);
-        if (flg>0)
-            fprintf('--warn-- gmres did not converge\n');
-        end;         
+%         nB = norm(B, 'fro');
+%         B = B/nB;
+%         rhs = rhs/nB;
+%          sol = (B'*B+1e-15*eye(size(B))) \ (B'*rhs);
+%          
+%          B = B*nB;
+%          rhs = rhs*nB;
+         sol = B \ rhs;
+               
         
 %          sol = (B'*B + 1e-16*norm(B'*B, 'fro')) \ (B'*rhs);
 %         sol = pinv(B)*rhs;
+        [sol,flg]=gmres(B, rhs, ...
+            nrestart, real_tol/resid_damp, gmres_iters, [], [], sol);
+
         res_true = norm(B*sol-rhs)/normy;
         res_prev = norm(B*sol_prev-rhs)/normy;
+        
+%         if (res_true/res_prev>1)&&(res_true>real_tol)
+% %             If the direct solution sucked
+%             [sol,flg]=gmres(B, rhs, ...
+%                 nrestart, real_tol/resid_damp, gmres_iters, [], [], sol_prev);
+% %             sol = sol_prev;
+%             res_true = norm(B*sol-rhs)/normy;
+%         else
+%             flg = 0;
+%         end;
+        
+        if (flg>0)
+            fprintf('--warn-- gmres did not converge\n');
+        end;         
     else
         B = cell(2,1);
         B{1} = a1;
@@ -1142,39 +1168,43 @@ if (strcmp(local_format, 'full'))
     sol = reshape(sol, rx1*n1, n2*rx3);
     [u,s,v]=svd(sol, 'econ');
     s = diag(s);
-    r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
-    while (r2-r1>1)
-        cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-        if (rx1*n1*n2*rx3<max_full_size)
-            res = norm(B*cursol(:)-rhs)/normy;
-        else
-            % old
-%             res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
-            % new
-            res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
+    if (strcmp(trunc_norm, 'fro'))
+        r = my_chop2(s, norm(s)*max(real_tol, res_true*resid_damp));
+    else
+        r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
+        while (r2-r1>1)
+            cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+            if (rx1*n1*n2*rx3<max_full_size)
+                res = norm(B*cursol(:)-rhs)/normy;
+            else
+                % old
+                %             res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+                % new
+                res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
+            end;
+            if (res<max(real_tol, res_true*resid_damp))
+                r2 = r;
+            else
+                r1 = r;
+            end;
+            r = round((r1+r2)/2);
         end;
-        if (res<max(real_tol, res_true*resid_damp))
-            r2 = r;
-        else
-            r1 = r;
+        %     r = 1;
+        while (r<=numel(s))
+            cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+            if (rx1*n1*n2*rx3<max_full_size)
+                res = norm(B*cursol(:)-rhs)/normy;
+            else
+                % old
+                %             res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
+                % new
+                res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
+            end;
+            if (res<max(real_tol, res_true*resid_damp))
+                break;
+            end;
+            r = r+1;
         end;
-        r = round((r1+r2)/2);
-    end;
-%     r = 1;
-    while (r<=numel(s))
-        cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-        if (rx1*n1*n2*rx3<max_full_size)
-            res = norm(B*cursol(:)-rhs)/normy;
-        else
-            % old
-%             res = norm(bfun2(B, cursol, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
-            % new
-            res = norm(bfun3(Phi1, a1, a2, Phi2, cursol)-rhs)/normy;
-        end;
-        if (res<max(real_tol, res_true*resid_damp))
-            break;
-        end;
-        r = r+1;
     end;
     r = min(r, numel(s));
     if (verb>1)
