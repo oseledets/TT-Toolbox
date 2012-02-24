@@ -231,56 +231,52 @@ while (swp<=nswp)
         res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
         
         if (res_prev>real_tol)
-            if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel'))&&(~last_sweep)
+            if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel')) %&&(mod(order_index, 2)==1)   % &&(~last_sweep)
                 % Prepare the Jacobi prec - on maximal rank
-%                 if (rx(i)>rx(i+2))
-%                     jacPhi1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
-%                     ind = (1:rx(i)) + (0:rx(i)-1)*rx(i); % diagonal elements
-%                     jacPhi = jacPhi1(ind,:);
-%                     % The second block, unfortunately, to compute explicitly
-%                     jacB = reshape(A1, ra(i)*n(i)*n(i), ra(i+1));
-%                     jacB = jacB*reshape(A2, ra(i+1), n(i+1)*n(i+1)*ra(i+2));
-%                     jacB = reshape(jacB, ra(i), n(i), n(i), n(i+1), n(i+1), ra(i+2));
-%                     jacB = permute(jacB, [1, 2, 4, 3, 5, 6]);
-%                     jacB = reshape(jacB, ra(i)*n(i)*n(i+1)*n(i)*n(i+1), ra(i+2));
-%                     jacB = jacB*reshape(permute(Phi2, [2, 1, 3]), ra(i+2), rx(i+2)*rx(i+2));
-%                     jacB = reshape(jacB, ra(i), n(i)*n(i+1), n(i)*n(i+1), rx(i+2), rx(i+2));
-%                     jacB = permute(jacB, [2, 4, 3, 5, 1]);
-%                     jacB = reshape(jacB, n(i)*n(i+1)*rx(i+2), n(i)*n(i+1)*rx(i+2), ra(i));
-%                     
-%                     % Lower and upper triangular parts for Gauss-Seidel
-% %                     gsU = Phi1;
-% %                     gsL = Phi1;
-% %                     for k=1:rx(i)
-% % %                         gsU(k:rx(i), :, k)=0;
-% %                         gsL(1:k, :, k)=0;
-% %                     end;
-%                     
-%                     
-%                     jacBlocks = cell(rx(i),1);
-% %                     jacBlocks=zeros(n(i)*n(i+1)*rx(i+2), n(i)*n(i+1)*rx(i+2), rx(i));
+                if (rx(i)>rx(i+1))
+                    jacPhi1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
+                    ind = (1:rx(i)) + (0:rx(i)-1)*rx(i); % diagonal elements
+                    jacPhi = jacPhi1(ind,:);
+                    % The second block, unfortunately, to compute explicitly
+                    jacB = reshape(A1, ra(i)*n(i)*n(i), ra(i+1));
+                    jacB = jacB*reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
+                    jacB = reshape(jacB, ra(i), n(i), n(i), rx(i+1), rx(i+1));
+                    jacB = permute(jacB, [2, 4, 3, 5, 1]);
+                    jacB = reshape(jacB, n(i)*rx(i+1), n(i)*rx(i+1), ra(i));
+                    
+                    % Lower and upper triangular parts for Gauss-Seidel
+%                     gsU = Phi1;
+%                     gsL = Phi1;
 %                     for k=1:rx(i)
-%                         jacBlocks{k}=zeros(n(i)*n(i+1)*rx(i+2), n(i)*n(i+1)*rx(i+2));
+% %                         gsU(k:rx(i), :, k)=0;
+%                         gsL(1:k, :, k)=0;
 %                     end;
-%                     % So stupid preallocation of sparsity
-% %                     jacP = 0*speye(rx(i)*n(i)*n(i+1)*rx(i+2));
-%                     % Sum over ra
-%                     for k=1:ra(i)
-%                         for m=1:rx(i)
-%                             jacBlocks{m} = jacBlocks{m} + jacB(:,:,k)*jacPhi(m,k);
-%                         end;
-%                     end;
-%                     
-%                     jacdir = -1;
-% %                     Stuff into the prec
-%                     for m=1:rx(i)
-% %                         em = [zeros(m-1,1); 1; zeros(rx(i)-m, 1)];
-%                         jacBlocks{m} = inv(jacBlocks{m});
+                    
+                    
+                    jacBlocks = cell(rx(i),1);
+%                     jacBlocks=zeros(n(i)*n(i+1)*rx(i+2), n(i)*n(i+1)*rx(i+2), rx(i));
+                    for k=1:rx(i)
+                        jacBlocks{k}=zeros(n(i)*rx(i+1), n(i)*rx(i+1));
+                    end;
+                    % So stupid preallocation of sparsity
+%                     jacP = 0*speye(rx(i)*n(i)*n(i+1)*rx(i+2));
+                    % Sum over ra
+                    for k=1:ra(i)
+                        for m=1:rx(i)
+                            jacBlocks{m} = jacBlocks{m} + jacB(:,:,k)*jacPhi(m,k);
+                        end;
+                    end;
+                    
+                    jacdir = -1;
+%                     Stuff into the prec
+                    for m=1:rx(i)
+%                         em = [zeros(m-1,1); 1; zeros(rx(i)-m, 1)];
+                        jacBlocks{m} = inv(jacBlocks{m});
 %                         jacBlocks{m} = jacBlocks{m}.';
-% %                         jacP = jacP + kron(jacBlocks{m}, spdiags(em, 0, rx(i), rx(i)));
-%                     end;
-%                     
-%                 else
+%                         jacP = jacP + kron(jacBlocks{m}, spdiags(em, 0, rx(i), rx(i)));
+                    end;
+                    
+                else
                     
                     jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
                     ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
@@ -317,10 +313,33 @@ while (swp<=nswp)
                     for m=1:rx(i+1)
                         jacBlocks{m} = inv(jacBlocks{m});
                     end;
-%                 end; % of rx(i)<rx(i+2)
+                end; % of rx(i)<rx(i+2)
+                
+            elseif (strcmp(local_prec, 'cjacobi')) %&&(mod(order_index, 2)==1)
+                
+                % Jacobi prec on phys mode only
+                jacPhi1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
+                ind = (1:rx(i)) + (0:rx(i)-1)*rx(i); % diagonal elements
+                jacPhi1 = jacPhi1(ind,:);
+                jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
+                ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
+                jacPhi2 = jacPhi2(:,ind);
+                
+                jacBlocks = cell(rx(i), rx(i+1));
+                for k2=1:rx(i+1)
+                    for k1=1:rx(i)
+                        jacBlocks{k1,k2} = jacPhi1(k1,:)*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+                        jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i)*n(i), ra(i+1));
+                        jacBlocks{k1,k2} = jacBlocks{k1,k2}*jacPhi2(:,k2);
+                        jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i), n(i));
+                        jacBlocks{k1,k2} = inv(jacBlocks{k1,k2});
+                    end;
+                end;
+                
             else
                 jacBlocks = [];
             end;
+            
             
             drhs = rhs - bfun3(Phi1, A1, Phi2, sol_prev);
             if (isempty(jacBlocks))
@@ -328,8 +347,10 @@ while (swp<=nswp)
             else
                 if (strcmp(local_prec, 'seidel'))
                     mvfun = @(v)bfun3(Phi1, A1, Phi2, gsfun(jacBlocks, gsL, A1, Phi1, v,jacdir));
-                else
+                elseif (strcmp(local_prec, 'jacobi'))
                     mvfun = @(v)bfun3(Phi1, A1, Phi2, jacfun(jacBlocks,v,jacdir));
+                else
+                    mvfun = @(v)bfun3(Phi1, A1, Phi2, cjacfun(jacBlocks,v,rx(i),rx(i+1)));
                 end;
             end;
             
@@ -344,8 +365,10 @@ while (swp<=nswp)
             if (~isempty(jacBlocks))
                 if (strcmp(local_prec, 'seidel'))
                     dsol = gsfun(jacBlocks, gsL, A1, Phi1,  dsol ,jacdir);
-                else
+                elseif (strcmp(local_prec, 'jacobi'))
                     dsol = jacfun(jacBlocks,dsol,jacdir);
+                else
+                    dsol = cjacfun(jacBlocks,dsol,rx(i),rx(i+1));
                 end;
             end;
             
@@ -458,9 +481,35 @@ while (swp<=nswp)
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
         u = u(:,1:r);
         v = v(:,1:r)*diag(s(1:r));
+        
+        % Smarter kick: low-rank PCA in residual
+        % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
+        leftA = permute(Phi1, [1, 3, 2]);
+        leftA = reshape(leftA, rx(i)*rx(i), ra(i));
+        leftA = leftA*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+        leftA = reshape(leftA, rx(i), rx(i), n(i), n(i), ra(i+1));
+        leftA = permute(leftA, [1, 3, 5, 2, 4]);
+        leftA = reshape(leftA, rx(i)*n(i)*ra(i+1), rx(i)*n(i));
+        lefty = phiy{i};
+        lefty = lefty*reshape(y{i}, ry(i), n(i)*ry(i+1));
+        lefty = reshape(lefty, rx(i)*n(i), ry(i+1));
+        leftresid = leftA*reshape(u*v', rx(i)*n(i), rx(i+1));
+        leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
+        leftresid = [leftresid, -lefty];
+        % The right rank is now ra*rx+rf; Extract kickrank PCAs
+        [uk, sk, vk]=svd(leftresid, 'econ');
+        uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha
+%         
+%         % Residual ~ orthogonal complement to the current basis
+%         proj = uk - u*((u')*uk);
+%         res = norm(proj)/norm(uk);
+%         max_res = max(max_res, res);
+        
+%         uk = randn(rx(i)*n(i), kickrank); % <- old random basis
+        
         % kick
         if (~last_sweep)
-            u = reort(u, randn(rx(i)*n(i), kickrank));
+            u = reort(u, uk);
         end;
         radd = size(u, 2)-r;
         v = [v, zeros(rx(i+1), radd)];
@@ -488,9 +537,36 @@ while (swp<=nswp)
     elseif (dir<0)&&(i>1) % right-to-left
         u = u(:,1:r)*diag(s(1:r));
         v = v(:,1:r);
+        
+        % Smarter kick: low-rank PCA in residual
+        % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
+        rightA = permute(Phi2, [2, 1, 3]);
+        rightA = reshape(rightA, ra(i+1), rx(i+1)*rx(i+1));
+        rightA = reshape(A1, ra(i)*n(i)*n(i), ra(i+1))*rightA;
+        rightA = reshape(rightA, ra(i), n(i), n(i), rx(i+1), rx(i+1));
+        rightA = permute(rightA, [2, 4, 1, 3, 5]);
+        rightA = reshape(rightA, n(i)*rx(i+1)*ra(i), n(i)*rx(i+1));
+        righty = reshape(y{i}, ry(i)*n(i), ry(i+1));
+        righty = righty*(phiy{i+1}.');
+        righty = reshape(righty, ry(i), n(i)*rx(i+1));
+        rightresid = rightA*(reshape(u*v', rx(i), n(i)*rx(i+1)).');
+        rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i)*rx(i));
+        rightresid = [rightresid, -(righty.')];
+        % The right rank is now ra*rx+rf; Extract kickrank PCAs
+        [uk, sk, vk]=svd(rightresid, 'econ');
+        uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha        
+        
+%         % Residual ~ orthogonal complement to the current basis
+%         proj = uk - v*((v')*uk);
+%         res = norm(proj)/norm(uk);
+%         max_res = max(max_res, res);
+        
+        
+%         uk = randn(n(i)*rx(i+1), kickrank); % <- old random
+        
         % kick
         if (~last_sweep)
-            v = reort(v, randn(n(i)*rx(i+1), kickrank));
+            v = reort(v, uk);
         end;
         radd = size(v, 2)-r;
         u = [u, zeros(rx(i), radd)];
@@ -530,6 +606,8 @@ while (swp<=nswp)
     if (cur_order(order_index)==0)
         order_index = order_index+1;
         
+%         max_res = norm(A*x-y)/norm(y);
+        
         if (verb>0)
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
         end;        
@@ -548,6 +626,12 @@ while (swp<=nswp)
                 end;
             end;        
         
+            max_res = 0;
+            max_dx = 0;
+            max_iter = 0;
+            dx_old = dx;
+            
+            
         if (order_index>numel(cur_order)) % New global sweep
             cur_order = block_order;
             order_index = 1;
@@ -555,10 +639,6 @@ while (swp<=nswp)
             if (last_sweep)
                 cur_order = d-1;
             end;
-            max_res = 0;
-            max_dx = 0;
-            max_iter = 0;
-            dx_old = dx;
             swp = swp+1;            
         end;
         
@@ -658,12 +738,12 @@ if (dir==1)
     end;
 else
     y = reshape(x, m, n);
+    y = y.';
     for i=1:m
         %     y(:,i) = jacs(:,:,i) \ y(:,i);
-%         y(:,i) = jacs{i}*y(:,i);
-        y(i,:) = y(i,:)*jacs{i};
+        y(:,i) = jacs{i}*y(:,i);
     end;
-%     y = y.';
+    y = y.';
 end;
 y = y(:);
 end
@@ -692,5 +772,28 @@ else
         y(i, :) = (rhs(i, :) - yprev)*jacs{i};
     end;      
 end;
+y = y(:);
+end
+
+
+function [y] = cjacfun(jacs, x,r1,r2)
+
+n = size(jacs{1},1);
+y = reshape(x, r1, n, r2);
+y = permute(y, [2, 1, 3]);
+% y = reshape(y, n, r1*r2);
+% y = mat2cell(y, n, ones(1,r1*r2));
+% for k=1:r1*r2
+%     y{k} = jacs{k}*y{k};
+% end;
+for k2=1:r2
+    for k1=1:r1
+        y(:,k1,k2) = jacs{k1,k2}*y(:,k1,k2);
+    end;
+end;
+
+% y = cell2mat(y);
+% y = reshape(y, n, r1, r2);
+y = permute(y, [2, 1 ,3]);
 y = y(:);
 end

@@ -1104,8 +1104,9 @@ if (strcmp(local_format, 'full'))
         
 %          sol = (B'*B + 1e-16*norm(B'*B, 'fro')) \ (B'*rhs);
 %         sol = pinv(B)*rhs;
-        [sol,flg]=gmres(B, rhs, ...
-            nrestart, real_tol/resid_damp, gmres_iters, [], [], sol);
+        flg = 0;
+%         [sol,flg]=gmres(B, rhs, ...
+%             nrestart, real_tol/resid_damp, gmres_iters, [], [], sol);
 
         res_true = norm(B*sol-rhs)/normy;
         res_prev = norm(B*sol_prev-rhs)/normy;
