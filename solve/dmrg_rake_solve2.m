@@ -33,19 +33,18 @@ function [x]=dmrg_rake_solve2(A, y, tol, varargin)
 nswp = 20;
 local_format = 'full';
 % local_format = 'tt';
-max_full_size = 1500;
+max_full_size = 2500;
 max_full_size2 = Inf;
 nrestart = 25;
 gmres_iters = 2;
 verb = 1;
 kickrank = 2;
 checkrank = 1;
-resid_damp_glob = 1.1;
-resid_damp_loc = 1.1;
+resid_damp_loc = 1.5;
 rmax = Inf;
 trunc_norm = 'matrix';
 
-tol2 = tol/100;
+tol2 = tol;
 
 x = [];
 
@@ -633,6 +632,9 @@ for swp=1:nswp
                 % rank
                 cr = reshape(cr, rfx(j,i)*n(j,i), rcx(i)*rcx(i+1));
                 [u,s,v]=svd(cr, 'econ');
+                if (strcmp(trunc_norm, 'fro'))
+                    r = my_chop2(diag(s), tol/sqrt(L(i))/sqrt(d)/2*norm(diag(s)));
+                else
                 % Prepare the local matrix and rhs for residue check
                 % new
                 Phi2 = phcA{i+1};
@@ -669,11 +671,13 @@ for swp=1:nswp
 %                     res = norm(bfun2(curA, cursol, rfx(j,i), n(j,i), rcx(i), rcx(i+1), rfx(j,i), n(j,i), rcx(i), rcx(i+1))-rhs)/normy;
                     % new
                     res = norm(bfun3(Phi1, curA1, curA2, Phi2, cursol)-rhs)/normy;
-                    if (res<max(tol/sqrt(L(i)), res_true*2))
+                    if (res<max(tol/sqrt(L(i))/sqrt(d)/2, res_true*resid_damp))
                         break;
                     end;
                     r = r+1;
                 end;
+                end;
+                
                 if (verb>1)
                     fprintf('=rake_solve2= swp %d, tuckerrank {%d}, res: %3.3e, r: %d\n', swp, i, res, r);
                 end;
@@ -897,11 +901,11 @@ for swp=1:nswp
     end;
     if (strcmp(trunc_norm, 'fro'))
         if (dx_max<tol)||(swp==nswp-1)
-            break;
+            last_sweep = true;
         end;
     else
         if (chk_res_max<tol)||(swp==nswp-1)
-            break;
+            last_sweep = true;
         end;
     end;
 end;
@@ -1131,7 +1135,8 @@ if (strcmp(local_format, 'full'))
         % old
 %         res_prev = norm(bfun2(B, sol_prev, rx1, n1, n2, rx3, rx1, n1, n2, rx3)-rhs)/normy;
         % new
-        res_prev = norm(bfun3(Phi1, a1, a2, Phi2, sol_prev)-rhs)/normy;
+        drhs = bfun3(Phi1, a1, a2, Phi2, sol_prev)-rhs;
+        res_prev = norm(drhs)/normy;
 
 %         sol = als_solve_rx_2(B, rhs, real_tol, 10, sol_prev, [], 3);
 %         [sol,flg]=bicgstab(@(v)bfun2(B, v, rx1, n1, n2, rx3, rx1, n1, n2, rx3), rhs, ...
@@ -1140,8 +1145,9 @@ if (strcmp(local_format, 'full'))
 %         [sol,flg]=gmres(@(v)bfun2(B, v, rx1, n1, n2, rx3, rx1, n1, n2, rx3), rhs, ...
 %             nrestart, max(real_tol,res_prev*0.05), gmres_iters, [], [], sol_prev);
         % new
-        [sol,flg]=gmres(@(v)bfun3(Phi1, a1, a2, Phi2, v), rhs, ...
-            nrestart, max(real_tol/resid_damp,res_prev*0), gmres_iters, [], [], sol_prev);
+        [dsol,flg]=gmres(@(v)bfun3(Phi1, a1, a2, Phi2, v), drhs, ...
+            nrestart, min(real_tol/resid_damp/res_prev,1), gmres_iters);
+        sol = sol_prev-dsol;
         if (flg>0)
             fprintf('--warn-- gmres did not converge\n');
         end;

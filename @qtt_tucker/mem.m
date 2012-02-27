@@ -1,6 +1,6 @@
-function [mm]=mem(tt)
-%Computes memory for TT-tensor (only # of data memcells)
-%[MM]=MEM(TT)
+function [mm]=mem(qt)
+%Computes memory for QTT-TUCKER (only # of data memcells)
+%[MM]=MEM(QT)
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -13,6 +13,10 @@ function [mm]=mem(tt)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-mm=dot(tt.n.*tt.r(1:tt.d),tt.r(2:tt.d+1));
-return
+mm = mem(qt.core);
+d = qt.core.d;
+for i=1:d
+    mm = mm+mem(qt.tuck{i});
+end;
+
 end

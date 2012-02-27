@@ -41,9 +41,9 @@ for i=1:d
    core{i}=ten_conv(core{i},2,rm.');
 end
 if (isempty(rmax))
-    core=round(core,eps); 
+    core=round(core,eps/2); 
 else
-    core=round(core,eps,rmax); 
+    core=round(core,eps/2,rmax); 
 end;
 %Round the core --- we know the result comes
 %with rl orthogonality? -< No, we don't
@@ -60,9 +60,9 @@ for i=d:-1:1
    u=u(:,1:r); s=s(1:r); v=v(:,1:r);
    tuck{i}=tuck{i}*(u*diag(s)); 
    if (isempty(rmax))
-       tuck{i}=round(tuck{i},eps/sqrt(d));
+       tuck{i}=round(tuck{i},eps/sqrt(d*2));
    else
-       tuck{i}=round(tuck{i},eps/sqrt(d), rmax);
+       tuck{i}=round(tuck{i},eps/sqrt(d*2), rmax);
    end;
    [tuck{i},rm]=qr(tuck{i},'lr');
    cr=rm*v';

@@ -21,6 +21,17 @@ elseif ( isempty(c) )
  return
 end
 
+% To add a scalar to all elements, as with vectors
+if (isa(b, 'double'))
+    a = (b*tt_ones(c.n))+c;
+    return;
+end;
+if (isa(c, 'double'))
+    a = (c*tt_ones(b.n))+b;
+    return;
+end;
+
+
 if (b.d==1)&&(c.d==1)
     a = b;
     a.core = b.core + c.core;

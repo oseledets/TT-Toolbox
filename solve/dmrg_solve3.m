@@ -44,14 +44,15 @@ function [x]=dmrg_solve3(A, y, tol, varargin)
 max_full_size=2500;
 step_dpow = 0.1; % stepsize for d-power in truncations
 min_dpow = 1; % Minimal d-power for truncation
+step_drank = 1;
 
 resid_damp = 1.5; % Truncation error to true residual treshold
 bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
 
 
-nswp=10;
-local_restart=40;
+nswp=20;
+local_restart=25;
 local_iters=2;
 
 local_prec = '';
@@ -95,6 +96,8 @@ for i=1:2:length(varargin)-1
             step_dpow=varargin{i+1};
         case 'min_dpow'
             min_dpow=varargin{i+1};
+        case 'step_drank'
+            step_drank=varargin{i+1};            
         case 'resid_damp'
             resid_damp = varargin{i+1};
         case 'trunc_norm'
@@ -385,12 +388,12 @@ while (swp<=nswp)
     
     % The new core does not converge - increase rank
     if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>tol)
-        dranks(i)=dranks(i)+1;
+        dranks(i)=dranks(i)+step_drank;
         dpows(i)=dpows(i)+step_dpow;
     end;
     % The new core converges well - try to decrease rank
     if (dx(i)/dx_old(i)<bot_conv)||(dx(i)<tol)
-        dranks(i)=max(dranks(i)-1, 0);
+        dranks(i)=max(dranks(i)-step_drank, 0);
         dpows(i)=max(dpows(i)-step_dpow, min_dpow);
     end;
     
@@ -529,10 +532,7 @@ while (swp<=nswp)
         if (last_sweep)
             break;
         end;
-        
-        if (order_index>numel(cur_order)) % New global sweep
-            cur_order = block_order;
-            order_index = 1;
+
             %residue
             if (strcmp(trunc_norm, 'fro'))
                 if (max_dx<tol)
@@ -543,13 +543,18 @@ while (swp<=nswp)
                     last_sweep=true;
                 end;
             end;
-            if (last_sweep)
-                cur_order = d-1;
-            end;
+        
             max_res = 0;
             max_dx = 0;
             max_iter = 0;
-            dx_old = dx;
+            dx_old = dx;            
+        
+        if (order_index>numel(cur_order)) % New global sweep
+            cur_order = block_order;
+            order_index = 1;
+            if (last_sweep)
+                cur_order = d-1;
+            end;
             swp = swp+1;            
         end;
         
