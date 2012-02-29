@@ -32,6 +32,10 @@ while (reort_flag )
     %Nice vectorization!
     norm_unew=sum(unew.^2,1);
     norm_uadd=sum(uadd.^2,1);
+    if (sum(norm_unew,2)<1e-28*sum(norm_uadd,2))
+        unew = [];
+        break;
+    end;
     reort_flag=~isempty(find(norm_unew <= 0.25*norm_uadd,1));
     [unew,~]=qr(unew,0); %Here it is ok.
     if (reort_flag)

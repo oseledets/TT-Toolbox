@@ -192,10 +192,10 @@ while (swp<=nswp)
     % sol_prev
     sol_prev = reshape(x{i}, rx(i)*n(i)*rx(i+1), 1);
     
-    real_tol = (tol/(d^dpows(i)))/resid_damp;
-    if (last_sweep)
+%     real_tol = (tol/(d^dpows(i)))/resid_damp;
+%     if (last_sweep)
         real_tol = (tol/sqrt(d))/resid_damp;
-    end;
+%     end;
     
     if (rx(i)*n(i)*rx(i+1)<max_full_size) % Full solution
         %      |     |    |
@@ -325,17 +325,28 @@ while (swp<=nswp)
                 ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
                 jacPhi2 = jacPhi2(:,ind);
                 
-                jacBlocks = cell(rx(i), rx(i+1));
+%                 tic;
+%                 jacBlocks = cell(rx(i), rx(i+1));
+                jacBlocks = zeros(n(i),n(i),rx(i),rx(i+1));
+%                 jacBlocks = sparse(rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
                 for k2=1:rx(i+1)
                     for k1=1:rx(i)
-                        jacBlocks{k1,k2} = jacPhi1(k1,:)*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-                        jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i)*n(i), ra(i+1));
-                        jacBlocks{k1,k2} = jacBlocks{k1,k2}*jacPhi2(:,k2);
-                        jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i), n(i));
-                        jacBlocks{k1,k2} = inv(jacBlocks{k1,k2});
+                        curblock = jacPhi1(k1,:)*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+                        curblock = reshape(curblock, n(i)*n(i), ra(i+1));
+                        curblock = curblock*jacPhi2(:,k2);
+                        curblock = reshape(curblock, n(i), n(i));
+                        curblock = inv(curblock);
+                        jacBlocks(:,:,k1,k2)=curblock;
+%                         ind = k1+((1:n(i))-1)*rx(i)+(k2-1)*rx(i)*n(i);
+%                         jacBlocks(ind, ind) = curblock;
+%                         jacBlocks{k1,k2} = jacPhi1(k1,:)*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+%                         jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i)*n(i), ra(i+1));
+%                         jacBlocks{k1,k2} = jacBlocks{k1,k2}*jacPhi2(:,k2);
+%                         jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i), n(i));
+%                         jacBlocks{k1,k2} = inv(jacBlocks{k1,k2});
                     end;
                 end;
-                
+%                 jacgentime = toc
             else
                 jacBlocks = [];
             end;
@@ -351,16 +362,19 @@ while (swp<=nswp)
                     mvfun = @(v)bfun3(Phi1, A1, Phi2, jacfun(jacBlocks,v,jacdir));
                 else
                     mvfun = @(v)bfun3(Phi1, A1, Phi2, cjacfun(jacBlocks,v,rx(i),rx(i+1)));
+%                     mvfun = @(v)bfun3(Phi1, A1, Phi2, jacBlocks*v);
                 end;
             end;
             
             % Run the iterative solution
+%             tic;
             if (strcmp(local_solver, 'gmres'))
                 [dsol,flg,RELRES,iter] = gmres(mvfun, drhs, local_restart, min(real_tol/res_prev,1), local_iters);
                 iter = (iter(1)-1)*local_restart + iter(2);
             else
                 [dsol,flg,RELRES,iter] = pcg(mvfun, drhs, min(real_tol/res_prev,1), local_iters*local_restart);
             end;
+%             soltime = toc
             
             if (~isempty(jacBlocks))
                 if (strcmp(local_prec, 'seidel'))
@@ -369,6 +383,7 @@ while (swp<=nswp)
                     dsol = jacfun(jacBlocks,dsol,jacdir);
                 else
                     dsol = cjacfun(jacBlocks,dsol,rx(i),rx(i+1));
+%                     dsol = jacBlocks*dsol;
                 end;
             end;
             
@@ -395,20 +410,20 @@ while (swp<=nswp)
     max_dx = max(max_dx, dx(i));
     
     % The new core does not converge - increase rank
-    if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>tol)
-        dranks(i)=dranks(i)+1;
-        dpows(i)=dpows(i)+step_dpow;
-    end;
-    % The new core converges well - try to decrease rank
-    if (dx(i)/dx_old(i)<bot_conv)||(dx(i)<tol)
-        dranks(i)=max(dranks(i)-1, 0);
-        dpows(i)=max(dpows(i)-step_dpow, min_dpow);
-    end;
-    
-    if (last_sweep)
-        dpows(i)=0.5;
-        dranks(i)=0;
-    end;
+%     if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>tol)
+%         dranks(i)=dranks(i)+1;
+%         dpows(i)=dpows(i)+step_dpow;
+%     end;
+%     % The new core converges well - try to decrease rank
+%     if (dx(i)/dx_old(i)<bot_conv)||(dx(i)<tol)
+%         dranks(i)=max(dranks(i)-1, 0);
+%         dpows(i)=max(dpows(i)-step_dpow, min_dpow);
+%     end;
+%     
+%     if (last_sweep)
+%         dpows(i)=0.5;
+%         dranks(i)=0;
+%     end;
     
     % Check the residual
     cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
@@ -436,7 +451,7 @@ while (swp<=nswp)
     s = diag(s);
     
     if (strcmp(trunc_norm, 'fro')) % We are happy with L2 truncation (when? but let it be)
-        r = my_chop2(s, max(tol/(d^dpows(i)), res_new*resid_damp)*norm(s));        
+        r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));        
     else
         % Residual trunc; First, bin-search
         r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
@@ -447,7 +462,7 @@ while (swp<=nswp)
             else
                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
             end;
-            if (res<max(tol/(d^dpows(i)), res_new*resid_damp))
+            if (res<max(real_tol, res_new)*resid_damp)
                 r2 = r;
             else
                 r1 = r;
@@ -462,7 +477,7 @@ while (swp<=nswp)
             else
                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
             end;
-            if (res<max(tol/(d^dpows(i)), res_new*resid_damp))
+            if (res<max(real_tol, res_new)*resid_damp)
                 break;
             end;
             r = r+1;
@@ -470,7 +485,7 @@ while (swp<=nswp)
     end;
     
     % Artificial rank increasing
-    r = r+dranks(i);
+%     r = r+dranks(i);
     r = min(r, numel(s));
     r = min(r, rmax);
     
@@ -496,9 +511,13 @@ while (swp<=nswp)
         leftresid = leftA*reshape(u*v', rx(i)*n(i), rx(i+1));
         leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
         leftresid = [leftresid, -lefty];
+        
+%         leftresid = randn(rx(i)*n(i), kickrank);
+        
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
-        [uk, sk, vk]=svd(leftresid, 'econ');
-        uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha
+        uk = uchol(leftresid.', kickrank);
+%         [uk, sk, vk]=svd(leftresid, 'econ');
+%         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha
 %         
 %         % Residual ~ orthogonal complement to the current basis
 %         proj = uk - u*((u')*uk);
@@ -509,6 +528,7 @@ while (swp<=nswp)
         
         % kick
         if (~last_sweep)
+%             [u,rr]=qr([u,uk], 0);
             u = reort(u, uk);
         end;
         radd = size(u, 2)-r;
@@ -552,9 +572,13 @@ while (swp<=nswp)
         rightresid = rightA*(reshape(u*v', rx(i), n(i)*rx(i+1)).');
         rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i)*rx(i));
         rightresid = [rightresid, -(righty.')];
+        
+%         rightresid = randn(n(i)*rx(i+1), kickrank);
+        
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
-        [uk, sk, vk]=svd(rightresid, 'econ');
-        uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha        
+        uk = uchol(rightresid.', kickrank);
+%         [uk, sk, vk]=svd(rightresid, 'econ');
+%         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha        
         
 %         % Residual ~ orthogonal complement to the current basis
 %         proj = uk - v*((v')*uk);
@@ -566,6 +590,7 @@ while (swp<=nswp)
         
         % kick
         if (~last_sweep)
+%             [v,rr]=qr([v,uk], 0);
             v = reort(v, uk);
         end;
         radd = size(v, 2)-r;
@@ -778,7 +803,8 @@ end
 
 function [y] = cjacfun(jacs, x,r1,r2)
 
-n = size(jacs{1},1);
+% n = size(jacs{1},1);
+n = size(jacs,1);
 y = reshape(x, r1, n, r2);
 y = permute(y, [2, 1, 3]);
 % y = reshape(y, n, r1*r2);
@@ -786,14 +812,17 @@ y = permute(y, [2, 1, 3]);
 % for k=1:r1*r2
 %     y{k} = jacs{k}*y{k};
 % end;
-for k2=1:r2
-    for k1=1:r1
-        y(:,k1,k2) = jacs{k1,k2}*y(:,k1,k2);
-    end;
-end;
+% for k2=1:r2
+%     for k1=1:r1
+% %         y(:,k1,k2) = jacs{k1,k2}*y(:,k1,k2);
+%         y(:,k1,k2) = jacs(:,:,k1,k2)*y(:,k1,k2);
+%     end;
+% end;
+
+y = cjacmex(jacs, y(:));
 
 % y = cell2mat(y);
-% y = reshape(y, n, r1, r2);
+y = reshape(y, n, r1, r2);
 y = permute(y, [2, 1 ,3]);
 y = y(:);
 end
