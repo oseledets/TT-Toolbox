@@ -23,28 +23,35 @@ if (size(u,1) == size(u,2) )
   return
 end
 if (size(u,2) + size(uadd,2) >= size(u,1) )
-  uadd=uadd(:,size(u,1)-size(u,2));
+  uadd=uadd(:,1:(size(u,1)-size(u,2)));
 end
 
 mvr=u'*uadd; unew=uadd-u*mvr; 
 reort_flag=true;
-while (reort_flag )
+j=1;
+while (reort_flag && j <= 2)
     %Nice vectorization!
     norm_unew=sum(unew.^2,1);
     norm_uadd=sum(uadd.^2,1);
-    if (sum(norm_unew,2)<1e-28*sum(norm_uadd,2))
-        unew = [];
-        break;
-    end;
+    %if (sum(norm_unew,2)<1e-28*sum(norm_uadd,2))
+    %    unew = [];
+    %    break;
+    %end;
     reort_flag=~isempty(find(norm_unew <= 0.25*norm_uadd,1));
     [unew,~]=qr(unew,0); %Here it is ok.
     if (reort_flag)
         su=u'*unew;
-        uadd=unew;
         unew=unew-u*su;
+        %Kill machine zeros
+        unew(unew==0)=max(1e-308,norm(unew,'fro')*1e-15);
+        j=j+1;
     end
-    
 end
-y=[u,unew];
+if ( reort_flag )
+ fprintf('Reort failed to reort! \n');
+ [y,~]=qr([u,unew]);
+else
+ y=[u,unew];
+%end
 return
 end
