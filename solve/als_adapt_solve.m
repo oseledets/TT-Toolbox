@@ -515,8 +515,10 @@ while (swp<=nswp)
 %         leftresid = randn(rx(i)*n(i), kickrank);
         
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
-        uk = uchol(leftresid.', kickrank);
-%         [uk, sk, vk]=svd(leftresid, 'econ');
+        uk = uchol(leftresid.', kickrank+1);
+        uk = uk(:,end:-1:max(end-kickrank+1,1));        
+%         [uk, s2, v2]=svd(leftresid, 'econ');
+%         u2'*uk
 %         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha
 %         
 %         % Residual ~ orthogonal complement to the current basis
@@ -576,8 +578,10 @@ while (swp<=nswp)
 %         rightresid = randn(n(i)*rx(i+1), kickrank);
         
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
-        uk = uchol(rightresid.', kickrank);
-%         [uk, sk, vk]=svd(rightresid, 'econ');
+        uk = uchol(rightresid.', kickrank+1);
+        uk = uk(:,end:-1:max(end-kickrank+1,1));
+%         [uk, s2, v2]=svd(rightresid, 'econ');
+%         u2'*uk
 %         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha        
         
 %         % Residual ~ orthogonal complement to the current basis

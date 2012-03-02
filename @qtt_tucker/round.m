@@ -41,9 +41,9 @@ for i=1:d
    core{i}=ten_conv(core{i},2,rm.');
 end
 if (isempty(rmax))
-    core=round(core,eps/2); 
+    core=round(core,eps/sqrt(2)); 
 else
-    core=round(core,eps/2,rmax); 
+    core=round(core,eps/sqrt(2),rmax); 
 end;
 %Round the core --- we know the result comes
 %with rl orthogonality? -< No, we don't
@@ -56,7 +56,7 @@ for i=d:-1:1
    cr=permute(cr,[2,1,3]); cr=reshape(cr,n(i),rtt(i)*rtt(i+1));
    [u,s,v]=svd(cr,'econ');
    s=diag(s);
-   r=my_chop2(s,norm(s)*eps);
+   r=my_chop2(s,norm(s)*eps/sqrt(d*2)/sqrt(tuck{i}.d));
    u=u(:,1:r); s=s(1:r); v=v(:,1:r);
    tuck{i}=tuck{i}*(u*diag(s)); 
    if (isempty(rmax))

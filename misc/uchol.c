@@ -1,5 +1,6 @@
 #include "mex.h"
 #include "lapack.h"
+#include "blas.h"
 
 double dCompElem(double *dA, int i, int j, int m)
 {
@@ -20,7 +21,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     long maxi;
     double maxa, maxx;
     double *dx;
-    char jobs = 'V';
+    char jobs;
     char uplo = 'U';
     double *work;
     long lwork;
@@ -40,16 +41,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     lwork = 3*numvec;
     work = (double *)malloc(sizeof(double)*lwork);
 
-    plhs[0] = mxCreateDoubleMatrix(n, numvec, mxREAL);
-    du = mxGetPr(plhs[0]);
+    du = (double *)malloc(sizeof(double)*n*numvec);
+    lam = (double *)malloc(sizeof(double)*numvec);
 
-    if (nlhs>1) {
-        plhs[1] = mxCreateDoubleMatrix(numvec,1, mxREAL);
-        lam = mxGetPr(plhs[1]);
-    }
-    else {
-        lam = (double *)malloc(sizeof(double)*numvec);
-    }
+    for (j=0; j<numvec; j++) lam[j]=0.0;
 
     du2 = (double *)malloc(sizeof(double)*n*numvec);
 
@@ -57,10 +52,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     /* Initial diagonal */
     for (i=0; i<n; i++) {
         ddiag[i] = dCompElem(dA, i, i, m);
-        if (ddiag[i]>maxa) {
-            maxi = i;
-            maxa = ddiag[i];
-        }
+//         if (ddiag[i]>maxa) {
+//             maxi = i;
+//             maxa = ddiag[i];
+//         }
     }
 
     /* Main cycle */
@@ -82,56 +77,81 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             }
         }
         maxa = sqrt(fabs(du[maxi+cnt*n]));
+        if (maxa<1e-300) { // We've got the exact zero matrix
+            break;
+        }
         for (i=0; i<n; i++) {
             du[i+cnt*n] /= maxa;
             ddiag[i] = ddiag[i]-(du[i+cnt*n]*du[i+cnt*n]);
         }
         /* reorth */
-        for (j=0; j<cnt; j++) {
-            dx[j] = 0.0;
-            for (i=0; i<n; i++) {
-                dx[j]+=du[i+j*n]*du[i+cnt*n];
-            }
-        }
-        maxa = 0.0;
-        for (i=0; i<n; i++) {
-            for (j=0; j<cnt; j++) {
-                du[i+cnt*n] -= du[i+j*n]*dx[j];
-            }
-            maxa += du[i+cnt*n]*du[i+cnt*n];
-        }
-        maxa = sqrt(maxa);
-        for (i=0; i<n; i++) {
-            du[i+cnt*n] /= maxa;
-        }
+// 	for (i=0; i<n; i++) du2[i]=du[i+cnt*n];
+	j = cnt+1;
+	dgeqrf_(&n, &j, du, &n, du2, work, &lwork, &i);
+        for (j=0; j<=cnt; j++) dx[j] = du[j+cnt*n];
+	dorgqr_(&n, &j, &j, du, &n, du2, work, &lwork, &i);
+
+// 	for (j=0; j<=cnt; j++) {
+// 	  dx[j]=0.0;
+// 	  for (i=0; i<n; i++) {
+// 	    dx[j] +=du[i+j*n]*du2[i];
+// 	  }
+// 	}
+
+
+//         for (j=0; j<cnt; j++) {
+//             dx[j] = 0.0;
+//             for (i=0; i<n; i++) {
+//                 dx[j]+=du[i+j*n]*du[i+cnt*n];
+//             }
+//         }
+//         maxa = 0.0;
+//         for (i=0; i<n; i++) {
+//             for (j=0; j<cnt; j++) {
+//                 du[i+cnt*n] -= du[i+j*n]*dx[j];
+//             }
+//             maxa += du[i+cnt*n]*du[i+cnt*n];
+//         }
+//         maxa = sqrt(maxa);
+//         for (i=0; i<n; i++) {
+//             du[i+cnt*n] /= maxa;
+//         }
         /* new eig */
-        dx[cnt]=maxa;
-        for (i=0; i<cnt; i++) {
-            for (j=0; j<cnt; j++) {
+//         dx[cnt]=maxa;
+        for (i=0; i<=cnt; i++) {
+            for (j=0; j<=cnt; j++) {
                 if (i==j)
                     dv[j+j*numvec]=lam[j];
                 else
                     dv[i+j*numvec]=0.0;
             }
         }
-        for (j=0; j<=cnt; j++) {
-            dv[j+cnt*numvec]=dx[j]*dx[cnt];
-            dv[cnt+j*numvec]=dx[cnt]*dx[j];
+//         dv[cnt+cnt*numvec]=0.0;
+        for (i=0; i<=cnt; i++) {
+            for (j=0; j<=cnt; j++) {
+                dv[i+j*numvec]+=dx[i]*dx[j];
+//                 dv[i+i*numvec]+=dx[cnt]*dx[j];
+            }
         }
         j=cnt+1;
+        jobs = 'V';
         dsyev_(&jobs, &uplo, &j, dv, &numvec, lam, work, &lwork, &i);
 //         for (j=0; j<=cnt; j++) {
 //             mexPrintf("cnt=%d, lam[%d]=%g\n", cnt, j, lam[j]);
 //         }
         /* update u */
-        for (i=0; i<n; i++) {
+        jobs = 'N';
+        j=cnt+1;
+        work[0]=1.0; work[1]=0.0;
+        dgemm_(&jobs,&jobs,&n,&j,&j,&work[0],du,&n,dv,&numvec,&work[1],du2,&n);
+/*        for (i=0; i<n; i++) {
             for (j=0; j<=cnt; j++) {
                 du2[i+j*n]=0.0;
                 for (maxi=0; maxi<=cnt; maxi++) {
                     du2[i+j*n] += du[i+maxi*n]*dv[maxi+j*numvec];
                 }
             }
-        }
+        }*/
         for (i=0; i<n; i++) {
             for (j=0; j<=cnt; j++) du[i+j*n]=du2[i+j*n];
         }
@@ -139,9 +159,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
     free(ddiag);
-    if (nlhs==0) free(lam);
     free(dx);
     free(dv);
     free(work);
     free(du2);
+
+    plhs[0] = mxCreateDoubleMatrix(n, cnt, mxREAL);
+    du2 = mxGetPr(plhs[0]);
+    for (j=0; j<cnt; j++) {
+        for (i=0; i<n; i++) du2[i+j*n]=du[i+j*n];
+    }
+
+    free(du);
+
+    if (nlhs>1) {
+        plhs[1] = mxCreateDoubleMatrix(cnt,1, mxREAL);
+        dx = mxGetPr(plhs[1]);
+        for (j=0; j<cnt; j++) dx[j]=lam[j];
+    }
+
+    free(lam);
 }
