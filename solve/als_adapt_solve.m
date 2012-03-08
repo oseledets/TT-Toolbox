@@ -45,7 +45,7 @@ max_full_size=2500;
 step_dpow = 0.1; % stepsize for d-power in truncations
 min_dpow = 1; % Minimal d-power for truncation
 
-resid_damp = 1.5; % Truncation error to true residual treshold
+resid_damp = 2; % Truncation error to true residual treshold
 bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
 
@@ -117,6 +117,7 @@ end
 if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1;  end;
 if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
 
+tol2 = tol/2;
 
 if (A.n~=A.m)
     error(' DMRG does not know how to solve rectangular systems!\n Use dmrg_solve3(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
@@ -144,8 +145,8 @@ phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
 % This is for checking the residual via averaging
-cphia = cell(d+1,1); cphia{1}=1; cphia{d+1}=1;
-cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
+% cphia = cell(d+1,1); cphia{1}=1; cphia{d+1}=1;
+% cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
 
 
 % Orthogonalization
@@ -165,8 +166,8 @@ for i=d:-1:2
     phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
     
     % For residual-check
-    cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), crA{i}, cr, 'rl');
-    cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], cry{i}, 'rl');
+%     cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), crA{i}, cr, 'rl');
+%     cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], cry{i}, 'rl');
 end;
 
 
@@ -204,7 +205,7 @@ while (swp<=nswp)
     
 %     real_tol = (tol/(d^dpows(i)))/resid_damp;
 %     if (last_sweep)
-        real_tol = (tol/sqrt(d))/resid_damp;
+        real_tol = (tol2/sqrt(d))/resid_damp;
 %     end;
     
     if (rx(i)*n(i)*rx(i+1)<max_full_size) % Full solution
@@ -405,6 +406,7 @@ while (swp<=nswp)
             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
 
             flg=0;
+            iter = 0;
 %             if (res_new>real_tol); flg=1; end;
             end;
             
@@ -444,17 +446,17 @@ while (swp<=nswp)
 %     end;
     
     % Check the residual
-    cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
-    crhs = cphiy{i};
-    crhs = crhs*reshape(cry{i}, ry(i), n(i)*ry(i+1));
-    crhs = reshape(crhs, n(i), ry(i+1));
-    crhs = crhs*(cphiy{i+1}.');
-    cAsol = bfun3(cPhi1, A1, cPhi2, sol);
-    chkres = norm(cAsol-crhs)/norm(crhs);
+%     cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
+%     crhs = cphiy{i};
+%     crhs = crhs*reshape(cry{i}, ry(i), n(i)*ry(i+1));
+%     crhs = reshape(crhs, n(i), ry(i+1));
+%     crhs = crhs*(cphiy{i+1}.');
+%     cAsol = bfun3(cPhi1, A1, cPhi2, sol);
+%     chkres = norm(cAsol-crhs)/norm(crhs);
     
     
-    chkres = res_prev;
-    max_res = max(max_res, chkres);
+%     chkres = res_prev;
+    max_res = max(max_res, res_prev);
 %     max_res = max(max_res, res_prev);
     max_iter = max(max_iter, iter);
     
@@ -575,8 +577,8 @@ while (swp<=nswp)
         phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
         
         % residual-check
-        cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), crA{i}, u, 'lr');
-        cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], cry{i}, 'lr');
+%         cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), crA{i}, u, 'lr');
+%         cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], cry{i}, 'lr');
                 
         % Stuff back
         rx(i+1) = r;
@@ -647,8 +649,8 @@ while (swp<=nswp)
         phia{i} = compute_next_Phi(phia{i+1}, v, crA{i}, v, 'rl');
         phiy{i} = compute_next_Phi(phiy{i+1}, v, [], cry{i}, 'rl');        
         % Residual check
-        cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), crA{i}, v, 'rl');
-        cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], cry{i}, 'rl');        
+%         cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), crA{i}, v, 'rl');
+%         cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], cry{i}, 'rl');        
         
         % Stuff back
         rx(i) = r;
@@ -693,7 +695,7 @@ while (swp<=nswp)
             max_res = 0;
             max_dx = 0;
             max_iter = 0;
-            dx_old = dx;
+%             dx_old = dx;
             
             
         if (order_index>numel(cur_order)) % New global sweep

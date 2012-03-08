@@ -671,7 +671,7 @@ for swp=1:nswp
 %                     res = norm(bfun2(curA, cursol, rfx(j,i), n(j,i), rcx(i), rcx(i+1), rfx(j,i), n(j,i), rcx(i), rcx(i+1))-rhs)/normy;
                     % new
                     res = norm(bfun3(Phi1, curA1, curA2, Phi2, cursol)-rhs)/normy;
-                    if (res<max(tol/sqrt(L(i))/sqrt(d)/2, res_true*resid_damp))
+                    if (res<max(tol/sqrt(L(i))/sqrt(d)/2, res_true*resid_damp_loc))
                         break;
                     end;
                     r = r+1;
