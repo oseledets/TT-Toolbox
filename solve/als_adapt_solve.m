@@ -55,13 +55,16 @@ local_restart=40;
 local_iters=2;
 
 local_prec = '';
+local_prec_char = 0;
 % local_prec = 'jacobi';
 
 rmax=1000;
 trunc_norm = 'residual';
+trunc_norm_char = 1;
 % trunc_norm = 'fro';
 
 local_solver = 'gmres';
+ismex = true;
 % local_solver = 'pcg';
 
 verb=1;
@@ -74,7 +77,7 @@ for i=1:2:length(varargin)-1
         case 'nswp'
             nswp=varargin{i+1};
         case 'rmax'
-            rmax=lower(varargin{i+1});
+            rmax=varargin{i+1};
         case 'x0'
             x=varargin{i+1};
         case 'verb'
@@ -111,6 +114,9 @@ for i=1:2:length(varargin)-1
     end
 end
 
+if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1;  end;
+if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
+
 
 if (A.n~=A.m)
     error(' DMRG does not know how to solve rectangular systems!\n Use dmrg_solve3(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
@@ -130,6 +136,10 @@ ry = y.r;
 ra = A.r;
 rx = x.r;
 
+cry = core2cell(y);
+crA = core2cell(A);
+crx = core2cell(x);
+
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
@@ -140,23 +150,23 @@ cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
 
 % Orthogonalization
 for i=d:-1:2
-    cr = x{i};
+    cr = crx{i};
     cr = reshape(cr, rx(i), n(i)*rx(i+1));
     [cr, rv]=qr(cr.', 0);
-    cr2 = x{i-1};
+    cr2 = crx{i-1};
     cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
     cr2 = cr2*(rv.');
     rx(i) = size(cr, 2);
     cr = reshape(cr.', rx(i), n(i), rx(i+1));
-    x{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
-    x{i} = cr;
+    crx{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
+    crx{i} = cr;
     
-    phia{i} = compute_next_Phi(phia{i+1}, cr, A{i}, cr, 'rl');
-    phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], y{i}, 'rl');
+    phia{i} = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
+    phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
     
     % For residual-check
-    cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), A{i}, cr, 'rl');
-    cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], y{i}, 'rl');
+    cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), crA{i}, cr, 'rl');
+    cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], cry{i}, 'rl');
 end;
 
 
@@ -181,16 +191,16 @@ dir = sign(cur_order(order_index));
 while (swp<=nswp)
     % Extract elements - matrix
     Phi1 = phia{i}; Phi2 = phia{i+1};
-    A1 = A{i};
+    A1 = crA{i};
     % RHS
     rhs = phiy{i};
-    rhs = rhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
+    rhs = rhs*reshape(cry{i}, ry(i), n(i)*ry(i+1));
     rhs = reshape(rhs, rx(i)*n(i), ry(i+1));
     rhs = rhs*(phiy{i+1}.');
     rhs = reshape(rhs, rx(i)*n(i)*rx(i+1),1);
     norm_rhs = norm(rhs);
     % sol_prev
-    sol_prev = reshape(x{i}, rx(i)*n(i)*rx(i+1), 1);
+    sol_prev = reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1);
     
 %     real_tol = (tol/(d^dpows(i)))/resid_damp;
 %     if (last_sweep)
@@ -231,6 +241,7 @@ while (swp<=nswp)
         res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
         
         if (res_prev>real_tol)
+            if (~ismex)
             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel')) %&&(mod(order_index, 2)==1)   % &&(~last_sweep)
                 % Prepare the Jacobi prec - on maximal rank
                 if (rx(i)>rx(i+1))
@@ -387,10 +398,17 @@ while (swp<=nswp)
                 end;
             end;
             
-            sol = sol_prev + dsol;
+            sol = sol_prev + dsol;            
+            
+            else
+                                
+            sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+
+            flg=0;
+%             if (res_new>real_tol); flg=1; end;
+            end;
             
             res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
-            
         else
             sol = sol_prev;
             res_new = res_prev;
@@ -428,7 +446,7 @@ while (swp<=nswp)
     % Check the residual
     cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
     crhs = cphiy{i};
-    crhs = crhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
+    crhs = crhs*reshape(cry{i}, ry(i), n(i)*ry(i+1));
     crhs = reshape(crhs, n(i), ry(i+1));
     crhs = crhs*(cphiy{i+1}.');
     cAsol = bfun3(cPhi1, A1, cPhi2, sol);
@@ -451,7 +469,8 @@ while (swp<=nswp)
     s = diag(s);
     
     if (strcmp(trunc_norm, 'fro')) % We are happy with L2 truncation (when? but let it be)
-        r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));        
+%         r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));        
+        r = my_chop2(s, real_tol*resid_damp*norm(s));        
     else
         % Residual trunc; First, bin-search
         r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
@@ -506,7 +525,7 @@ while (swp<=nswp)
         leftA = permute(leftA, [1, 3, 5, 2, 4]);
         leftA = reshape(leftA, rx(i)*n(i)*ra(i+1), rx(i)*n(i));
         lefty = phiy{i};
-        lefty = lefty*reshape(y{i}, ry(i), n(i)*ry(i+1));
+        lefty = lefty*reshape(cry{i}, ry(i), n(i)*ry(i+1));
         lefty = reshape(lefty, rx(i)*n(i), ry(i+1));
         leftresid = leftA*reshape(u*v', rx(i)*n(i), rx(i+1));
         leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
@@ -515,6 +534,13 @@ while (swp<=nswp)
 %         leftresid = randn(rx(i)*n(i), kickrank);
         
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
+%         uk = zeros(rx(i)*n(i), min(kickrank, n(i)*rx(i)));
+%         for j=1:min(kickrank, n(i)*rx(i))
+%             uk(:,j) = uchol(leftresid.', 1);
+%             uk(:,1:j) = reort(uk(:,1:(j-1)), uk(:,j));
+%             leftresid = leftA*uk(:,j);
+%             leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1));
+%         end;
         uk = uchol(leftresid.', kickrank+1);
         uk = uk(:,end:-1:max(end-kickrank+1,1));        
 %         [uk, s2, v2]=svd(leftresid, 'econ');
@@ -535,7 +561,7 @@ while (swp<=nswp)
         end;
         radd = size(u, 2)-r;
         v = [v, zeros(rx(i+1), radd)];
-        cr2 = x{i+1};
+        cr2 = crx{i+1};
         cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
         v = (v')*cr2; % size r+radd, n2, r3
         
@@ -545,17 +571,17 @@ while (swp<=nswp)
         v = reshape(v, r, n(i+1), rx(i+2));
         
         % Recompute phi. Left ones, so permute them appropriately
-        phia{i+1} = compute_next_Phi(phia{i}, u, A{i}, u, 'lr');
-        phiy{i+1} = compute_next_Phi(phiy{i}, u, [], y{i}, 'lr');
+        phia{i+1} = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
+        phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
         
         % residual-check
-        cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), A{i}, u, 'lr');
-        cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], y{i}, 'lr');
+        cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), crA{i}, u, 'lr');
+        cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], cry{i}, 'lr');
                 
         % Stuff back
         rx(i+1) = r;
-        x{i} = u;
-        x{i+1} = v;
+        crx{i} = u;
+        crx{i+1} = v;
     elseif (dir<0)&&(i>1) % right-to-left
         u = u(:,1:r)*diag(s(1:r));
         v = v(:,1:r);
@@ -568,7 +594,7 @@ while (swp<=nswp)
         rightA = reshape(rightA, ra(i), n(i), n(i), rx(i+1), rx(i+1));
         rightA = permute(rightA, [2, 4, 1, 3, 5]);
         rightA = reshape(rightA, n(i)*rx(i+1)*ra(i), n(i)*rx(i+1));
-        righty = reshape(y{i}, ry(i)*n(i), ry(i+1));
+        righty = reshape(cry{i}, ry(i)*n(i), ry(i+1));
         righty = righty*(phiy{i+1}.');
         righty = reshape(righty, ry(i), n(i)*rx(i+1));
         rightresid = rightA*(reshape(u*v', rx(i), n(i)*rx(i+1)).');
@@ -578,6 +604,15 @@ while (swp<=nswp)
 %         rightresid = randn(n(i)*rx(i+1), kickrank);
         
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
+%         uk = zeros(n(i)*rx(i+1), min(kickrank, n(i)*rx(i+1)));
+%         for j=1:min(kickrank, n(i)*rx(i+1))
+%             uk(:,j) = uchol(rightresid.', 1);
+%             uk(:,1:j) = reort(uk(:,1:(j-1)), uk(:,j));
+%             rightresid = rightA*uk(:,j);
+%             rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i));
+%         end;
+        
+        
         uk = uchol(rightresid.', kickrank+1);
         uk = uk(:,end:-1:max(end-kickrank+1,1));
 %         [uk, s2, v2]=svd(rightresid, 'econ');
@@ -599,7 +634,7 @@ while (swp<=nswp)
         end;
         radd = size(v, 2)-r;
         u = [u, zeros(rx(i), radd)];
-        cr2 = x{i-1};
+        cr2 = crx{i-1};
         cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
         u = cr2*u;
         
@@ -609,21 +644,21 @@ while (swp<=nswp)
         v = reshape(v', r, n(i), rx(i+1));
         
         % Recompute phi. Here are right phis
-        phia{i} = compute_next_Phi(phia{i+1}, v, A{i}, v, 'rl');
-        phiy{i} = compute_next_Phi(phiy{i+1}, v, [], y{i}, 'rl');        
+        phia{i} = compute_next_Phi(phia{i+1}, v, crA{i}, v, 'rl');
+        phiy{i} = compute_next_Phi(phiy{i+1}, v, [], cry{i}, 'rl');        
         % Residual check
-        cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), A{i}, v, 'rl');
-        cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], y{i}, 'rl');        
+        cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), crA{i}, v, 'rl');
+        cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], cry{i}, 'rl');        
         
         % Stuff back
         rx(i) = r;
-        x{i-1} = u;
-        x{i} = v;
+        crx{i-1} = u;
+        crx{i} = v;
     elseif ((dir>0)&&(i==d))||((dir<0)&&(i==1))
         % Just stuff back the last core
         sol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
         sol = reshape(sol, rx(i), n(i), rx(i+1));
-        x{i} = sol;
+        crx{i} = sol;
     end;
     
     
@@ -638,7 +673,7 @@ while (swp<=nswp)
 %         max_res = norm(A*x-y)/norm(y);
         
         if (verb>0)
-            fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
+            fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;        
         
         if (last_sweep)
@@ -676,6 +711,7 @@ while (swp<=nswp)
     end;
 end;
 
+x = cell2core(x, crx);
 
 end
 
