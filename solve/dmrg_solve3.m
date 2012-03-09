@@ -46,13 +46,13 @@ step_dpow = 0.1; % stepsize for d-power in truncations
 min_dpow = 1; % Minimal d-power for truncation
 step_drank = 1;
 
-resid_damp = 1.5; % Truncation error to true residual treshold
+resid_damp = 2; % Truncation error to true residual treshold
 bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
 
 
 nswp=20;
-local_restart=25;
+local_restart=40;
 local_iters=2;
 
 local_prec = '';
@@ -468,18 +468,18 @@ while (swp<=nswp)
     
     if (dir>0) % left-to-right
         u = u(:,1:r);
-        v = v(:,1:r)*diag(s(1:r));
+        v = conj(v(:,1:r))*diag(s(1:r));
         % kick
         if (~last_sweep)
-            u = reort(u, randn(rx(i)*n(i), kickrank));
+            [u,rv]=qr([u, randn(rx(i)*n(i), kickrank)], 0);
+            radd = kickrank;
+            v = [v, zeros(n(i+1)*rx(i+2), radd)];
+            v = v*(rv.');
+%             u = reort(u, randn(rx(i)*n(i), kickrank));
         end;
-        radd = size(u, 2)-r;
-        v = [v, zeros(n(i+1)*rx(i+2), radd)];
-        
-        r = r+radd;
-        
+        r = size(u,2);
         u = reshape(u, rx(i), n(i), r);
-        v = reshape(v', r, n(i+1), rx(i+2));
+        v = reshape(v.', r, n(i+1), rx(i+2));
         
         % Recompute phi. Left ones, so permute them appropriately
         phia{i+1} = compute_next_Phi(phia{i}, u, A{i}, u, 'lr');
@@ -491,18 +491,18 @@ while (swp<=nswp)
         
     else % right-to-left
         u = u(:,1:r)*diag(s(1:r));
-        v = v(:,1:r);
+        v = conj(v(:,1:r));
         % kick
         if (~last_sweep)
-            v = reort(v, randn(n(i+1)*rx(i+2), kickrank));
+            [v,rv] = qr([v, randn(n(i+1)*rx(i+2), kickrank)], 0);
+%             v = reort(v, randn(n(i+1)*rx(i+2), kickrank));
+            radd = kickrank;
+            u = [u, zeros(rx(i)*n(i), radd)];
+            u = u*(rv.');
         end;
-        radd = size(v, 2)-r;
-        u = [u, zeros(rx(i)*n(i), radd)];
-        
-        r = r+radd;
-        
+        r = size(v,2);        
         u = reshape(u, rx(i), n(i), r);
-        v = reshape(v', r, n(i+1), rx(i+2));
+        v = reshape(v.', r, n(i+1), rx(i+2));
         
         % Recompute phi. Here are right phis
         phia{i+1} = compute_next_Phi(phia{i+2}, v, A{i+1}, v, 'rl');

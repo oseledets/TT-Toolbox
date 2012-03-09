@@ -516,8 +516,9 @@ while (swp<=nswp)
         
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
         u = u(:,1:r);
-        v = v(:,1:r)*diag(s(1:r));
+        v = conj(v(:,1:r))*diag(s(1:r));
         
+        if (~last_sweep)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         leftA = permute(Phi1, [1, 3, 2]);
@@ -557,17 +558,18 @@ while (swp<=nswp)
 %         uk = randn(rx(i)*n(i), kickrank); % <- old random basis
         
         % kick
-        if (~last_sweep)
-%             [u,rr]=qr([u,uk], 0);
-            u = reort(u, uk);
+            [u,rv]=qr([u,uk], 0);
+            radd = size(uk, 2);
+            v = [v, zeros(rx(i+1), radd)];
+            v = v*(rv.');
+%             u = reort(u, uk);
         end;
-        radd = size(u, 2)-r;
-        v = [v, zeros(rx(i+1), radd)];
         cr2 = crx{i+1};
         cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
-        v = (v')*cr2; % size r+radd, n2, r3
+        v = (v.')*cr2; % size r+radd, n2, r3
         
-        r = r+radd;
+        r = size(u,2);
+%         r = r+radd;
         
         u = reshape(u, rx(i), n(i), r);
         v = reshape(v, r, n(i+1), rx(i+2));
@@ -586,8 +588,9 @@ while (swp<=nswp)
         crx{i+1} = v;
     elseif (dir<0)&&(i>1) % right-to-left
         u = u(:,1:r)*diag(s(1:r));
-        v = v(:,1:r);
+        v = conj(v(:,1:r));
         
+        if (~last_sweep)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         rightA = permute(Phi2, [2, 1, 3]);
@@ -630,20 +633,21 @@ while (swp<=nswp)
 %         uk = randn(n(i)*rx(i+1), kickrank); % <- old random
         
         % kick
-        if (~last_sweep)
-%             [v,rr]=qr([v,uk], 0);
-            v = reort(v, uk);
+            [v,rv]=qr([v,uk], 0);
+%             v = reort(v, uk);
+            radd = size(uk, 2);
+            u = [u, zeros(rx(i), radd)];
+            u = u*(rv.');
         end;
-        radd = size(v, 2)-r;
-        u = [u, zeros(rx(i), radd)];
         cr2 = crx{i-1};
         cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
         u = cr2*u;
         
-        r = r+radd;
+        r = size(v,2);
+%         r = r+radd;
         
         u = reshape(u, rx(i-1), n(i-1), r);
-        v = reshape(v', r, n(i), rx(i+1));
+        v = reshape(v.', r, n(i), rx(i+1));
         
         % Recompute phi. Here are right phis
         phia{i} = compute_next_Phi(phia{i+1}, v, crA{i}, v, 'rl');
