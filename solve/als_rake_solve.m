@@ -152,7 +152,7 @@ else
     rxc = x.core.r;
     for i=1:d
         rxf{i} = x.tuck{i}.r;
-        rxf{i}(L{i}+2)=rxc(i+1);
+        rxf{i}(L(i)+2)=rxc(i+1);
         n{i}(L(i)+1) = rxc(i);
         xf{i} = cell(L(i)+1,1);
         xf{i}(1:L(i)) = core2cell(x.tuck{i});
@@ -426,6 +426,10 @@ for swp=1:nswp
         if (max_res<tol)
             last_sweep=true;
         end;
+    end;
+    
+    if (swp==nswp-1)
+        last_sweep=true;
     end;
     
     max_res = 0;
