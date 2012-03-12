@@ -99,7 +99,7 @@ for i=1:2:length(varargin)-1
     end
 end
 
-tol2 = tol/2;
+tol2 = tol/4;
 
 d = y.core.d;
 yc = core2cell(y.core);
@@ -251,10 +251,12 @@ for swp=1:nswp
         if (i==1); dir=0; end;
         local_kickrank = kickrank;
         if (last_sweep); local_kickrank=0; end;
-        [u,v,max_res,max_dx]=local_solve(Phi1,A1,Phi2, phiyc{i},ycp{i},phiyc{i+1}, ...
+        [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyc{i},ycp{i},phiyc{i+1}, ...
             tol2/sqrt(d*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
             local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
             dir, local_kickrank, verb);
+        
+        if (flg>0); fprintf('-warn- local_solve did not converge at cb {%d}\n', i); end;
         
         if (i>1)
             cr2 = xf{i-1}{L(i-1)+1};
@@ -332,10 +334,12 @@ for swp=1:nswp
             if (j==(L(i)+1)); dir=0; end;
             local_kickrank = kickrank;
             if (last_sweep); local_kickrank=0; end;
-            [u,v,max_res,max_dx]=local_solve(Phi1,A1,Phi2, phiyf{i}{j},cury{j},phiyf{i}{j+1}, ...
+            [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyf{i}{j},cury{j},phiyf{i}{j+1}, ...
                 tol2/sqrt(d*L(i)*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
                 local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
                 dir, local_kickrank, verb);
+            
+            if (flg>0); fprintf('-warn- local_solve did not converge at fb {%d}{%d}\n', i, j); end;
             
             if (j<(L(i)+1))
                 cr2 = curx{j+1};
@@ -478,7 +482,7 @@ y = reshape(y, ry1*k1*ry2, 1);
 end
 
 
-function [u,v,max_res,max_dx]=local_solve(Phi1,A1,Phi2, phiy1,y1,phiy2, tol, resid_damp, trunc_norm, sol_prev, local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, dir, kickrank, verb)
+function [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiy1,y1,phiy2, tol, resid_damp, trunc_norm, sol_prev, local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, dir, kickrank, verb)
 rx1 = size(Phi1,1);
 n = size(A1,2);
 rx2 = size(Phi2,1);
@@ -524,9 +528,12 @@ if (rx1*n*rx2<max_full_size)
         % If the system was ill-conditioned
         %         [sol,flg] = gmres(B, rhs, local_restart, real_tol, 2, [], [], sol);
         res_new = norm(B*sol-rhs)/norm_rhs;
+        flg=0;
+        if (res_new>tol); flg=1; end;
     else
         sol = sol_prev;
         res_new = res_prev;
+        flg=0;
     end;
 else
     res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
@@ -540,9 +547,12 @@ else
         sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
         
         res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
+        flg=0;
+        if (res_new>tol); flg=1; end;
     else
         sol = sol_prev;
         res_new = res_prev;
+        flg = 0;
     end;
 end;
 

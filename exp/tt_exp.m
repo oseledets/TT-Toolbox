@@ -8,7 +8,12 @@ function [y]=tt_exp(x, eps, varargin)
 %       RMAX is the TT-rank bound.
 
 
-nrm = norm(x);
+% nrm = norm(x);
+if (isa(x, 'tt_tensor'))
+    nrm = tt_max(x);
+else
+    nrm = tt_max(qtttucker_to_linqtt(x, eps));
+end;
 n0 = floor(max(log2(nrm), 0))+1;
 x = x./(2^n0);
 if (isa(x, 'tt_tensor'))

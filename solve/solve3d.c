@@ -334,7 +334,12 @@ void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
     work = (double *)malloc(sizeof(double)*lwork);
 
     nrmsol = dnrm2_(&sz, sol, &ione);
-    nrmrhs = dnrm2_(&sz, rhs, &ione);
+    if (jacs!=NULL) {
+        dcopy_(&sz,rhs,&ione,w,&ione);
+        dcjacapply(jacs, n, rx1, rx2, w, w2);
+        nrmrhs = dnrm2_(&sz, w2, &ione);
+    } else
+        nrmrhs = dnrm2_(&sz, rhs, &ione);
 //     for (j=0; j<sz; j++) sol[j]=0.0;
 
     for (it=0; it<niters; it++) {
@@ -453,9 +458,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double tol, tol_prev;
     double *dsol, *djacs;
     int nrestart, niters;
-    unsigned long dimcount, *rhsdims;
-    unsigned long dims[4];
-    unsigned long rx1, rx2, ra1, ra2, n, i;
+    long dimcount, *rhsdims;
+    long dims[4];
+    long rx1, rx2, ra1, ra2, n, i;
     char prec, verb, trunc_norm;
 
     if (nrhs<7) { mexPrintf("Specify at least Phi1,A,Phi2,rhs,tol,trunc_norm,sol_prev\n"); return; }

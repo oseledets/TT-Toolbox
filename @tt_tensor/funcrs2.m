@@ -151,18 +151,20 @@ pos1=1;
      [u,s,v]=svd(cr,'econ');
      s=diag(s);
      r2=my_chop2(s,eps*norm(s)/sqrt(d-1));
-     s=s(1:r2); u=u(:,1:r2); v=v(:,1:r2);
+     s=s(1:r2); u=u(:,1:r2); v=conj(v(:,1:r2));
      v=v*diag(s);
 
      %Kick rank of u
      ur=randn(size(u,1),kick_rank);
-     %Orthogonalize ur to u by Golub-Kahan reorth
-     u=reort(u,ur);
-     radd=size(u,2)-r2;
-     if ( radd > 0 )
-       vr=zeros(size(v,1),radd);
+     %Orthogonalize ur to u by Golub-Kahan reorth <- it sucks!!
+     [u,rv]=qr([u,ur], 0);
+%      u=reort(u,ur);
+%      radd=size(u,2)-r2;
+%      if ( radd > 0 )
+       vr=zeros(size(v,1),kick_rank);
        v=[v,vr];
-     end
+       v = v*(rv.');
+%      end
      r2=size(u,2);
 
 
@@ -258,12 +260,14 @@ cry=cry(psy(d):psy(d+1)-1); %Start--only two cores
      %Kick rank
 
       vr=randn(size(v,1),kick_rank);
-      v=reort(v,vr);
-      radd=size(v,2)-r2;
-      if ( radd > 0 )
-         ur=zeros(size(u,1),radd);
+      [v,rv]=qr([v,vr], 0);
+%       v=reort(v,vr);
+%       radd=size(v,2)-r2;
+%       if ( radd > 0 )
+         ur=zeros(size(u,1),kick_rank);
          u=[u,ur];
-      end
+         u = u*(rv.');
+%       end
       r2=size(v,2);
 
 
