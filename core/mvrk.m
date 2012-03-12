@@ -261,10 +261,13 @@ for swp=1:nswp
             v = conj(v(:,1:r));
             u = u(:,1:r)*diag(s(1:r));
             % Kick
-            v = reort(v, randn(curn(j)*ry3, kickrank));
-            radd = size(v,2)-r;
-            u = [u, zeros(ry1*curn(j-1), radd)];
-            r = r+radd;
+%             v = reort(v, randn(curn(j)*ry3, kickrank));
+            [v,rv] = qr([v, randn(curn(j)*ry3, kickrank)], 0);
+%             radd = size(v,2)-r;
+            u = [u, zeros(ry1*curn(j-1), kickrank)];
+            u = u*(rv.');
+            r = size(u,2);
+%             r = r+radd;
             % Stuff back
             cury{j} = reshape(v.', r, curn(j), ry3);
             cury{j-1} = reshape(u, ry1, curn(j-1), r);
@@ -304,10 +307,13 @@ for swp=1:nswp
                 u = u(:,1:r);
                 v = diag(s(1:r))*(v(:,1:r)');
                 % Kick
-                u = reort(u, randn(ry1*n1, kickrank));
-                radd = size(u,2)-r;
-                v = [v; zeros(radd, n2)];
-                r = r+radd;
+%                 u = reort(u, randn(ry1*n1, kickrank));
+                [u,rv] = qr([u, randn(ry1*n1, kickrank)], 0);
+%                 radd = size(u,2)-r;
+                v = [v; zeros(kickrank, n2)];
+                v = rv*v;
+                r = size(u,2);
+%                 r = r+radd;
                 u = reshape(u, ry1, n1, r);
                 cury{j} = u;
                 v = reshape(v, r, rcy(i), rcy(i+1));
@@ -381,10 +387,13 @@ for swp=1:nswp
             u = u(:,1:r);
             v = conj(v(:,1:r))*diag(s(1:r));
             % Kick
-            u = reort(u, randn(ry1*curn1, kickrank));
-            radd = size(u,2)-r;
-            v = [v, zeros(curn2*ry3, radd)];
-            r = r+radd;
+            [u,rv] = qr([u, randn(ry1*curn1, kickrank)], 0);
+%             u = reort(u, randn(ry1*curn1, kickrank));
+%             radd = size(u,2)-r;
+            v = [v, zeros(curn2*ry3, kickrank)];
+            v = v*(rv.');
+            r = size(u,2);
+%             r = r+radd;
             yc{i} = reshape(u, ry1, curn1, r);
             yc{i+1} = reshape(v.', r, curn2, ry3);
             % Update phi

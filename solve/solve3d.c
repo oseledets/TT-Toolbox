@@ -174,6 +174,7 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
     double *v, *w, *w2;
     double *H,*Q,*R, *work;
     double nrmr, curres, nrmrhs;
+    char last_iter = 0;
 
     sz = rx1*n*rx2;
 
@@ -284,7 +285,8 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
             sz = rx1*n*rx2;
             dalpha = 1.0; dbeta = 0.0;
 
-            if ((curres<tol)) break;
+            if (last_iter==1) break;
+            if ((curres<tol)) last_iter=1;
         }
         if (j==nrestart) j=nrestart-1;
         // Correction
@@ -294,7 +296,8 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
 //             daxpy_(&sz,&Q[i],w,&ione,sol,&ione);
             daxpy_(&sz,&Q[i],&v[i*sz],&ione,sol,&ione);
         }
-        if ((curres<tol)) break;
+        if (last_iter==1) break;
+        if ((curres<tol)) last_iter=1;
     }
     if (verb>0) mexPrintf("gmres conducted [%d,%d] iters to relres %3.3e\n", it, j, curres);
 

@@ -246,9 +246,12 @@ for swp=1:nswp
         else
             % kick
             if (~last_sweep)
-                u = reort(u, randn(size(u,1),kickrank));
+%                 u = reort(u, randn(size(u,1),kickrank));
+                [u,rv] = qr([u, randn(size(u,1),kickrank)], 0);
                 r = size(u,2);
-                v = [v, zeros(size(v,1),r-size(v,2))];
+%                 v = [v, zeros(size(v,1),r-size(v,2))];
+                v = [v, zeros(size(v,1),kickrank)];
+                v = v*(rv.');
             end;
             ry2 = size(u,2);
         end;

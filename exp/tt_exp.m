@@ -29,8 +29,12 @@ end;
 y = ons;
 
 N = 10;
+hdm = 'svd';
 rmax = Inf;
 epst = eps;
+while (length(varargin)==1)
+    varargin = varargin{1};
+end;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'n'
@@ -39,6 +43,8 @@ for i=1:2:length(varargin)-1
             rmax=varargin{i+1};
         case 'epst'
             epst=varargin{i+1};
+        case 'hdm'
+            hdm=varargin{i+1};
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -52,7 +58,15 @@ for k=(N-1):-1:1
 end
 
 for k=1:n0
-   y=round(y.*y,eps,rmax);
+    if (strcmp(hdm, 'svd'))
+        y=round(y.*y,eps,rmax);
+    else
+        if (isa(x, 'tt_tensor'))
+            y = mvk3(diag(y), y, eps, 'nswp', 20, 'kickrank', 2);
+        else
+            y = mvrk(diag(y), y, eps, 'nswp', 20, 'kickrank', 2);
+        end;
+    end;
 end
 
 end

@@ -1,9 +1,10 @@
-function [tt]=qtttucker_to_tt(fc, cr)
-% function [tt]=qtttucker_to_tt(fc, cr)
+function [tt]=qtttucker_to_tt(qtt)
+% function [tt]=qtttucker_to_tt(qtt)
 % Builds the TT tensor from the QTT-Tucker representation,
-% where fc is the Tucker factors in QTT (cell array of @tt_tensor),
-% cr is the Tucker core in TT.
+% where qtt is the QTT-Tucker 
 
+cr = qtt.core;
+fc = qtt.tuck;
 d = cr.d;
 for i=1:d
     fc{i} = tt_reshape(fc{i}, prod(fc{i}.n), [], 1, fc{i}.r(fc{i}.d+1));
