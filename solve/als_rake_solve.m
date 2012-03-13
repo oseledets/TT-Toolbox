@@ -183,6 +183,8 @@ for swp=1:nswp
     
     % Orthog + phi, Factors
     for i=1:d
+        n{i}(L(i)+1)=rxc(i);
+        rxf{i}(L(i)+2)=rxc(i+1);        
         % Permute core blocks: rc1 is mode index now
         xf{i}{L(i)+1} = permute(xf{i}{L(i)+1}, [2,1,3]); % rxt,rxc1,rxc2
         for j=1:L(i)
@@ -230,8 +232,8 @@ for swp=1:nswp
         cr2 = rv*cr2;
         rxc(i+1) = size(cr,2);
         % Update Factor-sizes too
-        n{i+1}(L(i+1)+1)=rxc(i+1);
-        rxf{i}(L(i)+2)=rxc(i+1);
+%         n{i+1}(L(i+1)+1)=rxc(i+1);
+%         rxf{i}(L(i)+2)=rxc(i+1);
         cr = reshape(cr, rxc(i), nc(i), rxc(i+1));
         xf{i}{L(i)+1} = cr;
         xf{i+1}{L(i+1)+1} = reshape(cr2, rxc(i+1), nc(i+1), rxc(i+2));
@@ -264,8 +266,8 @@ for swp=1:nswp
             cr2 = cr2*u;
             rxc(i) = size(v,2);
             % Update Factor-sizes
-            n{i}(L(i)+1)=rxc(i);
-            rxf{i-1}(L(i-1)+2)=rxc(i);
+%             n{i}(L(i)+1)=rxc(i);
+%             rxf{i-1}(L(i-1)+2)=rxc(i);
             v = reshape(v.', rxc(i), nc(i), rxc(i+1));
             xf{i}{L(i)+1} = v;
             xf{i-1}{L(i-1)+1} = reshape(cr2, rxc(i-1), nc(i-1), rxc(i));
@@ -284,25 +286,54 @@ for swp=1:nswp
         % ALS L->1, the orth. holds
         % Copy the extended factor data to the current array
         curx = xf{i};
-        % Reshape the core block to be the factor one
-        curx{L(i)+1} = permute(curx{L(i)+1}, [2, 1, 3]);
-        
-        cura = af{i};
-        % last block has to be convolved with phiac-left
-        cura{L(i)+1} = permute(phiac{i}, [1,3,2]);
-        cura{L(i)+1} = reshape(cura{L(i)+1}, rxc(i)*rxc(i), rac(i));
-        cura{L(i)+1} = cura{L(i)+1}*reshape(af{i}{L(i)+1}, rac(i), raf{i}(L(i)+1)*rac(i+1));
-        cura{L(i)+1} = reshape(cura{L(i)+1}, rxc(i), rxc(i), raf{i}(L(i)+1), rac(i+1));
-        cura{L(i)+1} = permute(cura{L(i)+1}, [3, 1,2, 4]); % tucker rank is now the left
-        
-        cury = yf{i};
-        cury{L(i)+1} = phiyc{i}*reshape(yf{i}{L(i)+1}, ryc(i), ryf{i}(L(i)+1)*ryc(i+1));
-        cury{L(i)+1} = reshape(cury{L(i)+1}, rxc(i), ryf{i}(L(i)+1), ryc(i+1));
-        cury{L(i)+1} = permute(cury{L(i)+1}, [2, 1, 3]); % tucker rank is now the left        
-        
-        % The L+2-th phi comes from the core
-        phiaf{i}{L(i)+2} = phiac{i+1}; % sizes rxc2,ra2,rxc2. rxc2 - our last "rank" index
-        phiyf{i}{L(i)+2} = phiyc{i+1};
+        % Last mode size <- largest core rank
+        if (rxc(i)>rxc(i+1))
+            % Reshape the core block to be the factor one
+            curx{L(i)+1} = permute(curx{L(i)+1}, [2, 1, 3]); % rtx, rxc1, rxc2
+            
+            cura = af{i};
+            % last block has to be convolved with phiac-left
+            cura{L(i)+1} = permute(phiac{i}, [1,3,2]);
+            cura{L(i)+1} = reshape(cura{L(i)+1}, rxc(i)*rxc(i), rac(i));
+            cura{L(i)+1} = cura{L(i)+1}*reshape(af{i}{L(i)+1}, rac(i), raf{i}(L(i)+1)*rac(i+1));
+            cura{L(i)+1} = reshape(cura{L(i)+1}, rxc(i), rxc(i), raf{i}(L(i)+1), rac(i+1));
+            cura{L(i)+1} = permute(cura{L(i)+1}, [3, 1,2, 4]); % tucker rank is now the left
+            
+            cury = yf{i};
+            cury{L(i)+1} = phiyc{i}*reshape(yf{i}{L(i)+1}, ryc(i), ryf{i}(L(i)+1)*ryc(i+1));
+            cury{L(i)+1} = reshape(cury{L(i)+1}, rxc(i), ryf{i}(L(i)+1), ryc(i+1));
+            cury{L(i)+1} = permute(cury{L(i)+1}, [2, 1, 3]); % tucker rank is now the left
+            
+            % The L+2-th phi comes from the core
+            phiaf{i}{L(i)+2} = phiac{i+1}; % sizes rxc2,ra2,rxc2. rxc2 - our last "rank" index
+            phiyf{i}{L(i)+2} = phiyc{i+1};
+            
+            n{i}(L(i)+1) = rxc(i);
+            rxf{i}(L(i)+2) = rxc(i+1);
+        else
+            % Reshape the core block to be the factor one
+            curx{L(i)+1} = permute(curx{L(i)+1}, [2, 3, 1]); %  rtx, rxc2, rxc1
+            
+            cura = af{i};
+            % last block has to be convolved with phiac-left
+            cura{L(i)+1} = permute(phiac{i+1}, [2, 1,3]);
+            cura{L(i)+1} = reshape(cura{L(i)+1}, rac(i+1), rxc(i+1)*rxc(i+1));
+            cura{L(i)+1} = reshape(af{i}{L(i)+1}, rac(i)*raf{i}(L(i)+1), rac(i+1)) * cura{L(i)+1};
+            cura{L(i)+1} = reshape(cura{L(i)+1}, rac(i), raf{i}(L(i)+1), rxc(i+1), rxc(i+1));
+            cura{L(i)+1} = permute(cura{L(i)+1}, [2, 3,4, 1]); % tucker rank is now the left
+            
+            cury = yf{i};
+            cury{L(i)+1} = reshape(yf{i}{L(i)+1}, ryc(i)*ryf{i}(L(i)+1), ryc(i+1)) * (phiyc{i+1}.');
+            cury{L(i)+1} = reshape(cury{L(i)+1}, ryc(i), ryf{i}(L(i)+1), rxc(i+1));
+            cury{L(i)+1} = permute(cury{L(i)+1}, [2, 3, 1]); % tucker rank is now the left
+            
+            % The L+2-th phi comes from the core
+            phiaf{i}{L(i)+2} = phiac{i}; % sizes rxc2,ra2,rxc2. rxc2 - our last "rank" index
+            phiyf{i}{L(i)+2} = phiyc{i};    
+            
+            n{i}(L(i)+1) = rxc(i+1);
+            rxf{i}(L(i)+2) = rxc(i);
+        end;
         
         % First, orthogonality L->1
         for j=(L(i)+1):-1:2
@@ -377,7 +408,11 @@ for swp=1:nswp
             % First L cells are all what we need for factor
             xf{i}(1:L(i)) = curx(1:L(i));
             % The last one should go to the core. Moreover, we need xc1->xc2 orth
-            cr = permute(curx{L(i)+1}, [2, 1, 3]); % now rc1,rt,rc2
+            if (rxc(i)>rxc(i+1))
+                cr = permute(curx{L(i)+1}, [2, 1, 3]); % now rc1,rt,rc2
+            else 
+                cr = permute(curx{L(i)+1}, [3, 1, 2]); % now rc1,rt,rc2
+            end;
             cr = reshape(cr, rxc(i)*rxf{i}(L(i)+1), rxc(i+1));
             [cr,rv]=qr(cr,0);
             cr2 = xf{i+1}{L(i+1)+1};
@@ -385,8 +420,8 @@ for swp=1:nswp
             cr2 = rv*cr2;
             rxc(i+1) = size(cr,2);
             % Update Factor-sizes too
-            n{i+1}(L(i+1)+1)=rxc(i+1);
-            rxf{i}(L(i)+2)=rxc(i+1);
+%             n{i+1}(L(i+1)+1)=rxc(i+1);
+%             rxf{i}(L(i)+2)=rxc(i+1);
             cr = reshape(cr, rxc(i), rxf{i}(L(i)+1), rxc(i+1));
             xf{i}{L(i)+1} = cr;
             xf{i+1}{L(i+1)+1} = reshape(cr2, rxc(i+1), rxf{i+1}(L(i+1)+1), rxc(i+2));
@@ -408,7 +443,11 @@ for swp=1:nswp
             phiyc{i+1} = compute_next_Phi(phiyc{i}, cr, [], ycp{i}, 'lr');
         else
             xf{i}(1:L(i)) = curx(1:L(i));
-            xf{i}{L(i)+1} = permute(curx{L(i)+1}, [2, 1, 3]); % core block
+            if (rxc(i)>rxc(i+1))
+                xf{i}{L(i)+1} = permute(curx{L(i)+1}, [2, 1, 3]); % core block
+            else
+                xf{i}{L(i)+1} = permute(curx{L(i)+1}, [3, 1, 2]); % core block
+            end;
         end;
     end;
     
@@ -542,7 +581,7 @@ else
         trunc_norm_char = 1;
         if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
         local_prec_char = 0;
-        if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1; end;
+        if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
         
         sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
         
@@ -632,9 +671,21 @@ end;
             leftresid = leftA*reshape(u*v.', rx1*n, rx2);
             leftresid = reshape(leftresid, rx1*n, ra2*rx2);
             leftresid = [leftresid, -y_save];
+%             
+%             uk = zeros(rx1*n, min(kickrank,rx1*n));
+%             for i=1:min(kickrank, rx1*n)
+%                 uk2 = uchol(leftresid.', 2);
+%                 uk(:,i) = uk2(:,end);
+%                 [uk(:,1:i),rv]=qr(uk(:,1:i), 0);
+%                 leftresid = leftA*uk(:,i);
+%                 leftresid = reshape(leftresid, rx1*n, ra2);
+%             end;
             
             uk = uchol(leftresid.', kickrank+1);
             uk = uk(:,end:-1:max(end-kickrank+1,1));
+%             leftresid = leftA*uk;
+%             leftresid = reshape(leftresid, rx1*n, ra2*size(uk,2));
+%             uk(:,size(uk,2)+1) = uchol(leftresid.', 1);
             
             [u,rv]=qr([u,uk], 0);
             radd = size(uk,2);
@@ -657,6 +708,16 @@ end;
             rightresid = rightA*(reshape(u*v.', rx1, n*rx2).');
             rightresid = reshape(rightresid, n*rx2, ra1*rx1);
             rightresid = [rightresid, -(y_save.')];
+            
+%             uk = zeros(n*rx2, min(kickrank,n*rx2));
+%             for i=1:min(kickrank, n*rx2)
+%                 uk2 = uchol(rightresid.', 2);
+%                 uk(:,i) = uk2(:,end);
+%                 [uk(:,1:i),rv]=qr(uk(:,1:i), 0);
+%                 rightresid = rightA*uk(:,i);
+%                 rightresid = reshape(rightresid, n*rx2, ra1);
+%             end;
+            
             uk = uchol(rightresid.', kickrank+1);
             uk = uk(:,end:-1:max(end-kickrank+1,1));
             

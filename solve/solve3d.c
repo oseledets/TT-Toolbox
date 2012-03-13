@@ -4,8 +4,8 @@
 
 char trans = 'N';
 char uplo = 'U';
-double dalpha=1.0;
-double dbeta=0.0;
+double done=1.0;
+double dzero=0.0;
 long ione = 1;
 
 void dperm213(double *in, long n1, long n2, long n3, double *out)
@@ -35,7 +35,8 @@ void dperm312(double *in, long n1, long n2, long n3, double *out)
 void dcjacgen(double *Phi1,double *A,double *Phi2, long rx1, long n, long rx2, long ra1, long ra2,double *jacs)
 {
     long i, k,m,cnt;
-    double *diag1, *diag2;
+    double *diag1;
+    double *diag2;
     double *Id, *B, *A2;
     long *ipiv, info;
 
@@ -71,11 +72,13 @@ void dcjacgen(double *Phi1,double *A,double *Phi2, long rx1, long n, long rx2, l
     A2 = (double *)malloc(sizeof(double)*rx1*n*n*ra2);
     // with phi1: sizes rx1,ra1 - ra1,n*n*ra2
     i = n*n*ra2;
-    dgemm_(&trans,&trans,&rx1,&i,&ra1,&dalpha,diag1,&rx1,A,&ra1,&dbeta,A2,&rx1);
+    dgemm_(&trans,&trans,&rx1,&i,&ra1,&done,diag1,&rx1,A,&ra1,&dzero,A2,&rx1);
     // with phi2: sizes rx1*n*n,ra2 - ra2,rx2
     i = rx1*n*n;
-    dgemm_(&trans,&trans,&i,&rx2,&ra2,&dalpha,A2,&i,diag2,&ra2,&dbeta,jacs,&i);
+    dgemm_(&trans,&trans,&i,&rx2,&ra2,&done,A2,&i,diag2,&ra2,&dzero,jacs,&i);
     free(A2);
+
+
     // permute so that n.n.rx1.rx2
     A2 = (double *)malloc(sizeof(double)*n*n*rx1*rx2);
     dperm213(jacs,rx1, n*n, rx2, A2);
@@ -116,7 +119,7 @@ void dcjacapply(double *jacs, long n, long rx1, long rx2, double *x, double *y)
     dperm213(x, rx1, n, rx2, y);
     for (j=0; j<rx2; j++) {
         for (i=0; i<rx1; i++) {
-            dgemv_(&trans,&n,&n,&dalpha,&jacs[i*n*n+j*n*n*rx1],&n,&y[i*n+j*n*rx1],&ione, &dbeta, &x[i*n+j*n*rx1], &ione);
+            dgemv_(&trans,&n,&n,&done,&jacs[i*n*n+j*n*n*rx1],&n,&y[i*n+j*n*rx1],&ione, &dzero, &x[i*n+j*n*rx1], &ione);
         }
     }
     dperm213(x, n, rx1, rx2, y);
@@ -137,7 +140,7 @@ void bfun3(double *Phi1, double *A, double *Phi2, long rx1, long n, long rx2, lo
     z2 = (double *)malloc(sizeof(double)*rx2*rx1*n*ra2);
     for (j=0; j<ra2; j++) {
         for (i=0; i<rx1*n; i++) {
-            dgemv_(&trans,&rx2,&rx2,&dalpha,&Phi2[j*rx2*rx2],&rx2,&z1[i*rx2],&ione, &dbeta, &z2[i*rx2+j*rx2*rx1*n], &ione); // indices rx2, rx1', n', ra2
+            dgemv_(&trans,&rx2,&rx2,&done,&Phi2[j*rx2*rx2],&rx2,&z1[i*rx2],&ione, &dzero, &z2[i*rx2+j*rx2*rx1*n], &ione); // indices rx2, rx1', n', ra2
         }
     }
     free(z1);
@@ -149,7 +152,7 @@ void bfun3(double *Phi1, double *A, double *Phi2, long rx1, long n, long rx2, lo
     z2 = (double *)malloc(sizeof(double)*ra1*n*rx1*rx2);
     sz1 = ra1*n; sz2 = n*ra2;
     for (i=0; i<rx2*rx1; i++) {
-        dgemv_(&trans,&sz1,&sz2,&dalpha,A,&sz1,&z1[i*n*ra2],&ione, &dbeta, &z2[i*ra1*n], &ione);
+        dgemv_(&trans,&sz1,&sz2,&done,A,&sz1,&z1[i*n*ra2],&ione, &dzero, &z2[i*ra1*n], &ione);
         // indices ra1,n,rx2,rx1'
     }
     free(z1);
@@ -160,7 +163,7 @@ void bfun3(double *Phi1, double *A, double *Phi2, long rx1, long n, long rx2, lo
     // Phi1*x
     sz1 = rx1; sz2 = rx1*ra1;
     for (i=0; i<n*rx2; i++) {
-        dgemv_(&trans,&sz1,&sz2,&dalpha,Phi1,&sz1,&z1[i*rx1*ra1],&ione, &dbeta, &y[i*rx1], &ione); // indices rx1, n, rx2
+        dgemv_(&trans,&sz1,&sz2,&done,Phi1,&sz1,&z1[i*rx1*ra1],&ione, &dzero, &y[i*rx1], &ione); // indices rx1, n, rx2
     }
 
     free(z1);
@@ -174,6 +177,7 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
     double *v, *w, *w2;
     double *H,*Q,*R, *work;
     double nrmr, curres, nrmrhs;
+    double dalpha, dbeta;
     char last_iter = 0;
 
     sz = rx1*n*rx2;
@@ -196,7 +200,6 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
 
     for (it=0; it<niters; it++) {
         // r0
-        dalpha = 1.0; dbeta = 0.0;
         if (jacs!=NULL) {
             dcopy_(&sz,sol,&ione,w,&ione);
             dcjacapply(jacs, n, rx1, rx2, w, w2);
@@ -214,8 +217,6 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
         dscal_(&sz,&dbeta,&v[0],&ione);
 
         for (j=0; j<nrestart; j++) {
-            dalpha = 1.0; dbeta = 0.0;
-//             mexPrintf("lala: %g\n", dnrm2_(&sz,w,&ione));
             // precvec, matvec
             if (jacs!=NULL) {
                 dcopy_(&sz,&v[j*sz],&ione,w,&ione);
@@ -283,7 +284,6 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
             if (verb>1) mexPrintf("iter [%d,%d], res: %3.5e\n", it, j, curres);
 
             sz = rx1*n*rx2;
-            dalpha = 1.0; dbeta = 0.0;
 
             if (last_iter==1) break;
             if ((curres<tol)) last_iter=1;
@@ -311,6 +311,187 @@ void dgmresr(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
 }
 
 
+void dgmresr_hh(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long n, long rx2, long ra1, long ra2, long nrestart, double tol, long niters, double *jacs, double *sol, char verb)
+// right preconditioned - for residual tolerance
+// This one with Householder tranforms
+{
+    long i,j,it, sz;
+    double *U, *w, *w2;
+    double *R, *J, *tau;
+    double nrmr, curres, nrmrhs;
+    double dalpha, dbeta;
+    char last_iter = 0;
+
+    sz = rx1*n*rx2;
+
+    U = (double *)malloc(sizeof(double)*sz*(nrestart+1));
+    w = (double *)malloc(sizeof(double)*sz);
+    w2 = (double *)malloc(sizeof(double)*sz);
+    tau = (double *)malloc(sizeof(double)*(nrestart+1));
+    J = (double *)malloc(sizeof(double)*2*(nrestart));
+//     Q = (double *)malloc(sizeof(double)*nrestart*(nrestart+1));
+    R = (double *)malloc(sizeof(double)*(nrestart)*(nrestart));
+
+//     lda = nrestart+1;
+
+
+//     lwork = 3*(nrestart+1);
+//     work = (double *)malloc(sizeof(double)*lwork);
+
+    for (j=0; j<sz; j++) sol[j]=0.0;
+
+    for (it=0; it<niters; it++) {
+        // r0
+        if (jacs!=NULL) {
+            dcopy_(&sz,sol,&ione,w,&ione);
+            dcjacapply(jacs, n, rx1, rx2, w, w2);
+            bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,w2,w);
+        }
+        else {
+            bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,sol,w);
+        }
+        dbeta = -1.0;
+        daxpy_(&sz,&dbeta,rhs,&ione,w,&ione);
+        dscal_(&sz,&dbeta,w,&ione);
+        nrmr = dnrm2_(&sz,w,&ione);
+        if (verb>1) mexPrintf("restart %d, res: %3.5e\n", it, nrmr);
+        if (it==0) nrmrhs = nrmr;
+        // initial HHT
+        dbeta = nrmr;
+        if (w[0]<0.0) dbeta = -dbeta;
+        w[0]+=dbeta;
+        tau[0]=-dbeta;
+        nrmr = dnrm2_(&sz,w,&ione);
+        dbeta = 1.0/nrmr;
+        dscal_(&sz,&dbeta,w,&ione);
+        dcopy_(&sz,w,&ione,&U[0],&ione);
+
+        for (j=0; j<nrestart; j++) {
+            // HHT on last U
+            dcopy_(&sz,&U[sz*j],&ione,w,&ione);
+            dbeta = -2.0*U[j+sz*j];
+            dscal_(&sz,&dbeta,w,&ione);
+            w[j]+=1.0;
+            for (i=j-1; i>=0; i--) {
+                dbeta = -2.0*ddot_(&sz,&U[i*sz],&ione,w,&ione);
+                daxpy_(&sz,&dbeta,&U[i*sz],&ione,w,&ione);
+            }
+            dbeta = dnrm2_(&sz,w,&ione);
+            dbeta = 1.0/dbeta;
+            dscal_(&sz,&dbeta,w,&ione); // w=w/norm(w);
+
+//             mexPrintf("norm_v0=%3.7e\n", 1.0/dbeta);
+
+            // precvec, matvec
+            if (jacs!=NULL) {
+                dcopy_(&sz,w,&ione,w2,&ione);
+                dcjacapply(jacs, n, rx1, rx2, w2, w);
+                bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,w,w);
+            }
+            else {
+                bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,w,w);
+            }
+
+            // Orthog w to j projectors
+            for (i=0; i<=j; i++) {
+                dbeta = -2.0*ddot_(&sz,&U[i*sz],&ione,w,&ione);
+                daxpy_(&sz,&dbeta,&U[i*sz],&ione,w,&ione);
+            }
+
+            // new P_{j+1}
+            if (j<sz-1) {
+                for (i=0; i<=j; i++) U[i+(j+1)*sz]=0.0;
+                i = sz-j-1;
+                dcopy_(&i, &w[j+1], &ione, &U[j+1+(j+1)*sz], &ione);
+                dalpha = dnrm2_(&i, &U[j+1+(j+1)*sz], &ione);
+                if (dalpha!=0.0) {
+                    if (w[j+1]<0.0) dalpha = -dalpha;
+                    U[j+1+(j+1)*sz]+=dalpha;
+                    dbeta = dnrm2_(&i, &U[j+1+(j+1)*sz], &ione);
+                    dbeta = 1.0/dbeta;
+                    dscal_(&i,&dbeta,&U[j+1+(j+1)*sz],&ione);
+
+                    w[j+1]=-dalpha;
+                    for (i=j+2; i<sz; i++) w[i]=0.0;
+                }
+            }
+
+            // Givens rotators to the top of w
+            for (i=0; i<=j-1; i++) {
+                dbeta = w[i];
+                w[i] = J[0+i*2]*w[i] + J[1+i*2]*w[i+1];
+                w[i+1] = -J[1+i*2]*dbeta + J[0+i*2]*w[i+1];
+            }
+
+//            mexPrintf("w[%d]=%3.7e\tw[%d]=%3.7e\n", i, w[j], j+1, w[j+1]);
+
+            // New rotator
+            if (j<sz-1) {
+                dalpha = sqrt((w[j]*w[j])+(w[j+1]*w[j+1]));
+//                 mexPrintf("rho=%3.7e\n", dalpha);
+                J[0+j*2] = w[j]/dalpha;
+                J[1+j*2] = w[j+1]/dalpha;
+//                 mexPrintf("Jnew=%3.7e\t%3.7e\n", J[j*2], J[j*2+1]);
+                tau[j+1] = -J[1+j*2]*tau[j];
+                tau[j] = J[0+j*2]*tau[j];
+//                 mexPrintf("tau=%3.7e\t%3.7e\n", tau[j], tau[j+1]);
+                w[j] = dalpha;
+                w[j+1] = 0.0;
+            }
+
+//             for (i=0; i<=j+1; i++) mexPrintf("tau[%d]=%3.7e\n", i, tau[i]);
+
+            dcopy_(&nrestart, w, &ione, &R[j*nrestart], &ione);
+
+
+            // residual
+            curres = fabs(tau[j+1])/nrmrhs;
+            if (verb>1) mexPrintf("iter [%d,%d], res: %3.5e\n", it, j, curres);
+
+            if ((curres<tol)) break;
+        }
+
+//         for (i=0; i<=j; i++) mexPrintf("%g\t", tau[i]);
+//         mexPrintf("\n");
+
+        if (j==nrestart) {
+            j=nrestart-1;
+            i=nrestart;
+        }
+        else i=j+1;
+        dtrsv_(&uplo,&trans,&trans,&i,R,&nrestart,tau,&ione);
+
+/*        if (j==nrestart) {
+            j=nrestart-1;
+            i=nrestart;
+        }
+        else i=j+1;*/
+
+        // Correction
+        dcopy_(&sz, &U[j*sz], &ione, w, &ione);
+        dbeta = -2.0*U[j+j*sz]*tau[j];
+        dscal_(&sz, &dbeta, w, &ione);
+        w[j]+=tau[j];
+        for (i=j-1; i>=0; i--) {
+            w[i]+=tau[i];
+            dbeta = -2.0*ddot_(&sz,&U[i*sz],&ione,w,&ione);
+            daxpy_(&sz,&dbeta,&U[i*sz],&ione,w,&ione);
+        }
+        dalpha=1.0;
+//         dcopy_(&sz, w, &ione, sol, &ione);
+        daxpy_(&sz,&dalpha,w,&ione,sol,&ione);
+        if ((curres<tol)) break;
+    }
+    if (verb>0) mexPrintf("gmres conducted [%d,%d] iters to relres %3.3e\n", it, j, curres);
+
+    free(U);
+    free(w);
+    free(w2);
+    free(tau);
+    free(J);
+    free(R);
+}
+
 
 void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long n, long rx2, long ra1, long ra2, int nrestart, double tol, int niters, double *jacs, double *sol, char verb)
 // left preconditioned - for fro tolerance
@@ -319,6 +500,7 @@ void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
     double *v, *w, *w2;
     double *H,*Q,*R, *work;
     double nrmr, curres, nrmrhs, nrmsol;
+    double dalpha, dbeta;
 
     sz = rx1*n*rx2;
 
@@ -347,12 +529,10 @@ void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
 
     for (it=0; it<niters; it++) {
         // r0
-        dalpha = 1.0; dbeta = 0.0;
         bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,sol,&v[0]);
         dbeta = -1.0;
         daxpy_(&sz,&dbeta,rhs,&ione,&v[0],&ione);
         if (jacs!=NULL) {
-            dbeta = 0.0;
             dcjacapply(jacs, n, rx1, rx2, &v[0], w);
             dcopy_(&sz,w,&ione,&v[0],&ione);
         }
@@ -362,7 +542,6 @@ void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
         dscal_(&sz,&dbeta,&v[0],&ione);
 
         for (j=0; j<nrestart; j++) {
-            dalpha = 1.0; dbeta = 0.0;
             // matvec, precvec
             bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,&v[j*sz],w);
             if (jacs!=NULL) {
@@ -425,7 +604,6 @@ void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
             if (verb>1) mexPrintf("iter [%d,%d], res: %3.5e\n", it, j, curres);
 
             sz = rx1*n*rx2;
-            dalpha = 1.0; dbeta = 0.0;
 
             if ((curres<tol)&&(fabs(Q[j])/nrmsol<tol)) break;
         }
@@ -454,13 +632,190 @@ void dgmresl(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long 
 }
 
 
+void dgmresl_hh(double *Phi1, double *A, double *Phi2, double *rhs, long rx1, long n, long rx2, long ra1, long ra2, long nrestart, double tol, long niters, double *jacs, double *sol, char verb)
+// left preconditioned - for fro tolerance
+// This one with Householder tranforms
+{
+    long i,j,it, sz;
+    double *U, *w, *w2;
+    double *R, *J, *tau;
+    double nrmr, curres, nrmrhs, nrmsol;
+    double dalpha, dbeta;
+    char last_iter = 0;
+
+    sz = rx1*n*rx2;
+
+    U = (double *)malloc(sizeof(double)*sz*(nrestart+1));
+    w = (double *)malloc(sizeof(double)*sz);
+    w2 = (double *)malloc(sizeof(double)*sz);
+    tau = (double *)malloc(sizeof(double)*(nrestart+1));
+    J = (double *)malloc(sizeof(double)*2*(nrestart));
+//     Q = (double *)malloc(sizeof(double)*nrestart*(nrestart+1));
+    R = (double *)malloc(sizeof(double)*(nrestart)*(nrestart));
+
+    if (jacs!=NULL) {
+        dcopy_(&sz,rhs,&ione,w,&ione);
+        dcjacapply(jacs, n, rx1, rx2, w, w2);
+        nrmrhs = dnrm2_(&sz, w2, &ione);
+    } else
+        nrmrhs = dnrm2_(&sz, rhs, &ione);
+
+    for (it=0; it<niters; it++) {
+        // r0
+        nrmsol = dnrm2_(&sz, sol, &ione);
+        bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,sol,w);
+        dbeta = -1.0;
+        daxpy_(&sz,&dbeta,rhs,&ione,w,&ione);
+        dscal_(&sz,&dbeta,w,&ione);
+        if (jacs!=NULL) {
+            dcopy_(&sz,w,&ione,w2,&ione);
+            dcjacapply(jacs, n, rx1, rx2, w2, w);
+        }
+        nrmr = dnrm2_(&sz,w,&ione);
+        if (verb>1) mexPrintf("restart %d, res: %3.5e\n", it, nrmr);
+        if (it==0) nrmrhs = nrmr;
+        // initial HHT
+        dbeta = nrmr;
+        if (w[0]<0.0) dbeta = -dbeta;
+        w[0]+=dbeta;
+        tau[0]=-dbeta;
+        nrmr = dnrm2_(&sz,w,&ione);
+        dbeta = 1.0/nrmr;
+        dscal_(&sz,&dbeta,w,&ione);
+        dcopy_(&sz,w,&ione,&U[0],&ione);
+
+        for (j=0; j<nrestart; j++) {
+            // HHT on last U
+            dcopy_(&sz,&U[sz*j],&ione,w,&ione);
+            dbeta = -2.0*U[j+sz*j];
+            dscal_(&sz,&dbeta,w,&ione);
+            w[j]+=1.0;
+            for (i=j-1; i>=0; i--) {
+                dbeta = -2.0*ddot_(&sz,&U[i*sz],&ione,w,&ione);
+                daxpy_(&sz,&dbeta,&U[i*sz],&ione,w,&ione);
+            }
+            dbeta = dnrm2_(&sz,w,&ione);
+            dbeta = 1.0/dbeta;
+            dscal_(&sz,&dbeta,w,&ione); // w=w/norm(w);
+
+//             mexPrintf("norm_v0=%3.7e\n", 1.0/dbeta);
+
+            // precvec, matvec
+            bfun3(Phi1,A,Phi2,rx1,n,rx2,ra1,ra2,w,w);
+            if (jacs!=NULL) {
+                dcopy_(&sz,w,&ione,w2,&ione);
+                dcjacapply(jacs, n, rx1, rx2, w2, w);
+            }
+
+            // Orthog w to j projectors
+            for (i=0; i<=j; i++) {
+                dbeta = -2.0*ddot_(&sz,&U[i*sz],&ione,w,&ione);
+                daxpy_(&sz,&dbeta,&U[i*sz],&ione,w,&ione);
+            }
+
+            // new P_{j+1}
+            if (j<sz-1) {
+                for (i=0; i<=j; i++) U[i+(j+1)*sz]=0.0;
+                i = sz-j-1;
+                dcopy_(&i, &w[j+1], &ione, &U[j+1+(j+1)*sz], &ione);
+                dalpha = dnrm2_(&i, &U[j+1+(j+1)*sz], &ione);
+                if (dalpha!=0.0) {
+                    if (w[j+1]<0.0) dalpha = -dalpha;
+                    U[j+1+(j+1)*sz]+=dalpha;
+                    dbeta = dnrm2_(&i, &U[j+1+(j+1)*sz], &ione);
+                    dbeta = 1.0/dbeta;
+                    dscal_(&i,&dbeta,&U[j+1+(j+1)*sz],&ione);
+
+                    w[j+1]=-dalpha;
+                    for (i=j+2; i<sz; i++) w[i]=0.0;
+                }
+            }
+
+            // Givens rotators to the top of w
+            for (i=0; i<=j-1; i++) {
+                dbeta = w[i];
+                w[i] = J[0+i*2]*w[i] + J[1+i*2]*w[i+1];
+                w[i+1] = -J[1+i*2]*dbeta + J[0+i*2]*w[i+1];
+            }
+
+//            mexPrintf("w[%d]=%3.7e\tw[%d]=%3.7e\n", i, w[j], j+1, w[j+1]);
+
+            // New rotator
+            if (j<sz-1) {
+                dalpha = sqrt((w[j]*w[j])+(w[j+1]*w[j+1]));
+//                 mexPrintf("rho=%3.7e\n", dalpha);
+                J[0+j*2] = w[j]/dalpha;
+                J[1+j*2] = w[j+1]/dalpha;
+//                 mexPrintf("Jnew=%3.7e\t%3.7e\n", J[j*2], J[j*2+1]);
+                tau[j+1] = -J[1+j*2]*tau[j];
+                tau[j] = J[0+j*2]*tau[j];
+//                 mexPrintf("tau=%3.7e\t%3.7e\n", tau[j], tau[j+1]);
+                w[j] = dalpha;
+                w[j+1] = 0.0;
+            }
+
+//             for (i=0; i<=j+1; i++) mexPrintf("tau[%d]=%3.7e\n", i, tau[i]);
+
+            dcopy_(&nrestart, w, &ione, &R[j*nrestart], &ione);
+
+
+            // residual
+            curres = fabs(tau[j+1])/nrmrhs;
+            if (verb>1) mexPrintf("iter [%d,%d], res: %3.5e\n", it, j, curres);
+
+            if ((curres<tol)) break;
+        }
+
+//         for (i=0; i<=j; i++) mexPrintf("%g\t", tau[i]);
+//         mexPrintf("\n");
+
+        if (j==nrestart) {
+            j=nrestart-1;
+            i=nrestart;
+        }
+        else i=j+1;
+        dtrsv_(&uplo,&trans,&trans,&i,R,&nrestart,tau,&ione);
+
+/*        if (j==nrestart) {
+            j=nrestart-1;
+            i=nrestart;
+        }
+        else i=j+1;*/
+
+        // Correction
+        dcopy_(&sz, &U[j*sz], &ione, w, &ione);
+        dbeta = -2.0*U[j+j*sz]*tau[j];
+        dscal_(&sz, &dbeta, w, &ione);
+        w[j]+=tau[j];
+        for (i=j-1; i>=0; i--) {
+            w[i]+=tau[i];
+            dbeta = -2.0*ddot_(&sz,&U[i*sz],&ione,w,&ione);
+            daxpy_(&sz,&dbeta,&U[i*sz],&ione,w,&ione);
+        }
+        dalpha=1.0;
+//         dcopy_(&sz, w, &ione, sol, &ione);
+        daxpy_(&sz,&dalpha,w,&ione,sol,&ione);
+        if ((curres<tol)&&(fabs(tau[j])/nrmsol<tol)) break;
+    }
+    if (verb>0) mexPrintf("gmres conducted [%d,%d] iters to relres %3.3e\n", it, j, curres);
+
+    free(U);
+    free(w);
+    free(w2);
+    free(tau);
+    free(J);
+    free(R);
+}
+
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 // Phi1 [r1,r1',ra1], A[ra1,n,n',ra2], Phi2[r2,r2',ra2], rhs, tol, trunc_norm, sol_prev, prec, nrestart, niters, verb
 {
     double *dPhi1, *dA, *dPhi2, *drhs, *scal, *dsol_prev, *dres;
     double tol, tol_prev;
     double *dsol, *djacs;
-    int nrestart, niters;
+    double dbeta;
+    long nrestart, niters;
     long dimcount, *rhsdims;
     long dims[4];
     long rx1, rx2, ra1, ra2, n, i;
@@ -468,8 +823,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if (nrhs<7) { mexPrintf("Specify at least Phi1,A,Phi2,rhs,tol,trunc_norm,sol_prev\n"); return; }
     if (nrhs<8) prec=0; else { scal = mxGetPr(prhs[7]); prec = (char)round(scal[0]); }
-    if (nrhs<9) nrestart=40; else { scal = mxGetPr(prhs[8]); nrestart = (int)round(scal[0]); }
-    if (nrhs<10) niters=2; else { scal = mxGetPr(prhs[9]); niters = (int)round(scal[0]); }
+    if (nrhs<9) nrestart=40; else { scal = mxGetPr(prhs[8]); nrestart = (long)round(scal[0]); }
+    if (nrhs<10) niters=2; else { scal = mxGetPr(prhs[9]); niters = (long)round(scal[0]); }
     if (nrhs<11) verb=0; else { scal = mxGetPr(prhs[10]); verb = (char)round(scal[0]); }
 
     // Fetch the data
@@ -522,6 +877,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     plhs[0] = mxCreateDoubleMatrix(rx1*n*rx2, 1, mxREAL);
     dsol = mxGetPr(plhs[0]);
 
+//     plhs[1] = mxCreateDoubleMatrix(rx1*ra1, 1, mxREAL);
+
 
     djacs=NULL;
     if (prec==1) {
@@ -538,7 +895,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (trunc_norm==1) { // residual
         // prepare initial residual - for right prec
         dres = (double *)malloc(sizeof(double)*rx1*n*rx2);
-        dalpha = 1.0; dbeta = 0.0;
         bfun3(dPhi1,dA,dPhi2,rx1,n,rx2,ra1,ra2,dsol_prev,dres);
         dbeta = -1.0;
         i = rx1*n*rx2;
@@ -547,15 +903,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         tol_prev = dnrm2_(&i, dres, &ione) / dnrm2_(&i, drhs, &ione);
         if (tol_prev<tol) tol_prev = tol;
 //         mexPrintf("tol0: %3.5e, tol: %3.5e\n", tol_prev, tol);
-        dbeta = 0.0;
-        dgmresr(dPhi1, dA, dPhi2, dres, rx1, n, rx2, ra1, ra2, nrestart, tol/tol_prev, niters, djacs, dsol, verb);
+        dgmresr_hh(dPhi1, dA, dPhi2, dres, rx1, n, rx2, ra1, ra2, nrestart, tol/tol_prev, niters, djacs, dsol, verb);
         if (prec==1) {
-            dalpha = 1.0; dbeta = 0.0;
             dcjacapply(djacs, n, rx1, rx2, dsol, dres);
             dcopy_(&i,dres,&ione,dsol,&ione);
         }
-        dalpha = 1.0;
-        daxpy_(&i,&dalpha,dsol_prev,&ione,dsol,&ione);
+        dbeta = 1.0;
+        daxpy_(&i,&dbeta,dsol_prev,&ione,dsol,&ione);
         free(dres);
     }
     else { // fro
@@ -563,8 +917,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         i = rx1*n*rx2;
         dcopy_(&i, dsol_prev, &ione, dsol, &ione);
 //         for (i=0; i<rx1*n*rx2; i++) mexPrintf("%g\n", dsol[i]);
-        dgmresl(dPhi1, dA, dPhi2, drhs, rx1, n, rx2, ra1, ra2, nrestart, tol, niters, djacs, dsol, verb);
+        dgmresl_hh(dPhi1, dA, dPhi2, drhs, rx1, n, rx2, ra1, ra2, nrestart, tol, niters, djacs, dsol, verb);
     }
+
+//     i = rx1*ra1;
+//     if (prec==1) { dcopy_(&i, scal, &ione, mxGetPr(plhs[1]), &ione);  /*free(scal);*/ }
 
     if (prec==1) free(djacs);
 
