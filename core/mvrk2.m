@@ -26,6 +26,8 @@ function [y]=mvrk2(a,x,tol,varargin)
 % Inner parameters
 
 nswp=10;
+als_tol_low = 2;
+als_tol_high = 10;
 
 
 % rmax=1000;
@@ -43,6 +45,10 @@ for i=1:2:length(varargin)-1
             y=varargin{i+1};
         case 'verb'
             verb=varargin{i+1};
+        case 'als_tol_high'
+            als_tol_high=varargin{i+1};                        
+        case 'als_tol_low'
+            als_tol_low=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
             
@@ -51,7 +57,7 @@ for i=1:2:length(varargin)-1
     end
 end
 
-tol2 = tol/2;
+tol2 = tol;
 
 d = x.core.d;
 xc = core2cell(x.core);
@@ -115,6 +121,8 @@ else
 end;
 
 max_dx = 0;
+max_dx_prev=Inf;
+regurg_cnt=0;
 
 phiaf = cell(d,1);
 for i=1:d
@@ -359,11 +367,16 @@ for swp=1:nswp
     if (max_dx<tol)
         last_sweep=true;
     end;
+    if (max_dx_prev<=tol*als_tol_high)
+        if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low)); kickrank = -1; end;
+    end;
     
     if (swp==nswp-1)
         last_sweep=true;
     end;
     
+    max_dx_prev = max_dx;
     max_dx = 0;
 end;
 
@@ -423,12 +436,13 @@ max_dx = max(max_dx, dx);
 
 
 % Truncation
-if (dir>0) % left-to-right
+if (dir>=0) % left-to-right
     y_new = reshape(y_new, ry1*n, ry2);
 else
     y_new = reshape(y_new, ry1, n*ry2);
 end;
 
+if (kickrank>=0)
 [u,s,v]=svd(y_new, 'econ');
 s = diag(s);
     
@@ -436,6 +450,21 @@ r = my_chop2(s, tol*norm(s));
     
 r = min(r, numel(s));
   
+else
+    if (dir>=0)
+        [u,v]=qr(y_new, 0);
+        v = v';
+        r = size(u,2);
+        s = ones(r,1);
+    else
+        [v,u]=qr(y_new.', 0);        
+        u = u.';
+        v = conj(v);
+        r = size(v,2);
+        s = ones(r,1);        
+    end;    
+end;
+
 if (verb>1)
     fprintf('=mvrk2= dir %d, dx: %3.3e, r: %d\n', dir, dx, r);
 end;

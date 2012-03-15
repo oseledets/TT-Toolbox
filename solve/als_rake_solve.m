@@ -38,6 +38,8 @@ function [x]=als_rake_solve(a,y,tol,varargin)
 max_full_size=2500;
 
 resid_damp = 2; % Truncation error to true residual treshold
+als_tol_high = 10;
+als_tol_low = 4;
 
 nswp=10;
 local_restart=40;
@@ -79,6 +81,10 @@ for i=1:2:length(varargin)-1
 %             local_solver=varargin{i+1};            
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'als_tol_high'
+            als_tol_high=varargin{i+1};            
+        case 'als_tol_low'
+            als_tol_low=varargin{i+1};                        
         case  'max_full_size'
             max_full_size=varargin{i+1};
 %         case 'step_dpow'
@@ -99,7 +105,7 @@ for i=1:2:length(varargin)-1
     end
 end
 
-tol2 = tol/4;
+tol2 = tol;
 
 d = y.core.d;
 yc = core2cell(y.core);
@@ -177,6 +183,10 @@ phiyc = cell(d+1,1); phiyc{1}=1; phiyc{d+1}=1;
 acp = cell(d,1);
 ycp = cell(d,1);
 
+
+max_res_prev = Inf;
+max_dx_prev = Inf;
+regurg_cnt = 0;
 last_sweep = false;
 
 for swp=1:nswp
@@ -464,16 +474,34 @@ for swp=1:nswp
     if (strcmp(trunc_norm, 'fro'))
         if (max_dx<tol)
             last_sweep=true;
+%             tol2 = tol;
         end;
+        if (max_dx_prev<=tol*als_tol_high)
+            if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; end;           
+%             kickrank = -1;
+%             tol2=tol/4;
+        end;
+        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low)); kickrank=-1; end;
     else
         if (max_res<tol)
             last_sweep=true;
+%             tol2 = tol;
         end;
+        if (max_res_prev<=tol*als_tol_high)
+            if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+            if ((regurg_cnt>0)||(max_res<=tol*als_tol_low)); kickrank=-1; end;
+%             kickrank = -1;
+%             tol2=tol/4;
+        end;        
     end;
     
     if (swp==nswp-1)
         last_sweep=true;
+%         tol2 = tol;
     end;
+    
+    max_res_prev = max_res;
+    max_dx_prev = max_dx;
     
     max_res = 0;
     max_dx = 0;
@@ -583,6 +611,11 @@ else
         local_prec_char = 0;
         if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
         
+        if (res_prev>1)
+            sol_prev = zeros(rx1*n*rx2, 1);
+            res_prev = 1;
+        end;
+        
         sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
         
         res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
@@ -599,6 +632,11 @@ if (res_prev/res_new<resid_damp)&&(res_new>tol)
     fprintf('--warn-- the residual damp was smaller than in the truncation\n');
 end;
 
+% if (flg>0)&&(kickrank==0)
+%     sol = sol_prev;
+%     res_new = res_prev;
+% end;
+
 dx = norm(sol-sol_prev)/norm(sol);
 max_dx = max(max_dx, dx);
 
@@ -606,12 +644,13 @@ max_res = max(max_res, res_prev);
 
 
 % Truncation
-if (dir>0) % left-to-right
+if (dir>=0) % left-to-right
     sol = reshape(sol, rx1*n, rx2);
 else
     sol = reshape(sol, rx1, n*rx2);
 end;
 
+if (kickrank>=0)
 [u,s,v]=svd(sol, 'econ');
 s = diag(s);
     
@@ -650,7 +689,22 @@ else
 end;
     
 r = min(r, numel(s));
-  
+
+else
+    if (dir>=0)
+        [u,v]=qr(sol, 0);
+        v = v';
+        r = size(u,2);
+        s = ones(r,1);
+    else
+        [v,u]=qr(sol.', 0);        
+        u = u.';
+        v = conj(v);
+        r = size(v,2);
+        s = ones(r,1);        
+    end;
+end;
+
 if (verb>1)
     fprintf('=als_rake_solve= dir %d, dx: %3.3e, res_prev: %3.3e, res_new: %3.3e r: %d\n', dir, dx, res_prev, res_new, r);
 end;
@@ -681,8 +735,10 @@ end;
 %                 leftresid = reshape(leftresid, rx1*n, ra2);
 %             end;
             
-            uk = uchol(leftresid.', kickrank+1);
-            uk = uk(:,end:-1:max(end-kickrank+1,1));
+            [uk,~,~]=svd(leftresid, 'econ');
+            uk = uk(:,1:min(kickrank, size(uk,2)));
+%             uk = uchol(leftresid.', kickrank+1);
+%             uk = uk(:,end:-1:max(end-kickrank+1,1));
 %             leftresid = leftA*uk;
 %             leftresid = reshape(leftresid, rx1*n, ra2*size(uk,2));
 %             uk(:,size(uk,2)+1) = uchol(leftresid.', 1);
@@ -717,9 +773,12 @@ end;
 %                 rightresid = rightA*uk(:,i);
 %                 rightresid = reshape(rightresid, n*rx2, ra1);
 %             end;
-            
-            uk = uchol(rightresid.', kickrank+1);
-            uk = uk(:,end:-1:max(end-kickrank+1,1));
+
+            [uk,~,~]=svd(rightresid, 'econ');
+            uk = uk(:,1:min(kickrank, size(uk,2)));
+
+%             uk = uchol(rightresid.', kickrank+1);
+%             uk = uk(:,end:-1:max(end-kickrank+1,1));
             
             [v,rv]=qr([v,uk], 0);
             radd = size(uk,2);

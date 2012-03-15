@@ -1,7 +1,14 @@
 #include "mex.h"
 #include "lapack.h"
 #include "blas.h"
+// #include "time.h"
 
+
+//     typedef struct {
+//                time_t   tv_sec;        // seconds
+//                long     tv_nsec;       // nanoseconds
+//            } tsc;
+//
 char trans = 'N';
 char uplo = 'U';
 double done=1.0;
@@ -820,6 +827,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     long dims[4];
     long rx1, rx2, ra1, ra2, n, i;
     char prec, verb, trunc_norm;
+//     tsc ts0, ts1;
 
     if (nrhs<7) { mexPrintf("Specify at least Phi1,A,Phi2,rhs,tol,trunc_norm,sol_prev\n"); return; }
     if (nrhs<8) prec=0; else { scal = mxGetPr(prhs[7]); prec = (char)round(scal[0]); }
@@ -883,7 +891,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     djacs=NULL;
     if (prec==1) {
         djacs = (double *)malloc(sizeof(double)*n*n*rx1*rx2);
+//         clock_gettime(CLOCK_REALTIME, &ts0);
         dcjacgen(dPhi1,dA,dPhi2, rx1, n, rx2, ra1, ra2, djacs);
+//         clock_gettime(CLOCK_REALTIME, &ts1);
+//         if (verb>0) mexPrintf("JacGen time: %g\n", difftime(ts1.tv_sec, ts0.tv_sec) + ((double)(ts1.tv_nsec-ts0.tv_nsec))*1e-9);
 
 //         dims[0]=n; dims[1]=n; dims[2]=rx1; dims[3]=rx2;
 //         plhs[0] = mxCreateNumericArray(4, dims, mxDOUBLE_CLASS, mxREAL);
@@ -903,7 +914,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         tol_prev = dnrm2_(&i, dres, &ione) / dnrm2_(&i, drhs, &ione);
         if (tol_prev<tol) tol_prev = tol;
 //         mexPrintf("tol0: %3.5e, tol: %3.5e\n", tol_prev, tol);
+//         clock_gettime(CLOCK_REALTIME, &ts0);
         dgmresr_hh(dPhi1, dA, dPhi2, dres, rx1, n, rx2, ra1, ra2, nrestart, tol/tol_prev, niters, djacs, dsol, verb);
+//         clock_gettime(CLOCK_REALTIME, &ts1);
+//         if (verb>0) mexPrintf("gmres time: %g\n", difftime(ts1.tv_sec, ts0.tv_sec) + ((double)(ts1.tv_nsec-ts0.tv_nsec))*1e-9);
+
         if (prec==1) {
             dcjacapply(djacs, n, rx1, rx2, dsol, dres);
             dcopy_(&i,dres,&ione,dsol,&ione);
@@ -917,7 +932,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         i = rx1*n*rx2;
         dcopy_(&i, dsol_prev, &ione, dsol, &ione);
 //         for (i=0; i<rx1*n*rx2; i++) mexPrintf("%g\n", dsol[i]);
+//         clock_gettime(CLOCK_REALTIME, &ts0);
         dgmresl_hh(dPhi1, dA, dPhi2, drhs, rx1, n, rx2, ra1, ra2, nrestart, tol, niters, djacs, dsol, verb);
+//         clock_gettime(CLOCK_REALTIME, &ts1);
+//         if (verb>0) mexPrintf("gmres time: %g\n", difftime(ts1.tv_sec, ts0.tv_sec) + ((double)(ts1.tv_nsec-ts0.tv_nsec))*1e-9);
+
     }
 
 //     i = rx1*ra1;
