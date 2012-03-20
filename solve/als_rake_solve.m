@@ -477,7 +477,7 @@ for swp=1:nswp
 %             tol2 = tol;
         end;
         if (max_dx_prev<=tol*als_tol_high)
-            if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; end;           
+            if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;           
 %             kickrank = -1;
 %             tol2=tol/4;
         end;
