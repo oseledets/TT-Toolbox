@@ -23,10 +23,10 @@ else
    d = numel(sz);
 end
 N=numel(a);
-rks=zeros(d,1); u=cell(d-1,1);
+rks=zeros(d,1); u=cell(d,1);
 rks(1)=1;
 a=reshape(a,[sz(1),N/sz(1)]);
-for k=1:d-1
+for k=1:d
    [m,p]=size(a);
    if ( m > p ) 
       [u1,s1,v1]=svd(a);
@@ -56,18 +56,20 @@ for k=1:d-1
 %    end
 %  end
 %    end
- s1=diag(s1);
+    s1=diag(s1);
    %s1
    r0=my_chop2(s1,eps*norm(s1)/sqrt(d-1));
-      r=min([m,p,rmax,r0]);
+   r=min([m,p,rmax,r0]);
    N = N*r/(sz(k)*rks(k));
    rks(k+1)=r;
    a=u1'*a; 
-   a=a(1:r,:); a=reshape(a,[r*sz(k+1),N/(r*sz(k+1))]);
+   if ( k < d )
+    a=a(1:r,:); a=reshape(a,[r*sz(k+1),N/(r*sz(k+1))]);
+   end
    u{k}=u1;
 end
-rks(d)=1;
-u{d}=v1;
+rks(d+1)=1;
+%u{d}=v1;
 wtt_transform=struct;
 wtt_transform.u=u;
 wtt_transform.rks=rks;
