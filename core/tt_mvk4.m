@@ -9,6 +9,8 @@ function [y]=tt_mvk4(A, x, tol, varargin)
 
 nswp=10;
 
+als_tol_low = 5;
+als_iters = 4;
 
 rmax=1000;
 
@@ -43,6 +45,10 @@ for i=1:2:length(varargin)-1
             top_conv=varargin{i+1};
         case 'block_order'
             block_order=varargin{i+1};            
+        case 'als_tol_low'
+            als_tol_low=varargin{i+1};            
+        case 'als_iters'
+            als_iters=varargin{i+1};            
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -52,7 +58,8 @@ end
 d = x.d;
 n = A.n;
 if (isempty(y))
-    y = tt_rand(n, A.d, kickrank);
+%     y = tt_rand(n, A.d, kickrank);
+    y = tt_ones(n, A.d);
 end;
 
 if (isempty(block_order))
@@ -164,6 +171,7 @@ while (swp<=nswp)
         newy = reshape(newy, ry(i), n(i)*ry(i+1));
     end;
     
+    if (kickrank>=0)
     [u,s,v]=svd(newy, 'econ');
     s = diag(s);
     r = my_chop2(s, tol/sqrt(d)*norm(s));    
@@ -171,6 +179,20 @@ while (swp<=nswp)
 %     r = r+dranks(i);
     r = min(r, numel(s));
     r = min(r, rmax);
+    else
+        if (dir>0)
+            [u,v]=qr(newy, 0);
+            v=v';
+            r = size(u,2);
+            s = ones(r,1);
+        else
+            [v,u]=qr(newy.', 0);
+            v=conj(v);
+            u=u.';
+            r = size(u,2);
+            s = ones(r,1);            
+        end;
+    end;
     
     if (verb>1)
         fprintf('=mvk4=   block %d{%d}, dy: %3.3e, r: %d\n', i, dir, dy(i), r);
@@ -182,7 +204,7 @@ while (swp<=nswp)
         
         % kick
         radd = 0; rv = 1;
-        if (~last_sweep)
+        if (~last_sweep)&&(kickrank>0)
 %             newy = reshape(Phi1, ry(i)*ra(i), rx(i));
 %             newy = newy*reshape(crx{i}, rx(i), n(i)*rx(i+1));
 %             newy = reshape(newy, ry(i), ra(i)*n(i), rx(i+1));
@@ -195,9 +217,37 @@ while (swp<=nswp)
 %             newy = permute(newy, [3, 1, 2, 4]);
 %             newy = reshape(newy, ry(i)*n(i), ra(i+1)*rx(i+1));
             if (strcmp(kicktype, 'mr'))
-                resid = [reshape(u*v', ry(i)*n(i), ry(i+1)), -newy_save];
-                uk = uchol(resid.', kickrank+1);
-                uk = uk(:,end:-1:max(end-kickrank+1,1));
+                leftresid = [reshape(u*v', ry(i)*n(i), ry(i+1)), -newy_save];
+                uk = uchol(leftresid.', kickrank*2);
+                uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
+                
+%                 if (i+1<d)
+%                     newy = reshape(phia{i+3}, ry(i+3)*ra(i+3), rx(i+3));
+%                     newy = newy*reshape(crx{i+2}, rx(i+2)*n(i+2), rx(i+3)).';
+%                     newy = reshape(newy, ry(i+3), ra(i+3), rx(i+2), n(i+2));
+%                     newy = permute(newy, [2, 4, 1, 3]);
+%                     newy = reshape(newy, ra(i+3)*n(i+2), ry(i+3)*rx(i+2));
+%                     A1 = permute(crA{i+2}, [2, 1, 4, 3]);
+%                     A1 = reshape(A1, n(i+2)*ra(i+2), ra(i+3)*n(i+2));
+%                     newy = A1*newy;
+%                     newy = reshape(newy, n(i+2), ra(i+2), ry(i+3), rx(i+2));
+%                     newy = permute(newy, [1, 3, 2, 4]);
+%                     newy = reshape(newy, n(i+2)*ry(i+3), ra(i+2)*rx(i+2));
+%                     
+%                     oldy = reshape(cry{i+2}, ry(i+2), n(i+2)*ry(i+3)).';
+%                     rightresid = [oldy, -newy];
+%                     vk = uchol(rightresid.', kickrank*2);
+%                     vk = vk(:,size(vk,2):-1:max(size(vk,2)-kickrank+1,1));
+%                     
+%                     [oldy,rv]=qr([oldy,vk], 0);
+%                     newy = reshape(cry{i+1}, ry(i+1)*n(i+1), ry(i+2));
+%                     newy = [newy, zeros(ry(i+1)*n(i+1), size(vk,2))];
+%                     newy = newy*(rv.');
+%                     ry(i+2) = size(oldy,2);
+%                     cry{i+1} = reshape(newy, ry(i+1), n(i+1), ry(i+2));
+%                     cry{i+2} = permute(reshape(oldy, n(i+2), ry(i+3), ry(i+2)), [3, 1, 2]);
+%                     phia{i+2} = compute_next_Phi(phia{i+3}, cry{i+2}, crA{i+2}, crx{i+2}, 'rl');
+%                 end;
             else
                 uk = randn(ry(i)*n(i), kickrank);
             end;
@@ -303,7 +353,7 @@ while (swp<=nswp)
         v = conj(v(:,1:r));
         % kick
         radd = 0; rv = 1;
-        if (~last_sweep)&&(strcmp(kicktype, 'rand'))
+        if (~last_sweep)&&(strcmp(kicktype, 'rand'))&&(kickrank>0)
 %             newy = reshape(Phi2, ry(i+1)*ra(i+1), rx(i+1));
 %             newy = newy*reshape(crx{i}, rx(i)*n(i), rx(i+1)).';
 %             newy = reshape(newy, ry(i+1), ra(i+1), rx(i), n(i));
@@ -366,12 +416,20 @@ while (swp<=nswp)
         if (last_sweep)
             break;
         end;
-        
-        
-        if (max_dy<tol)
-            last_sweep=true;
+
+        if (kickrank<0)
+            kickrank=kickrank-1;
         end;
         
+        if (max_dy<tol*als_tol_low)&&(kickrank>=0)
+            kickrank=-1;
+        end;
+        
+        if (max_dy<tol)&&(kickrank<=-als_iters)
+            last_sweep=true;
+            kickrank=0;
+        end;
+                
         if (order_index>numel(cur_order)) % New global sweep
             cur_order = block_order;
             order_index = 1;

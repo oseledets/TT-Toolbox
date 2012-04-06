@@ -40,6 +40,7 @@ max_full_size=2500;
 resid_damp = 2; % Truncation error to true residual treshold
 als_tol_high = 10;
 als_tol_low = 4;
+als_iters=1;
 
 nswp=10;
 local_restart=40;
@@ -49,7 +50,7 @@ local_prec = '';
 % local_prec_char = 0;
 % local_prec = 'jacobi';
 
-% rmax=1000;
+rmax=Inf;
 trunc_norm = 'residual';
 % trunc_norm_char = 1;
 % trunc_norm = 'fro';
@@ -65,8 +66,8 @@ for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
             nswp=varargin{i+1};
-%         case 'rmax'
-%             rmax=varargin{i+1};
+        case 'rmax'
+            rmax=varargin{i+1};
         case 'x0'
             x=varargin{i+1};
         case 'verb'
@@ -85,6 +86,8 @@ for i=1:2:length(varargin)-1
             als_tol_high=varargin{i+1};            
         case 'als_tol_low'
             als_tol_low=varargin{i+1};                        
+        case 'als_iters'
+            als_iters=varargin{i+1};                                    
         case  'max_full_size'
             max_full_size=varargin{i+1};
 %         case 'step_dpow'
@@ -186,6 +189,7 @@ ycp = cell(d,1);
 
 max_res_prev = Inf;
 max_dx_prev = Inf;
+max_frank = 0;
 regurg_cnt = 0;
 last_sweep = false;
 
@@ -266,7 +270,7 @@ for swp=1:nswp
         [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyc{i},ycp{i},phiyc{i+1}, ...
             tol2/sqrt(d*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
             local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
-            dir, local_kickrank, verb);
+            dir, rmax, local_kickrank, verb);
         
         if (flg>0); fprintf('-warn- local_solve did not converge at cb {%d}\n', i); end;
         
@@ -378,7 +382,7 @@ for swp=1:nswp
             [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyf{i}{j},cury{j},phiyf{i}{j+1}, ...
                 tol2/sqrt(d*L(i)*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
                 local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
-                dir, local_kickrank, verb);
+                dir, rmax, local_kickrank, verb);
             
             if (flg>0); fprintf('-warn- local_solve did not converge at fb {%d}{%d}\n', i, j); end;
             
@@ -387,6 +391,7 @@ for swp=1:nswp
                 cr2 = reshape(cr2, rxf{i}(j+1), n{i}(j+1)*rxf{i}(j+2));
                 cr2 = (v.')*cr2;
                 rxf{i}(j+1) = size(u,2);
+                max_frank = max(max_frank, rxf{i}(j+1));
                 u = reshape(u, rxf{i}(j), n{i}(j), rxf{i}(j+1));
                 curx{j} = u;
                 curx{j+1} = reshape(cr2, rxf{i}(j+1), n{i}(j+1), rxf{i}(j+2));
@@ -463,16 +468,28 @@ for swp=1:nswp
     
     
     % Residual check, etc
+    
+%     x_old = x;
+%     for i=1:d
+%         x.tuck{i} = cell2core(x.tuck{i}, xf{i}(1:L(i)));
+%         xc{i} = xf{i}{L(i)+1};
+%     end;
+%     x.core = cell2core(x.core, xc);
+    
     if (verb>0)
-        fprintf('=als_rake_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, mrank_c: %d, mrank_f: %d\n', swp, max_dx, max_res, max(rxc), max(cell2mat(rxf)));
+        fprintf('=als_rake_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, mrank_c: %d, mrank_f: %d\n', swp, max_dx, max_res, max(rxc), max_frank);
     end;
     
     if (last_sweep)
         break;
-    end;
+    end;    
     
-    if (strcmp(trunc_norm, 'fro'))
-        if (max_dx<tol)
+    if (kickrank<0)
+        kickrank=kickrank-1;
+    end;    
+    
+    if (strcmp(trunc_norm, 'fro'))        
+        if (max_dx<tol)&&(kickrank<=-als_iters)
             last_sweep=true;
 %             tol2 = tol;
         end;
@@ -481,21 +498,21 @@ for swp=1:nswp
 %             kickrank = -1;
 %             tol2=tol/4;
         end;
-        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low)); kickrank=-1; end;
+        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>=0); kickrank=-1; end;
     else
-        if (max_res<tol)
+        if (max_res<tol)&&(kickrank<=-als_iters)
             last_sweep=true;
 %             tol2 = tol;
         end;
         if (max_res_prev<=tol*als_tol_high)
             if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
-            if ((regurg_cnt>0)||(max_res<=tol*als_tol_low)); kickrank=-1; end;
+            if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>=0); kickrank=-1; end;
 %             kickrank = -1;
 %             tol2=tol/4;
         end;        
     end;
     
-    if (swp==nswp-1)
+    if (swp==nswp-1)||(regurg_cnt>2)
         last_sweep=true;
 %         tol2 = tol;
     end;
@@ -505,6 +522,7 @@ for swp=1:nswp
     
     max_res = 0;
     max_dx = 0;
+    max_frank=0;
 end;
 
 % Stuff back
@@ -549,7 +567,7 @@ y = reshape(y, ry1*k1*ry2, 1);
 end
 
 
-function [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiy1,y1,phiy2, tol, resid_damp, trunc_norm, sol_prev, local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, dir, kickrank, verb)
+function [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiy1,y1,phiy2, tol, resid_damp, trunc_norm, sol_prev, local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, dir, rmax, kickrank, verb)
 rx1 = size(Phi1,1);
 n = size(A1,2);
 rx2 = size(Phi2,1);
@@ -607,7 +625,7 @@ else
     
     if (res_prev>tol)
         trunc_norm_char = 1;
-        if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
+%         if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
         local_prec_char = 0;
         if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
         
@@ -673,6 +691,7 @@ else
         end;
         r = round((r1+r2)/2);
     end;
+    r = max(r-1,1);
     % More accurate Linear search
     while (r<=numel(s))
         cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
@@ -689,6 +708,7 @@ else
 end;
     
 r = min(r, numel(s));
+r = min(r, rmax);
 
 else
     if (dir>=0)
@@ -735,14 +755,15 @@ end;
 %                 leftresid = reshape(leftresid, rx1*n, ra2);
 %             end;
             
-            [uk,~,~]=svd(leftresid, 'econ');
-            uk = uk(:,1:min(kickrank, size(uk,2)));
-%             uk = uchol(leftresid.', kickrank+1);
-%             uk = uk(:,end:-1:max(end-kickrank+1,1));
+% %             [uk,~,~]=svd(leftresid, 'econ');
+% %             uk = uk(:,1:min(kickrank, size(uk,2)));
+            uk = uchol(leftresid.', kickrank+1);
+            uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
 %             leftresid = leftA*uk;
 %             leftresid = reshape(leftresid, rx1*n, ra2*size(uk,2));
 %             uk(:,size(uk,2)+1) = uchol(leftresid.', 1);
-            
+% %             uk = randn(rx1*n, kickrank);
+
             [u,rv]=qr([u,uk], 0);
             radd = size(uk,2);
             v = [v, zeros(rx2, radd)];
@@ -774,11 +795,12 @@ end;
 %                 rightresid = reshape(rightresid, n*rx2, ra1);
 %             end;
 
-            [uk,~,~]=svd(rightresid, 'econ');
-            uk = uk(:,1:min(kickrank, size(uk,2)));
+% %             [uk,~,~]=svd(rightresid, 'econ');
+% %             uk = uk(:,1:min(kickrank, size(uk,2)));
 
-%             uk = uchol(rightresid.', kickrank+1);
-%             uk = uk(:,end:-1:max(end-kickrank+1,1));
+% %             uk = randn(n*rx2, kickrank);
+            uk = uchol(rightresid.', kickrank+1);
+            uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
             
             [v,rv]=qr([v,uk], 0);
             radd = size(uk,2);

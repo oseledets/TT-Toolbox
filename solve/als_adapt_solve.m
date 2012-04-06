@@ -45,6 +45,10 @@ max_full_size=2500;
 step_dpow = 0.1; % stepsize for d-power in truncations
 min_dpow = 1; % Minimal d-power for truncation
 
+als_tol_high = 10;
+als_tol_low = 4;
+als_iters = 3;
+
 resid_damp = 2; % Truncation error to true residual treshold
 bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
@@ -117,7 +121,7 @@ end
 if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1;  end;
 if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
 
-tol2 = tol/2;
+tol2 = tol;
 
 if (A.n~=A.m)
     error(' DMRG does not know how to solve rectangular systems!\n Use dmrg_solve3(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
@@ -467,6 +471,7 @@ while (swp<=nswp)
         sol = reshape(sol, rx(i), n(i)*rx(i+1));
     end;
     
+    if (kickrank>=0)
     [u,s,v]=svd(sol, 'econ');
     s = diag(s);
     
@@ -490,6 +495,7 @@ while (swp<=nswp)
             end;
             r = round((r1+r2)/2);
         end;
+        r = max(r-1,1);
         % More accurate Linear search
         while (r<=numel(s))
             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
@@ -510,6 +516,21 @@ while (swp<=nswp)
     r = min(r, numel(s));
     r = min(r, rmax);
     
+    else
+        if (dir>0)
+            [u,v]=qr(sol, 0);
+            v=v';
+            r = size(u,2);
+            s = ones(r,1);
+        else
+            [v,u]=qr(sol.', 0);
+            v=conj(v);
+            u=u.';
+            r = size(u,2);
+            s = ones(r,1);            
+        end;        
+    end;
+    
     if (verb>1)
         fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), chkres, iter, r);
     end;
@@ -518,7 +539,7 @@ while (swp<=nswp)
         u = u(:,1:r);
         v = conj(v(:,1:r))*diag(s(1:r));
         
-        if (~last_sweep)
+        if (kickrank>0)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         leftA = permute(Phi1, [1, 3, 2]);
@@ -590,7 +611,7 @@ while (swp<=nswp)
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
         
-        if (~last_sweep)
+        if (kickrank>0)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         rightA = permute(Phi2, [2, 1, 3]);
@@ -685,14 +706,26 @@ while (swp<=nswp)
         if (last_sweep)
             break;
         end;
+        
+        if (kickrank<0)
+            kickrank=kickrank-1;
+        end;        
 
             if (strcmp(trunc_norm, 'fro'))
-                if (max_dx<tol)
+                if (max_dx<tol)&&(kickrank<=-als_iters)
+                    last_sweep=true;
+                    kickrank = 0;
+                end;
+                if (max_dx<tol*als_tol_low)&&(kickrank>=0)
+                    kickrank=-1;
+                end;                
+            else
+                if (max_res<tol)&&(kickrank<=-als_iters)
+                    kickrank = 0;
                     last_sweep=true;
                 end;
-            else
-                if (max_res<tol)
-                    last_sweep=true;
+                if (max_res<tol*als_tol_low)&&(kickrank>=0)
+                    kickrank=-1;
                 end;
             end;        
         

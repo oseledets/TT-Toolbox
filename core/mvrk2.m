@@ -28,7 +28,7 @@ function [y]=mvrk2(a,x,tol,varargin)
 nswp=10;
 als_tol_low = 2;
 als_tol_high = 10;
-
+als_iters = 4;
 
 % rmax=1000;
 verb=1;
@@ -49,6 +49,8 @@ for i=1:2:length(varargin)-1
             als_tol_high=varargin{i+1};                        
         case 'als_tol_low'
             als_tol_low=varargin{i+1};
+        case 'als_iters'
+            als_iters=varargin{i+1};            
         case 'kickrank'
             kickrank=varargin{i+1};
             
@@ -135,6 +137,7 @@ acp = cell(d,1);
 % xcp = cell(d,1);
 
 last_sweep = false;
+max_frank = 0;
 
 for swp=1:nswp
     
@@ -290,6 +293,7 @@ for swp=1:nswp
                 cr2 = reshape(cr2, ryf{i}(j+1), n{i}(j+1)*ryf{i}(j+2));
                 cr2 = (v.')*cr2;
                 ryf{i}(j+1) = size(u,2);
+                max_frank = max(max_frank, ryf{i}(j+1));
                 u = reshape(u, ryf{i}(j), n{i}(j), ryf{i}(j+1));
                 cury{j} = u;
                 cury{j+1} = reshape(cr2, ryf{i}(j+1), n{i}(j+1), ryf{i}(j+2));
@@ -357,19 +361,25 @@ for swp=1:nswp
     
     % Residual check, etc
     if (verb>0)
-        fprintf('=mvrk2= sweep %d, max_dx: %3.3e, mrank_c: %d, mrank_f: %d\n', swp, max_dx, max(ryc), max(cell2mat(ryf)));
+        fprintf('=mvrk2= sweep %d, max_dx: %3.3e, mrank_c: %d, mrank_f: %d\n', swp, max_dx, max(ryc), max_frank);
     end;
     
     if (last_sweep)
         break;
     end;
     
-    if (max_dx<tol)
-        last_sweep=true;
+    if (kickrank<0)
+        kickrank=kickrank-1;
     end;
+    
+    if (max_dx<tol)&&(kickrank<=-als_iters)
+        last_sweep=true;
+        kickrank=0;
+    end;
+
     if (max_dx_prev<=tol*als_tol_high)
         if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
-        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low)); kickrank = -1; end;
+        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>=0); kickrank = -1; end;
     end;
     
     if (swp==nswp-1)
@@ -378,6 +388,7 @@ for swp=1:nswp
     
     max_dx_prev = max_dx;
     max_dx = 0;
+    max_frank = 0;
 end;
 
 % Stuff back
@@ -478,8 +489,8 @@ end;
             leftresid = reshape(u*v.', ry1*n, ry2);
             leftresid = [leftresid, -y_save];
             
-            uk = uchol(leftresid.', kickrank+1);
-            uk = uk(:,end:-1:max(end-kickrank+1,1));
+            uk = uchol(leftresid.', kickrank*2);
+            uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
             
             [u,rv]=qr([u,uk], 0);
             radd = size(uk,2);
@@ -494,8 +505,8 @@ end;
             % Smarter kick: low-rank PCA in residual
             rightresid = reshape(u*v.', ry1, n*ry2);
             rightresid = [rightresid; -y_save];
-            uk = uchol(rightresid, kickrank+1);
-            uk = uk(:,end:-1:max(end-kickrank+1,1));
+            uk = uchol(rightresid, kickrank*2);
+            uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
             
             [v,rv]=qr([v,uk], 0);
             radd = size(uk,2);

@@ -33,7 +33,11 @@ r_prev = 1;
 for i=2:d-1
     % Off-diagonal block decomp
     [U,si,wi]=svd(B(1:i, i+1:d), 'econ');
-    r = my_chop2(diag(si), tol*norm(diag(si)));
+    if (norm(diag(si))==0)
+        r=0;
+    else
+        r = my_chop2(diag(si), tol*norm(diag(si)));
+    end;
     U = U(:, 1:r);
     W=si(1:r, 1:r)*wi(:,1:r)';
     

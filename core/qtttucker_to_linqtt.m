@@ -67,7 +67,11 @@ for i=1:dphys
     curtuck = tt_reshape(curtuck, [ns{i}; rc(i); rc(i+1)], eps);
     % Now the most dangerous: the movement of the block rc(i) to the beginning
     curtuck = move_tt_block(curtuck, numel(ns{i})+1, 1, eps);
-    curtuck = tt_reshape(curtuck, [rc(i)*ns{i}(1); ns{i}(2:end-1); ns{i}(end)*rc(i+1)], eps);
+    if (numel(ns{i})>1)
+        curtuck = tt_reshape(curtuck, [rc(i)*ns{i}(1); ns{i}(2:end-1); ns{i}(end)*rc(i+1)], eps);
+    else
+        curtuck = tt_reshape(curtuck, rc(i)*ns{i}(1)*rc(i+1), eps);
+    end;
     % the data is in fact done; update the rank and n formally
     curtuck.r(1) = rc(i);
     curtuck.n(1) = ns{i}(1);

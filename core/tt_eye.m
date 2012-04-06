@@ -18,7 +18,11 @@ function [e]=tt_eye(n,varargin)
 
 
 if (numel(n) == 1)
-  d=varargin{1}; 
+    if (numel(varargin)<1)
+        d = 1;
+    else
+        d=varargin{1}; 
+    end;
   n=n*ones(1,d);
 else
   d=numel(n);

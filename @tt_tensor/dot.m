@@ -86,10 +86,13 @@ if (do_qr)
     p = p*conj(rv1);
     p = reshape(p, r1(1), r2(1), r2old, r1old);
     p = permute(p, [1,2,4,3]);
+    if ( r1(1)*r2(1) == 1 ) %Save the rabbits
+        p=reshape(p, r1old, r2old);
+    end
 else
     p = reshape(p, r1(1), r2(1), r1(d+1), r2(d+1));
+    if ( r1(1)*r2(1) == 1 ) %Save the rabbits
+        p=reshape(p, r1(d+1), r2(d+1));
+    end
 end;
-if ( r1(1)*r2(1) == 1 ) %Save the rabbits 
-   p=reshape(p,r1(d+1),r2(d+1));
 end
-end  
