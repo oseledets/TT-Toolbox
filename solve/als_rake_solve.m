@@ -498,7 +498,7 @@ for swp=1:nswp
 %             kickrank = -1;
 %             tol2=tol/4;
         end;
-        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>=0); kickrank=-1; end;
+        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
     else
         if (max_res<tol)&&(kickrank<=-als_iters)
             last_sweep=true;
@@ -506,7 +506,7 @@ for swp=1:nswp
         end;
         if (max_res_prev<=tol*als_tol_high)
             if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
-            if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>=0); kickrank=-1; end;
+            if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
 %             kickrank = -1;
 %             tol2=tol/4;
         end;        

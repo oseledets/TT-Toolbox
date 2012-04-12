@@ -137,6 +137,10 @@ if (isempty(block_order))
     block_order = [+(d), -(d)];
 end;
 
+if (norm(y)==0) % Solution is a ground state. Keep it normalized
+    x = x/norm(x);
+end;
+
 ry = y.r;
 ra = A.r;
 rx = x.r;
@@ -226,23 +230,52 @@ while (swp<=nswp)
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
-        res_prev = norm(B*sol_prev-rhs)/norm_rhs;
-        if (res_prev>real_tol)
-            sol = B \ rhs;
-            flg = 0;
-            % If the system was ill-conditioned
-            %         [sol,flg] = gmres(B, rhs, local_restart, real_tol, 2, [], [], sol);
-            res_new = norm(B*sol-rhs)/norm_rhs;
-            iter=1;
+        if (norm_rhs~=0)
+            res_prev = norm(B*sol_prev-rhs)/norm_rhs;
+            if (res_prev>real_tol)
+                sol = B \ rhs;
+                flg = 0;
+                res_new = norm(B*sol-rhs)/norm_rhs;
+                iter=1;
+            else
+                sol = sol_prev;
+                res_new = res_prev;
+                flg=0;
+                iter=0;
+            end;
         else
-            sol = sol_prev;
-            res_new = res_prev;
-            flg=0;
-            iter=0;
+            % rhs = 0: we are looking for a ground state
+            res_prev = norm(B*sol_prev);
+            if (res_prev>real_tol)
+                B2 = B+eye(rx(i)*n(i)*rx(i+1))*mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
+                sol_prev2 = sol_prev;
+                for it=1:local_restart
+                    sol = B2 \ sol_prev2;
+                    sol = sol/norm(sol);
+                    res_new = norm(B*sol);
+                    if (strcmp(trunc_norm, 'fro'))
+                        if (norm(sol-sol_prev2)<real_tol); break; end;
+                    else
+                        if (res_new<real_tol); break; end;    
+                    end;
+                    sol_prev2 = sol;
+                end;
+%                 [sol,L]=eig(B);
+%                 [v,l]=min(abs(diag(L)));
+%                 sol = sol(:,l);
+                flg = 0;
+                iter=it;
+            else
+                sol = sol_prev;
+                res_new = res_prev;
+                flg=0;
+                iter=0;
+            end;
         end;
         
     else % Structured solution.
         
+        if (norm_rhs~=0)
         res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
         
         if (res_prev>real_tol)
@@ -421,12 +454,50 @@ while (swp<=nswp)
             flg=0;
             iter=0;
         end;
+        
+        
+        else % Ground state
+            res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev));
+            
+            if (res_prev>real_tol)
+                sol_prev2 = sol_prev;
+                Phi1mex = zeros(rx(i), rx(i), ra(i)+1);
+                Phi1mex(1:rx(i), 1:rx(i), 1:ra(i)) = permute(Phi1,[1,3,2]);
+                Phi1mex(1:rx(i), 1:rx(i), ra(i)+1) = eye(rx(i))*mean(abs(Phi1(:)));
+                Phi2mex = zeros(rx(i+1), rx(i+1), ra(i+1)+1);
+                Phi2mex(1:rx(i+1), 1:rx(i+1), 1:ra(i+1)) = permute(Phi2,[1,3,2]);
+                Phi2mex(1:rx(i+1), 1:rx(i+1), ra(i+1)+1) = eye(rx(i+1))*mean(abs(Phi2(:)));
+                A1mex = zeros(n(i),n(i), ra(i)+1, ra(i+1)+1);
+                A1mex(1:n(i), 1:n(i), 1:ra(i), 1:ra(i+1)) = permute(A1, [2, 3, 1, 4]);
+                A1mex(1:n(i), 1:n(i), ra(i)+1, ra(i+1)+1) = eye(n(i))*mean(abs(A1(:)));
+                A1mex = permute(A1mex, [3, 1, 2, 4]);
+                for it=1:local_iters
+                    rhs = sol_prev2;
+                    sol = solve3d(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
+                    sol = sol/norm(sol);
+                    res_new = norm(bfun3(Phi1, A1, Phi2, sol));
+                    if (strcmp(trunc_norm, 'fro'))
+                        if (norm(sol-sol_prev2)<real_tol); break; end;
+                    else
+                        if (res_new<real_tol); break; end;
+                    end;
+                    sol_prev2 = sol;
+                end;
+                flg=0;               
+                iter = it;
+            else
+                sol = sol_prev;
+                res_new = res_prev;
+                flg=0;
+                iter=0;
+            end;
+        end;
     end;
     
     if (flg>0)
         fprintf('-warn- local solver did not converge at block %d\n', i);
     end;
-    if (res_prev/res_new<resid_damp)&&(res_new>real_tol)
+    if (res_prev/res_new<resid_damp)&&(res_new>real_tol)&&(norm_rhs~=0)
         fprintf('--warn-- the residual damp was smaller than in the truncation\n');
     end;
     
@@ -469,6 +540,10 @@ while (swp<=nswp)
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
     else
         sol = reshape(sol, rx(i), n(i)*rx(i+1));
+    end;
+    
+    if (norm_rhs==0)
+        norm_rhs=1;
     end;
     
     if (kickrank>=0)
@@ -532,7 +607,7 @@ while (swp<=nswp)
     end;
     
     if (verb>1)
-        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), chkres, iter, r);
+        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), res_prev, iter, r);
     end;
         
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
@@ -716,7 +791,7 @@ while (swp<=nswp)
                     last_sweep=true;
                     kickrank = 0;
                 end;
-                if (max_dx<tol*als_tol_low)&&(kickrank>=0)
+                if (max_dx<tol*als_tol_low)&&(kickrank>0)
                     kickrank=-1;
                 end;                
             else
@@ -724,7 +799,7 @@ while (swp<=nswp)
                     kickrank = 0;
                     last_sweep=true;
                 end;
-                if (max_res<tol*als_tol_low)&&(kickrank>=0)
+                if (max_res<tol*als_tol_low)&&(kickrank>0)
                     kickrank=-1;
                 end;
             end;        

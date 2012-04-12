@@ -20,6 +20,11 @@ function [mx,ind_full]=tt_max(tt)
 tt=core(tt); %From the TT2 format
 d=size(tt,1);
 
+if (d==1)
+    [mx,ind_full]=max(abs(tt{1}(:)));
+    return;
+end;
+
 %NEW version 
 tt1=tt;
 mat=tt1{1};
