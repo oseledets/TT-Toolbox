@@ -554,36 +554,76 @@ while (swp<=nswp)
 %         r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));        
         r = my_chop2(s, real_tol*resid_damp*norm(s));        
     else
-        % Residual trunc; First, bin-search
-        r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
-        while (r2-r1>1)
+        if (dir>0); r = min(rx(i)*n(i),rx(i+1));
+        else r = min(rx(i), n(i)*rx(i+1)); end;        
+        cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+        if (rx(i)*n(i)*rx(i+1)<max_full_size)
+            res = norm(B*cursol(:)-rhs)/norm_rhs;
+        else
+            res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+        end;
+        bfuncnt = 1;
+        if (res<max(real_tol, res_new)*resid_damp)
+            drank = -1;
+        else
+            drank = 1;
+        end;        
+        while (r>0)&&(r<=numel(s))
             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
             if (rx(i)*n(i)*rx(i+1)<max_full_size)
                 res = norm(B*cursol(:)-rhs)/norm_rhs;
             else
                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
             end;
-            if (res<max(real_tol, res_new)*resid_damp)
-                r2 = r;
+            bfuncnt=bfuncnt+1;
+            if (drank>0)
+                if (res<max(real_tol, res_new)*resid_damp)
+                    break;
+                end;
             else
-                r1 = r;
+                if (res>=max(real_tol, res_new)*resid_damp)
+                    break;
+                end;
             end;
-            r = round((r1+r2)/2);
+            r = r+drank;
         end;
-        r = max(r-1,1);
-        % More accurate Linear search
-        while (r<=numel(s))
-            cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-            if (rx(i)*n(i)*rx(i+1)<max_full_size)
-                res = norm(B*cursol(:)-rhs)/norm_rhs;
-            else
-                res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
-            end;
-            if (res<max(real_tol, res_new)*resid_damp)
-                break;
-            end;
-            r = r+1;
+        if (drank<0)
+            r=r+1;
         end;
+        
+%         bfuncnt = 0;
+%         % Residual trunc; First, bin-search
+%         r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
+%         while (r2-r1>1)
+%             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+%             if (rx(i)*n(i)*rx(i+1)<max_full_size)
+%                 res = norm(B*cursol(:)-rhs)/norm_rhs;
+%             else
+%                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+%             end;
+%             bfuncnt=bfuncnt+1;
+%             if (res<max(real_tol, res_new)*resid_damp)
+%                 r2 = r;
+%             else
+%                 r1 = r;
+%             end;
+%             r = round((r1+r2)/2);
+%         end;
+%         r = max(r-1,1);
+%         % More accurate Linear search
+%         while (r<=numel(s))
+%             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+%             if (rx(i)*n(i)*rx(i+1)<max_full_size)
+%                 res = norm(B*cursol(:)-rhs)/norm_rhs;
+%             else
+%                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+%             end;
+%             bfuncnt=bfuncnt+1;
+%             if (res<max(real_tol, res_new)*resid_damp)
+%                 break;
+%             end;
+%             r = r+1;
+%         end;
     end;
     
     % Artificial rank increasing
@@ -607,7 +647,7 @@ while (swp<=nswp)
     end;
     
     if (verb>1)
-        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), res_prev, iter, r);
+        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, bfuncnt: %d, r: %d\n', i, dir, dx(i), res_prev, bfuncnt, r);
     end;
         
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
