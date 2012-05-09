@@ -74,7 +74,7 @@ elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
       cr=reshape(cr,[r(k),n(k),m(k),r(k+1)]);
       cr=permute(cr,[2,4,1,3]); cr=reshape(cr,[n(k)*r(k+1),r(k)*m(k)]);
       M=numel(c);
-      c=reshape(c,[r(k)*m(k),M/(r(k)*m(k))]);
+      c=reshape(c,[r(k)*m(k),M/(r(k)*m(k))]); 
       c=cr*c; c=reshape(c,[n(k),numel(c)/n(k)]);
       c=permute(c,[2,1]);
     end

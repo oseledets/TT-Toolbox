@@ -33,6 +33,7 @@ for k=1:d
    else
       [u1,s1,v1]=svd(a,'econ');
    end
+   
    %Fix for u1 SLIGHTLY
 %   a1=a;
 %    if ( m > p )
@@ -67,6 +68,7 @@ for k=1:d
     a=a(1:r,:); a=reshape(a,[r*sz(k+1),N/(r*sz(k+1))]);
    end
    u{k}=u1;
+    fprintf('k=%d r=%d Size of u = %d x %d, Size of a is %d x %d \n',k,r,size(u1,1),size(u1,2),size(a,1),size(a,2));
 end
 rks(d+1)=1;
 %u{d}=v1;

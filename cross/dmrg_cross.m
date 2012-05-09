@@ -41,6 +41,9 @@ kickrank=2;
 nswp=10;
 y=[];
 vectorized=false;
+
+
+
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -78,6 +81,8 @@ y=round(y,0); %To avoid overranks
 ry=y.r;
 [y,rm]=qr(y,'rl');
 y=rm*y;
+ytt=y;
+y=core2cell(y);
 %Warmup procedure: orthogonalization from right to left of the initial
 %approximation & computation of the index sets & computation of the
 %right-to-left R matrix
@@ -278,6 +283,7 @@ while ( swp < nswp && not_converged )
         end
     end
 end
+y=cell2core(ytt,y);
 return
 end
 function val=my_vec_fun(ind,fun)

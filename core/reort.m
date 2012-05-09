@@ -14,6 +14,8 @@ function [y]=reort(u,uadd)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
+usave=u;
+uadd_save=uadd;
 if (size(uadd,2)==0)
     y = u;
     return;
@@ -41,16 +43,17 @@ while (reort_flag && j <= 20 )
     reort_flag=~isempty(find(norm_unew <= 0.25*norm_uadd,1));
     [unew,~]=qr(unew,0); %Here it is ok.
     if (reort_flag)
+        uadd=unew;
         su=u'*unew;
         unew=unew-u*su;
         %Kill machine zeros
         %unew(unew==0)=max(1e-308,norm(unew,'fro')*1e-15);
         j=j+1;
-        if ( j == 3 && isempty(z) ) %Kill machine zeros
-           z=randn(size(unew,1),1); z=z/norm(z);
-           u = u - 2*z*(z'*u);
-           unew = unew - 2*z*(z'*unew);
-        end
+        %if ( j == 3 && isempty(z) ) %Kill machine zeros
+        %   z=randn(size(unew,1),1); z=z/norm(z);
+        %   u = u - 2*z*(z'*u);
+        %   unew = unew - 2*z*(z'*unew);
+        %end
     end
 end
 if ( reort_flag )
@@ -59,8 +62,8 @@ if ( reort_flag )
 else
  y=[u,unew];
 end
-if ( ~isempty(z) ) 
-   y = y - 2*z*(z'*y);
-end
+%if ( ~isempty(z) ) 
+%   y = y - 2*z*(z'*y);
+%end
 return
 end

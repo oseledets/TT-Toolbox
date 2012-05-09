@@ -1,7 +1,7 @@
 function [x]=als_adapt_solve(A, y, tol, varargin)
 %Solution of linear systems in TT-format via DMRG iteration
-%   [X,SWEEPS]=DMRG_SOLVE3(A,Y,TOL,OPTIONS) Attempts to solve the linear
-%   system A*X = Y with accuracy/residual TOL using the two-sided DMRG iteration.
+%   [X,SWEEPS]=ALS_ADAPT_SOLVE(A,Y,TOL,OPTIONS) Attempts to solve the linear
+%   system A*X = Y with accuracy/residual TOL using the two-sided ALS+KICK iteration.
 %   Matrix A has to be given in the TT-format, right-hand side Y should be
 %   given in the TT-format also. Options are provided in form
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
@@ -26,7 +26,6 @@ function [x]=als_adapt_solve(A, y, tol, varargin)
 %           d=8; f=8; 
 %           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
 %           rhs=tt_ones(2,d*f); Right-hand side of all ones
-%           sol=dmrg_solve3(mat,rhs,1e-6);
 %
 %
 % TT-Toolbox 2.2, 2009-2012
