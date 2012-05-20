@@ -76,6 +76,8 @@ if (isempty(y) )
 end
 if ( ~vectorized ) 
     elem=@(ind) my_vec_fun(ind,fun);
+else
+    elem = @(ind)fun(ind);
 end
 y=round(y,0); %To avoid overranks
 ry=y.r;
