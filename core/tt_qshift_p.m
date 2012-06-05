@@ -1,12 +1,12 @@
 function [tt]=tt_qshift_p(d,m)
 
 % for integer m
-% returns the periodic downward M-position shift matrix of size 2^d x 2^d
-% where M=sign(m) * mod(abs(m),2^d)
+% returns the periodic downward m-position shift matrix of size 2^d x 2^d
 % in the QTT format
 % The shift is (-m)-position upward for m < 0
 % m=0 corresponds to the identity matrix
 % m=2^d corresponds to the identity matrix
+% m=-2^d corresponds to the identity matrix
 %
 % January 28, 2011
 % Vladimir Kazeev

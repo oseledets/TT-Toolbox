@@ -1,12 +1,12 @@
 function [tt]=tt_qshift(d,m)
 
 % for integer m
-% returns the non-periodic downward M-position shift matrix of size 2^d x 2^d,
-% where M=sign(m) * mod(abs(m),2^d)
+% returns the non-periodic downward m-position shift matrix of size 2^d x 2^d,
 % in the QTT format
 % The shift is (-m)-position upward for m < 0
 % m=0 corresponds to the identity matrix
-% m=2^d corresponds to the identity matrix
+% m=2^d corresponds to the zero matrix
+% m=-2^d corresponds to the zero matrix
 %
 % January 25, 2011
 % Vladimir Kazeev
@@ -29,14 +29,20 @@ I=eye(2);
 J=[0,1;0,0];
 O=zeros(2);
 
+tt=cell(d,1);
+
 if (m < 0)
 	J=J';
 	m=abs(m);
 end
-m=mod(m,2^d);
-m=dec2bin(m,d);
+if (abs(m) >= 2^d)
+	for k=1:d
+		tt{k}=O;
+	end
+	return
+end
 
-tt=cell(d,1);
+m=dec2bin(m,d);
 
 if (m(1) == '1')
 	tt{1}=[J',O];
