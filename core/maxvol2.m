@@ -24,6 +24,7 @@ end
 if ( nargin < 2 || isempty(ind) )
 [l_shit,u_shit,p]=lu(a,'vector');
 %p=randperm(n);
+%p=1:n;
 ind=p(1:r);
 b=a(p,:);
 sbm=a(ind,:);
@@ -37,6 +38,7 @@ while (iter <= niters);
 % [mx,pv]=max((abs(z))');
 [mx,pv]=max(abs(z), [], 2);
 [mx0,pv0]=max(mx);
+%fprintf('mx=%.1f \n',mx0);
 if ( mx0 <= 1 + eps ) 
     ind=sort(ind);
     return

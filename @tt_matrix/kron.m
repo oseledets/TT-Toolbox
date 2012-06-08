@@ -1,8 +1,11 @@
-function [c] = kron(a,b)
+function [c] = kron(a,b,typ)
 %Kronecker product of two TT-matrices
-%   [C]=KRON(A,B) Kronecker product of two TT-matrices. One of the
+%   [C]=KRON(A,B,TYP) Kronecker product of two TT-matrices. One of the
 %   arguments can be empty. In this case, the other, nonempty argument is
-%   returned
+%   returned. TYP can be absent, then it is old-tt-style Kronecker product 
+%   (not the standard definition). If TYP is present, then it is 
+%   consistent with the standard definition. This may change 
+%   change in future to use only the standard definition
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -21,10 +24,13 @@ elseif (isempty(b) )
   c=a;  
   return;
 end
-c=tt_matrix;
-c.n=[(a.n);(b.n)];
-c.m=[(a.m);(b.m)];
-%c.d=a.d+b.d;
-c.tt=kron(a.tt,b.tt);
+if ( nargin < 3 )
+    c=tt_matrix;
+    c.n=[(a.n);(b.n)];
+    c.m=[(a.m);(b.m)];
+    c.tt=kron(a.tt,b.tt);
+else
+   c = kron(b,a);
+end
 return
 end

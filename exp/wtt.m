@@ -1,6 +1,6 @@
 function [w]=wtt(v,wtt_transform)
-%Inverse WTT transform with previously computed filters
-%   W=IWTT(V,WTT_TRANSFORM) computes the forward WTT tranformation of a 
+%Forward WTT transform with previously computed filters
+%   W=WTT(V,WTT_TRANSFORM) computes the forward WTT tranformation of a 
 %   given tensor with filters, stored in the WTT_TRANSFORM structure.
 %
 %
