@@ -57,6 +57,7 @@ end
 
 d = x.d;
 n = A.n;
+m = A.m;
 if (isempty(y))
 %     y = tt_rand(n, A.d, kickrank);
     y = tt_ones(n, A.d);
@@ -126,12 +127,12 @@ while (swp<=nswp)
     A1 = crA{i};
 
     newy = reshape(Phi1, ry(i)*ra(i), rx(i));
-    newy = newy*reshape(x1, rx(i), n(i)*rx(i+1));
-    newy = reshape(newy, ry(i), ra(i)*n(i), rx(i+1));
+    newy = newy*reshape(x1, rx(i), m(i)*rx(i+1));
+    newy = reshape(newy, ry(i), ra(i)*m(i), rx(i+1));
     newy = permute(newy, [2, 1, 3]);
-    newy = reshape(newy, ra(i)*n(i), ry(i)*rx(i+1));
+    newy = reshape(newy, ra(i)*m(i), ry(i)*rx(i+1));
     A1 = permute(A1, [2, 4, 1, 3]);
-    A1 = reshape(A1, n(i)*ra(i+1), ra(i)*n(i));
+    A1 = reshape(A1, n(i)*ra(i+1), ra(i)*m(i));
     newy = A1*newy;
     newy = reshape(newy, n(i), ra(i+1), ry(i), rx(i+1));
     newy = permute(newy, [3, 1, 2, 4]);
