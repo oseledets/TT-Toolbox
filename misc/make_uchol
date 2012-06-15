@@ -1,0 +1,4 @@
+all:
+	 icc -fPIC -c uchol_full.c -o uchol_full.o
+	 icc  -c  -I/home/dc/matlab_inst/extern/include -I/home/dc/matlab_inst/simulink/include -DMATLAB_MEX_FILE  -D_GNU_SOURCE  -fexceptions -fPIC -fno-omit-frame-pointer -pthread  -O3   "uchol.c"
+	 icc  -O3 -pthread -shared -Wl,--version-script,/home/dc/matlab_inst/extern/lib/glnxa64/mexFunction.map -Wl,--no-undefined -o  "uchol.mexa64"  uchol.o uchol_full.o  -lmwlapack -lmwblas -Wl,-rpath-link,/home/dc/matlab_inst/bin/glnxa64 -L/home/dc/matlab_inst/bin/glnxa64 -lmx -lmex -lmat -lm -lstdc++

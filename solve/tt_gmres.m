@@ -32,7 +32,7 @@ derr_tol_for_sp = 1.0; % minimal jump of residual at one iteration, which is con
                        % a stagnation.
 use_err_trunc = 1; % use compression accuracy eps_z/err for Krylov vectors 
 err_trunc_power = 0.8; % theoretical estimate - 1 - sometimes sucks
-compute_real_res = 0; % Compute the real residual on each step (expensive!)
+compute_real_res = 1; % Compute the real residual on each step (expensive!)
 % extra param in tt_iterapp.m: matvec_alg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -96,7 +96,8 @@ if (existsx0)
 else
 %     x = pre_b;
 %     x = tt_scal2(b, log(1e-308), 1);
-    x = tt_zeros(max(size(b)), tt_size(b));
+%     x = tt_zeros(max(size(b)), tt_size(b));
+    x = core(tt_zeros(tt_size(b), max(size(b))));
 end;
 
 % x_old = x;
