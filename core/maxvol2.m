@@ -1,8 +1,15 @@
 function [ind]=maxvol2(a,ind)
 %Maximal volume submatrix in an tall matrix
-%   [IND]=MAXVOL2(A) computes maximal volume submatrix in n x r matrix A
+%   [IND]=MAXVOL2(A,IND) Computes maximal volume submatrix in A starting from IND
+%   [IND]=MAXVOL2(A) Computes maximal volume submatrix in A starting from LU
 %   Returns rows indices that contain maximal volume submatrix
-%
+%   
+%   Reference: 
+%   How to find a good submatrix / S.A. Goreinov, 
+%   I.V. Oseledets, D.V. Savostyanov, E.E. Tyrtyshnikov, N.L. Zamarashkin
+%   // Matrix Methods: Theory, Algorithms, Applications / 
+%   Ed. by V. Olshevsky, E. Tyrtyshnikov. ? World Scientific 
+%   Publishing, 2010. ? Pp. 247?256.
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -22,42 +29,31 @@ end
 
 %Initialize
 if ( nargin < 2 || isempty(ind) )
-[l_shit,u_shit,p]=lu(a,'vector');
-%p=randperm(n);
-%p=1:n;
+[l_dmp,u_dmp,p]=lu(a,'vector');
 ind=p(1:r);
-b=a(p,:);
+
+
 sbm=a(ind,:);
-z=b(r+1:n,:)/sbm; %Watch for this later on please
+b = a / sbm; 
 end
 %Start iterations
 niters=100;
 eps=5e-2; %Stopping accuracy
 iter=0;
 while (iter <= niters);
-% [mx,pv]=max((abs(z))');
-[mx,pv]=max(abs(z), [], 2);
-[mx0,pv0]=max(mx);
-%fprintf('mx=%.1f \n',mx0);
+
+[mx0,big_ind] = max(abs(b(:)));
+[i0,j0] = ind2sub([n,r],big_ind);
 if ( mx0 <= 1 + eps ) 
     ind=sort(ind);
     return
     
 end 
-%Swap i0-th row with j0-th row
-i0=pv0;
-j0=pv(i0);
-i=p(i0+r);
-p(i0+r)=p(j0);
-p(j0)=i;
-bb=z(:,j0);
-bb(i0)=bb(i0)+1;
-cc=z(i0,:);
-cc(j0)=cc(j0)-1;
-z=z-bb*cc./z(i0,j0);
-iter=iter+1;
-ind=p(1:r);
-ind=sort(ind);
+k = ind(j0); %This is the current row that we are using
+b = b + b(:,j0)*(b(k,:)-b(i0,:))/b(i0,j0);
+ind(j0) = i0;
+
+
 end
 
 return

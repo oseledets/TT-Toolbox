@@ -228,7 +228,6 @@ while (swp<=nswp)
         B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
-        
         if (norm_rhs~=0)
             res_prev = norm(B*sol_prev-rhs)/norm_rhs;
             if (res_prev>real_tol)
@@ -416,8 +415,11 @@ while (swp<=nswp)
             
             % Run the iterative solution
 %             tic;
+            fprintf('HERE!');
             if (strcmp(local_solver, 'gmres'))
                 [dsol,flg,RELRES,iter] = gmres(mvfun, drhs, local_restart, min(real_tol/res_prev,1), local_iters);
+
+
                 iter = (iter(1)-1)*local_restart + iter(2);
             else
                 [dsol,flg,RELRES,iter] = pcg(mvfun, drhs, min(real_tol/res_prev,1), local_iters*local_restart);
