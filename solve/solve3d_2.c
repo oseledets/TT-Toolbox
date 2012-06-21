@@ -23,6 +23,8 @@ extern void tt_adapt_als_mp_bfun3_(long *rx1, long *m, long *rx2, long *ry1, lon
 #define bfun3 tt_adapt_als_mp_bfun3_
 #define djac_gen tt_adapt_als_mp_djac_gen_
 
+extern char gmres_3d_printf_buf_[128];
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 // Phi1 [r1,r1',ra1], A[ra1,n,n',ra2], Phi2[r2,r2',ra2], rhs, tol, trunc_norm, sol_prev, prec, nrestart, niters, verb
 {
@@ -35,7 +37,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     long dims[4];
     long rx1, rx2, ra1, ra2, n, i;
     char prec, verb, trunc_norm;
-    char ptype = 'c';
+    char ptype = 'n';
 //     tsc ts0, ts1;
 
     if (nrhs<7) { mexPrintf("Specify at least Phi1,A,Phi2,rhs,tol,trunc_norm,sol_prev\n"); return; }
@@ -99,6 +101,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     djacs=NULL;
     if (prec==1) {
+        ptype = 'c';
 	i = n*n*rx1*rx2;
 	if (ra2>rx2) i = n*n*rx1*ra2;
         djacs = (double *)malloc(sizeof(double)*i);
@@ -143,6 +146,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //         mexPrintf("tol0: %3.5e, tol: %3.5e\n", tol_prev, tol);
 //         clock_gettime(CLOCK_REALTIME, &ts0);
         dgmresr_hh(dPhi1, dA, dPhi2, dres, rx1, n, rx2, ra1, ra2, nrestart, tol/tol_prev, niters, ptype, djacs, dsol, verb);
+	if (verb>0) mexPrintf("%s", gmres_3d_printf_buf_);
 //         clock_gettime(CLOCK_REALTIME, &ts1);
 //         if (verb>0) mexPrintf("gmres time: %g\n", difftime(ts1.tv_sec, ts0.tv_sec) + ((double)(ts1.tv_nsec-ts0.tv_nsec))*1e-9);
 
@@ -162,6 +166,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //         for (i=0; i<rx1*n*rx2; i++) mexPrintf("%g\n", dsol[i]);
 //         clock_gettime(CLOCK_REALTIME, &ts0);
         dgmresl_hh(dPhi1, dA, dPhi2, drhs, rx1, n, rx2, ra1, ra2, nrestart, tol, niters, ptype, djacs, dsol, verb);
+	if (verb>0) mexPrintf("%s", gmres_3d_printf_buf_);
 //         clock_gettime(CLOCK_REALTIME, &ts1);
 //         if (verb>0) mexPrintf("gmres time: %g\n", difftime(ts1.tv_sec, ts0.tv_sec) + ((double)(ts1.tv_nsec-ts0.tv_nsec))*1e-9);
 
