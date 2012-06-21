@@ -74,6 +74,7 @@ verb=1;
 kickrank = 5;
 x=[];
 block_order = [];
+Au = [];
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -110,7 +111,11 @@ for i=1:2:length(varargin)-1
         case 'top_conv'
             top_conv=varargin{i+1};
         case 'block_order'
-            block_order=varargin{i+1};            
+            block_order=varargin{i+1}; 
+        case 'als_tol_low'
+            als_tol_low=varargin{i+1};
+        case 'als_iters'
+            als_iters=varargin{i+1};              
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -815,7 +820,10 @@ while (swp<=nswp)
         
 %         max_res = norm(A*x-y)/norm(y);
         
+%         Au = tt_mvk4(A, x, tol, 'y0', Au, 'verb', 0);
+%         fprintf('=dmrg_solve3= sweep %d{%d}, real_res: %3.3e\n', swp, order_index-1, norm(Au-y)/norm(y));
         if (verb>0)
+%             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, real_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, norm(Au-y)/norm(y), max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;        
         
@@ -840,14 +848,17 @@ while (swp<=nswp)
                     kickrank = 0;
                     last_sweep=true;
                 end;
-                if (max_res<tol*als_tol_low)&&(kickrank>0)
-                    kickrank=-1;
+%                 if (max_res<tol*als_tol_low)&&(kickrank>0)
+                if (max_res<tol)&&(kickrank>0)
+%                     kickrank=-1;
+                    kickrank = 0;
+                    last_sweep=true;
                 end;
             end;        
         
             max_res = 0;
             max_dx = 0;
-            max_iter = 0;
+            max_iter = 0;               
 %             dx_old = dx;
             
             
@@ -858,6 +869,7 @@ while (swp<=nswp)
             if (last_sweep)
                 cur_order = d-1;
             end;
+            x = cell2core(x, crx);
             swp = swp+1;            
         end;
         

@@ -17,26 +17,31 @@ long ione = 1;
 
 void dperm213(double *in, long n1, long n2, long n3, double *out)
 {
-    int i,j,k;
+    long j,k;
     for (k=0; k<n3; k++) {
         for (j=0; j<n2; j++) {
-            for (i=0; i<n1; i++) {
-                out[j+i*n2+k*n1*n2] = in[i+j*n1+k*n1*n2];
-            }
+            dcopy_(&n1, &in[j*n1+k*n1*n2], &ione, &out[j+k*n1*n2], &n2);
+//             for (i=0; i<n1; i++) {
+//                 out[j+i*n2+k*n1*n2] = in[i+j*n1+k*n1*n2];
+//             }
         }
     }
 }
 
 void dperm312(double *in, long n1, long n2, long n3, double *out)
 {
-    int i,j,k;
-    for (k=0; k<n3; k++) {
-        for (j=0; j<n2; j++) {
-            for (i=0; i<n1; i++) {
-                out[k+i*n3+j*n3*n1] = in[i+j*n1+k*n1*n2];
-            }
-        }
+    long i,j; //,k;
+    j = n1*n2;
+    for (i=0; i<n3; i++) {
+        dcopy_(&j, &in[i*j], &ione, &out[i], &n3);
     }
+//     for (k=0; k<n3; k++) {
+//         for (j=0; j<n2; j++) {
+//             for (i=0; i<n1; i++) {
+//                 out[k+i*n3+j*n3*n1] = in[i+j*n1+k*n1*n2];
+//             }
+//         }
+//     }
 }
 
 void dcjacgen(double *Phi1,double *A,double *Phi2, long rx1, long n, long rx2, long ra1, long ra2,double *jacs)
@@ -137,43 +142,56 @@ void bfun3(double *Phi1, double *A, double *Phi2, long rx1, long n, long rx2, lo
 // x is preserved, &x==&y is possible
 {
     // we need A in form ra1,n,n',ra2
-    long i,j,sz1, sz2;
+    long i,j,sz1, sz2, sz3;
     double *z1, *z2;
 
-    z1 = (double *)malloc(sizeof(double)*rx1*n*rx2);
+// bydlocoded max. size calculus
+    sz1 = rx1*n*rx2;
+    sz2 = rx2*rx1*n*ra2;
+    if (sz2>sz1) sz1 = sz2;
+    sz2 = ra1*n*rx1*rx2;
+    if (sz2>sz1) sz1 = sz2;
+
+    z1 = (double *)malloc(sizeof(double)*sz1);
+    z2 = (double *)malloc(sizeof(double)*sz1);
+
+//     z1 = (double *)malloc(sizeof(double)*rx1*n*rx2);
     dperm213(x, rx1*n, rx2, 1, z1); // rx2', rx1', n
 
     // Phi2*x
-    z2 = (double *)malloc(sizeof(double)*rx2*rx1*n*ra2);
+//     z2 = (double *)malloc(sizeof(double)*rx2*rx1*n*ra2);
     for (j=0; j<ra2; j++) {
         for (i=0; i<rx1*n; i++) {
             dgemv_(&trans,&rx2,&rx2,&done,&Phi2[j*rx2*rx2],&rx2,&z1[i*rx2],&ione, &dzero, &z2[i*rx2+j*rx2*rx1*n], &ione); // indices rx2, rx1', n', ra2
         }
     }
-    free(z1);
-    z1 = (double *)malloc(sizeof(double)*n*ra2*rx2*rx1);
+//     free(z1);
+//     z1 = (double *)malloc(sizeof(double)*n*ra2*rx2*rx1);
     dperm213(z2, rx2*rx1, n*ra2, 1, z1); // now n'*ra2, rx2*rx1'
-    free(z2);
+//     free(z2);
 
     // A*x
-    z2 = (double *)malloc(sizeof(double)*ra1*n*rx1*rx2);
-    sz1 = ra1*n; sz2 = n*ra2;
-    for (i=0; i<rx2*rx1; i++) {
+//     z2 = (double *)malloc(sizeof(double)*ra1*n*rx1*rx2);
+    sz1 = ra1*n; sz2 = n*ra2; sz3 = rx2*rx1;
+    dgemm_(&trans, &trans, &sz1, &sz3, &sz2, &done, A, &sz1, z1, &sz2, &dzero, z2, &sz1);
+/*    for (i=0; i<rx2*rx1; i++) {
         dgemv_(&trans,&sz1,&sz2,&done,A,&sz1,&z1[i*n*ra2],&ione, &dzero, &z2[i*ra1*n], &ione);
         // indices ra1,n,rx2,rx1'
-    }
-    free(z1);
-    z1 = (double *)malloc(sizeof(double)*rx1*ra1*n*rx2);
+    }*/
+//     free(z1);
+//     z1 = (double *)malloc(sizeof(double)*rx1*ra1*n*rx2);
     dperm312(z2, ra1, n*rx2, rx1, z1); // now rx1'*ra1*n*rx2
-    free(z2);
+//     free(z2);
 
     // Phi1*x
-    sz1 = rx1; sz2 = rx1*ra1;
-    for (i=0; i<n*rx2; i++) {
-        dgemv_(&trans,&sz1,&sz2,&done,Phi1,&sz1,&z1[i*rx1*ra1],&ione, &dzero, &y[i*rx1], &ione); // indices rx1, n, rx2
-    }
+    sz1 = rx1; sz2 = rx1*ra1; sz3 = n*rx2;
+    dgemm_(&trans, &trans, &sz1, &sz3, &sz2, &done, Phi1, &sz1, z1, &sz2, &dzero, y, &sz1);
+//     for (i=0; i<n*rx2; i++) {
+//         dgemv_(&trans,&sz1,&sz2,&done,Phi1,&sz1,&z1[i*rx1*ra1],&ione, &dzero, &y[i*rx1], &ione); // indices rx1, n, rx2
+//     }
 
     free(z1);
+    free(z2);
 }
 
 

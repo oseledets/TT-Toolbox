@@ -36,7 +36,8 @@ end;
 rf = f.r;
 
 % y = tt_ones(n);
-y = tt_rand(n, d, 1);
+y = round(A*x-f, tol, 1);
+% y = tt_rand(n, d, 1);
 % y = y.*y;
 % for i=1:d
 %     y{i} = y{i} + 1;
@@ -100,8 +101,11 @@ while (swp<=maxit)
         if (dx_max<tol)
             break;
         end;
-        dx_max = 0;
         swp = swp+1;
+        if (swp>maxit)&&(dx_max>tol)
+            fprintf('--warn-- als_rank_one did not converge in %d iters\n', maxit);
+        end;
+        dx_max = 0;
         i = i+dir;
     end;
 end;

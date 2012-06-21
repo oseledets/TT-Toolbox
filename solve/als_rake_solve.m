@@ -34,6 +34,8 @@ function [x]=als_rake_solve(a,y,tol,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 
+Au = [];
+
 % Inner parameters
 max_full_size=2500;
 
@@ -500,16 +502,25 @@ for swp=1:nswp
         end;
         if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
     else
-        if (max_res<tol)&&(kickrank<=-als_iters)
-            last_sweep=true;
-%             tol2 = tol;
+%         for i=1:d
+%             x.tuck{i} = cell2core(x.tuck{i}, xf{i}(1:L(i)));
+%             xc{i} = xf{i}{L(i)+1};
+%         end;
+%         x.core = cell2core(x.core, xc);
+%         x.dphys = d;
+%         Au = mvrk2(a, x, tol, 'y0', Au, 'verb', 0);
+%         real_res = norm(Au-y)/norm(y);
+%         fprintf('=als_rake_solve= sweep %d, \t\t\t real_res: %3.3e\n', swp, real_res);
+        if (max_res<tol)
+            last_sweep = true;
         end;
-        if (max_res_prev<=tol*als_tol_high)
-            if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
-            if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
-%             kickrank = -1;
-%             tol2=tol/4;
-        end;        
+%         if (max_res<tol)&&(kickrank<=-als_iters)
+%             last_sweep=true;
+%         end;
+%         if (max_res_prev<=tol*als_tol_high)
+%             if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+%             if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
+%         end;        
     end;
     
     if (swp==nswp-1)||(regurg_cnt>2)
