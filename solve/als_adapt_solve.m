@@ -446,7 +446,8 @@ while (swp<=nswp)
             
             else
                                 
-            sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+%             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+            sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
 
             flg=0;
             iter = 0;
@@ -473,13 +474,15 @@ while (swp<=nswp)
                 Phi2mex = zeros(rx(i+1), rx(i+1), ra(i+1)+1);
                 Phi2mex(1:rx(i+1), 1:rx(i+1), 1:ra(i+1)) = permute(Phi2,[1,3,2]);
                 Phi2mex(1:rx(i+1), 1:rx(i+1), ra(i+1)+1) = eye(rx(i+1))*mean(abs(Phi2(:)));
+                Phi2mex = permute(Phi2mex, [2,3,1]);
                 A1mex = zeros(n(i),n(i), ra(i)+1, ra(i+1)+1);
                 A1mex(1:n(i), 1:n(i), 1:ra(i), 1:ra(i+1)) = permute(A1, [2, 3, 1, 4]);
                 A1mex(1:n(i), 1:n(i), ra(i)+1, ra(i+1)+1) = eye(n(i))*mean(abs(A1(:)));
                 A1mex = permute(A1mex, [3, 1, 2, 4]);
                 for it=1:local_iters
                     rhs = sol_prev2;
-                    sol = solve3d(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
+%                     sol = solve3d(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
+                    sol = solve3d_2(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
                     sol = sol/norm(sol);
                     res_new = norm(bfun3(Phi1, A1, Phi2, sol));
                     if (strcmp(trunc_norm, 'fro'))

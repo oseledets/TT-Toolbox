@@ -15,7 +15,7 @@
 // double dzero=0.0;
 long ione = 1;
 
-extern void tt_adapt_als_mp_djac_gen_(char *ptype, long *rx1, long *n, long *rx2, long *ra1, long *ra2, double *Phi1, double *A, double *Phi2, double *jacs, double *work1, double *work2);
+extern void tt_adapt_als_mp_djac_gen_(char *ptype, long *rx1, long *n, long *rx2, long *ra1, long *ra2, double *Phi1, double *A, double *Phi2, double *jacs);
 extern void tt_adapt_als_mp_djac_apply_(char *ptype, long *rx1, long *n, long *rx2, double *jacs, double *x, double *y, double *work1);
 extern void tt_adapt_als_mp_bfun3_(long *rx1, long *m, long *rx2, long *ry1, long *n, long *ry2, long *ra1, long *ra2, double *phi1, double *A, double *phi2, double *x, double *y, double *res1, double *res2);
 
@@ -105,15 +105,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	i = n*n*rx1*rx2;
 	if (ra2>rx2) i = n*n*rx1*ra2;
         djacs = (double *)malloc(sizeof(double)*i);
-	i = rx1*ra1;
-	if (rx2*ra2>i) i = rx2*ra2;
-	if (rx1*n*n*rx2>i) i = rx1*n*n*rx2;
-        if (rx1*n*ra2*rx2>i) i = rx1*n*ra2*rx2;
-	if (rx1*ra1*n*rx2>i) i = rx1*ra1*n*rx2;
-	work1 = (double *)malloc(sizeof(double)*i);
-	work2 = (double *)malloc(sizeof(double)*i);
 
-	djac_gen(&ptype, &rx1, &n, &rx2, &ra1, &ra2, dPhi1, dA, dPhi2, djacs, work1, work2);
+        printf("djac_gen started...\n");
+	djac_gen(&ptype, &rx1, &n, &rx2, &ra1, &ra2, dPhi1, dA, dPhi2, djacs);
 //         clock_gettime(CLOCK_REALTIME, &ts0);
 //         dcjacgen(dPhi1,dA,dPhi2, rx1, n, rx2, ra1, ra2, djacs);
 //         clock_gettime(CLOCK_REALTIME, &ts1);
@@ -125,12 +119,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //         return;
 //         memcpy(dsol, djacs, sizeof(double)*n*n*rx1*rx2);
     }
-    else {
-        i = rx1*n*ra2*rx2;
-	if (rx1*ra1*n*rx2>i) i = rx1*ra1*n*rx2;
-	work1 = (double *)malloc(sizeof(double)*i);
-	work2 = (double *)malloc(sizeof(double)*i);
-    }
+
+    i = rx1*n*ra2*rx2;
+    if (ra1>ra2) i = rx1*ra1*n*rx2;
+    work1 = (double *)malloc(sizeof(double)*i);
+    work2 = (double *)malloc(sizeof(double)*i);
+
+
+    verb = 2;
 
     if (trunc_norm==1) { // residual
         // prepare initial residual - for right prec

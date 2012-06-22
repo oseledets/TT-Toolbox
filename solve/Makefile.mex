@@ -1,0 +1,11 @@
+include Makefile.cpu
+
+ifeq ($(CPU),mpg-intel)
+	MATLAB = /opt/local/matlab2011b/bin/matlab
+	FC = ifort
+	FOPTIMFLAGS = -O3 -i8
+	CC = icc
+	CFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+	COPTIMFLAGS = -O3
+	LIBS2 = /opt/local/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/libifcoremt_pic.a
+endif
