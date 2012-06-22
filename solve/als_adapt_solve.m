@@ -5,14 +5,14 @@ function [x]=als_adapt_solve(A, y, tol, varargin)
 %   Matrix A has to be given in the TT-format, right-hand side Y should be
 %   given in the TT-format also. Options are provided in form
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
-%   on. The parameters are set to default (in brackets in the following) 
+%   on. The parameters are set to default (in brackets in the following)
 %   The list of option names and default values are:
-%       o x0 - initial approximation [random rank-2 tensor] 
+%       o x0 - initial approximation [random rank-2 tensor]
 %       o P - preconditioner  [I]
 %       o nswp - maximal number of DMRG sweeps [10]
 %       o rmax - maximal TT-rank of the solution [1000]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
-%       o max_full_size - maximal size of the local matrix to full solver 
+%       o max_full_size - maximal size of the local matrix to full solver
 %       [2500]
 %       o local_prec: Local preconditioner, 'als' - ALS-Richardson
 %       iteration, 'selfprec' (Saad selfpreconditioner) ['als']
@@ -23,7 +23,7 @@ function [x]=als_adapt_solve(A, y, tol, varargin)
 %       o gmres_iters - number of local gmres restarts [2]
 %       o nrestart - dimension of local gmres [40]
 %       Example:
-%           d=8; f=8; 
+%           d=8; f=8;
 %           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
 %           rhs=tt_ones(2,d*f); Right-hand side of all ones
 %
@@ -93,7 +93,7 @@ for i=1:2:length(varargin)-1
         case 'local_iters'
             local_iters=varargin{i+1};
         case 'local_solver'
-            local_solver=varargin{i+1};            
+            local_solver=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
         case  'max_full_size'
@@ -111,12 +111,12 @@ for i=1:2:length(varargin)-1
         case 'top_conv'
             top_conv=varargin{i+1};
         case 'block_order'
-            block_order=varargin{i+1}; 
+            block_order=varargin{i+1};
         case 'als_tol_low'
             als_tol_low=varargin{i+1};
         case 'als_iters'
-            als_iters=varargin{i+1};              
-            
+            als_iters=varargin{i+1};
+
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -173,10 +173,10 @@ for i=d:-1:2
     cr = reshape(cr.', rx(i), n(i), rx(i+1));
     crx{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
     crx{i} = cr;
-    
+
     phia{i} = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
     phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
-    
+
     % For residual-check
 %     cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), crA{i}, cr, 'rl');
 %     cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], cry{i}, 'rl');
@@ -214,12 +214,12 @@ while (swp<=nswp)
     norm_rhs = norm(rhs);
     % sol_prev
     sol_prev = reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1);
-    
+
 %     real_tol = (tol/(d^dpows(i)))/resid_damp;
 %     if (last_sweep)
         real_tol = (tol2/sqrt(d))/resid_damp;
 %     end;
-    
+
     if (rx(i)*n(i)*rx(i+1)<max_full_size) % Full solution
         %      |     |    |
         % B = Phi1 - A1 - Phi2
@@ -259,7 +259,7 @@ while (swp<=nswp)
                     if (strcmp(trunc_norm, 'fro'))
                         if (norm(sol-sol_prev2)<real_tol); break; end;
                     else
-                        if (res_new<real_tol); break; end;    
+                        if (res_new<real_tol); break; end;
                     end;
                     sol_prev2 = sol;
                 end;
@@ -275,12 +275,12 @@ while (swp<=nswp)
                 iter=0;
             end;
         end;
-        
+
     else % Structured solution.
-        
+
         if (norm_rhs~=0)
         res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
-        
+
         if (res_prev>real_tol)
             if (~ismex)
             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel')) %&&(mod(order_index, 2)==1)   % &&(~last_sweep)
@@ -295,7 +295,7 @@ while (swp<=nswp)
                     jacB = reshape(jacB, ra(i), n(i), n(i), rx(i+1), rx(i+1));
                     jacB = permute(jacB, [2, 4, 3, 5, 1]);
                     jacB = reshape(jacB, n(i)*rx(i+1), n(i)*rx(i+1), ra(i));
-                    
+
                     % Lower and upper triangular parts for Gauss-Seidel
 %                     gsU = Phi1;
 %                     gsL = Phi1;
@@ -303,8 +303,8 @@ while (swp<=nswp)
 % %                         gsU(k:rx(i), :, k)=0;
 %                         gsL(1:k, :, k)=0;
 %                     end;
-                    
-                    
+
+
                     jacBlocks = cell(rx(i),1);
 %                     jacBlocks=zeros(n(i)*n(i+1)*rx(i+2), n(i)*n(i+1)*rx(i+2), rx(i));
                     for k=1:rx(i)
@@ -318,7 +318,7 @@ while (swp<=nswp)
                             jacBlocks{m} = jacBlocks{m} + jacB(:,:,k)*jacPhi(m,k);
                         end;
                     end;
-                    
+
                     jacdir = -1;
 %                     Stuff into the prec
                     for m=1:rx(i)
@@ -327,9 +327,9 @@ while (swp<=nswp)
 %                         jacBlocks{m} = jacBlocks{m}.';
 %                         jacP = jacP + kron(jacBlocks{m}, spdiags(em, 0, rx(i), rx(i)));
                     end;
-                    
+
                 else
-                    
+
                     jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
                     ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
                     jacPhi = jacPhi2(:,ind);
@@ -339,7 +339,7 @@ while (swp<=nswp)
                     jacB = reshape(jacB, rx(i), rx(i), n(i), n(i), ra(i+1));
                     jacB = permute(jacB, [1, 3, 2, 4, 5]);
                     jacB = reshape(jacB, rx(i)*n(i), rx(i)*n(i), ra(i+1));
-                    
+
                     % Lower and upper triangular parts for Gauss-Seidel
                     if (strcmp(local_prec, 'seidel'))
                         gsL = Phi2;
@@ -347,7 +347,7 @@ while (swp<=nswp)
                             gsL(1:k, :, k)=0;
                         end;
                     end;
-                    
+
                     jacBlocks = cell(rx(i+1),1);
                     for k=1:rx(i+1)
                         jacBlocks{k}=zeros(rx(i)*n(i), rx(i)*n(i));
@@ -359,16 +359,16 @@ while (swp<=nswp)
                         end;
                     end;
 
-                    
+
                     jacdir = 1;
                     % Stuff into the prec
                     for m=1:rx(i+1)
                         jacBlocks{m} = inv(jacBlocks{m});
                     end;
                 end; % of rx(i)<rx(i+2)
-                
+
             elseif (strcmp(local_prec, 'cjacobi')) %&&(mod(order_index, 2)==1)
-                
+
                 % Jacobi prec on phys mode only
                 jacPhi1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
                 ind = (1:rx(i)) + (0:rx(i)-1)*rx(i); % diagonal elements
@@ -376,7 +376,7 @@ while (swp<=nswp)
                 jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
                 ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
                 jacPhi2 = jacPhi2(:,ind);
-                
+
 %                 tic;
 %                 jacBlocks = cell(rx(i), rx(i+1));
                 jacBlocks = zeros(n(i),n(i),rx(i),rx(i+1));
@@ -402,8 +402,8 @@ while (swp<=nswp)
             else
                 jacBlocks = [];
             end;
-            
-            
+
+
             drhs = rhs - bfun3(Phi1, A1, Phi2, sol_prev);
             if (isempty(jacBlocks))
                 mvfun = @(v)bfun3(Phi1, A1, Phi2, v);
@@ -417,7 +417,7 @@ while (swp<=nswp)
 %                     mvfun = @(v)bfun3(Phi1, A1, Phi2, jacBlocks*v);
                 end;
             end;
-            
+
             % Run the iterative solution
 %             tic;
             fprintf('HERE!');
@@ -430,7 +430,7 @@ while (swp<=nswp)
                 [dsol,flg,RELRES,iter] = pcg(mvfun, drhs, min(real_tol/res_prev,1), local_iters*local_restart);
             end;
 %             soltime = toc
-            
+
             if (~isempty(jacBlocks))
                 if (strcmp(local_prec, 'seidel'))
                     dsol = gsfun(jacBlocks, gsL, A1, Phi1,  dsol ,jacdir);
@@ -441,11 +441,15 @@ while (swp<=nswp)
 %                     dsol = jacBlocks*dsol;
                 end;
             end;
-            
-            sol = sol_prev + dsol;            
-            
+
+            sol = sol_prev + dsol;
+
             else
-                                
+
+%              local_prec_char = 0;
+%              if (strcmp(local_prec, 'cjacobi'))&&(n(i)>4)
+%                  local_prec_char = 1;
+%              end;
 %             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
             sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
 
@@ -453,7 +457,7 @@ while (swp<=nswp)
             iter = 0;
 %             if (res_new>real_tol); flg=1; end;
             end;
-            
+
             res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
         else
             sol = sol_prev;
@@ -461,11 +465,11 @@ while (swp<=nswp)
             flg=0;
             iter=0;
         end;
-        
-        
+
+
         else % Ground state
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev));
-            
+
             if (res_prev>real_tol)
                 sol_prev2 = sol_prev;
                 Phi1mex = zeros(rx(i), rx(i), ra(i)+1);
@@ -492,7 +496,7 @@ while (swp<=nswp)
                     end;
                     sol_prev2 = sol;
                 end;
-                flg=0;               
+                flg=0;
                 iter = it;
             else
                 sol = sol_prev;
@@ -502,17 +506,17 @@ while (swp<=nswp)
             end;
         end;
     end;
-    
+
     if (flg>0)
         fprintf('-warn- local solver did not converge at block %d\n', i);
     end;
     if (res_prev/res_new<resid_damp)&&(res_new>real_tol)&&(norm_rhs~=0)
         fprintf('--warn-- the residual damp was smaller than in the truncation\n');
     end;
-    
+
     dx(i) = norm(sol-sol_prev)/norm(sol);
     max_dx = max(max_dx, dx(i));
-    
+
     % The new core does not converge - increase rank
 %     if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>tol)
 %         dranks(i)=dranks(i)+1;
@@ -523,12 +527,12 @@ while (swp<=nswp)
 %         dranks(i)=max(dranks(i)-1, 0);
 %         dpows(i)=max(dpows(i)-step_dpow, min_dpow);
 %     end;
-%     
+%
 %     if (last_sweep)
 %         dpows(i)=0.5;
 %         dranks(i)=0;
 %     end;
-    
+
     % Check the residual
 %     cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
 %     crhs = cphiy{i};
@@ -537,34 +541,34 @@ while (swp<=nswp)
 %     crhs = crhs*(cphiy{i+1}.');
 %     cAsol = bfun3(cPhi1, A1, cPhi2, sol);
 %     chkres = norm(cAsol-crhs)/norm(crhs);
-    
-    
+
+
 %     chkres = res_prev;
     max_res = max(max_res, res_prev);
 %     max_res = max(max_res, res_prev);
     max_iter = max(max_iter, iter);
-    
+
     % Truncation
     if (dir>0) % left-to-right
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
     else
         sol = reshape(sol, rx(i), n(i)*rx(i+1));
     end;
-    
+
     if (norm_rhs==0)
         norm_rhs=1;
     end;
-    
+
     if (kickrank>=0)
     [u,s,v]=svd(sol, 'econ');
     s = diag(s);
-    
+
     if (strcmp(trunc_norm, 'fro')) % We are happy with L2 truncation (when? but let it be)
-%         r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));        
-        r = my_chop2(s, real_tol*resid_damp*norm(s));        
+%         r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));
+        r = my_chop2(s, real_tol*resid_damp*norm(s));
     else
         if (dir>0); r = min(rx(i)*n(i),rx(i+1));
-        else r = min(rx(i), n(i)*rx(i+1)); end;        
+        else r = min(rx(i), n(i)*rx(i+1)); end;
         cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
         if (rx(i)*n(i)*rx(i+1)<max_full_size)
             res = norm(B*cursol(:)-rhs)/norm_rhs;
@@ -576,7 +580,7 @@ while (swp<=nswp)
             drank = -1;
         else
             drank = 1;
-        end;        
+        end;
         while (r>0)&&(r<=numel(s))
             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
             if (rx(i)*n(i)*rx(i+1)<max_full_size)
@@ -599,7 +603,7 @@ while (swp<=nswp)
         if (drank<0)
             r=r+1;
         end;
-        
+
 %         bfuncnt = 0;
 %         % Residual trunc; First, bin-search
 %         r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
@@ -634,12 +638,12 @@ while (swp<=nswp)
 %             r = r+1;
 %         end;
     end;
-    
+
     % Artificial rank increasing
 %     r = r+dranks(i);
     r = min(r, numel(s));
     r = min(r, rmax);
-    
+
     else
         if (dir>0)
             [u,v]=qr(sol, 0);
@@ -651,18 +655,18 @@ while (swp<=nswp)
             v=conj(v);
             u=u.';
             r = size(u,2);
-            s = ones(r,1);            
-        end;        
+            s = ones(r,1);
+        end;
     end;
-    
+
     if (verb>1)
         fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, bfuncnt: %d, r: %d\n', i, dir, dx(i), res_prev, bfuncnt, r);
     end;
-        
+
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
         u = u(:,1:r);
         v = conj(v(:,1:r))*diag(s(1:r));
-        
+
         if (kickrank>0)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
@@ -678,9 +682,9 @@ while (swp<=nswp)
         leftresid = leftA*reshape(u*v', rx(i)*n(i), rx(i+1));
         leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
         leftresid = [leftresid, -lefty];
-        
+
 %         leftresid = randn(rx(i)*n(i), kickrank);
-        
+
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
 %         uk = zeros(rx(i)*n(i), min(kickrank, n(i)*rx(i)));
 %         for j=1:min(kickrank, n(i)*rx(i))
@@ -690,18 +694,18 @@ while (swp<=nswp)
 %             leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1));
 %         end;
         uk = uchol(leftresid.', kickrank+1);
-        uk = uk(:,end:-1:max(end-kickrank+1,1));        
+        uk = uk(:,end:-1:max(end-kickrank+1,1));
 %         [uk, s2, v2]=svd(leftresid, 'econ');
 %         u2'*uk
 %         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha
-%         
+%
 %         % Residual ~ orthogonal complement to the current basis
 %         proj = uk - u*((u')*uk);
 %         res = norm(proj)/norm(uk);
 %         max_res = max(max_res, res);
-        
+
 %         uk = randn(rx(i)*n(i), kickrank); % <- old random basis
-        
+
         % kick
             [u,rv]=qr([u,uk], 0);
             radd = size(uk, 2);
@@ -712,21 +716,21 @@ while (swp<=nswp)
         cr2 = crx{i+1};
         cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
         v = (v.')*cr2; % size r+radd, n2, r3
-        
+
         r = size(u,2);
 %         r = r+radd;
-        
+
         u = reshape(u, rx(i), n(i), r);
         v = reshape(v, r, n(i+1), rx(i+2));
-        
+
         % Recompute phi. Left ones, so permute them appropriately
         phia{i+1} = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
         phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
-        
+
         % residual-check
 %         cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), crA{i}, u, 'lr');
 %         cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], cry{i}, 'lr');
-                
+
         % Stuff back
         rx(i+1) = r;
         crx{i} = u;
@@ -734,7 +738,7 @@ while (swp<=nswp)
     elseif (dir<0)&&(i>1) % right-to-left
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
-        
+
         if (kickrank>0)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
@@ -750,9 +754,9 @@ while (swp<=nswp)
         rightresid = rightA*(reshape(u*v', rx(i), n(i)*rx(i+1)).');
         rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i)*rx(i));
         rightresid = [rightresid, -(righty.')];
-        
+
 %         rightresid = randn(n(i)*rx(i+1), kickrank);
-        
+
         % The right rank is now ra*rx+rf; Extract kickrank PCAs
 %         uk = zeros(n(i)*rx(i+1), min(kickrank, n(i)*rx(i+1)));
 %         for j=1:min(kickrank, n(i)*rx(i+1))
@@ -761,22 +765,22 @@ while (swp<=nswp)
 %             rightresid = rightA*uk(:,j);
 %             rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i));
 %         end;
-        
-        
+
+
         uk = uchol(rightresid.', kickrank+1);
         uk = uk(:,end:-1:max(end-kickrank+1,1));
 %         [uk, s2, v2]=svd(rightresid, 'econ');
 %         u2'*uk
-%         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha        
-        
+%         uk = uk(:, 1:min(kickrank, size(uk,2))); % <- this is our new basis, ha-ha
+
 %         % Residual ~ orthogonal complement to the current basis
 %         proj = uk - v*((v')*uk);
 %         res = norm(proj)/norm(uk);
 %         max_res = max(max_res, res);
-        
-        
+
+
 %         uk = randn(n(i)*rx(i+1), kickrank); % <- old random
-        
+
         % kick
             [v,rv]=qr([v,uk], 0);
 %             v = reort(v, uk);
@@ -787,20 +791,20 @@ while (swp<=nswp)
         cr2 = crx{i-1};
         cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
         u = cr2*u;
-        
+
         r = size(v,2);
 %         r = r+radd;
-        
+
         u = reshape(u, rx(i-1), n(i-1), r);
         v = reshape(v.', r, n(i), rx(i+1));
-        
+
         % Recompute phi. Here are right phis
         phia{i} = compute_next_Phi(phia{i+1}, v, crA{i}, v, 'rl');
-        phiy{i} = compute_next_Phi(phiy{i+1}, v, [], cry{i}, 'rl');        
+        phiy{i} = compute_next_Phi(phiy{i+1}, v, [], cry{i}, 'rl');
         % Residual check
 %         cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), crA{i}, v, 'rl');
-%         cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], cry{i}, 'rl');        
-        
+%         cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], cry{i}, 'rl');
+
         % Stuff back
         rx(i) = r;
         crx{i-1} = u;
@@ -811,32 +815,32 @@ while (swp<=nswp)
         sol = reshape(sol, rx(i), n(i), rx(i+1));
         crx{i} = sol;
     end;
-    
-    
+
+
     i = i+dir;
-    
+
     % Reversing, residue check, etc
     cur_order(order_index) = cur_order(order_index) - dir;
     % New direction
     if (cur_order(order_index)==0)
         order_index = order_index+1;
-        
+
 %         max_res = norm(A*x-y)/norm(y);
-        
+
 %         Au = tt_mvk4(A, x, tol, 'y0', Au, 'verb', 0);
 %         fprintf('=dmrg_solve3= sweep %d{%d}, real_res: %3.3e\n', swp, order_index-1, norm(Au-y)/norm(y));
         if (verb>0)
 %             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, real_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, norm(Au-y)/norm(y), max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-        end;        
-        
+        end;
+
         if (last_sweep)
             break;
         end;
-        
+
         if (kickrank<0)
             kickrank=kickrank-1;
-        end;        
+        end;
 
             if (strcmp(trunc_norm, 'fro'))
                 if (max_dx<tol)&&(kickrank<=-als_iters)
@@ -845,7 +849,7 @@ while (swp<=nswp)
                 end;
                 if (max_dx<tol*als_tol_low)&&(kickrank>0)
                     kickrank=-1;
-                end;                
+                end;
             else
                 if (max_res<tol)&&(kickrank<=-als_iters)
                     kickrank = 0;
@@ -857,14 +861,14 @@ while (swp<=nswp)
                     kickrank = 0;
                     last_sweep=true;
                 end;
-            end;        
-        
+            end;
+
             max_res = 0;
             max_dx = 0;
-            max_iter = 0;               
+            max_iter = 0;
 %             dx_old = dx;
-            
-            
+
+
         if (order_index>numel(cur_order)) % New global sweep
             cur_order = block_order;
             order_index = 1;
@@ -873,9 +877,9 @@ while (swp<=nswp)
                 cur_order = d-1;
             end;
             x = cell2core(x, crx);
-            swp = swp+1;            
+            swp = swp+1;
         end;
-        
+
         dir = sign(cur_order(order_index));
         i = i+dir;
     end;
@@ -939,7 +943,7 @@ function [y]=bfun3(Phi1,B1,Phi2, x)
 % Phi2 is of sizes ry2, rB2, rx2
 ry1 = size(Phi1,1); ry2 = size(Phi2,1);
 rx1 = size(Phi1,3); rx2 = size(Phi2,3);
-rb1=size(B1,1); rb2=size(B1,4); 
+rb1=size(B1,1); rb2=size(B1,4);
 m1 = size(B1,3);
 k1 = size(B1,2);
 
@@ -991,21 +995,21 @@ if (dir==1)
     y = reshape(x*0, n, m);
     rhs = x;
     rhs = reshape(rhs, n, m);
-    
+
     for i=1:m
         yprev = bfun3(Phi_full, A1, gsL(i,:,1:i-1), y(:, 1:i-1)); % L*y^1
         y(:,i) = jacs{i}*(rhs(:,i) - yprev);
-    end;   
+    end;
 else
     % Right-to-left, split on r1
     y = reshape(x*0, m, n);
     rhs = x;
     rhs = reshape(rhs, m, n);
-        
+
     for i=1:m
         yprev = bfun3(gsL(i,:,1:i-1), A1, Phi_full, y(1:i-1, :)); % L*y^1
         y(i, :) = (rhs(i, :) - yprev)*jacs{i};
-    end;      
+    end;
 end;
 y = y(:);
 end
