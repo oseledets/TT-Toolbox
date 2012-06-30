@@ -42,7 +42,7 @@ max_full_size=2500;
 resid_damp = 2; % Truncation error to true residual treshold
 als_tol_high = 10;
 als_tol_low = 4;
-als_iters=1;
+als_iters=2;
 
 nswp=10;
 local_restart=40;
@@ -63,6 +63,9 @@ trunc_norm = 'residual';
 verb=1;
 kickrank = 5;
 x=[];
+
+nswp_f = 1;
+nswp_c = 1;
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -238,6 +241,8 @@ for swp=1:nswp
     for i=1:d
         nc(i)=rxf{i}(L(i)+1);
     end;
+    for k=1:nswp_c
+%     max_res_c = 0;        
     % Orthog
     for i=1:d-1
         cr = xf{i}{L(i)+1};
@@ -269,6 +274,7 @@ for swp=1:nswp
         if (i==1); dir=0; end;
         local_kickrank = kickrank;
         if (last_sweep); local_kickrank=0; end;
+        if (verb>1); fprintf('\t core %d\n', i); end;
         [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyc{i},ycp{i},phiyc{i+1}, ...
             tol2/sqrt(d*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
             local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
@@ -295,6 +301,8 @@ for swp=1:nswp
             xf{i}{L(i)+1} = reshape(v, rxc(i), nc(i), rxc(i+1));
         end;
     end;
+    end;
+%     max_res = max(max_res, max_res_c);
     
     
     % Optimization over factors
@@ -351,6 +359,8 @@ for swp=1:nswp
             rxf{i}(L(i)+2) = rxc(i);
         end;
         
+        for k=1:nswp_f
+%         max_res_f = 0;
         % First, orthogonality L->1
         for j=(L(i)+1):-1:2
             cr = curx{j};
@@ -381,8 +391,9 @@ for swp=1:nswp
             if (j==(L(i)+1)); dir=0; end;
             local_kickrank = kickrank;
             if (last_sweep); local_kickrank=0; end;
+            if (verb>1); fprintf('\t factor {%d,%d}\n', i, j); end;
             [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyf{i}{j},cury{j},phiyf{i}{j+1}, ...
-                tol2/sqrt(d*L(i)*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
+                tol2/sqrt(sum(L)*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
                 local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
                 dir, rmax, local_kickrank, verb);
             
@@ -405,6 +416,9 @@ for swp=1:nswp
                 curx{j} = reshape(u, rxf{i}(j), n{i}(j), rxf{i}(j+1));
             end;
         end;
+        end;
+%         max_res = max(max_res, max_res_f);
+        
         if (i<d)
 %             % The factor is ready. Now, orthogonalize it l-to-r
 %             for j=1:L(i)
@@ -511,16 +525,17 @@ for swp=1:nswp
 %         Au = mvrk2(a, x, tol, 'y0', Au, 'verb', 0);
 %         real_res = norm(Au-y)/norm(y);
 %         fprintf('=als_rake_solve= sweep %d, \t\t\t real_res: %3.3e\n', swp, real_res);
-        if (max_res<tol)
-            last_sweep = true;
-        end;
+%         if (max_res<tol)
+%             last_sweep = true;
+%         end;
 %         if (max_res<tol)&&(kickrank<=-als_iters)
 %             last_sweep=true;
 %         end;
-%         if (max_res_prev<=tol*als_tol_high)
-%             if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+        if (max_res<=tol*als_tol_high)
+            if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+            if ((regurg_cnt>als_iters)||(max_res<tol)); last_sweep=true; end;
 %             if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
-%         end;        
+        end;        
     end;
     
     if (swp==nswp-1)||(regurg_cnt>2)
@@ -618,42 +633,107 @@ if (rx1*n*rx2<max_full_size)
     B = permute(B, [1, 3, 2, 4]);
     B = reshape(B, rx1*n*rx2, rx1*n*rx2);
     
-    res_prev = norm(B*sol_prev-rhs)/norm_rhs;
-    if (res_prev>tol)
-        sol = B \ rhs;
-        % If the system was ill-conditioned
-        %         [sol,flg] = gmres(B, rhs, local_restart, real_tol, 2, [], [], sol);
-        res_new = norm(B*sol-rhs)/norm_rhs;
-        flg=0;
-        if (res_new>tol); flg=1; end;
+    if (norm_rhs==0.0)
+        % Ground state
+        res_prev = norm(B*sol_prev);
+        if (res_prev>tol)
+            B2 = B+eye(rx1*n*rx2)*mean(abs(B(:)))*1e-3;
+            sol_prev2 = sol_prev;
+            for it=1:local_restart
+                sol = B2 \ sol_prev2;
+                sol = sol/norm(sol);
+                res_new = norm(B*sol);
+                if (strcmp(trunc_norm, 'fro'))
+                    if (norm(sol-sol_prev2)<tol); break; end;
+                else
+                    if (res_new<tol); break; end;
+                end;
+                sol_prev2 = sol;
+            end;
+            flg = 0;
+        else
+            sol = sol_prev;
+            res_new = res_prev;
+            flg=0;
+        end;
     else
-        sol = sol_prev;
-        res_new = res_prev;
-        flg=0;
+        res_prev = norm(B*sol_prev-rhs)/norm_rhs;
+        if (res_prev>tol)
+            sol = B \ rhs;
+            % If the system was ill-conditioned
+            %         [sol,flg] = gmres(B, rhs, local_restart, real_tol, 2, [], [], sol);
+            res_new = norm(B*sol-rhs)/norm_rhs;
+            flg=0;
+            if (res_new>tol); flg=1; end;
+        else
+            sol = sol_prev;
+            res_new = res_prev;
+            flg=0;
+        end;
     end;
 else
-    res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
-    
-    if (res_prev>tol)
-        trunc_norm_char = 1;
-%         if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
-        local_prec_char = 0;
-        if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
-        
-        if (res_prev>1)
-            sol_prev = zeros(rx1*n*rx2, 1);
-            res_prev = 1;
+    if (norm_rhs==0.0)
+        res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev));
+        if (res_prev>tol)
+            trunc_norm_char = 1;
+            local_prec_char = 0;
+            if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
+            
+            Psi1 = zeros(rx1, rx1, ra1+1);
+            Psi1(:,:,1:ra1) = permute(Phi1, [1,3,2]);
+            Psi1(:,:,ra1+1) = eye(rx1)*norm(Phi1(:), 'fro');
+            B1 = zeros(n, n, ra1+1, ra2+1);
+            B1(:,:,1:ra1,1:ra2) = permute(A1, [2,3,1,4]);
+            B1(:,:,ra1+1,ra2+1) = eye(n)*norm(A1(:), 'fro')*1e-4;
+            B1 = permute(B1, [3,1,2,4]);
+            Psi2 = zeros(rx2,rx2,ra2+1);
+            Psi2(:,:,1:ra2) = permute(Phi2, [1,3,2]);
+            Psi2(:,:,ra2+1) = eye(rx2)*norm(Phi1(:), 'fro');
+            Psi2 = permute(Psi2, [2,3,1]);
+            
+            sol_prev2 = sol_prev;
+            for it=1:local_restart
+                sol = solve3d_2(Psi1, B1, Psi2, sol_prev2, tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 1);
+                sol = sol/norm(sol);
+                res_new = norm(bfun3(Phi1, A1, Phi2, sol));
+                if (strcmp(trunc_norm, 'fro'))
+                    if (norm(sol-sol_prev2)<tol); break; end;
+                else
+                    if (res_new<tol); break; end;
+                end;
+                sol_prev2 = sol;
+            end;
+            
+            flg=0;
+            if (res_new>tol); flg=1; end;
+        else
+            sol = sol_prev;
+            res_new = res_prev;
+            flg = 0;
         end;
-        
-        sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
-        
-        res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
-        flg=0;
-        if (res_new>tol); flg=1; end;
     else
-        sol = sol_prev;
-        res_new = res_prev;
-        flg = 0;
+        res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
+        if (res_prev>tol)
+            trunc_norm_char = 1;
+%             if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
+            local_prec_char = 0;
+            if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
+            if (res_prev>1)
+                sol_prev = zeros(rx1*n*rx2, 1);
+                res_prev = 1;
+            end;
+            
+%             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+            sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+           
+            res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
+            flg=0;
+            if (res_new>tol); flg=1; end;
+        else
+            sol = sol_prev;
+            res_new = res_prev;
+            flg = 0;
+        end;
     end;
 end;
 
@@ -671,6 +751,10 @@ max_dx = max(max_dx, dx);
 
 max_res = max(max_res, res_prev);
 
+
+if (norm_rhs==0.0)
+    norm_rhs=1;
+end;
 
 % Truncation
 if (dir>=0) % left-to-right
@@ -746,15 +830,21 @@ end;
         
         if (kickrank>0)
             % Smarter kick: low-rank PCA in residual
-            % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
-            leftA = permute(Phi1, [1, 3, 2]);
-            leftA = reshape(leftA, rx1*rx1, ra1);
-            leftA = leftA*reshape(A1, ra1, n*n*ra2);
-            leftA = reshape(leftA, rx1, rx1, n, n, ra2);
-            leftA = permute(leftA, [1, 3, 5, 2, 4]);
-            leftA = reshape(leftA, rx1*n*ra2, rx1*n);
-            leftresid = leftA*reshape(u*v.', rx1*n, rx2);
-            leftresid = reshape(leftresid, rx1*n, ra2*rx2);
+            % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)            
+            leftresid = reshape(Phi1, rx1*ra1, rx1)*reshape(u*v.', rx1, n*rx2);
+            leftresid = reshape(leftresid, rx1, ra1*n, rx2);
+            leftresid = reshape(permute(leftresid, [2, 1, 3]), ra1*n, rx1*rx2);
+            leftresid = reshape(permute(A1, [2,4,1,3]), n*ra2, ra1*n)*leftresid;
+            leftresid = reshape(leftresid, n, ra2, rx1, rx2);
+            leftresid = reshape(permute(leftresid, [3,1,2,4]), rx1*n, ra2*rx2);
+%             leftA = permute(Phi1, [1, 3, 2]);
+%             leftA = reshape(leftA, rx1*rx1, ra1);
+%             leftA = leftA*reshape(A1, ra1, n*n*ra2);
+%             leftA = reshape(leftA, rx1, rx1, n, n, ra2);
+%             leftA = permute(leftA, [1, 3, 5, 2, 4]);
+%             leftA = reshape(leftA, rx1*n*ra2, rx1*n);
+%             leftresid = leftA*reshape(u*v.', rx1*n, rx2);
+%             leftresid = reshape(leftresid, rx1*n, ra2*rx2);
             leftresid = [leftresid, -y_save];
 %             
 %             uk = zeros(rx1*n, min(kickrank,rx1*n));
@@ -787,14 +877,20 @@ end;
         if (kickrank>0)
             % Smarter kick: low-rank PCA in residual
             % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
-            rightA = permute(Phi2, [2, 1, 3]);
-            rightA = reshape(rightA, ra2, rx2*rx2);
-            rightA = reshape(A1, ra1*n*n, ra2)*rightA;
-            rightA = reshape(rightA, ra1, n, n, rx2, rx2);
-            rightA = permute(rightA, [2, 4, 1, 3, 5]);
-            rightA = reshape(rightA, n*rx2*ra1, n*rx2);
-            rightresid = rightA*(reshape(u*v.', rx1, n*rx2).');
-            rightresid = reshape(rightresid, n*rx2, ra1*rx1);
+            rightresid = reshape(Phi2, rx2*ra2, rx2)*(reshape(u*v.', rx1*n, rx2).');
+            rightresid = reshape(rightresid, rx2, ra2, rx1, n);
+            rightresid = reshape(permute(rightresid, [4, 2, 3, 1]), n*ra2, rx1*rx2);
+            rightresid = reshape(A1, ra1*n, n*ra2)*rightresid;
+            rightresid = reshape(rightresid, ra1, n, rx1, rx2);
+            rightresid = reshape(permute(rightresid, [2,4,1,3]), n*rx2, ra1*rx1);            
+%             rightA = permute(Phi2, [2, 1, 3]);
+%             rightA = reshape(rightA, ra2, rx2*rx2);
+%             rightA = reshape(A1, ra1*n*n, ra2)*rightA;
+%             rightA = reshape(rightA, ra1, n, n, rx2, rx2);
+%             rightA = permute(rightA, [2, 4, 1, 3, 5]);
+%             rightA = reshape(rightA, n*rx2*ra1, n*rx2);
+%             rightresid = rightA*(reshape(u*v.', rx1, n*rx2).');
+%             rightresid = reshape(rightresid, n*rx2, ra1*rx1);
             rightresid = [rightresid, -(y_save.')];
             
 %             uk = zeros(n*rx2, min(kickrank,n*rx2));

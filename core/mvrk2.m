@@ -28,7 +28,7 @@ function [y]=mvrk2(a,x,tol,varargin)
 nswp=10;
 als_tol_low = 2;
 als_tol_high = 10;
-als_iters = 4;
+als_iters = 2;
 
 % rmax=1000;
 verb=1;
@@ -286,7 +286,7 @@ for swp=1:nswp
             if (j==(L(i)+1)); dir=0; end;
             local_kickrank = kickrank;
             if (last_sweep); local_kickrank=0; end;
-            [u,v,max_dx]=local_proj(Phi1,A1,Phi2, x1, tol2/sqrt(d*L(i)*2), y_prev,  max_dx, dir, local_kickrank, verb);
+            [u,v,max_dx]=local_proj(Phi1,A1,Phi2, x1, tol2/sqrt(sum(L)*2), y_prev,  max_dx, dir, local_kickrank, verb);
             
             if (j<(L(i)+1))
                 cr2 = cury{j+1};
@@ -379,6 +379,7 @@ for swp=1:nswp
 
     if (max_dx_prev<=tol*als_tol_high)
         if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+%         if ((regurg_cnt>als_iters)||(max_dx<tol)); last_sweep=true; end;
         if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>=0); kickrank = -1; end;
     end;
     
