@@ -8,4 +8,14 @@ ifeq ($(CPU),mpg-intel)
 	CFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
 	COPTIMFLAGS = -O2
 	LIBS2 = /opt/local/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/libifcoremt_pic.a
+	LDR = $(FC) -static-intel
+endif
+ifeq ($(CPU), mac-gfort)
+	MATLAB = matlab
+	FC = gfortran
+	FOPTIMFLAS = -O2 -fdefault-integer-8
+	CC = gcc
+	CFLAGS = -fPIC
+	COPTIMFLAGS = -O2
+	LDR = $(FC)
 endif

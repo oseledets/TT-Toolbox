@@ -1,12 +1,7 @@
 function [mat]=Fd_mtx2(a)
 %Finite difference approximation of a 2D scalar diffusion equation in QTT
-%   [M]=FD_MTX(D, A, BOUND)
-%   Generate finite difference matrix from diffusion coefficient A(n,n) or A(n,n,n)
-%   M - n^D-by-n^D sparse matrix
-%   D - dimensions, 
-%   BOUND:
-%       0 - Dirichlet,
-%       1 - Neuman
+%   [M]=FD_MTX2(A) Finite difference Laplacian with Dirichlet boundary
+%   conditions
 %
 %
 % TT-Toolbox 2.2, 2009-2012
