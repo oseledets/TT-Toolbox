@@ -1,4 +1,4 @@
-function [tt]=tt_qfromfull(full,s,d,eps)
+function [tt]=tt_qfromfull(ff,s,d,eps)
 
 % Approximates a full-format s-dimensional 2^{d} x...x 2^{d}-tensor
 % full, indexed by 
@@ -16,7 +16,7 @@ function [tt]=tt_qfromfull(full,s,d,eps)
 %
 
 
-full=reshape(full,2*ones(1,s*d));
+ff=reshape(ff,[2*ones(1,s*d),1]);
 
 prm=zeros(1,s*d);
 for k=1:d
@@ -25,12 +25,17 @@ for k=1:d
 	end
 end
 
-full=permute(full,prm);
-full=reshape(full,[2^s*ones(1,d),1]);
+ff=permute(ff,[prm,1+s*d]);
+ff=reshape(ff,[2^s*ones(1,d),1]);
 
-tt=core(tt_tensor(full,eps));
+tt=core(tt_tensor(ff,eps));
+if (numel(tt) > d)
+	tt{d}=tt{d}*tt{d+1};
+	tt=tt(1:d);
+end
+
 for k=1:d
-	[n,p,q]=size(tt{k});
+	[~,p,q]=size(tt{k});
 	tt{k}=reshape(tt{k},[2*ones(1,s),p,q]);
 end
 
