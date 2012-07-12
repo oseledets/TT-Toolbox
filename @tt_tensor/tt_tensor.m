@@ -70,7 +70,7 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
     rc=zeros(d,1);
     all_2d=true;
     for i=1:d
-       rc=size(tt{i},2);
+       rc(i)=size(tt{i},2);
        if (size(tt{i},3) ~= 1 )
           all_2d = false;
        end
