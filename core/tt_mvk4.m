@@ -16,8 +16,8 @@ rmax=1000;
 
 verb=1;
 kickrank = 10;
-%  kicktype = 'mr';
-kicktype = 'rand';
+ kicktype = 'mr';
+% kicktype = 'rand';
 y=[];
 block_order = [];
 

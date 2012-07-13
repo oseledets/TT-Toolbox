@@ -59,12 +59,15 @@ end
 
 for k=1:n0
     if (strcmp(hdm, 'svd'))
-        y=round(y.*y,eps,rmax);
+        y=round(y.*y,eps*(0.5^(n0-k)),rmax);
+        fprintf('squaring %d\n', k);
     else
         if (isa(x, 'tt_tensor'))
-            y = mvk3(diag(y), y, eps, 'nswp', 20, 'kickrank', 2);
+%             y = mvk3(diag(y), y, eps, 'nswp', 20, 'kickrank', 2);
+            y = tt_mvk4(diag(y), y, eps, 'nswp', 20);
         else
-            y = mvrk(diag(y), y, eps, 'nswp', 20, 'kickrank', 2);
+%             y = mvrk(diag(y), y, eps, 'nswp', 20, 'kickrank', 2);
+            y = mvrk2(diag(y), y, eps, 'nswp', 20);
         end;
     end;
 end
