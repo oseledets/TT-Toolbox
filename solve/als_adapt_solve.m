@@ -140,7 +140,7 @@ end
 if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1;  end;
 if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
 if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
-if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
+% if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
 
 tol2 = tol;
 
@@ -1127,15 +1127,19 @@ while (swp<=nswp)
         if (kickrank<0)
             kickrank=kickrank-1;
         end;
-
+        
             if (strcmp(trunc_norm, 'fro'))
-                if (max_dx<tol)&&(kickrank<=-als_iters)
-                    last_sweep=true;
+                if (max_dx<tol) % &&(kickrank>0)
                     kickrank = 0;
+                    last_sweep=true;
                 end;
-                if (max_dx<tol*als_tol_low)&&(kickrank>0)
-                    kickrank=-1;
-                end;
+%                 if (max_dx<tol)&&(kickrank<=-als_iters)
+%                     last_sweep=true;
+%                     kickrank = 0;
+%                 end;
+%                 if (max_dx<tol*als_tol_low)&&(kickrank>0)
+%                     kickrank=-1;
+%                 end;
             else
                 if (strcmp(kicktype, 'resid_tail'))
                     if (max_res_tail<tol)
@@ -1150,7 +1154,7 @@ while (swp<=nswp)
                         last_sweep=true;
                     end;
                     %                 if (max_res<tol*als_tol_low)&&(kickrank>0)
-                    if (max_res<tol)&&(kickrank>0)
+                    if (max_res<tol) % &&(kickrank>0)
                         %                     kickrank=-1;
                         kickrank = 0;
                         last_sweep=true;
