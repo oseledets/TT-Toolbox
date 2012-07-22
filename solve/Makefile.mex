@@ -19,3 +19,13 @@ ifeq ($(CPU), mac-gfort)
 	COPTIMFLAGS = -O2
 	LDR = $(FC)
 endif
+
+ifeq ($(CPU),dc-laptop-intel)
+	MATLAB = /home/dc/matlab_inst/bin/matlab
+	FC = ifort
+	FOPTIMFLAGS = -O2 -i8
+	CC = icc
+	CFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+	COPTIMFLAGS = -O2
+	LIBS2 = /opt/intel/Compiler/11.1/073/lib/intel64/libifcoremt_pic.a
+endif

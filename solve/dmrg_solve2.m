@@ -1,4 +1,4 @@
-function [x, sweeps]=dmrg_solve2(A, y, eps,varargin)
+function [x, somedata]=dmrg_solve2(A, y, eps,varargin)
 %Solution of linear systems in TT-format via DMRG iteration
 %   [X,SWEEPS]=DMRG_SOLVE2(A,Y,EPS,OPTIONS) Attempts to solve the linear
 %   system A*X = Y with accuracy EPS using the two-sided DMRG iteration.
@@ -188,6 +188,10 @@ dpows = ones(d,1)*min_dpow;
 %  chkvec{1}=reshape(chkvec{1}, size(chkvec{1},1), 1, size(chkvec{1},2));
 %  phAchk = cell(d,1);
 %  phychk = cell(d,1);
+
+
+somedata = cell(4,1); % swp, conds
+somedata{2} = zeros(d, nswp);
 
 sol_hist = cell(3,1);
 sol_hist{1}=x;
@@ -406,9 +410,11 @@ for swp=1:nswp
         else
             if (strcmp(MatVec, 'bfun2'))
                 mv=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
+                mv_t=@(vec)bfun2_t(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3);
                 %mv1=@(vec)bfun2(B, vec, rxm1,m1,m2,rxm3,rxn1,k1,k2,rxn3)+tau(i)*vec;
             else
                 mv = @(vec)(B*vec);
+                mv_t = @(vec)(B'*vec);
                 %mv1 = @(vec)(B*vec+tau(i)*vec);
             end;
         end;
@@ -427,6 +433,16 @@ for swp=1:nswp
         % We will solve the system only if res_prev>0.1*max_res_prev
         if (~last_sweep)&&(res_prev>bs_treshold*max_res_old)
             if (strcmp(MatVec,'full'))
+                
+%                 ev=eig(B);
+%                 ev1 = max(ev);
+%                 evn = min(ev);
+%                 [v1,ev1]=eigs(B'*B, [], 1, 'lr');
+%                 [vn,evn]=eigs(B'*B, [], 1, 'sr');                
+                somedata{2}(i, swp) = cond(B);
+                somedata{3}(i, swp) = res_prev;
+                fprintf('i=%d, cond(B): %g\n', i, somedata{2}(i, swp));
+%                 keyboard;
                 %             sol = pinv(B)*rhs;
                 %             sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
                 sol = B \ rhs;
@@ -442,6 +458,13 @@ for swp=1:nswp
 %                 else
 %                     tau(i)=tau(i)*4;
 %                 end
+
+                   keyboard;
+%                 [v1,ev1]=eigs(@(vec)(mv_t(mv(vec))), rxn1*k1*k2*rxn3, 1, 'lr');
+%                 [vn,evn]=eigs(@(vec)(mv_t(mv(vec))), rxn1*k1*k2*rxn3, 1, 'sr');
+%                 somedata{2}(i, swp) = sqrt(ev1/evn);
+%                 fprintf('i=%d, cond(B): %g\n', i, somedata{2}(i, swp));
+
                 if (strcmp(local_format, 'full'))
                     [sol_new,flg] = gmres(mv, rhs, nrestart, real_tol, 2, [], [], sol_prev);
                     %[dsol,flg]=gmres(mv, rhs-mv(sol_prev), nrestart, 1.0/8, 2, [], [], zeros(size(sol_prev)));
@@ -837,6 +860,16 @@ for swp=1:nswp
             sumn = sumn+size(x{i},1);
         end;
         erank = sqrt(erank/sumn);
+        
+        A{1} = reshape(A{1}, size(A{1},1), size(A{1},2), size(A{1},4));
+        y{1} = reshape(y{1}, size(y{1},1), size(y{1},3));
+        x{1} = reshape(x{1}, size(x{1},1), size(x{1},3));
+        res_real = tt_dist3(tt_mv(A, x), y)/sqrt(tt_dot(y,y));
+        A{1} = reshape(A{1}, size(A{1},1), size(A{1},2), 1, size(A{1},3));
+        y{1} = reshape(y{1}, size(y{1},1), 1, size(y{1},2));
+        x{1} = reshape(x{1}, size(x{1},1), 1, size(x{1},2));        
+        somedata{4}(swp) = res_real;
+        
 %         fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,0, dropflag, dx_max, max_res);
         fprintf('=dmrg_solve2= Sweep %d, dx_max: %3.3e, res_max: %3.3e, erank: %g\n', swp, max(dx), max_res, erank);
     end;
@@ -868,7 +901,7 @@ if (input_is_tt_tensor)
 end
 
 if (nargout>1)
-    sweeps = swp;
+    somedata{1} = swp;
 end;
 
 end
@@ -886,6 +919,24 @@ y = reshape(y, rB, rxn1*k1, m2*rxm3);
 y = permute(y, [3 1 2]);
 y = reshape(y, m2*rxm3*rB, rxn1*k1);
 B2 = reshape(B{2}, k2*rxn3, m2*rxm3*rB);
+y = B2*y; % size k2*rxn3,rxn1*k1
+y = reshape(y.', rxn1*k1*k2*rxn3, 1);
+end
+
+
+function [y]=bfun2_t(B, x, rxm1, m1, m2, rxm3, rxn1, k1, k2, rxn3)
+% Computes (B{1}' \otimes B{2}')x
+% B{1} is of sizes rxn1*k1, rxm1*m1, rB
+% B{2} is of sizes k2*rxn3, m2*rxm3, rB
+rB=size(B{1},3);
+x = reshape(x, rxm1*m1, m2*rxm3);
+B1 = permute(B{1}, [3 2 1]);  % HERE
+B1 = reshape(B1, rB*rxn1*k1, rxm1*m1);
+y = B1*x; % size rB*rxn1*k1,m2*rxm3
+y = reshape(y, rB, rxn1*k1, m2*rxm3);
+y = permute(y, [3 1 2]);
+y = reshape(y, m2*rxm3*rB, rxn1*k1);
+B2 = reshape(permute(B{2}, [2,1,3]), k2*rxn3, m2*rxm3*rB);
 y = B2*y; % size k2*rxn3,rxn1*k1
 y = reshape(y.', rxn1*k1*k2*rxn3, 1);
 end

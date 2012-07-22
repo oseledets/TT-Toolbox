@@ -65,6 +65,8 @@ trunc_norm = 'residual';
 local_solver = 'gmres';
 % local_solver = 'pcg';
 
+ismex = true;
+
 verb=1;
 kickrank = 2;
 x=[];
@@ -114,6 +116,10 @@ for i=1:2:length(varargin)-1
     end
 end
 
+local_prec_char = 0;
+if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1;  end;
+if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
+if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
 
 if (A.n~=A.m)
     error(' DMRG does not know how to solve rectangular systems!\n Use dmrg_solve3(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
@@ -242,6 +248,7 @@ while (swp<=nswp)
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
         
         if (res_prev>real_tol)
+            if (~ismex)
             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel'))&&(~last_sweep)
                 % Prepare the Jacobi prec - on maximal rank
 %                 if (rx(i)>rx(i+2))
@@ -365,6 +372,17 @@ while (swp<=nswp)
             end;
             
             sol = sol_prev + dsol;
+            
+            else % ismex
+                Amex = reshape(A1, ra(i)*n(i)*n(i), ra(i+1));
+                Amex = Amex*reshape(A2, ra(i+1), n(i+1)*n(i+1)*ra(i+2));
+                Amex = reshape(Amex, ra(i), n(i), n(i), n(i+1), n(i+1), ra(i+2));
+                Amex = permute(Amex, [1, 2, 4, 3, 5, 6]);
+                Amex = reshape(Amex, ra(i), n(i)*n(i+1), n(i)*n(i+1), ra(i+2));
+                sol = solve3d_2(permute(Phi1,[1,3,2]), Amex, permute(Phi2, [3,2,1]), rhs, real_tol, 1, sol_prev, local_prec_char, local_restart, local_iters, 1);
+                flg = 0;
+                iter = 1;
+            end;
             
             res_new = norm(bfun3(Phi1, A1, A2, Phi2, sol) - rhs)/norm_rhs;
             
