@@ -15,6 +15,7 @@
 // double dzero=0.0;
 long ione = 1;
 
+/*
 extern void tt_adapt_als_mp_djac_gen_(char *ptype, long *rx1, long *n, long *rx2, long *ra1, long *ra2, double *Phi1, double *A, double *Phi2, double *jacs);
 extern void tt_adapt_als_mp_djac_apply_(char *ptype, long *rx1, long *n, long *rx2, double *jacs, double *x, double *y, double *work1);
 extern void tt_adapt_als_mp_bfun3_(long *rx1, long *m, long *rx2, long *ry1, long *n, long *ry2, long *ra1, long *ra2, double *phi1, double *A, double *phi2, double *x, double *y, double *res1, double *res2);
@@ -24,6 +25,12 @@ extern void tt_adapt_als_mp_transp_(long *n, long *m, double *A, double *B);
 #define bfun3 tt_adapt_als_mp_bfun3_
 #define djac_gen tt_adapt_als_mp_djac_gen_
 #define transp tt_adapt_als_mp_transp_
+*/
+
+extern void djac_gen(char *ptype, long *rx1, long *n, long *rx2, long *ra1, long *ra2, double *Phi1, double *A, double *Phi2, double *jacs);
+extern void djac_apply(char *ptype, long *rx1, long *n, long *rx2, double *jacs, double *x, double *y, double *work1);
+extern void bfun3(long *rx1, long *m, long *rx2, long *ry1, long *n, long *ry2, long *ra1, long *ra2, double *phi1, double *A, double *phi2, double *x, double *y, double *res1, double *res2);
+extern void transp(long *n, long *m, double *A, double *B);
 
 extern char gmres_3d_printf_buf_[128];
 
