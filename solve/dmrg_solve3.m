@@ -432,8 +432,8 @@ while (swp<=nswp)
     chkres = norm(cAsol-crhs)/norm(crhs);
     
     
-    max_res = max(max_res, chkres);
-%     max_res = max(max_res, res_prev);
+%     max_res = max(max_res, chkres);
+    max_res = max(max_res, res_prev);
     max_iter = max(max_iter, iter);
     
     % Truncation

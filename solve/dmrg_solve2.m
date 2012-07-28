@@ -56,7 +56,7 @@ bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow an
 top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
 
 bs_treshold = 0.0001*0; % Treshold from the previous residual to consider a local system as "bad"
-trunc_to_true = 1.5; % Truncation error to true residual treshold
+trunc_to_true = 2; % Truncation error to true residual treshold
 
 use_self_prec=false;
 nswp=10;
@@ -439,9 +439,9 @@ for swp=1:nswp
 %                 evn = min(ev);
 %                 [v1,ev1]=eigs(B'*B, [], 1, 'lr');
 %                 [vn,evn]=eigs(B'*B, [], 1, 'sr');                
-                somedata{2}(i, swp) = cond(B);
+%                 somedata{2}(i, swp) = cond(B);
                 somedata{3}(i, swp) = res_prev;
-                fprintf('i=%d, cond(B): %g\n', i, somedata{2}(i, swp));
+%                 fprintf('i=%d, cond(B): %g\n', i, somedata{2}(i, swp));
 %                 keyboard;
                 %             sol = pinv(B)*rhs;
                 %             sol = (B'*B+tol^2*max(max(abs(B'*B)))*eye(size(B)))\(B'*rhs);
@@ -459,7 +459,7 @@ for swp=1:nswp
 %                     tau(i)=tau(i)*4;
 %                 end
 
-                   keyboard;
+%                    keyboard;
 %                 [v1,ev1]=eigs(@(vec)(mv_t(mv(vec))), rxn1*k1*k2*rxn3, 1, 'lr');
 %                 [vn,evn]=eigs(@(vec)(mv_t(mv(vec))), rxn1*k1*k2*rxn3, 1, 'sr');
 %                 somedata{2}(i, swp) = sqrt(ev1/evn);
@@ -754,13 +754,16 @@ for swp=1:nswp
         else
             if (~last_sweep)
                 vr=randn(size(v,1),kickrank);
-                v=reort(v,vr);
-                radd=size(v,2)-r;
+%                 v=reort(v,vr);
+                [v,rr]=qr([v,vr], 0);
+%                 radd=size(v,2)-r;
+                radd=kickrank;
                 if ( radd > 0 )
                     ur=zeros(size(u,1),radd);
-                    u=[u,ur];
+                    u=[u,ur]*(rr.');
                 end
-                r=r+radd;
+                r = size(u,2);
+%                 r=r+radd;
             end;
         end;
 
