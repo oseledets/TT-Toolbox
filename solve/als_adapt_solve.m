@@ -168,6 +168,11 @@ rx = x.r;
 
 cry = core2cell(y);
 crA = core2cell(A);
+% for i=1:d
+%     if (nnz(crA{i})<0.1*numel(crA{i}))
+%         crA{i}=ndSparse(crA{i});
+%     end;
+% end;
 crx = core2cell(x);
 
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
@@ -209,6 +214,9 @@ for i=d:-1:2
         A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
         x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
         Ax1 = A1*x1;
+%         if (issparse(Ax1))
+%             Ax1 = full(Ax1);
+%         end;
         Ax1 = reshape(Ax1, ra(i), n(i), ra(i+1), rx(i), rx(i+1));
         Ax1 = reshape(permute(Ax1, [1, 4, 2, 3, 5]), ra(i)*rx(i), n(i), ra(i+1)*rx(i+1));
         r1 = ra(i)*rx(i)+ry(i); r2 = ra(i+1)*rx(i+1)+ry(i+1);
@@ -278,14 +286,17 @@ while (swp<=nswp)
         %      |     |    |
         B = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
         B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-        B = reshape(B, rx(i), rx(i), n(i), n(i), ra(i+1));
-        B = permute(B, [1, 3, 2, 4, 5]);
+        B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
+        B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
         B = B*reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
         B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
+%         if (isa(B, 'ndSparse'))
+%             B = sparse(B);
+%         end;
         
 %         if (i<d)
 %             B1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
@@ -358,7 +369,7 @@ while (swp<=nswp)
             
             somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
             
-            if (res_prev>real_tol)
+            if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
                 sol = B \ rhs;
                 flg = 0;
                 res_new = norm(B*sol-rhs)/norm_rhs;
@@ -372,7 +383,7 @@ while (swp<=nswp)
         else
             % rhs = 0: we are looking for a ground state
             res_prev = norm(B*sol_prev);
-            if (res_prev>real_tol)
+            if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
                 B2 = B+eye(rx(i)*n(i)*rx(i+1))*mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
                 sol_prev2 = sol_prev;
                 for it=1:local_restart
@@ -406,7 +417,7 @@ while (swp<=nswp)
         
         somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
-        if (res_prev>real_tol)
+        if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
             if (~ismex)
                 sol = zeros(1,n(i),1);
                 Phi1mex = permute(Phi1,[1,3,2]);
@@ -591,7 +602,12 @@ while (swp<=nswp)
 %                  local_prec_char = 1;
 %              end;
 %             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
-            sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+
+%             if ((issparse(Phi1))||(issparse(A1))||(issparse(Phi2)))
+%                 sol = solve3d_2(permute(full(Phi1),[1,3,2]), full(A1), permute(full(Phi2), [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+%             else
+                sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+%             end;
 
             flg=0;
             iter = 0;
@@ -610,7 +626,7 @@ while (swp<=nswp)
         else % Ground state
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev));
 
-            if (res_prev>real_tol)
+            if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
                 sol_prev2 = sol_prev;
                 Phi1mex = zeros(rx(i), rx(i), ra(i)+1);
                 Phi1mex(1:rx(i), 1:rx(i), 1:ra(i)) = permute(Phi1,[1,3,2]);
@@ -813,9 +829,15 @@ while (swp<=nswp)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         leftresid = reshape(Phi1, rx(i)*ra(i), rx(i))*reshape(u*v.', rx(i), n(i)*rx(i+1));
+%         if (issparse(leftresid))
+%             leftresid = full(leftresid);
+%         end;
         leftresid = reshape(leftresid, rx(i), ra(i)*n(i), rx(i+1));
         leftresid = reshape(permute(leftresid, [2, 1, 3]), ra(i)*n(i), rx(i)*rx(i+1));
         leftresid = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*leftresid;
+%         if (issparse(leftresid))
+%             leftresid = full(leftresid);
+%         end;        
         leftresid = reshape(leftresid, n(i), ra(i+1), rx(i), rx(i+1));
         leftresid = reshape(permute(leftresid, [3,1,2,4]), rx(i)*n(i), ra(i+1)*rx(i+1));
         lefty = phiy{i};
@@ -824,9 +846,15 @@ while (swp<=nswp)
         
         if (strcmp(kicktype, 'resid_2d'))
             rightresid = reshape(phia{i+2}, rx(i+2)*ra(i+2), rx(i+2))*(reshape(crx{i+1}, rx(i+1)*n(i+1), rx(i+2)).');
+%             if (issparse(rightresid))
+%                 rightresid = full(rightresid);
+%             end;
             rightresid = reshape(rightresid, rx(i+2), ra(i+2), rx(i+1), n(i+1));
             rightresid = reshape(permute(rightresid, [4, 2, 3, 1]), n(i+1)*ra(i+2), rx(i+1)*rx(i+2));
             rightresid = reshape(crA{i+1}, ra(i+1)*n(i+1), n(i+1)*ra(i+2))*rightresid;
+%             if (issparse(rightresid))
+%                 rightresid = full(rightresid);
+%             end;
             rightresid = reshape(rightresid, ra(i+1), n(i+1), rx(i+1), rx(i+2));
             rightresid = reshape(permute(rightresid, [2,4,1,3]), n(i+1)*rx(i+2), ra(i+1)*rx(i+1));
             righty = reshape(cry{i+1}, ry(i+1)*n(i+1), ry(i+2));
@@ -927,6 +955,9 @@ while (swp<=nswp)
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
             x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
             Ax1 = A1*x1;
+%             if (issparse(Ax1))
+%                 Ax1 = full(Ax1);
+%             end;
             Ax1 = reshape(Ax1, ra(i), n(i), ra(i+1), rx(i), rx(i+1));
             Ax1 = reshape(permute(Ax1, [1, 4, 2, 3, 5]), ra(i)*rx(i), n(i), ra(i+1)*rx(i+1));
             r1 = ra(i)*rx(i)+ry(i); r2 = ra(i+1)*rx(i+1)+ry(i+1);
@@ -958,9 +989,15 @@ while (swp<=nswp)
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         
         rightresid = reshape(phia{i+1}, rx(i+1)*ra(i+1), rx(i+1))*(reshape(u*v.', rx(i)*n(i), rx(i+1)).');
+%         if (issparse(rightresid))
+%             rightresid = full(rightresid);
+%         end;
         rightresid = reshape(rightresid, rx(i+1), ra(i+1), rx(i), n(i));
         rightresid = reshape(permute(rightresid, [4, 2, 3, 1]), n(i)*ra(i+1), rx(i)*rx(i+1));
         rightresid = reshape(crA{i}, ra(i)*n(i), n(i)*ra(i+1))*rightresid;
+%         if (issparse(rightresid))
+%             rightresid = full(rightresid);
+%         end;
         rightresid = reshape(rightresid, ra(i), n(i), rx(i), rx(i+1));
         rightresid = reshape(permute(rightresid, [2,4,1,3]), n(i)*rx(i+1), ra(i)*rx(i));
         righty = reshape(cry{i}, ry(i)*n(i), ry(i+1));
@@ -968,9 +1005,15 @@ while (swp<=nswp)
         righty = reshape(righty, ry(i), n(i)*rx(i+1)).';
         if (strcmp(kicktype, 'resid_2d'))
             leftresid = reshape(phia{i-1}, rx(i-1)*ra(i-1), rx(i-1))*reshape(crx{i-1}, rx(i-1), n(i-1)*rx(i));
+%             if (issparse(leftresid))
+%                 leftresid = full(leftresid);
+%             end;
             leftresid = reshape(leftresid, rx(i-1), ra(i-1)*n(i-1), rx(i));
             leftresid = reshape(permute(leftresid, [2, 1, 3]), ra(i-1)*n(i-1), rx(i-1)*rx(i));
             leftresid = reshape(permute(crA{i-1}, [2,4,1,3]), n(i-1)*ra(i), ra(i-1)*n(i-1))*leftresid;
+%             if (issparse(leftresid))
+%                 leftresid = full(leftresid);
+%             end;
             leftresid = reshape(leftresid, n(i-1), ra(i), rx(i-1), rx(i));
             leftresid = reshape(permute(leftresid, [3,1,2,4]), rx(i-1)*n(i-1), ra(i)*rx(i));
             lefty = phiy{i-1};
@@ -1072,6 +1115,9 @@ while (swp<=nswp)
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
             x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
             Ax1 = A1*x1;
+%             if (issparse(Ax1))
+%                 Ax1 = full(Ax1);
+%             end;
             Ax1 = reshape(Ax1, ra(i), n(i), ra(i+1), rx(i), rx(i+1));
             Ax1 = reshape(permute(Ax1, [1, 4, 2, 3, 5]), ra(i)*rx(i), n(i), ra(i+1)*rx(i+1));
             r1 = ra(i)*rx(i)+ry(i); r2 = ra(i+1)*rx(i+1)+ry(i+1);
@@ -1143,16 +1189,16 @@ while (swp<=nswp)
             else
                 if (strcmp(kicktype, 'resid_tail'))
                     if (max_res_tail<tol)
-                        crx = crx_old;
-                        break;
-%                         kickrank=0;
-%                         last_sweep=true;
-                    end;
-                else
-                    if (max_res<tol)&&(kickrank<=-als_iters)
-                        kickrank = 0;
+%                         crx = crx_old;
+%                         break;
+                        kickrank=0;
                         last_sweep=true;
                     end;
+                else
+%                     if (max_res<tol)&&(kickrank<=-als_iters)
+%                         kickrank = 0;
+%                         last_sweep=true;
+%                     end;
                     %                 if (max_res<tol*als_tol_low)&&(kickrank>0)
                     if (max_res<tol) % &&(kickrank>0)
                         %                     kickrank=-1;
@@ -1165,7 +1211,7 @@ while (swp<=nswp)
             max_res = 0;
             max_dx = 0;
             max_iter = 0;     
-            if (strcmp(kicktype, 'resid_tail')); crx_old = crx; max_res_tail = 0; end;            
+            if (strcmp(kicktype, 'resid_tail')); max_res_tail = 0; end;            
 %             dx_old = dx;
 
 
@@ -1231,6 +1277,9 @@ x = reshape(x, [rx1*n, rx2]);
 Phi = (x')*Phi;	% complexity §\mcommentfont$\mathcal{O}(n  r_x^2 r_A r_y)$§
 if (~isempty(A))
   Phi = reshape(Phi, [rx2, ra2, ry2]);
+%   if (nnz(Phi)<0.1*numel(Phi))
+%       Phi=ndSparse(Phi);
+%   end;
 end
 end
 
