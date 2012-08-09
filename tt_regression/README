@@ -1,0 +1,29 @@
+ALS-based regression in the TT-function format
+
+1) To fit a TT-function to the given data use
+ttf = reg_als(x, y, fun, r, n)
+where 
+x - d x N array of N d-dimensional coordinates
+y - 1 x N array of values of the unknown function at points x
+fun - function handle of the format fun(i,j,x) that returns value of the 
+	j-th basis function in the i-th dimension at the point (d x 1 vector) x
+n - d x 1 array of the number of basis functions in each dimension
+r - d+1 x 1 array of TT-ranks of the TT-tensor of coefficients
+
+2) Once TT-function ttf is fitted you can evaluate it at an arbitrary point by using
+val = ttf.eval(x)
+or create a TT-tensor of its values on a given grid
+tt = ttf.to_tt_tensor(x)
+where x - d x 1 cell array, each x{i} stores grid points in the i-th dimension
+
+3) To try the regression use
+ttf = sin_test() - fits sin(x_1 + x_2 + ... + x_10) function given by 
+values at 20k random points on [0,1]^d
+ttf = friedman_test(n_problem, tt_rank, n_basis)
+n_problem = 1, 2 or 3 - Friedman's n-th problem
+tt_rank - rank of the TT-tensor of coefficients
+n_basis - # of basis functions in each dimension
+
+!!! ATTENTION Algorithm is slow, complexity is O(d*N*n^2*r^4)
+
+!Written by Pavel Zhlobich http://www.maths.ed.ac.uk/~pzhlobic/
