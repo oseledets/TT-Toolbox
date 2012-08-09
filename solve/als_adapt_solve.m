@@ -193,6 +193,7 @@ end;
 somedata = cell(7,1); % cond, V*Z, V*Z^l, res_prev, dot(Z,Z^l)
 for i=1:5; somedata{i}=zeros(d,nswp*2); end;
 somedata{7}=zeros(d,nswp*2);
+somedata{6}=zeros(nswp*2,1);
 
 % Orthogonalization
 for i=d:-1:2
@@ -369,7 +370,7 @@ while (swp<=nswp)
             
             somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
             
-            if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
+            if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
                 sol = B \ rhs;
                 flg = 0;
                 res_new = norm(B*sol-rhs)/norm_rhs;
@@ -383,8 +384,8 @@ while (swp<=nswp)
         else
             % rhs = 0: we are looking for a ground state
             res_prev = norm(B*sol_prev);
-            if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
-                B2 = B+eye(rx(i)*n(i)*rx(i+1))*mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
+            if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
+                B2 = B+eye(rx(i)*n(i)*rx(i+1)); %*mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
                 sol_prev2 = sol_prev;
                 for it=1:local_restart
                     sol = B2 \ sol_prev2;
@@ -417,7 +418,7 @@ while (swp<=nswp)
         
         somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
-        if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
+        if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
             if (~ismex)
                 sol = zeros(1,n(i),1);
                 Phi1mex = permute(Phi1,[1,3,2]);
@@ -626,18 +627,18 @@ while (swp<=nswp)
         else % Ground state
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev));
 
-            if (res_prev>real_tol)&&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
+            if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
                 sol_prev2 = sol_prev;
                 Phi1mex = zeros(rx(i), rx(i), ra(i)+1);
                 Phi1mex(1:rx(i), 1:rx(i), 1:ra(i)) = permute(Phi1,[1,3,2]);
-                Phi1mex(1:rx(i), 1:rx(i), ra(i)+1) = eye(rx(i))*mean(abs(Phi1(:)));
+                Phi1mex(1:rx(i), 1:rx(i), ra(i)+1) = eye(rx(i)); %*mean(abs(Phi1(:)));
                 Phi2mex = zeros(rx(i+1), rx(i+1), ra(i+1)+1);
                 Phi2mex(1:rx(i+1), 1:rx(i+1), 1:ra(i+1)) = permute(Phi2,[1,3,2]);
-                Phi2mex(1:rx(i+1), 1:rx(i+1), ra(i+1)+1) = eye(rx(i+1))*mean(abs(Phi2(:)));
+                Phi2mex(1:rx(i+1), 1:rx(i+1), ra(i+1)+1) = eye(rx(i+1)); %*mean(abs(Phi2(:)));
                 Phi2mex = permute(Phi2mex, [2,3,1]);
                 A1mex = zeros(n(i),n(i), ra(i)+1, ra(i+1)+1);
                 A1mex(1:n(i), 1:n(i), 1:ra(i), 1:ra(i+1)) = permute(A1, [2, 3, 1, 4]);
-                A1mex(1:n(i), 1:n(i), ra(i)+1, ra(i+1)+1) = eye(n(i))*mean(abs(A1(:)));
+                A1mex(1:n(i), 1:n(i), ra(i)+1, ra(i+1)+1) = eye(n(i)); %*mean(abs(A1(:)));
                 A1mex = permute(A1mex, [3, 1, 2, 4]);
                 for it=1:local_iters
                     rhs = sol_prev2;
@@ -884,9 +885,9 @@ while (swp<=nswp)
             end;
         elseif (strcmp(kicktype, 'resid_tail'))
             leftresid = [leftresid, -lefty]*Rs{i+1};
-            res_tail = norm(leftresid, 'fro')/normy;
-            somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
-            max_res_tail = max(max_res_tail, res_tail);
+%             res_tail = norm(leftresid, 'fro')/normy;
+%             somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
+%             max_res_tail = max(max_res_tail, res_tail);
             if (strcmp(pcatype, 'svd'))
                 [uk,sk,vk]=svd(leftresid, 'econ');
                 uk = uk(:,1:min(rho, size(uk,2)));
@@ -1043,9 +1044,9 @@ while (swp<=nswp)
             end;
         elseif (strcmp(kicktype, 'resid_tail'))
             rightresid = [rightresid, -righty]*(Rs{i}.');            
-            res_tail = norm(rightresid, 'fro')/normy;
-            somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
-            max_res_tail = max(max_res_tail, res_tail);            
+%             res_tail = norm(rightresid, 'fro')/normy;
+%             somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
+%             max_res_tail = max(max_res_tail, res_tail);            
             if (strcmp(pcatype, 'svd'))
                 [uk,sk,vk]=svd(rightresid, 'econ');
                 uk = uk(:,1:min(rho, size(uk,2)));
@@ -1155,15 +1156,15 @@ while (swp<=nswp)
 %         max_res = norm(A*x-y)/norm(y);
         
         if (verb>0)
-%             x = cell2core(x, crx);
-%             real_res = norm(A*x-y)/norm(y);
-%             somedata{6}((swp-1)*2+1.5-dir/2)=real_res;
+%              x = cell2core(x, crx);
+%              real_res = norm(A*x-y)/norm(y);
+%              somedata{6}((swp-1)*2+1.5-dir/2)=real_res;
 %             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, real_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, real_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-            if (strcmp(kicktype, 'resid_tail'))
-                fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, tail_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res_tail, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-            else
+%             if (strcmp(kicktype, 'resid_tail'))
+%                 fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, tail_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res_tail, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
+%             else
                 fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-            end;
+%             end;
         end;
 
         if (last_sweep)
@@ -1187,14 +1188,13 @@ while (swp<=nswp)
 %                     kickrank=-1;
 %                 end;
             else
-                if (strcmp(kicktype, 'resid_tail'))
-                    if (max_res_tail<tol)
-%                         crx = crx_old;
-%                         break;
-                        kickrank=0;
-                        last_sweep=true;
-                    end;
-                else
+%                 if (strcmp(kicktype, 'resid_tail'))
+%                     if (max_res_tail<tol)
+%                          crx = crx_old;
+%                          break;
+%                     end;
+%                 else
+                    
 %                     if (max_res<tol)&&(kickrank<=-als_iters)
 %                         kickrank = 0;
 %                         last_sweep=true;
@@ -1205,13 +1205,13 @@ while (swp<=nswp)
                         kickrank = 0;
                         last_sweep=true;
                     end;
-                end;
+%                 end;
             end;
 
             max_res = 0;
             max_dx = 0;
             max_iter = 0;     
-            if (strcmp(kicktype, 'resid_tail')); max_res_tail = 0; end;            
+%             if (strcmp(kicktype, 'resid_tail')); max_res_tail = 0; crx_old=crx; end;            
 %             dx_old = dx;
 
 

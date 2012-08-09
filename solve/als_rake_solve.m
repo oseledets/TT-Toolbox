@@ -276,7 +276,7 @@ for swp=1:nswp
         if (last_sweep); local_kickrank=0; end;
         if (verb>1); fprintf('\t core %d\n', i); end;
         [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyc{i},ycp{i},phiyc{i+1}, ...
-            tol2/sqrt(d*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
+            tol2/sqrt(sum(L+1))/resid_damp, resid_damp, trunc_norm, sol_prev, ...
             local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
             dir, rmax, local_kickrank, verb);
         
@@ -393,7 +393,7 @@ for swp=1:nswp
             if (last_sweep); local_kickrank=0; end;
             if (verb>1); fprintf('\t factor {%d,%d}\n', i, j); end;
             [u,v,max_res,max_dx,flg]=local_solve(Phi1,A1,Phi2, phiyf{i}{j},cury{j},phiyf{i}{j+1}, ...
-                tol2/sqrt(sum(L)*2)/resid_damp, resid_damp, trunc_norm, sol_prev, ...
+                tol2/sqrt(sum(L+1))/resid_damp, resid_damp, trunc_norm, sol_prev, ...
                 local_prec, local_restart, local_iters, max_full_size, max_res, max_dx, ...
                 dir, rmax, local_kickrank, verb);
             
@@ -525,17 +525,18 @@ for swp=1:nswp
 %         Au = mvrk2(a, x, tol, 'y0', Au, 'verb', 0);
 %         real_res = norm(Au-y)/norm(y);
 %         fprintf('=als_rake_solve= sweep %d, \t\t\t real_res: %3.3e\n', swp, real_res);
-%         if (max_res<tol)
-%             last_sweep = true;
-%         end;
+        if (max_res<tol)
+            kickrank = 0;
+            last_sweep = true;
+        end;
 %         if (max_res<tol)&&(kickrank<=-als_iters)
 %             last_sweep=true;
 %         end;
-        if (max_res<=tol*als_tol_high)
-            if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
-            if ((regurg_cnt>als_iters)||(max_res<tol)); last_sweep=true; end;
-%             if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
-        end;        
+%         if (max_res<=tol*als_tol_high)
+%             if (max_res>max_res_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+%             if ((regurg_cnt>als_iters)||(max_res<tol)); last_sweep=true; end;
+% %             if ((regurg_cnt>0)||(max_res<=tol*als_tol_low))&&(kickrank>0); kickrank=-1; end;
+%         end;        
     end;
     
     if (swp==nswp-1)||(regurg_cnt>2)
@@ -637,7 +638,7 @@ if (rx1*n*rx2<max_full_size)
         % Ground state
         res_prev = norm(B*sol_prev);
         if (res_prev>tol)
-            B2 = B+eye(rx1*n*rx2)*mean(abs(B(:)))*1e-3;
+            B2 = B+eye(rx1*n*rx2);
             sol_prev2 = sol_prev;
             for it=1:local_restart
                 sol = B2 \ sol_prev2;
@@ -678,17 +679,19 @@ else
             trunc_norm_char = 1;
             local_prec_char = 0;
             if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
+            if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
+            if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
             
             Psi1 = zeros(rx1, rx1, ra1+1);
             Psi1(:,:,1:ra1) = permute(Phi1, [1,3,2]);
-            Psi1(:,:,ra1+1) = eye(rx1)*norm(Phi1(:), 'fro');
+            Psi1(:,:,ra1+1) = eye(rx1);
             B1 = zeros(n, n, ra1+1, ra2+1);
             B1(:,:,1:ra1,1:ra2) = permute(A1, [2,3,1,4]);
-            B1(:,:,ra1+1,ra2+1) = eye(n)*norm(A1(:), 'fro')*1e-4;
+            B1(:,:,ra1+1,ra2+1) = eye(n);
             B1 = permute(B1, [3,1,2,4]);
             Psi2 = zeros(rx2,rx2,ra2+1);
             Psi2(:,:,1:ra2) = permute(Phi2, [1,3,2]);
-            Psi2(:,:,ra2+1) = eye(rx2)*norm(Phi1(:), 'fro');
+            Psi2(:,:,ra2+1) = eye(rx2);
             Psi2 = permute(Psi2, [2,3,1]);
             
             sol_prev2 = sol_prev;
@@ -718,6 +721,8 @@ else
 %             if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
             local_prec_char = 0;
             if ((strcmp(local_prec, 'cjacobi'))); local_prec_char = 1; end;
+            if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
+            if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
             if (res_prev>1)
                 sol_prev = zeros(rx1*n*rx2, 1);
                 res_prev = 1;

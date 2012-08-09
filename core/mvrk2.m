@@ -212,7 +212,7 @@ for swp=1:nswp
         if (i==1); dir=0; end;
         local_kickrank = kickrank;
         if (last_sweep); local_kickrank=0; end;
-        [u,v,max_dx]=local_proj(Phi1,A1,Phi2, x1, tol2/sqrt(d*2), y_prev,  max_dx, dir, local_kickrank, verb);
+        [u,v,max_dx]=local_proj(Phi1,A1,Phi2, x1, tol2/sqrt(sum(L+1)), y_prev,  max_dx, dir, local_kickrank, verb);
         
         if (i>1)
             cr2 = yf{i-1}{L(i-1)+1};
@@ -286,7 +286,7 @@ for swp=1:nswp
             if (j==(L(i)+1)); dir=0; end;
             local_kickrank = kickrank;
             if (last_sweep); local_kickrank=0; end;
-            [u,v,max_dx]=local_proj(Phi1,A1,Phi2, x1, tol2/sqrt(sum(L)*2), y_prev,  max_dx, dir, local_kickrank, verb);
+            [u,v,max_dx]=local_proj(Phi1,A1,Phi2, x1, tol2/sqrt(sum(L+1)), y_prev,  max_dx, dir, local_kickrank, verb);
             
             if (j<(L(i)+1))
                 cr2 = cury{j+1};
@@ -372,16 +372,21 @@ for swp=1:nswp
         kickrank=kickrank-1;
     end;
     
-    if (max_dx<tol)&&(kickrank<=-als_iters)
+%     if (max_dx<tol)&&(kickrank<=-als_iters)
+%         last_sweep=true;
+%         kickrank=0;
+%     end;
+
+    if (max_dx<tol)
+        kickrank = 0;
         last_sweep=true;
-        kickrank=0;
     end;
 
-    if (max_dx_prev<=tol*als_tol_high)
-        if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
+%     if (max_dx_prev<=tol*als_tol_high)
+%         if (max_dx>max_dx_prev); regurg_cnt=regurg_cnt+1; fprintf('---- Regurgitation %d\n', regurg_cnt); end;
 %         if ((regurg_cnt>als_iters)||(max_dx<tol)); last_sweep=true; end;
-        if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>=0); kickrank = -1; end;
-    end;
+%         if ((regurg_cnt>0)||(max_dx<=tol*als_tol_low))&&(kickrank>=0); kickrank = -1; end;
+%     end;
     
     if (swp==nswp-1)
         last_sweep=true;

@@ -14,7 +14,9 @@ function [a] = full(tt, sizes)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-a=full(tt.core); 
+n=size(tt.core);
+r = tt.core.r;
+a=core2cell(tt.core); 
 fac=cell(tt.dphys,1);
 for i=1:tt.dphys
    ti=tt.tuck{i}; ri=rank(ti,ti.d+1);
@@ -22,11 +24,15 @@ for i=1:tt.dphys
    fac{i}=reshape(ti,[numel(ti)/ri,ri]);
 end
 %And now convert tucker representation to the full one
-n=size(tt.core);
 for i=1:tt.dphys
-   a=reshape(a,[n(i),numel(a)/n(i)]);
-   a=(fac{i}*a).'; %r1r2r3 -> n1r2r3 ->r2r3n1 
+    a{i} = permute(a{i}, [2,1,3]);
+    a{i} = reshape(a{i}, n(i), r(i)*r(i+1));
+    a{i} = fac{i}*a{i};
+    a{i} = reshape(a{i}, size(fac{i},1), r(i), r(i+1));
+    a{i} = permute(a{i}, [2,1,3]);
 end
+a = cell2core(tt_tensor, a);
+a = full(a);
 if ( nargin > 1 && ~isempty(sizes) )
    a=reshape(a,sizes);
 end

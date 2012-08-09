@@ -1,4 +1,4 @@
-function [x]=dmrg_solve3(A, y, tol, varargin)
+function [x,somedata]=dmrg_solve3(A, y, tol, varargin)
 %Solution of linear systems in TT-format via DMRG iteration
 %   [X,SWEEPS]=DMRG_SOLVE3(A,Y,TOL,OPTIONS) Attempts to solve the linear
 %   system A*X = Y with accuracy/residual TOL using the two-sided DMRG iteration.
@@ -135,37 +135,45 @@ if (isempty(block_order))
     block_order = [+(d-1), -(d-1)];
 end;
 
-ry = y.r;
-ra = A.r;
+ry = (y.r); %.*(A.r);
+ra = (A.r); %.^2;
 rx = x.r;
+
+crA = core2cell(A);
+cry = core2cell(y);
+crx = core2cell(x);
 
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
 % This is for checking the residual via averaging
-cphia = cell(d+1,1); cphia{1}=1; cphia{d+1}=1;
-cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
+% cphia = cell(d+1,1); cphia{1}=1; cphia{d+1}=1;
+% cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
+
+somedata = cell(2,1);
+somedata{1}=zeros(d,nswp*2);
+somedata{2}=zeros(nswp*2, 1);
 
 
 % Orthogonalization
 for i=d:-1:2
-    cr = x{i};
+    cr = crx{i};
     cr = reshape(cr, rx(i), n(i)*rx(i+1));
     [cr, rv]=qr(cr.', 0);
-    cr2 = x{i-1};
+    cr2 = crx{i-1};
     cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
     cr2 = cr2*(rv.');
     rx(i) = size(cr, 2);
     cr = reshape(cr.', rx(i), n(i), rx(i+1));
-    x{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
-    x{i} = cr;
+    crx{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
+    crx{i} = cr;
     
-    phia{i} = compute_next_Phi(phia{i+1}, cr, A{i}, cr, 'rl');
-    phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], y{i}, 'rl');
+    phia{i} = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
+    phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
     
     % For residual-check
-    cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), A{i}, cr, 'rl');
-    cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], y{i}, 'rl');
+%    cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), A{i}, cr, 'rl');
+%    cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], y{i}, 'rl');
 end;
 
 
@@ -190,19 +198,19 @@ dir = sign(cur_order(order_index));
 while (swp<=nswp)
     % Extract elements - matrix
     Phi1 = phia{i}; Phi2 = phia{i+2};
-    A1 = A{i}; A2 = A{i+1};
+    A1 = crA{i}; A2 = crA{i+1};
     % RHS
     rhs = phiy{i};
-    rhs = rhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
+    rhs = rhs*reshape(cry{i}, ry(i), n(i)*ry(i+1));
     rhs = reshape(rhs, rx(i)*n(i), ry(i+1));
-    rhs = rhs*reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
+    rhs = rhs*reshape(cry{i+1}, ry(i+1), n(i+1)*ry(i+2));
     rhs = reshape(rhs, rx(i)*n(i)*n(i+1), ry(i+2));
     rhs = rhs*(phiy{i+2}.');
     rhs = reshape(rhs, rx(i)*n(i)*n(i+1)*rx(i+2),1);
     norm_rhs = norm(rhs);
     % sol_prev
-    sol_prev = reshape(x{i}, rx(i)*n(i), rx(i+1));
-    sol_prev = sol_prev*reshape(x{i+1}, rx(i+1), n(i+1)*rx(i+2));
+    sol_prev = reshape(crx{i}, rx(i)*n(i), rx(i+1));
+    sol_prev = sol_prev*reshape(crx{i+1}, rx(i+1), n(i+1)*rx(i+2));
     sol_prev = reshape(sol_prev, rx(i)*n(i)*n(i+1)*rx(i+2),1);
     
     real_tol = (tol/(d^dpows(i)))/resid_damp;
@@ -229,6 +237,8 @@ while (swp<=nswp)
         B = reshape(B, rx(i)*n(i)*n(i+1)*rx(i+2), rx(i)*n(i)*n(i+1)*rx(i+2));
         
         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
+	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+
         if (res_prev>real_tol)
             sol = B \ rhs;
             flg = 0;
@@ -246,6 +256,7 @@ while (swp<=nswp)
     else % Structured solution.
         
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
+	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
         if (res_prev>real_tol)
             if (~ismex)
@@ -421,15 +432,15 @@ while (swp<=nswp)
     end;
     
     % Check the residual
-    cPhi1 = cphia{i}; cPhi2 = cphia{i+2};
-    crhs = cphiy{i};
-    crhs = crhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
-    crhs = reshape(crhs, n(i), ry(i+1));
-    crhs = crhs*reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
-    crhs = reshape(crhs, n(i)*n(i+1), ry(i+2));
-    crhs = crhs*(cphiy{i+2}.');
-    cAsol = bfun3(cPhi1, A1, A2, cPhi2, sol);
-    chkres = norm(cAsol-crhs)/norm(crhs);
+%    cPhi1 = cphia{i}; cPhi2 = cphia{i+2};
+%    crhs = cphiy{i};
+%    crhs = crhs*reshape(y{i}, ry(i), n(i)*ry(i+1));
+%    crhs = reshape(crhs, n(i), ry(i+1));
+%    crhs = crhs*reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
+%    crhs = reshape(crhs, n(i)*n(i+1), ry(i+2));
+%    crhs = crhs*(cphiy{i+2}.');
+%    cAsol = bfun3(cPhi1, A1, A2, cPhi2, sol);
+%    chkres = norm(cAsol-crhs)/norm(crhs);
     
     
 %     max_res = max(max_res, chkres);
@@ -500,12 +511,12 @@ while (swp<=nswp)
         v = reshape(v.', r, n(i+1), rx(i+2));
         
         % Recompute phi. Left ones, so permute them appropriately
-        phia{i+1} = compute_next_Phi(phia{i}, u, A{i}, u, 'lr');
-        phiy{i+1} = compute_next_Phi(phiy{i}, u, [], y{i}, 'lr');
+        phia{i+1} = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
+        phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
         
         % residual-check
-        cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), A{i}, u, 'lr');
-        cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], y{i}, 'lr');
+%        cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), A{i}, u, 'lr');
+%        cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], y{i}, 'lr');
         
     else % right-to-left
         u = u(:,1:r)*diag(s(1:r));
@@ -523,17 +534,17 @@ while (swp<=nswp)
         v = reshape(v.', r, n(i+1), rx(i+2));
         
         % Recompute phi. Here are right phis
-        phia{i+1} = compute_next_Phi(phia{i+2}, v, A{i+1}, v, 'rl');
-        phiy{i+1} = compute_next_Phi(phiy{i+2}, v, [], y{i+1}, 'rl');        
+        phia{i+1} = compute_next_Phi(phia{i+2}, v, crA{i+1}, v, 'rl');
+        phiy{i+1} = compute_next_Phi(phiy{i+2}, v, [], cry{i+1}, 'rl');        
         % Residual check
-        cphia{i+1} = compute_next_Phi(cphia{i+2}, ones(1,n(i+1)), A{i+1}, v, 'rl');
-        cphiy{i+1} = compute_next_Phi(cphiy{i+2}, ones(1,n(i+1)), [], y{i+1}, 'rl');        
+%        cphia{i+1} = compute_next_Phi(cphia{i+2}, ones(1,n(i+1)), A{i+1}, v, 'rl');
+%        cphiy{i+1} = compute_next_Phi(cphiy{i+2}, ones(1,n(i+1)), [], y{i+1}, 'rl');        
     end;
     
     % Stuff back
     rx(i+1) = r;
-    x{i} = u;
-    x{i+1} = v;
+    crx{i} = u;
+    crx{i+1} = v;
     
     i = i+dir;
     
@@ -544,6 +555,9 @@ while (swp<=nswp)
         order_index = order_index+1;
         
         if (verb>0)
+%              x = cell2core(tt_tensor, crx);
+%              real_res = norm(A*x-y)/norm(y);
+%              somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
         end;        
         
@@ -581,6 +595,8 @@ while (swp<=nswp)
     end;
 end;
 
+
+x = cell2core(tt_tensor, crx);
 
 end
 
