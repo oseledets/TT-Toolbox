@@ -350,20 +350,22 @@ while (swp<=nswp)
                 cr = resid{j};
                 r1 = size(cr,1); r2 = size(cr,3);
                 cr = reshape(cr, r1*n(j), r2);
-		[uk,sk,vk]=svd(cr,'econ');
-		uk=uk(:,1);
-		vk=sk(1,1)*(vk(:,1)');
+                [uk,sk,vk]=svd(cr,'econ');
+                uk=uk(:,1);
+                vk=sk(1,1)*(vk(:,1)');
 %                uk = uchol(cr.', 1);
 %                uk = uk(:,end);
 %                cr = uk'*cr;
                 cr2 = resid{j+1};
                 r3 = size(cr2, 3);
                 cr2 = reshape(cr2, r2, n(j+1)*r3);
-                cr2 = cr*cr2;
+                cr2 = vk*cr2;
                 resid{j} = reshape(uk, r1, n(j), 1);
                 resid{j+1} = reshape(cr2, 1, n(j+1), r3);
             end;
             resid = cell2core(tt_tensor, resid);
+%             fprintf('resid: %3.3e\n', norm(resid)/norm(y));
+
 %             resid1 = als_rank_one(x, 'a', A, 'f', y, 'maxit', 100);
 %             resid2 = als_rank_one(x, 'a', A, 'f', y, 'maxit', 100);            
 %             [norm(resid1)/norm(y), norm(A*x-y)/norm(y)]

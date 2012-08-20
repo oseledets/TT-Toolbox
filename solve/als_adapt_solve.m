@@ -78,6 +78,8 @@ kicktype = 'resid_factor';
 % pcatype = 'svd';
 pcatype = 'uchol';
 
+tau = 1;
+
 verb=1;
 kickrank = 5;
 trunc_swp = 1;
@@ -131,7 +133,9 @@ for i=1:2:length(varargin)-1
             als_tol_low=varargin{i+1};
         case 'als_iters'
             als_iters=varargin{i+1};
-
+        case 'tau'
+            tau=varargin{i+1};
+            
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -242,7 +246,6 @@ for i=d:-1:2
 %     cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], cry{i}, 'rl');
 end;
 
-
 last_sweep = false;
 swp = 1;
 i = 1;
@@ -262,7 +265,7 @@ order_index = 1;
 dir = sign(cur_order(order_index));
 
 % DMRG sweeps
-while (swp<=nswp)
+while (swp<=nswp)  
     % Extract elements - matrix
     Phi1 = phia{i}; Phi2 = phia{i+1};
     A1 = crA{i};
@@ -385,8 +388,10 @@ while (swp<=nswp)
             % rhs = 0: we are looking for a ground state
             res_prev = norm(B*sol_prev);
             if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
-                B2 = B+eye(rx(i)*n(i)*rx(i+1)); %*mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
-                sol_prev2 = sol_prev;
+%                 tau = mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
+%                 tau = 1;
+                B2 = B+eye(rx(i)*n(i)*rx(i+1))*tau;
+                sol_prev2 = sol_prev;                
                 for it=1:local_restart
                     sol = B2 \ sol_prev2;
                     sol = sol/norm(sol);
@@ -399,8 +404,11 @@ while (swp<=nswp)
                     sol_prev2 = sol;
                 end;
 %                 [sol,L]=eig(B);
-%                 [v,l]=min(abs(diag(L)));
+%                 [v,l]=min(abs(diag(L)));                
 %                 sol = sol(:,l);
+%                 [u,s,v]=svds(B,1,0);
+%                 sol = v(:,end);
+%                 res_new = norm(B*sol);
                 flg = 0;
                 iter=it;
             else
@@ -638,7 +646,7 @@ while (swp<=nswp)
                 Phi2mex = permute(Phi2mex, [2,3,1]);
                 A1mex = zeros(n(i),n(i), ra(i)+1, ra(i+1)+1);
                 A1mex(1:n(i), 1:n(i), 1:ra(i), 1:ra(i+1)) = permute(A1, [2, 3, 1, 4]);
-                A1mex(1:n(i), 1:n(i), ra(i)+1, ra(i+1)+1) = eye(n(i)); %*mean(abs(A1(:)));
+                A1mex(1:n(i), 1:n(i), ra(i)+1, ra(i+1)+1) = eye(n(i))*tau; %*mean(abs(A1(:)));
                 A1mex = permute(A1mex, [3, 1, 2, 4]);
                 for it=1:local_iters
                     rhs = sol_prev2;
@@ -885,6 +893,43 @@ while (swp<=nswp)
             end;
         elseif (strcmp(kicktype, 'resid_tail'))
             leftresid = [leftresid, -lefty]*Rs{i+1};
+            
+%             if (i==d-1)
+%             crx2 = crx;
+%             crx2{1} = crx2{1}(1, :, 1:end-1);
+%             for j=2:i-1
+%                 crx2{j} = crx2{j}(1:end-1, :, 1:end-1);
+%             end;
+%             crx2{i} = reshape(u*v.', rx(i), n(i), rx(i+1));
+%             crx2{i}=crx2{i}(1:end-1, :, :);
+%             x = cell2core(x, crx2);
+%             resfull = A*x-y;
+% %             resfull = round(resfull, 1e-12);
+%             [resfull, nrm1]=qr(resfull, 'rl');
+%             resfull = core2cell(resfull);
+%             resfull{1}=resfull{1}*nrm1;
+%             rr2 = size(resfull{i}, 1); rr3 = size(resfull{i}, 3);
+%             for j=1:i
+%                 rr1=size(resfull{j}, 1); rr2 = size(resfull{j}, 3); rr3 = size(resfull{j+1}, 3);
+%                 crr = reshape(resfull{j}, rr1*n(j), rr2);
+%                 [crr,srr,vrr]=svd(crr, 'econ');
+%                 rrnew = min(rho, size(crr, 2));
+%                 crr2 = reshape(resfull{j+1}, rr2, n(j+1)*rr3);
+%                 crr2 = srr(1:rrnew, 1:rrnew)*(vrr(:,1:rrnew)')*crr2;
+%                 rr2 = rrnew;
+%                 resfull{j} = reshape(crr(:,1:rrnew), rr1, n(j), rr2);
+%                 resfull{j+1} = reshape(crr2, rr2, n(j+1), rr3);
+%             end;
+%             lfull = cell2core(tt_tensor, resfull(1:i));
+%             end;
+%             crr = reshape(resfull{i}, rr2*n(i), rr3);
+%             [uf,sf,vf]=svd(crr, 'econ');
+%             resfull{i} = reshape(uf(:,1:min(rho, size(uf,2))), rr2, n(i), min(rho, size(uf,2)));            
+%             crx2{i} = reshape([leftresid, u*v.'], rx(i), n(i), size(leftresid,2)+rx(i+1));
+%             ltail = cell2core(tt_tensor, crx2(1:i));
+%             [ltail, rltail]=qr(ltail, 'lr');            
+%             keyboard;    
+
 %             res_tail = norm(leftresid, 'fro')/normy;
 %             somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
 %             max_res_tail = max(max_res_tail, res_tail);
@@ -894,7 +939,7 @@ while (swp<=nswp)
             else
                 uk = uchol(leftresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
-            end;            
+            end;        
         else
             uk = randn(rx(i)*n(i), rho);
 %             [uk,rr]=qr(uk,0);
@@ -928,6 +973,12 @@ while (swp<=nswp)
             v = [v, zeros(rx(i+1), radd)];
             v = v*(rv.');
 %             u = reort(u, uk);
+%             if (i==d-1)
+%             crx2 = crx;
+%             crx2{i} = reshape(u, rx(i), n(i), size(u,2));
+%             ltail = cell2core(tt_tensor, crx2(1:i));           
+%             keyboard; 
+%             end;
         end;
         cr2 = crx{i+1};
         cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
