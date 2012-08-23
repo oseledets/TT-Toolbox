@@ -1,6 +1,7 @@
 program test_amr
 
 use tt_lib
+use ttop_lib
 use ttio_lib
 use python_conv_lib
 use tt_adapt_als
@@ -20,14 +21,17 @@ call dtt_read(tt_b,'b.sdv')
 
 d = tt_A%m-tt_A%l+1
 
-print *, tt_A%m, tt_A%l
+!call svd(tt_A,1d-6)
+allocate(n(d),na(d),m(d),ry(d+1),ra(d+1),rx(d+1),ps(d+1),psa(d+1))
 
-! allocate(n(d),na(d),m(d),ry(d+1),ra(d+1),rx(d+1),ps(d+1),psa(d+1))
+ call dsdv_to_arrays(na,ra,d,psa,crA,tt_A)
+!print *,na(1:d)
+call dsdv_to_arrays(n,rx,d,ps,crb,tt_b)
 
-! call dsdv_to_arrays(na,ra,d,psa,crA,tt_A)
-! call dsdv_to_arrays(n,rx,d,ps,crb,tt_b)
-
-
+call dealloc(tt_A)
+call dealloc(tt_b)
+ry(1:d+1) = rx(1:d+1)
+call tt_amr_solve(d,n,n,ry,ra,crA, crb, crb, rx, 1d-6)
 
 ! deallocate (crA, crb)
 
