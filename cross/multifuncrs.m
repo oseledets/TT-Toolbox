@@ -33,6 +33,11 @@ nswp = 10;
 kickrank = 5;
 y = [];
 verb = 1;
+% kicktype = 'rand';
+kicktype = 'amr-two';
+% pcatype = 'svd';
+pcatype = 'uchol';
+
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -43,7 +48,11 @@ for i=1:2:length(varargin)-1
             kickrank=varargin{i+1};
         case 'verb'
             verb=varargin{i+1};
-
+        case 'kicktype'
+            kicktype=varargin{i+1};            
+        case 'pcatype'
+            pcatype=varargin{i+1};
+            
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -196,7 +205,45 @@ while (swp<=nswp)
         % kick
         radd = 0; rv = 1;
         if (~last_sweep)&&(kickrank>0)
-            uk = rand(ry(i)*n(i), kickrank);
+            if (strcmp(kicktype, 'amr-two'))
+                % AMR(two)-like kick. See also the M.Sc.Thesis by D. Zheltkov.
+                % The left indices are nested, but the right are chosen
+                % randomly. In Zheltkov's work, from all possible n^(d-k)
+                % values. However, in the functional-cross it would result
+                % in a d^2 complexity. Here, I use only the neighbouring
+                % core for randomization. Additionally, the actual kick is
+                % performed via the Z=PCA(supercore), since otherwise the
+                % rank grows too high.
+                
+                % Compute the X superblocks
+                ind2 = unique(ceil(rand(ry(i+1), 1)*(ry(i+2)*n(i+1))));
+                rkick = numel(ind2);
+                curbl = zeros(ry(i)*n(i)*rkick, nx);
+                for j=1:nx
+                    cr1 = reshape(crX{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                    cr1 = Rx{i,j}*cr1;
+                    cr1 = reshape(cr1, ry(i)*n(i), rx(i+1,j));
+                    cr2 = reshape(crX{i+1,j}, rx(i+1,j)*n(i+1), rx(i+2,j));                    
+                    cr2 = cr2*Rx{i+2,j}; % now its size rx
+                    cr2 = reshape(cr2, rx(i+1,j), n(i+1)*ry(i+2));
+                    cr2 = cr2(:, ind2);
+                    curbl(:,j) = reshape(cr1*cr2, ry(i)*n(i)*rkick, 1);
+                end;
+                % Call the function
+                uk = funs(curbl);
+                uk = reshape(uk, ry(i), n(i)*rkick);
+                uk = Ry{i} \ uk;
+                uk = reshape(uk, ry(i)*n(i), rkick);
+                if (strcmp(pcatype, 'svd'))
+                    [uk,sk,vk]=svd(uk, 'econ');
+                    uk = uk(:,1:min(kickrank, size(uk,2)));
+                else
+                    uk = uchol(uk.', kickrank+1);
+                    uk = uk(:,end:-1:max(end-kickrank+1,1));
+                end;
+            else
+                uk = rand(ry(i)*n(i), kickrank);
+            end;
             [u,rv]=qr([u,uk], 0);
             radd = size(uk,2);
         end;
@@ -236,7 +283,37 @@ while (swp<=nswp)
         % kick
         radd = 0; rv = 1;
         if (~last_sweep)&&(kickrank>0)
-            uk = rand(n(i)*ry(i+1), kickrank);
+            if (strcmp(kicktype, 'amr-two'))
+                % Compute the X superblocks
+                ind2 = unique(ceil(rand(ry(i), 1)*(ry(i-1)*n(i-1))));
+                rkick = numel(ind2);
+                curbl = zeros(rkick*n(i)*ry(i+1), nx);
+                for j=1:nx
+                    cr1 = reshape(crX{i,j}, rx(i,j)*n(i), rx(i+1,j));
+                    cr1 = cr1*Rx{i+1,j};
+                    cr1 = reshape(cr1, rx(i,j), n(i)*ry(i+1));
+                    cr2 = reshape(crX{i-1,j}, rx(i-1,j), n(i-1)*rx(i,j));                    
+                    cr2 = Rx{i-1,j}*cr2; % now its size rx
+                    cr2 = reshape(cr2, ry(i-1)*n(i-1), rx(i,j));
+                    cr2 = cr2(ind2, :);
+                    curbl(:,j) = reshape(cr2*cr1, rkick*n(i)*ry(i+1), 1);
+                end;
+                % Call the function
+                uk = funs(curbl);
+                uk = reshape(uk, rkick*n(i), ry(i+1));
+                uk = uk / Ry{i+1};
+                uk = reshape(uk, rkick, n(i)*ry(i+1));
+                if (strcmp(pcatype, 'svd'))
+                    [vk,sk,uk]=svd(uk, 'econ');
+                    uk = uk(:,1:min(kickrank, size(uk,2)));
+                else
+                    uk = uchol(uk, kickrank+1);
+                    uk = uk(:,end:-1:max(end-kickrank+1,1));
+                end;                
+            else
+                uk = rand(n(i)*ry(i+1), kickrank);
+            end;            
+%             uk = rand(n(i)*ry(i+1), kickrank);
             [v,rv]=qr([v,uk], 0);
             radd = size(uk,2);
         end;
