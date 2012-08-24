@@ -13,6 +13,7 @@ function [y]=multifuncrs(X, funs, eps, varargin)
 %   The list of option names and default values are:
 %       o y0 - initial approximation [random rank-2 tensor]
 %       o nswp - maximal number of DMRG sweeps [10]
+%       o rmax - maximal TT rank [Inf]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o kickrank - the rank-increasing parameter [5]
 %
@@ -37,7 +38,7 @@ verb = 1;
 kicktype = 'amr-two';
 % pcatype = 'svd';
 pcatype = 'uchol';
-
+rmax = Inf;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -46,6 +47,8 @@ for i=1:2:length(varargin)-1
             y=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'rmax'
+            rmax=varargin{i+1};            
         case 'verb'
             verb=varargin{i+1};
         case 'kicktype'
@@ -177,6 +180,7 @@ while (swp<=nswp)
                 r = numel(s);
             end;
         end;
+        r = min(r, rmax);
         r = min(r, numel(s));
     else
         if (dir>0)
@@ -194,7 +198,7 @@ while (swp<=nswp)
     end;
 
     if (verb>1)
-    	fprintf('=funcrs4=   block %d{%d}, dy: %3.3e, r: %d\n', i, dir, dy(i), r);
+    	fprintf('=multifuncrs=   block %d{%d}, dy: %3.3e, r: %d\n', i, dir, dy(i), r);
     end;    
     
     % Kicks and interfaces
@@ -363,7 +367,7 @@ while (swp<=nswp)
         order_index = order_index+1;
 
         if (verb>0)
-            fprintf('=funcrs4= sweep %d{%d}, max_dy: %3.3e, erank: %g\n', swp, order_index-1, max_dy, sqrt(ry(1:d)'*(n.*ry(2:d+1))/sum(n)));
+            fprintf('=multifuncrs= sweep %d{%d}, max_dy: %3.3e, erank: %g\n', swp, order_index-1, max_dy, sqrt(ry(1:d)'*(n.*ry(2:d+1))/sum(n)));
         end;
 
         if (last_sweep)

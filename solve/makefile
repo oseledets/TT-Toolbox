@@ -6,7 +6,7 @@ solve3d: solve3d.c
 	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims solve3d.c -lmwlapack -lmwblas $(LIBS2) FC=$(FC) FOPTIMFLAGS="$(FOPTIMFLAGS)" CC=$(CC) COPTIMFLAGS="$(COPTIMFLAGS)" CFLAGS="$(CFLAGS)" LD=$(CC); exit;'
 
 solve3d_2: solve3d_2.c mytt.a
-	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims solve3d_2.c mytt.a -lmwlapack -lmwblas $(LIBS2) FC=$(FC) FOPTIMFLAGS="$(FOPTIMFLAGS)" CC=$(CC) COPTIMFLAGS="$(COPTIMFLAGS)" CFLAGS="$(CFLAGS)" LD="$(LDR) "; exit;'
+	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims solve3d_2.c ../fmex/tt-fort/mytt.a -lmwlapack -lmwblas $(LIBS2) FC=$(FC) FOPTIMFLAGS="$(FOPTIMFLAGS)" CC=$(CC) COPTIMFLAGS="$(COPTIMFLAGS)" CFLAGS="$(CFLAGS)" LD="$(LDR) "; exit;'
 
 
 # all:
