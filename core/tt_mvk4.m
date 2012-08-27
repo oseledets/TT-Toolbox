@@ -55,7 +55,37 @@ for i=1:2:length(varargin)-1
     end
 end
 
+rx = x.r;
 d = x.d;
+tailranks = [false,false];
+if (rx(1)~=1)
+    e1 = tt_tensor;
+    e1.d=1;
+    e1.n = [rx(1)];
+    e1.r = [1; rx(1)];
+    e1.ps = [1; rx(1)^2+1];
+    e1.core = reshape(eye(rx(1)), rx(1)^2, 1);
+    x = kron(e1, x);
+    
+    A = kron(tt_matrix(eye(rx(1))), A);
+    tailranks(1)=true;
+end;
+if (rx(d+1)~=1)
+    e1 = tt_tensor;
+    e1.d=1;
+    e1.n = [rx(d+1)];
+    e1.r = [rx(d+1); 1];
+    e1.ps = [1; rx(d+1)^2+1];
+    e1.core = reshape(eye(rx(d+1)), rx(d+1)^2, 1);
+    x = kron(x, e1);
+    
+    A = kron(A, tt_matrix(eye(rx(d+1))));
+    tailranks(2)=true;
+end;
+
+d = x.d;
+rx = x.r;
+ra = A.r;
 n = A.n;
 m = A.m;
 if (isempty(y))
@@ -68,8 +98,6 @@ if (isempty(block_order))
 end;
 
 ry = y.r;
-ra = A.r;
-rx = x.r;
 
 cry = core2cell(y);
 crA = core2cell(A);
@@ -455,6 +483,18 @@ while (swp<=nswp)
     end;
 end
 
+if (tailranks(1))
+    cry{2} = reshape(cry{1}, n(1), ry(2))*reshape(cry{2}, ry(2), n(2)*ry(3));
+    cry{2} = reshape(cry{2}, n(1), n(2), ry(3));    
+end;
+if (tailranks(2))
+    cry{d-1} = reshape(cry{d-1}, ry(d-1)*n(d-1), ry(d))*reshape(cry{d}, ry(d), n(d));
+    cry{d-1} = reshape(cry{d-1}, ry(d-1), n(d-1), n(d));
+    cry = cry(1:d-1);
+end;
+if (tailranks(1))
+    cry = cry(2:end);
+end;
 y = cell2core(y, cry);
 
 end

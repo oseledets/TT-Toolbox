@@ -1,11 +1,17 @@
 function [y]=multifuncrs(X, funs, eps, varargin)
-% Cross approximation of a function of _several_ TT-tensors.
+% Cross approximation of a (vector-)function of several TT-tensors.
 %   [Y]=MULTIFUNCRS(X,FUNS,EPS, VARARGIN)
-%   Computes approximation to the function FUNS(X{1},...,X{N}) with accuracy EPS
+%   Computes approximation to the functions FUNS(X{1},...,X{N}) with accuracy EPS
 %   X should be a cell array of nx TT-tensors of equal sizes.
 %   The function FUNS should receive a 2d array V of sizes I x N, where the
 %   first dimension stays for the reduced set of spatial indices, and  the
-%   second is the enumerator of X. For example, FUNS=@(x)(x(:,1)+x(:,2)).
+%   second is the enumerator of X. 
+%   The returned sizes should be I x D2, where D2 is the number of
+%   components in FUNS. D2 should be either provided as the last (d+1)-th
+%   TT-rank of the initial guess, or given explicitly as an option (see
+%   below).
+%   For example, a linear combination reads FUNS=@(x)(x*W), W is a N x D2
+%   matrix.
 %
 %   Options are provided in form
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
@@ -16,9 +22,11 @@ function [y]=multifuncrs(X, funs, eps, varargin)
 %       o rmax - maximal TT rank [Inf]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o kickrank - the rank-increasing parameter [5]
+%       o d2 - the last rank of y, that is dim(FUNS) [1]
 %
 %   The method is based on the alternating approximation, with 
-%   the one-block enrichment via KICKRANK random vectors.
+%   the one-block enrichment via KICKRANK random vectors or randomized AMR.
+%   
 %
 % TT-Toolbox 2.2, 2009-2012
 %
@@ -39,6 +47,9 @@ kicktype = 'amr-two';
 % pcatype = 'svd';
 pcatype = 'uchol';
 rmax = Inf;
+d2 = 1;
+wasrand = false;
+
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -55,6 +66,8 @@ for i=1:2:length(varargin)-1
             kicktype=varargin{i+1};            
         case 'pcatype'
             pcatype=varargin{i+1};
+        case 'd2'
+            d2=varargin{i+1};            
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -72,10 +85,15 @@ for i=1:nx
 end;
 
 if (isempty(y))
-    y = tt_rand(n, d, 2);
+    ry = d2*ones(d+1,1); ry(1)=1;
+    y = tt_rand(n, d, ry);
+    wasrand = true;
 end;
 ry = y.r;
+d2 = ry(d+1);
+ry(d+1) = 1;
 cry = core2cell(y);
+cry{d} = permute(cry{d}, [3, 1, 2]); % d2, rd, nd, 1
 
 Ry = cell(d+1,1);
 Ry{1} = 1; Ry{d+1}=1;
@@ -88,21 +106,31 @@ block_order = [+(d), -(d)];
 
 % Orth
 for i=d:-1:2
-    cr = cry{i};
-    cr = reshape(cr, ry(i), n(i)*ry(i+1));
+    cr = cry{i}; % r1,n,d2,r2
+    cr = reshape(cr, d2*ry(i), n(i)*ry(i+1));
     [cr, rv]=qr(cr.', 0);    
     cr2 = cry{i-1};
     cr2 = reshape(cr2, ry(i-1)*n(i-1), ry(i));
+    rv = reshape(rv, size(cr,2)*d2, ry(i));
     cr2 = cr2*(rv.');
     ry(i) = size(cr, 2);
     cr = reshape(cr.', ry(i), n(i), ry(i+1));
-    cry{i-1} = reshape(cr2, ry(i-1), n(i-1), ry(i));
+    cry{i-1} = permute(reshape(cr2, ry(i-1), n(i-1), ry(i), d2), [4,1,2,3]);
     cry{i} = cr;
 
     % Interface matrix for Y
     Ry{i} = reshape(cr, ry(i)*n(i), ry(i+1))*Ry{i+1};
     Ry{i} = reshape(Ry{i}, ry(i), n(i)*ry(i+1));
-    curind = maxvol2(Ry{i}.');
+    if (wasrand)
+        curind = [];
+        while numel(curind)<ry(i)
+            curind = [curind; ceil(rand(ry(i), 1)*(n(i)*ry(i+1)))];
+            curind = unique(curind);
+        end;
+        curind = curind(1:ry(i));
+    else
+        curind = maxvol2(Ry{i}.');
+    end;
     Ry{i} = Ry{i}(:, curind);
     % Interface matrices for X
     for j=1:nx
@@ -132,7 +160,7 @@ dir = sign(cur_order(order_index));
 % DMRG sweeps
 while (swp<=nswp)
     
-    oldy = reshape(cry{i}, ry(i)*n(i)*ry(i+1), 1);
+    oldy = reshape(cry{i}, d2*ry(i)*n(i)*ry(i+1), 1);
     
     if (~last_sweep)
         % Compute the X superblocks
@@ -145,12 +173,14 @@ while (swp<=nswp)
             curbl(:,j) = cr(:);
         end;
         % Call the function
-        newy = funs(curbl);
+        newy = funs(curbl); % sizes: rnr x nx -> rnr x d2
         % Multiply with inverted Ry
-        newy = reshape(newy, ry(i)*n(i), ry(i+1));
-        newy = newy / (Ry{i+1});
-        newy = reshape(newy, ry(i), n(i)*ry(i+1));
+        newy = reshape(newy, ry(i), n(i)*ry(i+1)*d2);
         newy = (Ry{i}) \ newy;
+        newy = reshape(newy, ry(i)*n(i)*ry(i+1), d2);
+        newy = reshape(newy.', d2*ry(i)*n(i), ry(i+1));
+        newy = newy / (Ry{i+1});
+        newy = reshape(newy, d2*ry(i)*n(i)*ry(i+1), 1);
     else
         newy = oldy;
     end;
@@ -160,26 +190,27 @@ while (swp<=nswp)
 
     % Truncation
     if (dir>0) % left-to-right
-        newy = reshape(newy, ry(i)*n(i), ry(i+1));
+        newy = reshape(newy, d2, ry(i)*n(i)*ry(i+1));
+        newy = reshape(newy.', ry(i)*n(i), ry(i+1)*d2);
     else
-        newy = reshape(newy, ry(i), n(i)*ry(i+1));
+        newy = reshape(newy, d2*ry(i), n(i)*ry(i+1));
     end;
 
     if (kickrank>=0)
         [u,s,v]=svd(newy, 'econ');
         s = diag(s);
-        if (last_sweep)
+%         if (last_sweep)
             r = my_chop2(s, eps/sqrt(d)*norm(s));
-        else            
-            % Truncate taking into account the (r+1) overhead in the cross
-            cums = (s.*(2:numel(s)+1)').^2;
-            cums = cumsum(cums(end:-1:1));
-            cums = cums(end:-1:1)./cums(1);
-            r = find(cums<(eps^2/d), 1);
-            if (isempty(r))
-                r = numel(s);
-            end;
-        end;
+%         else            
+%             % Truncate taking into account the (r+1) overhead in the cross
+%             cums = (s.*(2:numel(s)+1)').^2;
+%             cums = cumsum(cums(end:-1:1));
+%             cums = cums(end:-1:1)./cums(1);
+%             r = find(cums<(eps^2/d), 1);
+%             if (isempty(r))
+%                 r = numel(s);
+%             end;
+%         end;
         r = min(r, rmax);
         r = min(r, numel(s));
     else
@@ -234,10 +265,10 @@ while (swp<=nswp)
                     curbl(:,j) = reshape(cr1*cr2, ry(i)*n(i)*rkick, 1);
                 end;
                 % Call the function
-                uk = funs(curbl);
-                uk = reshape(uk, ry(i), n(i)*rkick);
+                uk = funs(curbl); % rnr, d2
+                uk = reshape(uk, ry(i), n(i)*rkick*d2);
                 uk = Ry{i} \ uk;
-                uk = reshape(uk, ry(i)*n(i), rkick);
+                uk = reshape(uk, ry(i)*n(i), rkick*d2);
                 if (strcmp(pcatype, 'svd'))
                     [uk,sk,vk]=svd(uk, 'econ');
                     uk = uk(:,1:min(kickrank, size(uk,2)));
@@ -251,18 +282,20 @@ while (swp<=nswp)
             [u,rv]=qr([u,uk], 0);
             radd = size(uk,2);
         end;
-        v = [v, zeros(ry(i+1), radd)];
+        v = [v, zeros(ry(i+1)*d2, radd)];
         v = rv*(v');
         r = size(u,2);
 
         cr2 = cry{i+1};
         cr2 = reshape(cr2, ry(i+1), n(i+1)*ry(i+2));
+        v = reshape(v, r*ry(i+1), d2);
+        v = reshape(v.', d2*r, ry(i+1));
         v = v*cr2; % size r+radd, n2, r3
 
         ry(i+1) = r;
 
         u = reshape(u, ry(i), n(i), r);
-        v = reshape(v, r, n(i+1), ry(i+2));
+        v = reshape(v, d2, r, n(i+1), ry(i+2));
 
         % Stuff back
         cry{i} = u;
@@ -303,10 +336,11 @@ while (swp<=nswp)
                     curbl(:,j) = reshape(cr2*cr1, rkick*n(i)*ry(i+1), 1);
                 end;
                 % Call the function
-                uk = funs(curbl);
-                uk = reshape(uk, rkick*n(i), ry(i+1));
+                uk = funs(curbl); % rnr x d2
+                uk = reshape(uk, rkick*n(i)*ry(i+1), d2);
+                uk = reshape(uk.', d2*rkick*n(i), ry(i+1));
                 uk = uk / Ry{i+1};
-                uk = reshape(uk, rkick, n(i)*ry(i+1));
+                uk = reshape(uk, d2*rkick, n(i)*ry(i+1));
                 if (strcmp(pcatype, 'svd'))
                     [vk,sk,uk]=svd(uk, 'econ');
                     uk = uk(:,1:min(kickrank, size(uk,2)));
@@ -321,16 +355,18 @@ while (swp<=nswp)
             [v,rv]=qr([v,uk], 0);
             radd = size(uk,2);
         end;
-        
-        u = [u, zeros(ry(i), radd)];
+        u = [u, zeros(d2*ry(i), radd)];
         u = u*(rv.');
-        cr2 = cry{i-1};
-        cr2 = reshape(cr2, ry(i-1)*n(i-1), ry(i));
-        u = cr2*u;
-        
         r = size(v,2);
         
-        u = reshape(u, ry(i-1), n(i-1), r);
+        cr2 = cry{i-1};
+        cr2 = reshape(cr2, ry(i-1)*n(i-1), ry(i));
+        u = reshape(u, d2, ry(i)*r);
+        u = reshape(u.', ry(i), r*d2);
+        u = cr2*u;
+               
+        u = reshape(u, ry(i-1)*n(i-1)*r, d2);
+        u = reshape(u.', d2, ry(i-1), n(i-1), r);
         v = reshape(v.', r, n(i), ry(i+1));
                 
         % Stuff back
@@ -351,11 +387,16 @@ while (swp<=nswp)
             Rx{i,j} = reshape(Rx{i,j}, rx(i,j), n(i)*ry(i+1));
             Rx{i,j} = Rx{i,j}(:, curind);
         end;
-    elseif ((dir>0)&&(i==d))||((dir<0)&&(i==1))
+    elseif ((dir>0)&&(i==d))
         % Just stuff back the last core
         newy = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-        newy = reshape(newy, ry(i), n(i), ry(i+1));
-        cry{i} = newy;
+        newy = reshape(newy, ry(i)*n(i)*ry(i+1), d2);
+        cry{i} = reshape(newy.', d2, ry(i), n(i), ry(i+1));
+    elseif ((dir<0)&&(i==1))
+        % Just stuff back the last core
+        newy = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+        newy = reshape(newy, d2, ry(i), n(i), ry(i+1));
+        cry{i} = newy;        
     end;
     
     
@@ -374,7 +415,7 @@ while (swp<=nswp)
             break;
         end;
 
-        if (max_dy<eps)
+        if (max_dy<eps)&&(dir<0)
             last_sweep=true;
             kickrank=0;
         end;
@@ -396,6 +437,7 @@ while (swp<=nswp)
     end;
 end
 
+cry{d} = permute(cry{d}, [2,3,1]); % d2 is r(d+1)
 y = cell2core(y, cry);
 
 end
