@@ -90,10 +90,7 @@ if (isempty(y))
     wasrand = true;
 end;
 ry = y.r;
-d2 = ry(d+1);
-ry(d+1) = 1;
 cry = core2cell(y);
-cry{d} = permute(cry{d}, [3, 1, 2]); % d2, rd, nd, 1
 
 Ry = cell(d+1,1);
 Ry{1} = 1; Ry{d+1}=1;
@@ -105,46 +102,48 @@ end;
 block_order = [+(d), -(d)];
 
 % Orth
-for i=d:-1:2
+for i=1:d-1
     cr = cry{i}; % r1,n,d2,r2
-    cr = reshape(cr, d2*ry(i), n(i)*ry(i+1));
-    [cr, rv]=qr(cr.', 0);    
-    cr2 = cry{i-1};
-    cr2 = reshape(cr2, ry(i-1)*n(i-1), ry(i));
-    rv = reshape(rv, size(cr,2)*d2, ry(i));
-    cr2 = cr2*(rv.');
-    ry(i) = size(cr, 2);
-    cr = reshape(cr.', ry(i), n(i), ry(i+1));
-    cry{i-1} = permute(reshape(cr2, ry(i-1), n(i-1), ry(i), d2), [4,1,2,3]);
+    cr = reshape(cr, ry(i)*n(i), ry(i+1));
+    [cr, rv]=qr(cr, 0);    
+    cr2 = cry{i+1};
+    cr2 = reshape(cr2, ry(i+1), n(i+1)*ry(i+2));
+    cr2 = rv*cr2;
+    ry(i+1) = size(cr, 2);
+    cr = reshape(cr, ry(i), n(i), ry(i+1));
+    cry{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2));
     cry{i} = cr;
 
-    % Interface matrix for Y
-    Ry{i} = reshape(cr, ry(i)*n(i), ry(i+1))*Ry{i+1};
-    Ry{i} = reshape(Ry{i}, ry(i), n(i)*ry(i+1));
+    % Interface matrix for Y        
+    Ry{i+1} = Ry{i}*reshape(cr, ry(i), n(i)*ry(i+1));
+    Ry{i+1} = reshape(Ry{i+1}, ry(i)*n(i), ry(i+1));
     if (wasrand)
         curind = [];
-        while numel(curind)<ry(i)
-            curind = [curind; ceil(rand(ry(i), 1)*(n(i)*ry(i+1)))];
+        while numel(curind)<ry(i+1)
+            curind = [curind; ceil(rand(ry(i+1), 1)*(n(i)*ry(i)))];
             curind = unique(curind);
         end;
-        curind = curind(1:ry(i));
+        curind = curind(1:ry(i+1));
     else
-        curind = maxvol2(Ry{i}.');
-    end;
-    Ry{i} = Ry{i}(:, curind);
+        curind = maxvol2(Ry{i+1});
+    end;    
+    Ry{i+1} = Ry{i+1}(curind, :);
     % Interface matrices for X
     for j=1:nx
-        Rx{i,j} = reshape(crX{i,j}, rx(i,j)*n(i), rx(i+1,j));
-        Rx{i,j} = Rx{i,j}*Rx{i+1,j};
-        Rx{i,j} = reshape(Rx{i,j}, rx(i,j), n(i)*ry(i+1));
-        Rx{i,j} = Rx{i,j}(:, curind);
-    end;
+        Rx{i+1,j} = reshape(crX{i,j}, rx(i,j), n(i)*rx(i+1,j));
+        Rx{i+1,j} = Rx{i,j}*Rx{i+1,j};
+        Rx{i+1,j} = reshape(Rx{i+1,j}, ry(i)*n(i), rx(i+1,j));
+        Rx{i+1,j} = Rx{i+1,j}(curind, :);
+    end;   
 end;
 
 
+d2 = ry(d+1);
+ry(d+1) = 1;
+cry{d} = permute(cry{d}, [3,1,2]); % d2, rd, nd
+
 last_sweep = false;
 swp = 1;
-i = 1;
 
 % dy_old = ones(d,1);
 dy = zeros(d,1);
@@ -154,11 +153,12 @@ max_dy = 0;
 % dranks = zeros(d,1);
 
 cur_order = block_order;
-order_index = 1;
+order_index = 2;
+i = d;
 dir = sign(cur_order(order_index));
 
 % DMRG sweeps
-while (swp<=nswp)
+while (swp<=nswp)||(dir>0)
     
     oldy = reshape(cry{i}, d2*ry(i)*n(i)*ry(i+1), 1);
     
