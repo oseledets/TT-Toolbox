@@ -39,7 +39,7 @@ params = int64(params);
 
 %  keyboard;
 
-[rx,crx]=fort_amr_solve_mex2(int64(d), int64(A.n), int64(A.m), ...
+[rx,crx]=fort_amr_solve_mex(int64(d), int64(A.n), int64(A.m), ...
     int64(y.r), int64(A.r), A.core, y.core, x0.core, int64(x0.r), eps, params, local_prec);
 
 x = x0;

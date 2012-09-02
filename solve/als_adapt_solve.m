@@ -428,20 +428,46 @@ while (swp<=nswp)
 
         if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
             if (~ismex)
-                sol = zeros(1,n(i),1);
                 Phi1mex = permute(Phi1,[1,3,2]);
-                Phi2mex = permute(Phi2, [3,2,1]);
-                currhs = reshape(rhs, rx(i), n(i), rx(i+1));
-                for k=1:max(rx(i), rx(i+1))
-                    curPhi1 = Phi1mex(1:min(k,rx(i)), 1:min(k,rx(i)), :);
-                    curPhi2 = Phi2mex(1:min(k,rx(i+1)), :, 1:min(k,rx(i+1)));
-                    sol2 = solve3d_2(curPhi1, A1, curPhi2, currhs(1:min(k,rx(i)), :, 1:min(k,rx(i+1))), real_tol, trunc_norm_char, sol, local_prec_char, local_restart, local_iters, 1);
-                    sol2 = reshape(sol2, min(k,rx(i)), n(i), min(k,rx(i+1)));
-                    if (k<max(rx(i), rx(i+1)))
-                        sol = zeros(min(k+1,rx(i)), n(i), min(k+1,rx(i+1)));
-                        sol(1:min(k,rx(i)), :, 1:min(k,rx(i+1))) = sol2;
+                Phi2mex = permute(Phi2, [3,2,1]);             
+                sol = sol_prev;
+                curPhi1 = cell(rx(i),1);
+                curPhi1{rx(i)} = Phi1mex;
+                for l1=rx(i):-1:2
+                    curPhi1{l1-1} = curPhi1{l1}(1:l1-1, 1:l1-1 ,:);
+                end;
+%                 res = rhs - bfun3(Phi1,A1,Phi2,sol_prev);
+%                 sol = gmres(@(v)bfun3(Phi1,A1,Phi2, mg_3d(Phi1mex,A1,Phi2mex,v,v*0)), res, local_restart, real_tol/res_prev, local_iters);
+%                 sol = sol_prev + mg_3d(Phi1mex,A1,Phi2mex,sol,sol*0);
+                for it=1:local_restart
+                    sol = mg_3d(curPhi1, A1, Phi2mex, rhs, sol);
+                    res_new = norm(rhs - bfun3(Phi1, A1, Phi2, sol))/norm_rhs;
+                    if (verb>=2)
+                        fprintf('mg cycle %d, resid %3.3e\n', it, res_new);
+                    end;
+%                     keyboard;
+                    if (res_new<real_tol)
+%                         fprintf('gemacht! =) \n');
+                        break;
                     end;
                 end;
+                flg=0;
+                iter = 1;                
+                
+%                 sol = zeros(1,n(i),1);
+%                 Phi1mex = permute(Phi1,[1,3,2]);
+%                 Phi2mex = permute(Phi2, [3,2,1]);
+%                 currhs = reshape(rhs, rx(i), n(i), rx(i+1));
+%                 for k=1:max(rx(i), rx(i+1))
+%                     curPhi1 = Phi1mex(1:min(k,rx(i)), 1:min(k,rx(i)), :);
+%                     curPhi2 = Phi2mex(1:min(k,rx(i+1)), :, 1:min(k,rx(i+1)));
+%                     sol2 = solve3d_2(curPhi1, A1, curPhi2, currhs(1:min(k,rx(i)), :, 1:min(k,rx(i+1))), real_tol, trunc_norm_char, sol, local_prec_char, local_restart, local_iters, 1);
+%                     sol2 = reshape(sol2, min(k,rx(i)), n(i), min(k,rx(i+1)));
+%                     if (k<max(rx(i), rx(i+1)))
+%                         sol = zeros(min(k+1,rx(i)), n(i), min(k+1,rx(i+1)));
+%                         sol(1:min(k,rx(i)), :, 1:min(k,rx(i+1))) = sol2;
+%                     end;
+%                 end;
                 
 % %             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel')) %&&(mod(order_index, 2)==1)   % &&(~last_sweep)
 % %                 % Prepare the Jacobi prec - on maximal rank
@@ -615,7 +641,7 @@ while (swp<=nswp)
 %             if ((issparse(Phi1))||(issparse(A1))||(issparse(Phi2)))
 %                 sol = solve3d_2(permute(full(Phi1),[1,3,2]), full(A1), permute(full(Phi2), [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
 %             else
-                sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+                sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1,0));
 %             end;
 
             flg=0;
@@ -651,7 +677,7 @@ while (swp<=nswp)
                 for it=1:local_iters
                     rhs = sol_prev2;
 %                     sol = solve3d(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
-                    sol = solve3d_2(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
+                    sol = solve3d_2(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, max(verb-1,0));
                     sol = sol/norm(sol);
                     res_new = norm(bfun3(Phi1, A1, Phi2, sol));
                     if (strcmp(trunc_norm, 'fro'))
@@ -734,6 +760,7 @@ while (swp<=nswp)
     else
         if (dir>0); r = min(rx(i)*n(i),rx(i+1));
         else r = min(rx(i), n(i)*rx(i+1)); end;
+        r = max(r-kickrank, 1);
         cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
         if (rx(i)*n(i)*rx(i+1)<max_full_size)
             res = norm(B*cursol(:)-rhs)/norm_rhs;
@@ -825,7 +852,7 @@ while (swp<=nswp)
     end;
 
     if (verb>1)
-        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, bfuncnt: %d, r: %d\n', i, dir, dx(i), res_prev, bfuncnt, r);
+        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, bfuncnt: %d, r: %d, drank: %d\n', i, dir, dx(i), res_prev, bfuncnt, r, drank);
     end;
 
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
