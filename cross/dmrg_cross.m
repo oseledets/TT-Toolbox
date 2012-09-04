@@ -35,14 +35,15 @@ function [y]=dmrg_cross(d,n,fun,eps,varargin)
 %---------------------------
 %Default parameters
 rmin=1;
-verb=true;
+verb=1;
 radd=0;
 kickrank=2;
 nswp=10;
 y=[];
 vectorized=false;
 
-
+trunctype = 'fro';
+% trunctype = 'cross'; % Kostyl, but works sometimes
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -60,6 +61,8 @@ for i=1:2:length(varargin)-1
             vectorized=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'trunctype'
+            trunctype=varargin{i+1};            
 
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -172,7 +175,19 @@ while ( swp < nswp && not_converged )
     score=reshape(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
     [u,s,v]=svd(score,'econ');
     s=diag(s);
-    r=my_chop2(s,norm(s)*eps/sqrt(d-1)); %Truncation
+    if (strcmp(trunctype, 'fro'))
+        r = my_chop2(s, eps/sqrt(d)*norm(s));
+    else
+        % Truncate taking into account the (r+1) overhead in the cross
+        cums = (s.*(2:numel(s)+1)').^2;
+        cums = cumsum(cums(end:-1:1));
+        cums = cums(end:-1:1)./cums(1);
+        r = find(cums<(eps^2/d), 1);
+        if (isempty(r))
+            r = numel(s);
+        end;
+    end;
+%     r=my_chop2(s,norm(s)*eps/sqrt(d-1)); %Truncation
     u=u(:,1:r); v=v(:,1:r); s=s(1:r); 
     %Kick rank
     
@@ -209,7 +224,7 @@ while ( swp < nswp && not_converged )
     appr=appr*rmat{i+2}; 
     er_loc=norm(score(:)-appr(:))/norm(score(:));
     er_max=max(er_max,er_loc);
-    if ( verb ) 
+    if ( verb>1 ) 
         fprintf('swp=%d block=%d new_rank=%d local_er=%3.1e\n',swp,i,r,er_loc);
     end
     ry(i+1)=r;
@@ -244,6 +259,9 @@ while ( swp < nswp && not_converged )
         index_array{i+1}=ind_new; 
         if ( i == d - 1 ) 
             dir = -dir;
+            if (verb>0)
+                fprintf('=dmrg_cross= swp=%d(1) mrank=%d max_er=%3.3e\n',swp,max(ry),er_max);
+            end;
         else
             i=i+1;
         end
@@ -274,6 +292,9 @@ while ( swp < nswp && not_converged )
         index_array{i+1}=ind_new;
         if ( i == 1 ) 
             dir=-dir;
+            if (verb>0)
+                fprintf('=dmrg_cross= swp=%d(2) mrank=%d max_er=%3.3e\n',swp,max(ry),er_max);
+            end;            
             swp = swp + 1;
             if ( er_max < eps ) 
                 not_converged=false;

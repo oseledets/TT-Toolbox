@@ -49,6 +49,8 @@ pcatype = 'uchol';
 rmax = Inf;
 d2 = 1;
 wasrand = false;
+trunctype = 'fro';
+% trunctype = 'cross';
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -66,6 +68,8 @@ for i=1:2:length(varargin)-1
             kicktype=varargin{i+1};            
         case 'pcatype'
             pcatype=varargin{i+1};
+        case 'trunctype'
+            trunctype=varargin{i+1};            
         case 'd2'
             d2=varargin{i+1};            
             
@@ -199,18 +203,18 @@ while (swp<=nswp)||(dir>0)
     if (kickrank>=0)
         [u,s,v]=svd(newy, 'econ');
         s = diag(s);
-%         if (last_sweep)
+        if (strcmp(trunctype, 'fro'))||(last_sweep)
             r = my_chop2(s, eps/sqrt(d)*norm(s));
-%         else            
-%             % Truncate taking into account the (r+1) overhead in the cross
-%             cums = (s.*(2:numel(s)+1)').^2;
-%             cums = cumsum(cums(end:-1:1));
-%             cums = cums(end:-1:1)./cums(1);
-%             r = find(cums<(eps^2/d), 1);
-%             if (isempty(r))
-%                 r = numel(s);
-%             end;
-%         end;
+        else            
+            % Truncate taking into account the (r+1) overhead in the cross
+            cums = (s.*(2:numel(s)+1)').^2;
+            cums = cumsum(cums(end:-1:1));
+            cums = cums(end:-1:1)./cums(1);
+            r = find(cums<(eps^2/d), 1);
+            if (isempty(r))
+                r = numel(s);
+            end;
+        end;
         r = min(r, rmax);
         r = min(r, numel(s));
     else
