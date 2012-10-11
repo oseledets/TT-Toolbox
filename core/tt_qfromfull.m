@@ -25,12 +25,7 @@ end
 
 ff=reshape(ff,[q*ones(1,s*d),1]);
 
-prm=zeros(1,s*d);
-for k=1:d
-	for l=1:s
-		prm(s*k+1-l)=k+(s-l)*d;
-	end
-end
+prm = 1:s*d; prm = reshape(prm,[d,s]); prm = prm'; prm = reshape(prm,[1,d*s]);
 
 ff=permute(ff,[prm,1+s*d]);
 ff=reshape(ff,[q^s*ones(1,d),1]);

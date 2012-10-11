@@ -19,7 +19,7 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %   Example:
 %       d=8; f=3;
 %       mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
-%       [v,ev]=dmrg_eigb(mat,20,1e-6); %5 lowest eigenvalues 
+%       [v,ev]=dmrg_eigb(mat,5,1e-6); %5 lowest eigenvalues 
 %
 %
 % TT-Toolbox 2.2, 2009-2012
