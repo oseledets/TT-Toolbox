@@ -1,6 +1,6 @@
-function [tt]=tt_qfromfull(ff,s,d,eps)
+function [tt]=tt_qfromfull(ff,s,d,eps,q)
 
-% Approximates a full-format s-dimensional 2^{d} x...x 2^{d}-tensor
+% Approximates a full-format s-dimensional q^{d} x...x q^{d}-tensor
 % full, indexed by 
 % i^{1}_{1} ,..., i^{d}_{1} ,...,..., i^{1}_{s} ,..., i^{d}_{s},
 % by a QTT decomposition _tt_,
@@ -15,8 +15,15 @@ function [tt]=tt_qfromfull(ff,s,d,eps)
 % Moscow, Russia
 %
 
+if (nargin<4) || isempty (eps)
+    eps=1.e-8;
+end
 
-ff=reshape(ff,[2*ones(1,s*d),1]);
+if (nargin<5) || isempty (q)
+    q=2;
+end
+
+ff=reshape(ff,[q*ones(1,s*d),1]);
 
 prm=zeros(1,s*d);
 for k=1:d
@@ -26,7 +33,7 @@ for k=1:d
 end
 
 ff=permute(ff,[prm,1+s*d]);
-ff=reshape(ff,[2^s*ones(1,d),1]);
+ff=reshape(ff,[q^s*ones(1,d),1]);
 
 tt=core(tt_tensor(ff,eps));
 if (numel(tt) > d)
@@ -35,8 +42,8 @@ if (numel(tt) > d)
 end
 
 for k=1:d
-	[~,p,q]=size(tt{k});
-	tt{k}=reshape(tt{k},[2*ones(1,s),p,q]);
+	[~,p,r]=size(tt{k});
+	tt{k}=reshape(tt{k},[q*ones(1,s),p,r]);
 end
 
 return
