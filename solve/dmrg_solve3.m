@@ -65,7 +65,7 @@ trunc_norm = 'residual';
 local_solver = 'gmres';
 % local_solver = 'pcg';
 
-ismex = true;
+ismex = false;
 
 verb=1;
 kickrank = 2;

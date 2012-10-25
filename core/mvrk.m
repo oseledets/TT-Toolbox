@@ -200,7 +200,7 @@ for swp=1:nswp
         dir = -1;
         local_kickrank = kickrank;
         if (last_sweep); local_kickrank=0; end;
-        [u,v,max_dx]=local_proj2(Phi1,A1,A2,Phi2, x1, x2, tol2/sqrt(d*2), y_prev,  max_dx, dir, local_kickrank, verb);
+        [u,v,max_dx]=local_proj2(Phi1,A1,A2,Phi2, x1, x2, tol2/sqrt(sum(L)), y_prev,  max_dx, dir, local_kickrank, verb);
         
         ryc(i+1) = size(v,2);
         u = reshape(u, ryc(i), nc(i), ryc(i+1));
@@ -269,7 +269,7 @@ for swp=1:nswp
             dir = 1;
             local_kickrank = kickrank;
             if (last_sweep); local_kickrank=0; end;
-            [u,v,max_dx]=local_proj2(Phi1,A1,A2,Phi2, x1,x2, tol2/sqrt(d*L(i)*2), y_prev,  max_dx, dir, local_kickrank, verb);
+            [u,v,max_dx]=local_proj2(Phi1,A1,A2,Phi2, x1,x2, tol2/sqrt(sum(L)), y_prev,  max_dx, dir, local_kickrank, verb);
             
             ryf{i}(j+1) = size(u,2);
             u = reshape(u, ryf{i}(j), n{i}(j), ryf{i}(j+1));
