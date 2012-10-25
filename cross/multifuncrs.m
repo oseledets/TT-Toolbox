@@ -23,6 +23,7 @@ function [y]=multifuncrs(X, funs, eps, varargin)
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o kickrank - the rank-increasing parameter [5]
 %       o d2 - the last rank of y, that is dim(FUNS) [1]
+%       o qr - do (or not) qr before maxvol [false]
 %
 %   The method is based on the alternating approximation, with 
 %   the one-block enrichment via KICKRANK random vectors or randomized AMR.
@@ -50,6 +51,7 @@ rmax = Inf;
 d2 = 1;
 wasrand = false;
 trunctype = 'fro';
+do_qr = false;
 % trunctype = 'cross';
 
 for i=1:2:length(varargin)-1
@@ -72,7 +74,8 @@ for i=1:2:length(varargin)-1
             trunctype=varargin{i+1};            
         case 'd2'
             d2=varargin{i+1};            
-            
+        case 'qr'
+            do_qr = varargin{i+1};
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -129,7 +132,8 @@ for i=1:d-1
         end;
         curind = curind(1:ry(i+1));
     else
-        curind = maxvol2(Ry{i+1});
+        
+        curind = maxvol2(Ry{i+1},'qr',do_qr);
     end;    
     Ry{i+1} = Ry{i+1}(curind, :);
     % Interface matrices for X
@@ -309,7 +313,7 @@ while (swp<=nswp)||(dir>0)
         % Interface matrix for Y
         Ry{i+1} = Ry{i}*reshape(u, ry(i), n(i)*ry(i+1));
         Ry{i+1} = reshape(Ry{i+1}, ry(i)*n(i), ry(i+1));
-        curind = maxvol2(Ry{i+1});
+        curind = maxvol2(Ry{i+1},'qr',do_qr);
         Ry{i+1} = Ry{i+1}(curind, :);
         % Interface matrices for X
         for j=1:nx
@@ -382,7 +386,7 @@ while (swp<=nswp)||(dir>0)
         % Interface matrix for Y
         Ry{i} = reshape(v, ry(i)*n(i), ry(i+1))*Ry{i+1};
         Ry{i} = reshape(Ry{i}, ry(i), n(i)*ry(i+1));
-        curind = maxvol2(Ry{i}.');
+        curind = maxvol2(Ry{i}.','qr',do_qr);
         Ry{i} = Ry{i}(:, curind);
         % Interface matrices for X
         for j=1:nx

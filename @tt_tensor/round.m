@@ -53,10 +53,10 @@ for i=1:d-1
 end
 pos1=pos1+r(d)*n(d)*r(d+1)-1;
 cr=cr(1:pos1); %Truncate storage if required
- ep=eps/sqrt(d-1);
+ep=eps/sqrt(d-1);
 pos=cumsum([1;n.*r(1:d).*r(2:d+1)]); 
 core0=cr(pos1-r(d)*n(d)*r(d+1)+1:pos1);
- for i=d:-1:2
+for i=d:-1:2
      core1=cr(pos(i-1):pos(i)-1); 
      core0=reshape(core0,[r(i),n(i)*r(i+1)]);
      core1=reshape(core1,[r(i-1)*n(i-1),r(i)]);
@@ -72,17 +72,17 @@ core0=cr(pos1-r(d)*n(d)*r(d+1)+1:pos1);
      cr(pos1-r(i)*n(i)*r(i+1)-r(i-1)*n(i-1)*r(i)+1:pos1-r(i)*n(i)*r(i+1))=core1(:);
      pos1=pos1-r(i)*n(i)*r(i+1);
      core0=core1;
- end
- pos1=pos1-r(1)*n(1)*r(2);
- cr=cr(pos1+1:numel(cr)); %Truncate unwanted elements;
- tt.r=r;
- tt.ps=cumsum([1;tt.n.*tt.r(1:d).*tt.r(2:d+1)]);
- pp=cr(1:r(1)*n(1)*r(2));
- nrm(1)=norm(pp,'fro');
- if (nrm(1)~=0)
-     pp = pp./nrm(1);
- end;
- cr(1:r(1)*n(1)*r(2))=pp;
+end
+pos1 = pos1-r(1)*n(1)*r(2);
+cr = cr(pos1+1:numel(cr)); %Truncate unwanted elements;
+tt.r=r;
+tt.ps=cumsum([1;tt.n.*tt.r(1:d).*tt.r(2:d+1)]);
+pp=cr(1:r(1)*n(1)*r(2));
+nrm(1) = norm(pp,'fro');
+if (nrm(1) ~= 0)
+    pp = pp./nrm(1);
+end;
+cr(1:r(1)*n(1)*r(2)) = pp;
  %Now a simple trick: balance the product of numbers;
  %All cores are orthogonal except the first one. Thus, we know the norm
  nrm0=sum(log(abs(nrm))); 
