@@ -27,7 +27,9 @@ end
 if ( r(1) ~= 1 )
   a=reshape(a,[r(1); n(:);r(d+1)]');
 else
-  a=reshape(a,[n(:); r(d+1)]');    
+  if (r(d+1)~=1)
+    a=reshape(a,[n(:); r(d+1)]');    
+  end;
 end
 
 if (nargin>1)&&(~isempty(sizes))

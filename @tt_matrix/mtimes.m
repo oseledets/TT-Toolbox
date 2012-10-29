@@ -47,20 +47,25 @@ elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin == 2)
      for i=1:d
         mcur=crm(psm(i):psm(i+1)-1);
         vcur=crv(psv(i):psv(i+1)-1);
-        mcur=reshape(mcur,[rm(i)*n(i),m(i),rm(i+1)]);
-        mcur=permute(mcur,[1,3,2]); mcur=reshape(mcur,[rm(i)*n(i)*rm(i+1),m(i)]);
+        % make it consistent with sparse
+        mcur=reshape(mcur,[rm(i)*n(i)*m(i),rm(i+1)]);
+        mcur = mcur.';
+        mcur=reshape(mcur,[rm(i+1)*rm(i)*n(i),m(i)]);        
         vcur=reshape(vcur,[rv(i),m(i),rv(i+1)]);
         vcur=permute(vcur,[2,1,3]); vcur=reshape(vcur,[m(i),rv(i)*rv(i+1)]);
-        pcur=mcur*vcur; %pcur is now rm(i)*n(i)*rm(i+1)*rv(i)*rv(i+1)
-        pcur=reshape(pcur,[rm(i),n(i),rm(i+1),rv(i),rv(i+1)]);
-        pcur=permute(pcur,[1,4,2,3,5]); 
+        pcur=mcur*vcur; %pcur is now rm(i+1)*rm(i)*n(i)*rv(i)*rv(i+1)
+        pcur=reshape(pcur,[rm(i+1),rm(i),n(i),rv(i),rv(i+1)]);
+%         pcur=reshape(pcur,[rm(i),n(i),rm(i+1),rv(i),rv(i+1)]);
+        pcur=permute(pcur,[2,4,3,1,5]); 
+%         pcur=permute(pcur,[1,4,2,3,5]); 
         crp(psp(i):psp(i+1)-1)=pcur(:);
      end
      c.core=crp;
      %Simple cycle through cores
     %fprintf('matrix-by-vector not implemented yet \n');
 elseif ( isa(a,'tt_tensor') && isa(b,'tt_matrix') && nargin == 2)
-        fprintf('vector-by-matrix not implemented yet \n');
+    c = mtimes(b.', a);
+%         fprintf('vector-by-matrix not implemented yet \n');
 elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
     %TT-matrix by full vector product
     n=a.n; m=a.m; tt=a.tt; cra=tt.core; d=tt.d; ps=tt.ps; r=tt.r;
@@ -112,8 +117,8 @@ elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
     c.tt = tt;
     
 elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin > 3)
-    c=mvk(a,b,varargin);
-    fprintf('Krylov matrix-by-vector not implemented yet \n');
+    c=tt_mvk4(a,b,varargin);
+%     fprintf('Krylov matrix-by-vector not implemented yet \n');
     
 elseif ( isa(a,'tt_matrix') && isa(b,'tt_matrix') && nargin == 3)
     fprintf('Krylov matrix-by-matrix not implemented yet \n');

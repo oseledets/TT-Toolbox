@@ -82,24 +82,25 @@ end
 if ( nargin == 1 && isa(varargin{1},'double') || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
     t=tt_matrix;
     b=varargin{1};
-    if ( nargin == 2 && isa(varargin{2},'double')) 
-      eps=varargin{2};
+    if ( nargin == 2 && isa(varargin{2},'double'))
+        eps=varargin{2};
     else
-      eps=1e-14;
-%       fprintf('Accuracy not specified, using %3.2e \n',eps);  
+        eps=1e-14;
     end
     nm=size(b);
     d=numel(nm);
     d=d/2;
     n=nm(1:d);
     m=nm(d+1:2*d);
-    prm=1:2*d; prm=reshape(prm,[d,2]); prm=prm';
-    prm=reshape(prm,[1,2*d]); %Transposed permutation
-    b=permute(b,prm); 
+    if (~issparse(b))        
+        prm=1:2*d; prm=reshape(prm,[d,2]); prm=prm';
+        prm=reshape(prm,[1,2*d]); %Transposed permutation
+        b=permute(b,prm);
+    end;
     if (numel(n.*m) == 1 )
-      b=b(:);
+        b=reshape(b, n.*m, 1);
     else
-    b=reshape(b,n.*m);
+        b=reshape(b,n.*m);
     end
     tt=tt_tensor(b,eps);
     t.tt=tt;
