@@ -22,14 +22,21 @@ if (numel(n) == 1)
   d=varargin{1}; 
   n=n*ones(1,d);
 else
-  d=numel(n);
+  d=size(n,1);
 end
 tt=cell(d,1);
-tt{1}=zeros(n(1),1);
-tt{d}=zeros(n(d),1);
+tt{1}=zeros([n(1,:),1]);
+tt{d}=zeros([n(d,:),1]);
 for i=2:d-1
-   tt{i}=zeros(n(i),1,1);
+   tt{i}=zeros([n(i,:),1,1]);
 end
-tt=tt_tensor(tt); %Bydlocode
+switch size(n,2)
+    case 1
+        tt=tt_tensor(tt); %Bydlocode
+    case 2
+        tt=tt_matrix(tt); %Bydlocode
+    otherwise
+        error('tt_zeros: N array has illegal size.\n');
+end
 return
 end

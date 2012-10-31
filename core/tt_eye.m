@@ -25,11 +25,11 @@ if (numel(n) == 1)
     end;
   n=n*ones(1,d);
 else
-  d=numel(n);
+  d=size(n,1);
 end
 e=cell(d,1);
 for i=1:d
-   e{i}=eye(n(i));
+   e{i}=eye(n(i,:));
 end
 e=tt_matrix(e); %We did it
 return
