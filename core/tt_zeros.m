@@ -22,6 +22,9 @@ if (numel(n) == 1)
   d=varargin{1}; 
   n=n*ones(1,d);
 else
+  if(size(n,1)==1)
+      n=n';
+  end
   d=size(n,1);
 end
 tt=cell(d,1);

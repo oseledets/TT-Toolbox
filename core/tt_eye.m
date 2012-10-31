@@ -25,6 +25,9 @@ if (numel(n) == 1)
     end;
   n=n*ones(1,d);
 else
+  if(size(n,1)==1)
+      n=n';
+  end
   d=size(n,1);
 end
 e=cell(d,1);
