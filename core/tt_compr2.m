@@ -43,7 +43,7 @@ mat=tt{d};
 [q,rv]=qr(mat,0); rv=rv./nrm1; q=q.*nrm1;
 tt{d}=q;
 for i=(d-1):-1:2
-    tt{i} = ten_conv(tt{i},3,conj(rv'));
+    tt{i} = ten_conv(tt{i},3,rv.');
     ncur=size(tt{i},1);
     r2=size(tt{i},2);
     r3=size(tt{i},3);
@@ -54,7 +54,7 @@ for i=(d-1):-1:2
     tt{i}=reshape(tt{i}.*nrm1,[ncur,r3,rnew]);
     tt{i}=permute(tt{i},[1,3,2]);
 end
-tt{1}=tt{1}*conj(rv');
+tt{1}=tt{1}*rv.';
 %nrmf(1)=norm(tt{1},'fro');
 %nrm_full=sum(log(nrmf(1:d))); nrm1=nrm_full/d; nrm1=exp(nrm1); %This would
 %be the norm of each core
@@ -63,7 +63,7 @@ tt{1}=tt{1}*conj(rv');
 mat=tt{1};
 %return;
 mat(abs(mat)<1e-300)=0;
-[u0,s0,ru]=svd(mat,0); 
+[u0,s0,ru]=svd(mat,'econ'); 
 %If no scaling factors were taken out,
 %then everything would be simple --- nrm=norm(diag(s0)) is the norm,
 %singular values are filtered at absolute accuracy eps*nrm/sqrt(d-1)
@@ -72,14 +72,14 @@ mat(abs(mat)<1e-300)=0;
 %eps*nrmf(1)/sqrt{d-1}
 %nrmf(1)=norm(diag(s0));  
 %nrm=norm(diag(s0));
-eps1=eps*norm(diag(s0))/sqrt(d-1); %This is the absolute accuracy to filter with
-%r0=my_chop2(diag(s0),eps1);
-r0=numel(find(s0>eps1));
+s0=diag(s0);
+eps1=eps*norm(s0)/sqrt(d-1); %This is the absolute accuracy to filter with
+r0=my_chop2(s0,eps1);
+% r0=numel(find(s0>eps1));
 if (exists_max_r) r0 = min(r0, max_r); end;
 %keyboard;
 %r0=rank(mat,eps1);
 u0=u0(:,1:r0);
-s0=diag(s0);
 s0=s0(1:r0); % -eps1*sign(s0);
 ru=ru(:,1:r0)*diag(s0)./nrm1; %This should be scaled properly
 %ru=ru;
@@ -95,13 +95,13 @@ for i=2:d-1
     %r=rank(core,eps1);
     %keyboard;  
     core(abs(core)<1e-300)=0;
-    [u0,s0,ru]=svd(core,0);
+    [u0,s0,ru]=svd(core,'econ');
     
     nrm=norm(diag(s0));
     eps1=eps*nrm/sqrt(d-1); %Nothing more
     %keyboard;
-    %r=my_chop2(diag(s0),eps1);
-    r=numel(find(s0>eps1));
+    r=my_chop2(diag(s0),eps1);
+%     r=numel(find(s0>eps1));
     if (exists_max_r) r = min(r, max_r); end;
     u0=u0(:,1:r);
     s0=(s0(1:r,1:r))./nrm1;

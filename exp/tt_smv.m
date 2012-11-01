@@ -1,5 +1,3 @@
-% function [res]=tt_smv(sttm, vec)
-
 function [res]=tt_smv(sttm, vec)
 %TT-matrix with sparse factors by TT-vector multiplication
 %   [res]=TT_SMV(STTM,VEC) Multiplies the TT-matrix stored in the TT1.0
@@ -29,13 +27,16 @@ rv1=size(vec{1},2);
 res{1}=sttm{1}*vec{1};
 res{1}=reshape(permute(reshape(res{1},[n,rm1,rv1]),[1,3,2]),[n,rv1*rm1]);
 
-n=sttm{d+2}(d);
-% m=size(mat{d},2);
-rm1=sttm{d+1}(d-1);
-rv1=size(vec{d},2);
-%mat{1} is (n x rm1 x rv1 , vec{1} is mxrv1)
-res{d}=sttm{d}*vec{d};
-res{d}=reshape(permute(reshape(res{d},[n,rm1,rv1]),[1,3,2]),[n,rv1*rm1]);
+if (d>1)
+    n=sttm{d+2}(d);
+    % m=size(mat{d},2);
+    rm1=sttm{d+1}(d-1);
+    rv1=size(vec{d},2);
+    %mat{1} is (n x rm1 x rv1 , vec{1} is mxrv1)
+    res{d}=sttm{d}*vec{d};
+    res{d}=reshape(permute(reshape(res{d},[n,rm1,rv1]),[1,3,2]),[n,rv1*rm1]);
+end;
+
 for i=2:d-1
     n=sttm{d+2}(i);
     m=size(vec{i},1);
