@@ -20,7 +20,7 @@ function [tt] = tt_zeros(n,varargin)
 %---------------------------
 if (numel(n) == 1)
   d=varargin{1}; 
-  n=n*ones(1,d);
+  n=n*ones(d,1);
 else
   if(size(n,1)==1)
       n=n';

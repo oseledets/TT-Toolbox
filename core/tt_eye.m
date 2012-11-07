@@ -23,7 +23,7 @@ if (numel(n) == 1)
     else
         d=varargin{1}; 
     end;
-  n=n*ones(1,d);
+  n=n*ones(d, 1);
 else
   if(size(n,1)==1)
       n=n';
