@@ -31,7 +31,7 @@ for i = 1:d
 end
 for i = 1:d
     v = z{i};
-    for j = 1:i-1
+    for j = i-1:-1:1
         v = kron(e{j},v);
     end
     for j = i+1:d
