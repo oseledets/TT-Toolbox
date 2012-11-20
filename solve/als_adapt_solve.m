@@ -41,17 +41,8 @@ function [x,somedata]=als_adapt_solve(A, y, tol, varargin)
 
 % Inner parameters
 max_full_size=2500;
-step_dpow = 0.1; % stepsize for d-power in truncations
-min_dpow = 1; % Minimal d-power for truncation
-
-als_tol_high = 10;
-als_tol_low = 4;
-als_iters = 3;
 
 resid_damp = 2; % Truncation error to true residual treshold
-bot_conv = 0.1; % bottom convergence factor - if better, we can decrease dpow and drank
-top_conv = 0.99; % top convergence factor - if worse, we have to increase dpow and drank
-
 
 nswp=10;
 local_restart=40;
@@ -66,14 +57,16 @@ trunc_norm = 'residual';
 trunc_norm_char = 1;
 % trunc_norm = 'fro';
 
-local_solver = 'gmres';
 ismex = true;
-% local_solver = 'pcg';
+% dirfilter = -1; % only backward
+dirfilter = 1; % only forward
+% dirfilter = 0; % both
 
-% kicktype = 'resid_2d';
-kicktype = 'resid_factor';
+% kicktype = 'two';
+kicktype = 'one';
 % kicktype = 'rand';
-% kicktype = 'resid_tail';
+% kicktype = 'tail';
+% kicktype = 'realamr';
 
 % pcatype = 'svd';
 pcatype = 'uchol';
@@ -85,7 +78,6 @@ kickrank = 5;
 trunc_swp = 1;
 x=[];
 block_order = [];
-Au = [];
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -103,8 +95,6 @@ for i=1:2:length(varargin)-1
             local_restart=varargin{i+1};
         case 'local_iters'
             local_iters=varargin{i+1};
-        case 'local_solver'
-            local_solver=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
         case 'kicktype'
@@ -115,24 +105,12 @@ for i=1:2:length(varargin)-1
             trunc_swp=varargin{i+1};            
         case  'max_full_size'
             max_full_size=varargin{i+1};
-        case 'step_dpow'
-            step_dpow=varargin{i+1};
-        case 'min_dpow'
-            min_dpow=varargin{i+1};
         case 'resid_damp'
             resid_damp = varargin{i+1};
         case 'trunc_norm'
             trunc_norm = varargin{i+1};
-        case 'bot_conv'
-            bot_conv=varargin{i+1};
-        case 'top_conv'
-            top_conv=varargin{i+1};
         case 'block_order'
             block_order=varargin{i+1};
-        case 'als_tol_low'
-            als_tol_low=varargin{i+1};
-        case 'als_iters'
-            als_iters=varargin{i+1};
         case 'tau'
             tau=varargin{i+1};
             
@@ -172,32 +150,24 @@ rx = x.r;
 
 cry = core2cell(y);
 crA = core2cell(A);
-% for i=1:d
-%     if (nnz(crA{i})<0.1*numel(crA{i}))
-%         crA{i}=ndSparse(crA{i});
-%     end;
-% end;
 crx = core2cell(x);
 
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
-if (strcmp(kicktype, 'resid_tail')) 
+if (strcmp(kicktype, 'tail')||strcmp(kicktype, 'realamr')) 
     Rs = cell(d+1,1);
     Rs{1} = 1; Rs{d+1}=1;
-    normy = norm(y);
+    RsQ = cell(d+1,1);
+    RsQ{1} = 1; RsQ{d+1}=1;    
 end;
 
-% This is for checking the residual via averaging
-% cphia = cell(d+1,1); cphia{1}=1; cphia{d+1}=1;
-% cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
 
-
-
-somedata = cell(7,1); % cond, V*Z, V*Z^l, res_prev, dot(Z,Z^l)
-for i=1:5; somedata{i}=zeros(d,nswp*2); end;
+somedata = cell(7,1); % cond, real_res, V*Z^l, res_prev, dot(Z,Z^l)
+for i=1:6; somedata{i}=zeros(d,nswp*2); end;
 somedata{7}=zeros(d,nswp*2);
-somedata{6}=zeros(nswp*2,1);
+somedata{2}=zeros(nswp*2,1);
+
 
 % Orthogonalization
 for i=d:-1:2
@@ -215,7 +185,7 @@ for i=d:-1:2
     phia{i} = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
     phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
     
-    if (strcmp(kicktype, 'resid_tail'))
+    if (strcmp(kicktype, 'tail')||strcmp(kicktype, 'realamr'))
         A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
         x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
         Ax1 = A1*x1;
@@ -234,35 +204,41 @@ for i=d:-1:2
             res1(ra(i)*rx(i)+1:r1, :, ra(i+1)*rx(i+1)+1:r2) = cry{i};
         end;
         res1 = reshape(res1, r1*n(i), r2);
-        res1 = res1*Rs{i+1};
-        r2 = size(Rs{i+1}, 2);
-        res1 = reshape(res1, r1, n(i)*r2);
-        rr=qr(res1.', 0);
+        res2 = res1*Rs{i+1};
+        r3 = size(Rs{i+1}, 2);
+        res2 = reshape(res2, r1, n(i)*r3);
+        rr=qr(res2.', 0);
         Rs{i} = triu(rr(1:min(size(rr)), :)).';
     end;
+    if (strcmp(kicktype, 'realamr'))
+        res1 = reshape(res1, r1, n(i), r2);
+        res1 = permute(res1, [2, 1, 3]);
+        res1 = reshape(res1, n(i), r1*r2);
+        res2 = A1*res1;
+        res2 = reshape(res2, ra(i), n(i), ra(i+1), r1, r2);
+        res2 = permute(res2, [1, 4, 2, 3, 5]);
+        res2 = reshape(res2, ra(i)*r1*n(i), ra(i+1)*r2);
+        res2 = res2*RsQ{i+1};
+        r2 = size(RsQ{i+1}, 2);
+        res2 = reshape(res2, ra(i)*r1, n(i)*r2);
+        rr=qr(res2.', 0);
+        RsQ{i} = triu(rr(1:min(size(rr)), :)).';        
+    end;
 
-    % For residual-check
-%     cphia{i} = compute_next_Phi(cphia{i+1}, ones(1, n(i)), crA{i}, cr, 'rl');
-%     cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1, n(i)), [], cry{i}, 'rl');
 end;
 
-last_sweep = false;
-swp = 1;
-i = 1;
-
-dx_old = ones(d,1);
 dx = zeros(d,1);
 max_res = 0;
 max_dx = 0;
 max_iter = 0;
-max_res_tail = 0;
-% For extra-rank addition
-dpows = ones(d,1)*min_dpow;
-dranks = zeros(d,1);
 
 cur_order = block_order;
 order_index = 1;
 dir = sign(cur_order(order_index));
+
+last_sweep = false;
+swp = 1;
+i = 1;
 
 % DMRG sweeps
 while (swp<=nswp)  
@@ -279,10 +255,7 @@ while (swp<=nswp)
     % sol_prev
     sol_prev = reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1);
 
-%     real_tol = (tol/(d^dpows(i)))/resid_damp;
-%     if (last_sweep)
-        real_tol = (tol2/sqrt(d))/resid_damp;
-%     end;
+    real_tol = (tol2/sqrt(d))/resid_damp;
 
     if (rx(i)*n(i)*rx(i+1)<max_full_size) % Full solution
         %      |     |    |
@@ -298,10 +271,8 @@ while (swp<=nswp)
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
-%         if (isa(B, 'ndSparse'))
-%             B = sparse(B);
-%         end;
         
+        % This was some checking for AMR stuff
 %         if (i<d)
 %             B1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
 %             B1 = B1*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
@@ -368,12 +339,12 @@ while (swp<=nswp)
 % %             keyboard;
 %         end;
         
-        if (norm_rhs~=0)
+        if (norm_rhs~=0) % normal system
             res_prev = norm(B*sol_prev-rhs)/norm_rhs;
             
             somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
             
-            if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
+            if (res_prev>real_tol)&&((dir+dirfilter)~=0) % test the one-side sweeps
                 sol = B \ rhs;
                 flg = 0;
                 res_new = norm(B*sol-rhs)/norm_rhs;
@@ -387,9 +358,7 @@ while (swp<=nswp)
         else
             % rhs = 0: we are looking for a ground state
             res_prev = norm(B*sol_prev);
-            if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
-%                 tau = mean(abs(Phi1(:)))*mean(abs(A1(:)))*mean(abs(Phi2(:)));
-%                 tau = 1;
+            if (res_prev>real_tol)
                 B2 = B+eye(rx(i)*n(i)*rx(i+1))*tau;
                 sol_prev2 = sol_prev;                
                 for it=1:local_restart
@@ -403,12 +372,6 @@ while (swp<=nswp)
                     end;
                     sol_prev2 = sol;
                 end;
-%                 [sol,L]=eig(B);
-%                 [v,l]=min(abs(diag(L)));                
-%                 sol = sol(:,l);
-%                 [u,s,v]=svds(B,1,0);
-%                 sol = v(:,end);
-%                 res_new = norm(B*sol);
                 flg = 0;
                 iter=it;
             else
@@ -421,247 +384,40 @@ while (swp<=nswp)
 
     else % Structured solution.
 
-        if (norm_rhs~=0)
-        res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
-        
-        somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
-
-        if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
-            if (~ismex)
-                Phi1mex = permute(Phi1,[1,3,2]);
-                Phi2mex = permute(Phi2, [3,2,1]);             
-                sol = sol_prev;
-                curPhi1 = cell(rx(i),1);
-                curPhi1{rx(i)} = Phi1mex;
-                for l1=rx(i):-1:2
-                    curPhi1{l1-1} = curPhi1{l1}(1:l1-1, 1:l1-1 ,:);
+        if (norm_rhs~=0) % normal system
+            res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
+            
+            somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+            
+            if (res_prev>real_tol)&&((dir+dirfilter)~=0) % test the one-side sweeps
+                if (~ismex)
+                    drhs = rhs - bfun3(Phi1, A1, Phi2, sol_prev);
+                    mvfun = @(v)bfun3(Phi1, A1, Phi2, v);
+                    % Run the iterative solution
+                    
+                    [dsol,flg,RELRES,iter] = gmres(mvfun, drhs, local_restart, min(real_tol/res_prev,1), local_iters);
+                    iter = (iter(1)-1)*local_restart + iter(2);
+                    sol = sol_prev + dsol;
+                else % use MEX
+                    sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1,0));
+                    
+                    flg=0;
+                    iter = 0;
                 end;
-%                 res = rhs - bfun3(Phi1,A1,Phi2,sol_prev);
-%                 sol = gmres(@(v)bfun3(Phi1,A1,Phi2, mg_3d(Phi1mex,A1,Phi2mex,v,v*0)), res, local_restart, real_tol/res_prev, local_iters);
-%                 sol = sol_prev + mg_3d(Phi1mex,A1,Phi2mex,sol,sol*0);
-                for it=1:local_restart
-                    sol = mg_3d(curPhi1, A1, Phi2mex, rhs, sol);
-                    res_new = norm(rhs - bfun3(Phi1, A1, Phi2, sol))/norm_rhs;
-                    if (verb>=2)
-                        fprintf('mg cycle %d, resid %3.3e\n', it, res_new);
-                    end;
-%                     keyboard;
-                    if (res_new<real_tol)
-%                         fprintf('gemacht! =) \n');
-                        break;
-                    end;
-                end;
-                flg=0;
-                iter = 1;                
                 
-%                 sol = zeros(1,n(i),1);
-%                 Phi1mex = permute(Phi1,[1,3,2]);
-%                 Phi2mex = permute(Phi2, [3,2,1]);
-%                 currhs = reshape(rhs, rx(i), n(i), rx(i+1));
-%                 for k=1:max(rx(i), rx(i+1))
-%                     curPhi1 = Phi1mex(1:min(k,rx(i)), 1:min(k,rx(i)), :);
-%                     curPhi2 = Phi2mex(1:min(k,rx(i+1)), :, 1:min(k,rx(i+1)));
-%                     sol2 = solve3d_2(curPhi1, A1, curPhi2, currhs(1:min(k,rx(i)), :, 1:min(k,rx(i+1))), real_tol, trunc_norm_char, sol, local_prec_char, local_restart, local_iters, 1);
-%                     sol2 = reshape(sol2, min(k,rx(i)), n(i), min(k,rx(i+1)));
-%                     if (k<max(rx(i), rx(i+1)))
-%                         sol = zeros(min(k+1,rx(i)), n(i), min(k+1,rx(i+1)));
-%                         sol(1:min(k,rx(i)), :, 1:min(k,rx(i+1))) = sol2;
-%                     end;
-%                 end;
-                
-% %             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel')) %&&(mod(order_index, 2)==1)   % &&(~last_sweep)
-% %                 % Prepare the Jacobi prec - on maximal rank
-% %                 if (rx(i)>rx(i+1))
-% %                     jacPhi1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
-% %                     ind = (1:rx(i)) + (0:rx(i)-1)*rx(i); % diagonal elements
-% %                     jacPhi = jacPhi1(ind,:);
-% %                     % The second block, unfortunately, to compute explicitly
-% %                     jacB = reshape(A1, ra(i)*n(i)*n(i), ra(i+1));
-% %                     jacB = jacB*reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
-% %                     jacB = reshape(jacB, ra(i), n(i), n(i), rx(i+1), rx(i+1));
-% %                     jacB = permute(jacB, [2, 4, 3, 5, 1]);
-% %                     jacB = reshape(jacB, n(i)*rx(i+1), n(i)*rx(i+1), ra(i));
-% % 
-% %                     % Lower and upper triangular parts for Gauss-Seidel
-% % %                     gsU = Phi1;
-% % %                     gsL = Phi1;
-% % %                     for k=1:rx(i)
-% % % %                         gsU(k:rx(i), :, k)=0;
-% % %                         gsL(1:k, :, k)=0;
-% % %                     end;
-% % 
-% % 
-% %                     jacBlocks = cell(rx(i),1);
-% % %                     jacBlocks=zeros(n(i)*n(i+1)*rx(i+2), n(i)*n(i+1)*rx(i+2), rx(i));
-% %                     for k=1:rx(i)
-% %                         jacBlocks{k}=zeros(n(i)*rx(i+1), n(i)*rx(i+1));
-% %                     end;
-% %                     % So stupid preallocation of sparsity
-% % %                     jacP = 0*speye(rx(i)*n(i)*n(i+1)*rx(i+2));
-% %                     % Sum over ra
-% %                     for k=1:ra(i)
-% %                         for m=1:rx(i)
-% %                             jacBlocks{m} = jacBlocks{m} + jacB(:,:,k)*jacPhi(m,k);
-% %                         end;
-% %                     end;
-% % 
-% %                     jacdir = -1;
-% % %                     Stuff into the prec
-% %                     for m=1:rx(i)
-% % %                         em = [zeros(m-1,1); 1; zeros(rx(i)-m, 1)];
-% %                         jacBlocks{m} = inv(jacBlocks{m});
-% % %                         jacBlocks{m} = jacBlocks{m}.';
-% % %                         jacP = jacP + kron(jacBlocks{m}, spdiags(em, 0, rx(i), rx(i)));
-% %                     end;
-% % 
-% %                 else
-% % 
-% %                     jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
-% %                     ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
-% %                     jacPhi = jacPhi2(:,ind);
-% %                     % The second block, unfortunately, to compute explicitly
-% %                     jacB = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
-% %                     jacB = jacB*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-% %                     jacB = reshape(jacB, rx(i), rx(i), n(i), n(i), ra(i+1));
-% %                     jacB = permute(jacB, [1, 3, 2, 4, 5]);
-% %                     jacB = reshape(jacB, rx(i)*n(i), rx(i)*n(i), ra(i+1));
-% % 
-% %                     % Lower and upper triangular parts for Gauss-Seidel
-% %                     if (strcmp(local_prec, 'seidel'))
-% %                         gsL = Phi2;
-% %                         for k=1:rx(i+1)
-% %                             gsL(1:k, :, k)=0;
-% %                         end;
-% %                     end;
-% % 
-% %                     jacBlocks = cell(rx(i+1),1);
-% %                     for k=1:rx(i+1)
-% %                         jacBlocks{k}=zeros(rx(i)*n(i), rx(i)*n(i));
-% %                     end;
-% %                     % Sum over ra
-% %                     for k=1:ra(i+1)
-% %                         for m=1:rx(i+1)
-% %                             jacBlocks{m} = jacBlocks{m} + jacB(:,:,k)*jacPhi(k,m);
-% %                         end;
-% %                     end;
-% % 
-% % 
-% %                     jacdir = 1;
-% %                     % Stuff into the prec
-% %                     for m=1:rx(i+1)
-% %                         jacBlocks{m} = inv(jacBlocks{m});
-% %                     end;
-% %                 end; % of rx(i)<rx(i+2)
-% % 
-% %             elseif (strcmp(local_prec, 'cjacobi')) %&&(mod(order_index, 2)==1)
-% % 
-% %                 % Jacobi prec on phys mode only
-% %                 jacPhi1 = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
-% %                 ind = (1:rx(i)) + (0:rx(i)-1)*rx(i); % diagonal elements
-% %                 jacPhi1 = jacPhi1(ind,:);
-% %                 jacPhi2 = reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
-% %                 ind = (1:rx(i+1)) + (0:rx(i+1)-1)*rx(i+1); % diagonal elements
-% %                 jacPhi2 = jacPhi2(:,ind);
-% % 
-% % %                 tic;
-% % %                 jacBlocks = cell(rx(i), rx(i+1));
-% %                 jacBlocks = zeros(n(i),n(i),rx(i),rx(i+1));
-% % %                 jacBlocks = sparse(rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
-% %                 for k2=1:rx(i+1)
-% %                     for k1=1:rx(i)
-% %                         curblock = jacPhi1(k1,:)*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-% %                         curblock = reshape(curblock, n(i)*n(i), ra(i+1));
-% %                         curblock = curblock*jacPhi2(:,k2);
-% %                         curblock = reshape(curblock, n(i), n(i));
-% %                         curblock = inv(curblock);
-% %                         jacBlocks(:,:,k1,k2)=curblock;
-% % %                         ind = k1+((1:n(i))-1)*rx(i)+(k2-1)*rx(i)*n(i);
-% % %                         jacBlocks(ind, ind) = curblock;
-% % %                         jacBlocks{k1,k2} = jacPhi1(k1,:)*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-% % %                         jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i)*n(i), ra(i+1));
-% % %                         jacBlocks{k1,k2} = jacBlocks{k1,k2}*jacPhi2(:,k2);
-% % %                         jacBlocks{k1,k2} = reshape(jacBlocks{k1,k2}, n(i), n(i));
-% % %                         jacBlocks{k1,k2} = inv(jacBlocks{k1,k2});
-% %                     end;
-% %                 end;
-% % %                 jacgentime = toc
-% %             else
-% %                 jacBlocks = [];
-% %             end;
-% % 
-% % 
-% %             drhs = rhs - bfun3(Phi1, A1, Phi2, sol_prev);
-% %             if (isempty(jacBlocks))
-% %                 mvfun = @(v)bfun3(Phi1, A1, Phi2, v);
-% %             else
-% %                 if (strcmp(local_prec, 'seidel'))
-% %                     mvfun = @(v)bfun3(Phi1, A1, Phi2, gsfun(jacBlocks, gsL, A1, Phi1, v,jacdir));
-% %                 elseif (strcmp(local_prec, 'jacobi'))
-% %                     mvfun = @(v)bfun3(Phi1, A1, Phi2, jacfun(jacBlocks,v,jacdir));
-% %                 else
-% %                     mvfun = @(v)bfun3(Phi1, A1, Phi2, cjacfun(jacBlocks,v,rx(i),rx(i+1)));
-% % %                     mvfun = @(v)bfun3(Phi1, A1, Phi2, jacBlocks*v);
-% %                 end;
-% %             end;
-% % 
-% %             % Run the iterative solution
-% % %             tic;
-% %             fprintf('HERE!');
-% %             if (strcmp(local_solver, 'gmres'))
-% %                 [dsol,flg,RELRES,iter] = gmres(mvfun, drhs, local_restart, min(real_tol/res_prev,1), local_iters);
-% % 
-% % 
-% %                 iter = (iter(1)-1)*local_restart + iter(2);
-% %             else
-% %                 [dsol,flg,RELRES,iter] = pcg(mvfun, drhs, min(real_tol/res_prev,1), local_iters*local_restart);
-% %             end;
-% % %             soltime = toc
-% % 
-% %             if (~isempty(jacBlocks))
-% %                 if (strcmp(local_prec, 'seidel'))
-% %                     dsol = gsfun(jacBlocks, gsL, A1, Phi1,  dsol ,jacdir);
-% %                 elseif (strcmp(local_prec, 'jacobi'))
-% %                     dsol = jacfun(jacBlocks,dsol,jacdir);
-% %                 else
-% %                     dsol = cjacfun(jacBlocks,dsol,rx(i),rx(i+1));
-% % %                     dsol = jacBlocks*dsol;
-% %                 end;
-% %             end;
-% % 
-% %             sol = sol_prev + dsol;
-
+                res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
             else
-
-%              local_prec_char = 0;
-%              if (strcmp(local_prec, 'cjacobi'))&&(n(i)>4)
-%                  local_prec_char = 1;
-%              end;
-%             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
-
-%             if ((issparse(Phi1))||(issparse(A1))||(issparse(Phi2)))
-%                 sol = solve3d_2(permute(full(Phi1),[1,3,2]), full(A1), permute(full(Phi2), [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
-%             else
-                sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1,0));
-%             end;
-
-            flg=0;
-            iter = 0;
-%             if (res_new>real_tol); flg=1; end;
+                sol = sol_prev;
+                res_new = res_prev;
+                flg=0;
+                iter=0;
             end;
-
-            res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
-        else
-            sol = sol_prev;
-            res_new = res_prev;
-            flg=0;
-            iter=0;
-        end;
-
-
+            
+            
         else % Ground state
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev));
-
-            if (res_prev>real_tol) % &&((~last_sweep)||(strcmp(kicktype, 'resid_tail')==0))
+            
+            if (res_prev>real_tol)
                 sol_prev2 = sol_prev;
                 Phi1mex = zeros(rx(i), rx(i), ra(i)+1);
                 Phi1mex(1:rx(i), 1:rx(i), 1:ra(i)) = permute(Phi1,[1,3,2]);
@@ -676,7 +432,6 @@ while (swp<=nswp)
                 A1mex = permute(A1mex, [3, 1, 2, 4]);
                 for it=1:local_iters
                     rhs = sol_prev2;
-%                     sol = solve3d(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, 0);
                     sol = solve3d_2(Phi1mex, A1mex, Phi2mex, rhs, real_tol, trunc_norm_char, sol_prev2, local_prec_char, local_restart, local_iters, max(verb-1,0));
                     sol = sol/norm(sol);
                     res_new = norm(bfun3(Phi1, A1, Phi2, sol));
@@ -701,42 +456,14 @@ while (swp<=nswp)
     if (flg>0)
         fprintf('-warn- local solver did not converge at block %d\n', i);
     end;
-    if (res_prev/res_new<resid_damp)&&(res_new>real_tol)&&(norm_rhs~=0)
+    if (res_prev/res_new<resid_damp)&&(res_new>real_tol)&&(norm_rhs~=0)&&((dir+dirfilter)~=0) % one-side test
         fprintf('--warn-- the residual damp was smaller than in the truncation\n');
     end;
 
     dx(i) = norm(sol-sol_prev)/norm(sol);
     max_dx = max(max_dx, dx(i));
 
-    % The new core does not converge - increase rank
-%     if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>tol)
-%         dranks(i)=dranks(i)+1;
-%         dpows(i)=dpows(i)+step_dpow;
-%     end;
-%     % The new core converges well - try to decrease rank
-%     if (dx(i)/dx_old(i)<bot_conv)||(dx(i)<tol)
-%         dranks(i)=max(dranks(i)-1, 0);
-%         dpows(i)=max(dpows(i)-step_dpow, min_dpow);
-%     end;
-%
-%     if (last_sweep)
-%         dpows(i)=0.5;
-%         dranks(i)=0;
-%     end;
-
-    % Check the residual
-%     cPhi1 = cphia{i}; cPhi2 = cphia{i+1};
-%     crhs = cphiy{i};
-%     crhs = crhs*reshape(cry{i}, ry(i), n(i)*ry(i+1));
-%     crhs = reshape(crhs, n(i), ry(i+1));
-%     crhs = crhs*(cphiy{i+1}.');
-%     cAsol = bfun3(cPhi1, A1, cPhi2, sol);
-%     chkres = norm(cAsol-crhs)/norm(crhs);
-
-
-%     chkres = res_prev;
     max_res = max(max_res, res_prev);
-%     max_res = max(max_res, res_prev);
     max_iter = max(max_iter, iter);
 
     % Truncation
@@ -750,93 +477,57 @@ while (swp<=nswp)
         norm_rhs=1;
     end;
 
-    if ((kickrank>=0)&&(mod(round(swp*2-0.5-dir/2), trunc_swp)==0))||(last_sweep)
-    [u,s,v]=svd(sol, 'econ');
-    s = diag(s);
-
-    if (strcmp(trunc_norm, 'fro')) % We are happy with L2 truncation (when? but let it be)
-%         r = my_chop2(s, max(real_tol, res_new)*resid_damp*norm(s));
-        r = my_chop2(s, real_tol*resid_damp*norm(s));
-    else
-        if (dir>0); r = min(rx(i)*n(i),rx(i+1));
-        else r = min(rx(i), n(i)*rx(i+1)); end;
-        r = max(r-kickrank, 1);
-        cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-        if (rx(i)*n(i)*rx(i+1)<max_full_size)
-            res = norm(B*cursol(:)-rhs)/norm_rhs;
+    if ((kickrank>=0)&&(mod(round(swp*2-0.5-dir/2), trunc_swp)==0)&&((dir+dirfilter)~=0))||(last_sweep) % &&(dir>0) % test the one-side sweeps
+        [u,s,v]=svd(sol, 'econ');
+        s = diag(s);
+        
+        if (strcmp(trunc_norm, 'fro')) % We are happy with L2 truncation (when? but let it be)
+            r = my_chop2(s, real_tol*resid_damp*norm(s));
         else
-            res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
-        end;
-        bfuncnt = 1;
-        if (res<max(real_tol, res_new)*resid_damp)
-            drank = -1;
-        else
-            drank = 1;
-        end;
-        while (r>0)&&(r<=numel(s))
+            % check the residual trunc
+            % start from the old rank
+            if (dir>0); r = min(rx(i)*n(i),rx(i+1));
+            else r = min(rx(i), n(i)*rx(i+1)); end;
+            r = max(r-kickrank, 1);
+            
             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
             if (rx(i)*n(i)*rx(i+1)<max_full_size)
                 res = norm(B*cursol(:)-rhs)/norm_rhs;
             else
                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
             end;
-            bfuncnt=bfuncnt+1;
-            if (drank>0)
-                if (res<max(real_tol, res_new)*resid_damp)
-                    break;
-                end;
+            if (res<max(real_tol, res_new)*resid_damp)
+                drank = -1; % rank is overestimated; decrease
             else
-                if (res>=max(real_tol, res_new)*resid_damp)
-                    break;
-                end;
+                drank = 1; % residual is large; increase the rank
             end;
-            r = r+drank;
+            while (r>0)&&(r<=numel(s))
+                cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
+                if (rx(i)*n(i)*rx(i+1)<max_full_size)
+                    res = norm(B*cursol(:)-rhs)/norm_rhs;
+                else
+                    res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+                end;
+                if (drank>0)
+                    if (res<max(real_tol, res_new)*resid_damp)
+                        break;
+                    end;
+                else
+                    if (res>=max(real_tol, res_new)*resid_damp)
+                        break;
+                    end;
+                end;
+                r = r+drank;
+            end;
+            if (drank<0)
+                r=r+1;
+            end;
         end;
-        if (drank<0)
-            r=r+1;
-        end;
-
-%         bfuncnt = 0;
-%         % Residual trunc; First, bin-search
-%         r1 = 1; r2 = numel(s); r = round((r1+r2)/2);
-%         while (r2-r1>1)
-%             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-%             if (rx(i)*n(i)*rx(i+1)<max_full_size)
-%                 res = norm(B*cursol(:)-rhs)/norm_rhs;
-%             else
-%                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
-%             end;
-%             bfuncnt=bfuncnt+1;
-%             if (res<max(real_tol, res_new)*resid_damp)
-%                 r2 = r;
-%             else
-%                 r1 = r;
-%             end;
-%             r = round((r1+r2)/2);
-%         end;
-%         r = max(r-1,1);
-%         % More accurate Linear search
-%         while (r<=numel(s))
-%             cursol = u(:,1:r)*diag(s(1:r))*(v(:,1:r)');
-%             if (rx(i)*n(i)*rx(i+1)<max_full_size)
-%                 res = norm(B*cursol(:)-rhs)/norm_rhs;
-%             else
-%                 res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
-%             end;
-%             bfuncnt=bfuncnt+1;
-%             if (res<max(real_tol, res_new)*resid_damp)
-%                 break;
-%             end;
-%             r = r+1;
-%         end;
-    end;
-
-    % Artificial rank increasing
-%     r = r+dranks(i);
-    r = min(r, numel(s));
-    r = min(r, rmax);
-
-    else
+        
+        r = min(r, numel(s));
+        r = min(r, rmax);
+        
+    else % we don't need a truncation in this sweep
         if (dir>0)
             [u,v]=qr(sol, 0);
             v=v';
@@ -852,16 +543,17 @@ while (swp<=nswp)
     end;
 
     if (verb>1)
-        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, bfuncnt: %d, r: %d, drank: %d\n', i, dir, dx(i), res_prev, bfuncnt, r, drank);
+        fprintf('=als_adapt_solve=   block %d{%d}, dx: %3.3e, res: %3.3e, r: %d, drank: %d\n', i, dir, dx(i), res_prev, r, drank);
     end;
 
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
         u = u(:,1:r);
         v = conj(v(:,1:r))*diag(s(1:r));
 
-%         rho = max(min(n(i+1)*rx(i+2)-r, kickrank), 0);
         rho = kickrank;
-        if (rho>0)
+        
+        u2 = [];
+        if (rho>0)&&((dir+dirfilter)~=0)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         leftresid = reshape(Phi1, rx(i)*ra(i), rx(i))*reshape(u*v.', rx(i), n(i)*rx(i+1));
@@ -880,7 +572,7 @@ while (swp<=nswp)
         lefty = lefty*reshape(cry{i}, ry(i), n(i)*ry(i+1));
         lefty = reshape(lefty, rx(i)*n(i), ry(i+1));       
         
-        if (strcmp(kicktype, 'resid_2d'))
+        if (strcmp(kicktype, 'two'))
             rightresid = reshape(phia{i+2}, rx(i+2)*ra(i+2), rx(i+2))*(reshape(crx{i+1}, rx(i+1)*n(i+1), rx(i+2)).');
 %             if (issparse(rightresid))
 %                 rightresid = full(rightresid);
@@ -901,7 +593,7 @@ while (swp<=nswp)
             rr=qr(rightresid, 0);
             rr = triu(rr(1:min(size(rr)), :));
             leftresid = [leftresid, -lefty]*(rr.');
-%             fprintf('i=%d, norm(res2)=%3.3e\n', i, norm(leftresid, 'fro')/norm(lefty*righty.', 'fro'));
+
             if (strcmp(pcatype, 'svd'))
                 [uk,sk,vk]=svd(leftresid, 'econ');
                 uk = uk(:,1:min(rho, size(uk,2)));
@@ -909,7 +601,7 @@ while (swp<=nswp)
                 uk = uchol(leftresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
             end;
-        elseif (strcmp(kicktype, 'resid_factor'))
+        elseif (strcmp(kicktype, 'one'))
             leftresid = [leftresid, -lefty];
             if (strcmp(pcatype, 'svd'))
                 [uk,sk,vk]=svd(leftresid, 'econ');
@@ -918,44 +610,8 @@ while (swp<=nswp)
                 uk = uchol(leftresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
             end;
-        elseif (strcmp(kicktype, 'resid_tail'))
+        elseif (strcmp(kicktype, 'tail'))
             leftresid = [leftresid, -lefty]*Rs{i+1};
-            
-%             if (i==d-1)
-%             crx2 = crx;
-%             crx2{1} = crx2{1}(1, :, 1:end-1);
-%             for j=2:i-1
-%                 crx2{j} = crx2{j}(1:end-1, :, 1:end-1);
-%             end;
-%             crx2{i} = reshape(u*v.', rx(i), n(i), rx(i+1));
-%             crx2{i}=crx2{i}(1:end-1, :, :);
-%             x = cell2core(x, crx2);
-%             resfull = A*x-y;
-% %             resfull = round(resfull, 1e-12);
-%             [resfull, nrm1]=qr(resfull, 'rl');
-%             resfull = core2cell(resfull);
-%             resfull{1}=resfull{1}*nrm1;
-%             rr2 = size(resfull{i}, 1); rr3 = size(resfull{i}, 3);
-%             for j=1:i
-%                 rr1=size(resfull{j}, 1); rr2 = size(resfull{j}, 3); rr3 = size(resfull{j+1}, 3);
-%                 crr = reshape(resfull{j}, rr1*n(j), rr2);
-%                 [crr,srr,vrr]=svd(crr, 'econ');
-%                 rrnew = min(rho, size(crr, 2));
-%                 crr2 = reshape(resfull{j+1}, rr2, n(j+1)*rr3);
-%                 crr2 = srr(1:rrnew, 1:rrnew)*(vrr(:,1:rrnew)')*crr2;
-%                 rr2 = rrnew;
-%                 resfull{j} = reshape(crr(:,1:rrnew), rr1, n(j), rr2);
-%                 resfull{j+1} = reshape(crr2, rr2, n(j+1), rr3);
-%             end;
-%             lfull = cell2core(tt_tensor, resfull(1:i));
-%             end;
-%             crr = reshape(resfull{i}, rr2*n(i), rr3);
-%             [uf,sf,vf]=svd(crr, 'econ');
-%             resfull{i} = reshape(uf(:,1:min(rho, size(uf,2))), rr2, n(i), min(rho, size(uf,2)));            
-%             crx2{i} = reshape([leftresid, u*v.'], rx(i), n(i), size(leftresid,2)+rx(i+1));
-%             ltail = cell2core(tt_tensor, crx2(1:i));
-%             [ltail, rltail]=qr(ltail, 'lr');            
-%             keyboard;    
 
 %             res_tail = norm(leftresid, 'fro')/normy;
 %             somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
@@ -967,70 +623,79 @@ while (swp<=nswp)
                 uk = uchol(leftresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
             end;        
+        elseif (strcmp(kicktype, 'realamr'))
+            leftresid = [leftresid, -lefty];
+            r2 = (ra(i+1)*rx(i+1)+ry(i+1));
+            leftQ = reshape(leftresid, rx(i), n(i)*r2);
+            leftQ = reshape(Phi1, rx(i)*ra(i), rx(i))*leftQ;
+            leftQ = reshape(leftQ, rx(i), ra(i), n(i), r2);
+            leftQ = permute(leftQ, [2,3,1,4]);
+            leftQ = reshape(leftQ, ra(i)*n(i), rx(i)*r2);
+            leftQ = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*leftQ;
+            leftQ = reshape(leftQ, n(i), ra(i+1), rx(i), r2);
+            leftQ = permute(leftQ, [3,1,2,4]);
+            leftQ = reshape(leftQ, rx(i)*n(i), ra(i+1)*r2);
+            
+            leftresid = leftresid*Rs{i+1};
+            leftQ = leftQ*RsQ{i+1};
+            if (strcmp(pcatype, 'svd'))
+                [uk,sk,vk]=svd(leftresid, 'econ');
+                uk = uk(:,1:min(rho, size(uk,2)));
+                [ukQ,skQ,vkQ]=svd(leftQ, 'econ');
+                ukQ = ukQ(:,1:min([rho, size(ukQ,2), size(uk,2)]));
+            else
+                uk = uchol(leftresid.', rho+1);
+                uk = uk(:,end:-1:max(end-rho+1,1));
+                ukQ = uchol(leftQ.', rho+1);
+                ukQ = ukQ(:,end:-1:max(end-rho+1,1));
+            end;
         else
             uk = randn(rx(i)*n(i), rho);
-%             [uk,rr]=qr(uk,0);
         end;
         
-%         V = (eye(n(i)*rx(i)) - u*u');
-%         fprintf('i=%d, V*uk = %3.3e\n', i, norm(V*uk));
-        
-%         leftA = permute(Phi1, [1, 3, 2]);
-%         leftA = reshape(leftA, rx(i)*rx(i), ra(i));
-%         leftA = leftA*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-%         leftA = reshape(leftA, rx(i), rx(i), n(i), n(i), ra(i+1));
-%         leftA = permute(leftA, [1, 3, 5, 2, 4]);
-%         leftA = reshape(leftA, rx(i)*n(i)*ra(i+1), rx(i)*n(i));
-%         leftresid = leftA*reshape(u*v', rx(i)*n(i), rx(i+1));
-%         leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
-        
-        % The right rank is now ra*rx+rf; Extract kickrank PCAs
-%         uk = zeros(rx(i)*n(i), min(kickrank, n(i)*rx(i)));
-%         for j=1:min(kickrank, n(i)*rx(i))
-%             uk(:,j) = uchol(leftresid.', 1);
-%             uk(:,1:j) = reort(uk(:,1:(j-1)), uk(:,j));
-%             leftresid = leftA*uk(:,j);
-%             leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1));
-%         end;
-
-
-        % kick
+        % kick itself
+            if (strcmp(kicktype, 'realamr'))
+                uk = [uk,ukQ];
+%                 [u2,rv2]=qr([u0,ukQ], 0);
+            end;        
             [u,rv]=qr([u,uk], 0);
+%             if (size(u,2)~=size(u2,2))
+%                 keyboard;
+%             end;
             radd = size(uk, 2);
             v = [v, zeros(rx(i+1), radd)];
             v = v*(rv.');
-%             u = reort(u, uk);
-%             if (i==d-1)
-%             crx2 = crx;
-%             crx2{i} = reshape(u, rx(i), n(i), size(u,2));
-%             ltail = cell2core(tt_tensor, crx2(1:i));           
-%             keyboard; 
-%             end;
         end;
         cr2 = crx{i+1};
         cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
         v = (v.')*cr2; % size r+radd, n2, r3
 
         r = size(u,2);
-%         r = r+radd;
 
         u = reshape(u, rx(i), n(i), r);
         v = reshape(v, r, n(i+1), rx(i+2));
 
         % Recompute phi. Left ones, so permute them appropriately
-        phia{i+1} = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
-        phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
-
-        % residual-check
-%         cphia{i+1} = compute_next_Phi(cphia{i}, ones(1,n(i)), crA{i}, u, 'lr');
-%         cphiy{i+1} = compute_next_Phi(cphiy{i}, ones(1,n(i)), [], cry{i}, 'lr');
+%         if (strcmp(kicktype, 'realamr'))
+%             if (isempty(u2))
+%                 u2 = u;
+%             else
+%                 u2 = reshape(u2, rx(i), n(i), r);
+%             end;
+%             phia{i+1} = compute_next_Phi(phia{i}, u2, crA{i}, u, 'lr');
+%             phiy{i+1} = compute_next_Phi(phiy{i}, u2, [], cry{i}, 'lr');            
+%         else
+            phia{i+1} = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
+            phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
+%         end;
 
         % Stuff back
         rx(i+1) = r;
         crx{i} = u;
         crx{i+1} = v;
         
-        if (strcmp(kicktype, 'resid_tail'))
+        if (strcmp(kicktype, 'tail'))
+            % recompute the R-matrices of the full residual
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
             x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
             Ax1 = A1*x1;
@@ -1039,7 +704,8 @@ while (swp<=nswp)
 %             end;
             Ax1 = reshape(Ax1, ra(i), n(i), ra(i+1), rx(i), rx(i+1));
             Ax1 = reshape(permute(Ax1, [1, 4, 2, 3, 5]), ra(i)*rx(i), n(i), ra(i+1)*rx(i+1));
-            r1 = ra(i)*rx(i)+ry(i); r2 = ra(i+1)*rx(i+1)+ry(i+1);
+            r1 = ra(i)*rx(i)+ry(i); 
+            r2 = ra(i+1)*rx(i+1)+ry(i+1);
             if (i==1); r1 = 1; end;
             res1 = zeros(r1, n(i), r2);
             res1(1:ra(i)*rx(i), :, 1:ra(i+1)*rx(i+1)) = Ax1;
@@ -1059,11 +725,9 @@ while (swp<=nswp)
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
 
-%         rho = max(min(rx(i-1)*n(i-1)-r, kickrank), 0);
         rho = kickrank;
-%         rho = 0;
         
-        if (rho>0)
+        if (rho>0)&&((dir+dirfilter)~=0) % test for one-side sweeps
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
         
@@ -1082,7 +746,7 @@ while (swp<=nswp)
         righty = reshape(cry{i}, ry(i)*n(i), ry(i+1));
         righty = righty*(phiy{i+1}.');
         righty = reshape(righty, ry(i), n(i)*rx(i+1)).';
-        if (strcmp(kicktype, 'resid_2d'))
+        if (strcmp(kicktype, 'two'))
             leftresid = reshape(phia{i-1}, rx(i-1)*ra(i-1), rx(i-1))*reshape(crx{i-1}, rx(i-1), n(i-1)*rx(i));
 %             if (issparse(leftresid))
 %                 leftresid = full(leftresid);
@@ -1103,7 +767,7 @@ while (swp<=nswp)
             rr=qr(leftresid, 0);
             rr = triu(rr(1:min(size(rr)), :));            
             rightresid = [rightresid, -righty]*(rr.');
-%             fprintf('i=%d, norm(res2)=%3.3e\n', i, norm(rightresid, 'fro')/norm(lefty*righty.', 'fro'));
+
             if (strcmp(pcatype, 'svd'))
                 [uk,sk,vk]=svd(rightresid, 'econ');
                 uk = uk(:,1:min(rho, size(uk,2)));
@@ -1111,7 +775,7 @@ while (swp<=nswp)
                 uk = uchol(rightresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
             end;
-        elseif (strcmp(kicktype, 'resid_factor'))
+        elseif (strcmp(kicktype, 'one'))
             rightresid = [rightresid, -righty];
             if (strcmp(pcatype, 'svd'))
                 [uk,sk,vk]=svd(rightresid, 'econ');
@@ -1120,8 +784,9 @@ while (swp<=nswp)
                 uk = uchol(rightresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
             end;
-        elseif (strcmp(kicktype, 'resid_tail'))
+        elseif (strcmp(kicktype, 'tail'))
             rightresid = [rightresid, -righty]*(Rs{i}.');            
+            
 %             res_tail = norm(rightresid, 'fro')/normy;
 %             somedata{7}(i,(swp-1)*2+1.5-dir/2) = res_tail;
 %             max_res_tail = max(max_res_tail, res_tail);            
@@ -1134,36 +799,10 @@ while (swp<=nswp)
             end;
         else
             uk = randn(n(i)*rx(i+1), rho);
-%             [uk,rr]=qr(uk,0);
         end;
-        
-%         fprintf('i=%d, V*uk = %3.3e\n', i, norm((eye(n(i)*rx(i+1)) - v*v')*uk));
-        
-%         rightA = permute(Phi2, [2, 1, 3]);
-%         rightA = reshape(rightA, ra(i+1), rx(i+1)*rx(i+1));
-%         rightA = reshape(A1, ra(i)*n(i)*n(i), ra(i+1))*rightA;
-%         rightA = reshape(rightA, ra(i), n(i), n(i), rx(i+1), rx(i+1));
-%         rightA = permute(rightA, [2, 4, 1, 3, 5]);
-%         rightA = reshape(rightA, n(i)*rx(i+1)*ra(i), n(i)*rx(i+1));
-%         righty = reshape(cry{i}, ry(i)*n(i), ry(i+1));
-%         righty = righty*(phiy{i+1}.');
-%         righty = reshape(righty, ry(i), n(i)*rx(i+1));
-%         rightresid = rightA*(reshape(u*v', rx(i), n(i)*rx(i+1)).');
-%         rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i)*rx(i));
 
-
-        % The right rank is now ra*rx+rf; Extract kickrank PCAs
-%         uk = zeros(n(i)*rx(i+1), min(kickrank, n(i)*rx(i+1)));
-%         for j=1:min(kickrank, n(i)*rx(i+1))
-%             uk(:,j) = uchol(rightresid.', 1);
-%             uk(:,1:j) = reort(uk(:,1:(j-1)), uk(:,j));
-%             rightresid = rightA*uk(:,j);
-%             rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i));
-%         end;
-
-        % kick
+        % kick itself
             [v,rv]=qr([v,uk], 0);
-%             v = reort(v, uk);
             radd = size(uk, 2);
             u = [u, zeros(rx(i), radd)];
             u = u*(rv.');
@@ -1173,7 +812,6 @@ while (swp<=nswp)
         u = cr2*u;
 
         r = size(v,2);
-%         r = r+radd;
 
         u = reshape(u, rx(i-1), n(i-1), r);
         v = reshape(v.', r, n(i), rx(i+1));
@@ -1181,16 +819,14 @@ while (swp<=nswp)
         % Recompute phi. Here are right phis
         phia{i} = compute_next_Phi(phia{i+1}, v, crA{i}, v, 'rl');
         phiy{i} = compute_next_Phi(phiy{i+1}, v, [], cry{i}, 'rl');
-        % Residual check
-%         cphia{i} = compute_next_Phi(cphia{i+1}, ones(1,n(i)), crA{i}, v, 'rl');
-%         cphiy{i} = compute_next_Phi(cphiy{i+1}, ones(1,n(i)), [], cry{i}, 'rl');
 
         % Stuff back
         rx(i) = r;
         crx{i-1} = u;
         crx{i} = v;
         
-        if (strcmp(kicktype, 'resid_tail'))
+        if (strcmp(kicktype, 'tail')||strcmp(kicktype, 'realamr'))
+            % recompute the QRs of the residual
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
             x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
             Ax1 = A1*x1;
@@ -1209,11 +845,25 @@ while (swp<=nswp)
                 res1(ra(i)*rx(i)+1:r1, :, ra(i+1)*rx(i+1)+1:r2) = cry{i};
             end;
             res1 = reshape(res1, r1*n(i), r2);
-            res1 = res1*Rs{i+1};
-            r2 = size(Rs{i+1}, 2);
-            res1 = reshape(res1, r1, n(i)*r2);
-            rr=qr(res1.', 0);
+            res2 = res1*Rs{i+1};
+            r3 = size(Rs{i+1}, 2);
+            res2 = reshape(res2, r1, n(i)*r3);
+            rr=qr(res2.', 0);
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
+        end;
+        if (strcmp(kicktype, 'realamr'))
+            res1 = reshape(res1, r1, n(i), r2);
+            res1 = permute(res1, [2, 1, 3]);
+            res1 = reshape(res1, n(i), r1*r2);
+            res2 = A1*res1;
+            res2 = reshape(res2, ra(i), n(i), ra(i+1), r1, r2);
+            res2 = permute(res2, [1, 4, 2, 3, 5]);
+            res2 = reshape(res2, ra(i)*r1*n(i), ra(i+1)*r2);
+            res2 = res2*RsQ{i+1};
+            r2 = size(RsQ{i+1}, 2);
+            res2 = reshape(res2, ra(i)*r1, n(i)*r2);
+            rr=qr(res2.', 0);
+            RsQ{i} = triu(rr(1:min(size(rr)), :)).';
         end;
     elseif ((dir>0)&&(i==d))||((dir<0)&&(i==1))
         % Just stuff back the last core
@@ -1231,67 +881,38 @@ while (swp<=nswp)
     if (cur_order(order_index)==0)
         order_index = order_index+1;
 
-%         max_res = norm(A*x-y)/norm(y);
-        
         if (verb>0)
-%              x = cell2core(x, crx);
-%              real_res = norm(A*x-y)/norm(y);
-%              somedata{6}((swp-1)*2+1.5-dir/2)=real_res;
-%             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, real_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, real_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-%             if (strcmp(kicktype, 'resid_tail'))
-%                 fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, tail_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res_tail, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-%             else
-                fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
-%             end;
+             x = cell2core(x, crx); % for test
+             real_res = norm(A*x-y)/norm(y);
+             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+             
+             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;
 
         if (last_sweep)
             break;
         end;
 
-        if (kickrank<0)
-            kickrank=kickrank-1;
-        end;
+        %   don't remember why 
+%         if (kickrank<0)
+%             kickrank=kickrank-1;
+%         end;
         
-            if (strcmp(trunc_norm, 'fro'))
-                if (max_dx<tol) % &&(kickrank>0)
-                    kickrank = 0;
-                    last_sweep=true;
-                end;
-%                 if (max_dx<tol)&&(kickrank<=-als_iters)
-%                     last_sweep=true;
-%                     kickrank = 0;
-%                 end;
-%                 if (max_dx<tol*als_tol_low)&&(kickrank>0)
-%                     kickrank=-1;
-%                 end;
-            else
-%                 if (strcmp(kicktype, 'resid_tail'))
-%                     if (max_res_tail<tol)
-%                          crx = crx_old;
-%                          break;
-%                     end;
-%                 else
-                    
-%                     if (max_res<tol)&&(kickrank<=-als_iters)
-%                         kickrank = 0;
-%                         last_sweep=true;
-%                     end;
-                    %                 if (max_res<tol*als_tol_low)&&(kickrank>0)
-                    if (max_res<tol) % &&(kickrank>0)
-                        %                     kickrank=-1;
-                        kickrank = 0;
-                        last_sweep=true;
-                    end;
-%                 end;
+        if (strcmp(trunc_norm, 'fro'))
+            if (max_dx<tol)
+                kickrank = 0;
+                last_sweep=true;
             end;
+        else
+            if (max_res<tol)
+                kickrank = 0;
+                % last_sweep=true; % comment out for tests
+            end;
+        end;
 
             max_res = 0;
             max_dx = 0;
             max_iter = 0;     
-%             if (strcmp(kicktype, 'resid_tail')); max_res_tail = 0; crx_old=crx; end;            
-%             dx_old = dx;
-
 
         if (order_index>numel(cur_order)) % New global sweep
             cur_order = block_order;

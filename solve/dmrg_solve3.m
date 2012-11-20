@@ -65,7 +65,11 @@ trunc_norm = 'residual';
 local_solver = 'gmres';
 % local_solver = 'pcg';
 
-ismex = false;
+ismex = true;
+
+% dirfilter = -1; % only backward
+% dirfilter = 1; % only forward
+dirfilter = 0; % both
 
 verb=1;
 kickrank = 2;
@@ -239,7 +243,7 @@ while (swp<=nswp)
         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
-        if (res_prev>real_tol)
+        if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             sol = B \ rhs;
             flg = 0;
             % If the system was ill-conditioned
@@ -258,7 +262,7 @@ while (swp<=nswp)
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
-        if (res_prev>real_tol)
+        if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             if (~ismex)
             if (strcmp(local_prec, 'jacobi')||strcmp(local_prec, 'seidel'))&&(~last_sweep)
                 % Prepare the Jacobi prec - on maximal rank
@@ -448,6 +452,7 @@ while (swp<=nswp)
     max_iter = max(max_iter, iter);
     
     % Truncation
+    if ((dir+dirfilter)~=0)    
     sol = reshape(sol, rx(i)*n(i), n(i+1)*rx(i+2));
     [u,s,v]=svd(sol, 'econ');
     s = diag(s);
@@ -485,12 +490,27 @@ while (swp<=nswp)
             r = r+1;
         end;
     end;
+    else
+        if (dir>0)
+            [u,v]=qr(reshape(crx{i}, rx(i)*n(i), rx(i+1)), 0);
+            v = v*reshape(crx{i+1}, rx(i+1), n(i+1)*rx(i+2));
+            v = v';
+            r = size(u,2);
+            s = ones(r,1);
+        else
+            [v,u]=qr(reshape(crx{i+1}, rx(i+1), n(i+1)*rx(i+2)).', 0);
+            v=conj(v);
+            u=reshape(crx{i}, rx(i)*n(i), rx(i+1))*u.';
+            r = size(u,2);
+            s = ones(r,1);
+        end;
+    end;
     
     % Artificial rank increasing
     r = r+dranks(i);
     r = min(r, numel(s));
     r = min(r, rmax);
-    
+           
     if (verb>1)
         fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), chkres, iter, r);
     end;
@@ -499,7 +519,7 @@ while (swp<=nswp)
         u = u(:,1:r);
         v = conj(v(:,1:r))*diag(s(1:r));
         % kick
-        if (~last_sweep)
+        if (~last_sweep)&&((dir+dirfilter)~=0)
             [u,rv]=qr([u, randn(rx(i)*n(i), kickrank)], 0);
             radd = kickrank;
             v = [v, zeros(n(i+1)*rx(i+2), radd)];
@@ -522,7 +542,7 @@ while (swp<=nswp)
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
         % kick
-        if (~last_sweep)
+        if (~last_sweep)&&((dir+dirfilter)~=0)
             [v,rv] = qr([v, randn(n(i+1)*rx(i+2), kickrank)], 0);
 %             v = reort(v, randn(n(i+1)*rx(i+2), kickrank));
             radd = kickrank;
@@ -555,9 +575,9 @@ while (swp<=nswp)
         order_index = order_index+1;
         
         if (verb>0)
-%              x = cell2core(tt_tensor, crx);
-%              real_res = norm(A*x-y)/norm(y);
-%              somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+             x = cell2core(tt_tensor, crx);
+             real_res = norm(A*x-y)/norm(y);
+             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
         end;        
         
@@ -572,7 +592,7 @@ while (swp<=nswp)
                 end;
             else
                 if (max_res<tol)
-                    last_sweep=true;
+%                     last_sweep=true; % comment out to test
                 end;
             end;
         

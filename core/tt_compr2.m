@@ -1,4 +1,4 @@
-function [tt] = tt_compr2(tt,eps, max_r)
+function [tt] = tt_compr2(tt,eps, max_r, svd_gram)
 %Tensor rounding in TT1.0 format
 %   [TT]=TT_COMPR2(TT,EPS) Reapproximates the given TT-tensor with 
 %   prescribed accuracy EPS. Please avoid its usage: it will be removed in
@@ -25,6 +25,10 @@ exists_max_r=1;
 if ((nargin<3)||(isempty(max_r)))
     exists_max_r=0;
 end;
+if ((nargin<4)||(isempty(svd_gram)))
+   svd_gram=false;
+end;
+
 
 if ( nrm_full < log(1e-200) ) %Something really small
   n=size(tt{1},1);
@@ -62,8 +66,7 @@ tt{1}=tt{1}*rv.';
 %of norms
 mat=tt{1};
 %return;
-mat(abs(mat)<1e-300)=0;
-[u0,s0,ru]=svd(mat,'econ'); 
+% mat(abs(mat)<1e-300)=0;
 %If no scaling factors were taken out,
 %then everything would be simple --- nrm=norm(diag(s0)) is the norm,
 %singular values are filtered at absolute accuracy eps*nrm/sqrt(d-1)
@@ -72,12 +75,20 @@ mat(abs(mat)<1e-300)=0;
 %eps*nrmf(1)/sqrt{d-1}
 %nrmf(1)=norm(diag(s0));  
 %nrm=norm(diag(s0));
+if (svd_gram)&&(size(mat,1)>size(mat,2))
+mat2 = mat'*mat;
+[u0,s0,ru]=svd(mat2, 'econ');
+s0 = sqrt(diag(s0));
+u0 = mat*ru;
+u0 = u0*diag(1./s0);
+else
+[u0,s0,ru]=svd(mat,'econ'); 
 s0=diag(s0);
+end;
 eps1=eps*norm(s0)/sqrt(d-1); %This is the absolute accuracy to filter with
 r0=my_chop2(s0,eps1);
 % r0=numel(find(s0>eps1));
 if (exists_max_r) r0 = min(r0, max_r); end;
-%keyboard;
 %r0=rank(mat,eps1);
 u0=u0(:,1:r0);
 s0=s0(1:r0); % -eps1*sign(s0);
@@ -93,19 +104,26 @@ for i=2:d-1
     r3=size(tt{i},3);
     core=reshape(tt{i},[ncur*r2,r3]);
     %r=rank(core,eps1);
-    %keyboard;  
-    core(abs(core)<1e-300)=0;
-    [u0,s0,ru]=svd(core,'econ');
+%    core(abs(core)<1e-300)=0;
+  if (svd_gram)&&(size(core,1)>size(core,2))
+  core2 = core'*core;
+  [u0,s0,ru]=svd(core2, 'econ');
+  s0 = sqrt(diag(s0));
+  u0 = core*ru;
+  u0=u0*diag(1./s0);
+  else
+   [u0,s0,ru]=svd(core,'econ');
+   s0 = diag(s0);
+  end;
     
-    nrm=norm(diag(s0));
+    nrm=norm(s0);
     eps1=eps*nrm/sqrt(d-1); %Nothing more
-    %keyboard;
-    r=my_chop2(diag(s0),eps1);
+    r=my_chop2(s0,eps1);
 %     r=numel(find(s0>eps1));
     if (exists_max_r) r = min(r, max_r); end;
     u0=u0(:,1:r);
-    s0=(s0(1:r,1:r))./nrm1;
-    ru=ru(:,1:r)*s0;
+    s0=s0(1:r)./nrm1;
+    ru=ru(:,1:r)*diag(s0);
     core=u0.*nrm1;
     tt{i}=reshape(core,[ncur,r2,r]);
 end
