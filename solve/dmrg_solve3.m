@@ -94,6 +94,8 @@ for i=1:2:length(varargin)-1
             local_iters=varargin{i+1};
         case 'local_solver'
             local_solver=varargin{i+1};            
+        case 'dirfilter'
+            dirfilter=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
         case  'max_full_size'
@@ -139,12 +141,14 @@ if (isempty(block_order))
     block_order = [+(d-1), -(d-1)];
 end;
 
-ry = (y.r); %.*(A.r);
-ra = (A.r); %.^2;
+ry = (y.r).*(A.r);
+ra = (A.r).^2;
 rx = x.r;
 
-crA = core2cell(A);
-cry = core2cell(y);
+% crA = core2cell(A);  
+% cry = core2cell(y); 
+crA = core2cell(A'*A);
+cry = core2cell(A'*y);
 crx = core2cell(x);
 
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
@@ -226,6 +230,7 @@ while (swp<=nswp)
         %      |     |    |     |
         % B = Phi1 - A1 - A2 - Phi2
         %      |     |    |     |
+        if ((dir+dirfilter)~=0)
         B = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
         B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
         B = reshape(B, rx(i), rx(i), n(i), n(i), ra(i+1));
@@ -239,8 +244,10 @@ while (swp<=nswp)
         B = reshape(B, rx(i)*n(i)*n(i+1), rx(i)*n(i)*n(i+1), rx(i+2), rx(i+2));
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*n(i+1)*rx(i+2), rx(i)*n(i)*n(i+1)*rx(i+2));
+        end;
         
-        res_prev = norm(B*sol_prev-rhs)/norm_rhs;
+%         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
+        res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
@@ -394,7 +401,7 @@ while (swp<=nswp)
                 Amex = reshape(Amex, ra(i), n(i), n(i), n(i+1), n(i+1), ra(i+2));
                 Amex = permute(Amex, [1, 2, 4, 3, 5, 6]);
                 Amex = reshape(Amex, ra(i), n(i)*n(i+1), n(i)*n(i+1), ra(i+2));
-                sol = solve3d_2(permute(Phi1,[1,3,2]), Amex, permute(Phi2, [3,2,1]), rhs, real_tol, 1, sol_prev, local_prec_char, local_restart, local_iters, 1);
+                sol = solve3d_2(permute(Phi1,[1,3,2]), Amex, permute(Phi2, [3,2,1]), rhs, real_tol, 1, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1,0));
                 flg = 0;
                 iter = 1;
             end;
@@ -412,7 +419,7 @@ while (swp<=nswp)
     if (flg>0)
         fprintf('-warn- local solver did not converge at block %d\n', i);
     end;
-    if (res_prev/res_new<resid_damp)&&(res_new>real_tol)
+    if (res_prev/res_new<resid_damp)&&(res_new>real_tol)&&((dir+dirfilter)~=0)
         fprintf('--warn-- the residual damp was smaller than in the truncation\n');
     end;
     

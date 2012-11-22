@@ -864,14 +864,14 @@ for swp=1:nswp
         end;
         erank = sqrt(erank/sumn);
         
-        A{1} = reshape(A{1}, size(A{1},1), size(A{1},2), size(A{1},4));
-        y{1} = reshape(y{1}, size(y{1},1), size(y{1},3));
-        x{1} = reshape(x{1}, size(x{1},1), size(x{1},3));
-        res_real = tt_dist3(tt_mv(A, x), y)/sqrt(tt_dot(y,y));
-        A{1} = reshape(A{1}, size(A{1},1), size(A{1},2), 1, size(A{1},3));
-        y{1} = reshape(y{1}, size(y{1},1), 1, size(y{1},2));
-        x{1} = reshape(x{1}, size(x{1},1), 1, size(x{1},2));        
-        somedata{4}(swp) = res_real;
+%        A{1} = reshape(A{1}, size(A{1},1), size(A{1},2), size(A{1},4));
+%        y{1} = reshape(y{1}, size(y{1},1), size(y{1},3));
+%        x{1} = reshape(x{1}, size(x{1},1), size(x{1},3));
+%        res_real = tt_dist3(tt_mv(A, x), y)/sqrt(tt_dot(y,y));
+%        A{1} = reshape(A{1}, size(A{1},1), size(A{1},2), 1, size(A{1},3));
+%        y{1} = reshape(y{1}, size(y{1},1), 1, size(y{1},2));
+%        x{1} = reshape(x{1}, size(x{1},1), 1, size(x{1},2));        
+%        somedata{4}(swp) = res_real;
         
 %         fprintf('===Sweep %d, res_%d: %3.3e, drop_next: %d, dx_max: %3.3e, res_max: %3.3e\n', swp, chksweeps,0, dropflag, dx_max, max_res);
         fprintf('=dmrg_solve2= Sweep %d, dx_max: %3.3e, res_max: %3.3e, erank: %g\n', swp, max(dx), max_res, erank);

@@ -170,16 +170,30 @@ if (strcmp(kicktype, 'tail'))
 end;
 
 if (kickrankQ>0)
-    RsA = cell(d+1,1);
-    RsA{1} = 1; RsA{d+1}=1;
-    for i=d:-1:2
-        A1 = reshape(crA{i}, ra(i)*n(i)*n(i), ra(i+1));
-        A1 = A1*RsA{i+1};
-        r2 = size(A1,2);
-        A1 = reshape(A1, ra(i), n(i)*n(i)*r2);
-        rr=qr(A1.', 0);
-        RsA{i} = triu(rr(1:min(size(rr)), :)).';
+    if (dirfilter>=0)
+        RsAb = cell(d+1,1);
+        RsAb{1} = 1; RsAb{d+1}=1;
+        for i=d:-1:2
+            A1 = reshape(crA{i}, ra(i)*n(i)*n(i), ra(i+1));
+            A1 = A1*RsAb{i+1};
+            r2 = size(A1,2);
+            A1 = reshape(A1, ra(i), n(i)*n(i)*r2);
+            rr=qr(A1.', 0);
+            RsAb{i} = triu(rr(1:min(size(rr)), :)).';
+        end;
     end;
+    if (dirfilter<=0)
+        RsAf = cell(d+1,1);
+        RsAf{1} = 1; RsAf{d+1}=1;
+        for i=1:d-1
+            A1 = reshape(crA{i}, ra(i), n(i)*n(i)*ra(i+1));
+            A1 = RsAf{i}*A1;
+            r2 = size(A1,1);
+            A1 = reshape(A1, r2*n(i)*n(i), ra(i+1));
+            rr=qr(A1, 0);
+            RsAf{i+1} = triu(rr(1:min(size(rr)), :));
+        end;
+    end;    
 end;
 
 
@@ -267,15 +281,17 @@ while (swp<=nswp)
         %      |     |    |
         % B = Phi1 - A1 - Phi2
         %      |     |    |
-        B = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
-        B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-        B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
-        B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
-        B = B*reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
-        B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
-        B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
+        if ((dir+dirfilter)~=0)
+            B = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
+            B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+            B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
+            B = permute(B, [1, 3, 2, 4]);
+            B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
+            B = B*reshape(permute(Phi2, [2, 1, 3]), ra(i+1), rx(i+1)*rx(i+1));
+            B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
+            B = permute(B, [1, 3, 2, 4]);
+            B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
+        end;
         
         
         % This was some checking for AMR stuff
@@ -346,7 +362,8 @@ while (swp<=nswp)
 %         end;
         
         if (norm_rhs~=0) % normal system
-            res_prev = norm(B*sol_prev-rhs)/norm_rhs;
+            res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
+%             res_prev = norm(B*sol_prev-rhs)/norm_rhs;
             
             somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
             
@@ -643,7 +660,7 @@ while (swp<=nswp)
             Q = reshape(Q, n(i), ra(i+1), rx(i), rho);
             Q = permute(Q, [3,1,4,2]);
             Q = reshape(Q, rx(i)*n(i)*rho, ra(i+1));
-            Q = Q*RsA{i+1};
+            Q = Q*RsAb{i+1};
             r2 = size(Q, 2);
             Q = reshape(Q, rx(i)*n(i), rho*r2);
             if (strcmp(pcatype, 'svd'))
@@ -806,7 +823,7 @@ while (swp<=nswp)
             Q = reshape(crA{i}, ra(i)*n(i), n(i)*ra(i+1))*Q;
             Q = reshape(Q, ra(i), n(i), rho, rx(i+1));
             Q = reshape(permute(Q, [2,4,3,1]), n(i)*rx(i+1)*rho, ra(i));
-            Q = Q*RsA{i}.';
+            Q = Q*RsAf{i}.';
             r2 = size(Q,2);
             Q = reshape(Q, n(i)*rx(i+1), rho*r2);
             if (strcmp(pcatype, 'svd'))
@@ -887,9 +904,11 @@ while (swp<=nswp)
         order_index = order_index+1;
 
         if (verb>0)
+            if ((dir+dirfilter)~=0)
              x = cell2core(x, crx); % for test
              real_res = norm(A*x-y)/norm(y);
              somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+            end;
              
              fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;
@@ -910,14 +929,16 @@ while (swp<=nswp)
             end;
         else
             if (max_res<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))
-                kickrank = 0;
-                last_sweep=true; % comment out for tests
+%                 kickrank = 0;
+%                 last_sweep=true; % comment out for tests
             end;
         end;
 
+        if (((dir+dirfilter)==0)||(dirfilter==0))
             max_res = 0;
             max_dx = 0;
-            max_iter = 0;     
+            max_iter = 0;
+        end;
 
         if (order_index>numel(cur_order)) % New global sweep
             cur_order = block_order;
