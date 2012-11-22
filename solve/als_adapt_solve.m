@@ -66,7 +66,6 @@ dirfilter = 1; % only forward
 kicktype = 'one';
 % kicktype = 'rand';
 % kicktype = 'tail';
-% kicktype = 'realamr';
 
 % pcatype = 'svd';
 pcatype = 'uchol';
@@ -75,9 +74,11 @@ tau = 1;
 
 verb=1;
 kickrank = 5;
+kickrankQ = 0;
 trunc_swp = 1;
 x=[];
 block_order = [];
+tol2 = [];
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -97,12 +98,18 @@ for i=1:2:length(varargin)-1
             local_iters=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'kickrankq'
+            kickrankQ=varargin{i+1};            
         case 'kicktype'
             kicktype=varargin{i+1};            
         case 'pcatype'
             pcatype=varargin{i+1};                        
+        case 'tol2'
+            tol2=varargin{i+1};
         case 'trunc_swp'
             trunc_swp=varargin{i+1};            
+        case 'dirfilter'
+            dirfilter=varargin{i+1};                        
         case  'max_full_size'
             max_full_size=varargin{i+1};
         case 'resid_damp'
@@ -124,7 +131,9 @@ if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
 if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
 % if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
 
-tol2 = tol;
+if (isempty(tol2))
+    tol2 = tol;
+end;
 
 if (A.n~=A.m)
     error(' DMRG does not know how to solve rectangular systems!\n Use dmrg_solve3(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
@@ -155,11 +164,22 @@ crx = core2cell(x);
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
-if (strcmp(kicktype, 'tail')||strcmp(kicktype, 'realamr')) 
+if (strcmp(kicktype, 'tail'))
     Rs = cell(d+1,1);
     Rs{1} = 1; Rs{d+1}=1;
-    RsQ = cell(d+1,1);
-    RsQ{1} = 1; RsQ{d+1}=1;    
+end;
+
+if (kickrankQ>0)
+    RsA = cell(d+1,1);
+    RsA{1} = 1; RsA{d+1}=1;
+    for i=d:-1:2
+        A1 = reshape(crA{i}, ra(i)*n(i)*n(i), ra(i+1));
+        A1 = A1*RsA{i+1};
+        r2 = size(A1,2);
+        A1 = reshape(A1, ra(i), n(i)*n(i)*r2);
+        rr=qr(A1.', 0);
+        RsA{i} = triu(rr(1:min(size(rr)), :)).';
+    end;
 end;
 
 
@@ -185,7 +205,7 @@ for i=d:-1:2
     phia{i} = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
     phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
     
-    if (strcmp(kicktype, 'tail')||strcmp(kicktype, 'realamr'))
+    if (strcmp(kicktype, 'tail'))&&(dirfilter>=0)
         A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
         x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
         Ax1 = A1*x1;
@@ -209,20 +229,6 @@ for i=d:-1:2
         res2 = reshape(res2, r1, n(i)*r3);
         rr=qr(res2.', 0);
         Rs{i} = triu(rr(1:min(size(rr)), :)).';
-    end;
-    if (strcmp(kicktype, 'realamr'))
-        res1 = reshape(res1, r1, n(i), r2);
-        res1 = permute(res1, [2, 1, 3]);
-        res1 = reshape(res1, n(i), r1*r2);
-        res2 = A1*res1;
-        res2 = reshape(res2, ra(i), n(i), ra(i+1), r1, r2);
-        res2 = permute(res2, [1, 4, 2, 3, 5]);
-        res2 = reshape(res2, ra(i)*r1*n(i), ra(i+1)*r2);
-        res2 = res2*RsQ{i+1};
-        r2 = size(RsQ{i+1}, 2);
-        res2 = reshape(res2, ra(i)*r1, n(i)*r2);
-        rr=qr(res2.', 0);
-        RsQ{i} = triu(rr(1:min(size(rr)), :)).';        
     end;
 
 end;
@@ -552,7 +558,6 @@ while (swp<=nswp)
 
         rho = kickrank;
         
-        u2 = [];
         if (rho>0)&&((dir+dirfilter)~=0)
         % Smarter kick: low-rank PCA in residual
         % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
@@ -623,48 +628,40 @@ while (swp<=nswp)
                 uk = uchol(leftresid.', rho+1);
                 uk = uk(:,end:-1:max(end-rho+1,1));
             end;        
-        elseif (strcmp(kicktype, 'realamr'))
-            leftresid = [leftresid, -lefty];
-            r2 = (ra(i+1)*rx(i+1)+ry(i+1));
-            leftQ = reshape(leftresid, rx(i), n(i)*r2);
-            leftQ = reshape(Phi1, rx(i)*ra(i), rx(i))*leftQ;
-            leftQ = reshape(leftQ, rx(i), ra(i), n(i), r2);
-            leftQ = permute(leftQ, [2,3,1,4]);
-            leftQ = reshape(leftQ, ra(i)*n(i), rx(i)*r2);
-            leftQ = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*leftQ;
-            leftQ = reshape(leftQ, n(i), ra(i+1), rx(i), r2);
-            leftQ = permute(leftQ, [3,1,2,4]);
-            leftQ = reshape(leftQ, rx(i)*n(i), ra(i+1)*r2);
-            
-            leftresid = leftresid*Rs{i+1};
-            leftQ = leftQ*RsQ{i+1};
-            if (strcmp(pcatype, 'svd'))
-                [uk,sk,vk]=svd(leftresid, 'econ');
-                uk = uk(:,1:min(rho, size(uk,2)));
-                [ukQ,skQ,vkQ]=svd(leftQ, 'econ');
-                ukQ = ukQ(:,1:min([rho, size(ukQ,2), size(uk,2)]));
-            else
-                uk = uchol(leftresid.', rho+1);
-                uk = uk(:,end:-1:max(end-rho+1,1));
-                ukQ = uchol(leftQ.', rho+1);
-                ukQ = ukQ(:,end:-1:max(end-rho+1,1));
-            end;
         else
             uk = randn(rx(i)*n(i), rho);
         end;
         
-        % kick itself
-            if (strcmp(kicktype, 'realamr'))
-                uk = [uk,ukQ];
-%                 [u2,rv2]=qr([u0,ukQ], 0);
-            end;        
-            [u,rv]=qr([u,uk], 0);
-%             if (size(u,2)~=size(u2,2))
-%                 keyboard;
-%             end;
-            radd = size(uk, 2);
-            v = [v, zeros(rx(i+1), radd)];
-            v = v*(rv.');
+        if (kickrankQ>0)
+            rho = size(uk,2);
+            Q = reshape(uk, rx(i), n(i)*rho);
+            Q = reshape(Phi1, rx(i)*ra(i), rx(i))*Q;
+            Q = reshape(Q, rx(i), ra(i), n(i), rho);
+            Q = permute(Q, [2,3,1,4]);
+            Q = reshape(Q, ra(i)*n(i), rx(i)*rho);
+            Q = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*Q;
+            Q = reshape(Q, n(i), ra(i+1), rx(i), rho);
+            Q = permute(Q, [3,1,4,2]);
+            Q = reshape(Q, rx(i)*n(i)*rho, ra(i+1));
+            Q = Q*RsA{i+1};
+            r2 = size(Q, 2);
+            Q = reshape(Q, rx(i)*n(i), rho*r2);
+            if (strcmp(pcatype, 'svd'))
+                [ukQ,sk,vk]=svd(Q, 'econ');
+                ukQ = ukQ(:,1:min([kickrankQ, rho, size(ukQ,2)]));
+            else
+                ukQ = uchol(Q.', kickrankQ+1);
+                ukQ = ukQ(:,end:-1:1);
+                ukQ = ukQ(:, 1:min([kickrankQ, rho, size(ukQ,2)]));
+            end;
+            uk = [uk,ukQ];
+        end;
+        
+        % kick itself      
+        [u,rv]=qr([u,uk], 0);
+        radd = size(uk, 2);
+        v = [v, zeros(rx(i+1), radd)];
+        v = v*(rv.');
         end;
         cr2 = crx{i+1};
         cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
@@ -694,7 +691,7 @@ while (swp<=nswp)
         crx{i} = u;
         crx{i+1} = v;
         
-        if (strcmp(kicktype, 'tail'))
+        if (strcmp(kicktype, 'tail'))&&(dirfilter<=0)
             % recompute the R-matrices of the full residual
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
             x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
@@ -800,6 +797,28 @@ while (swp<=nswp)
         else
             uk = randn(n(i)*rx(i+1), rho);
         end;
+        
+        if (kickrankQ>0)
+            rho = size(uk,2);
+            Q = reshape(phia{i+1}, rx(i+1)*ra(i+1), rx(i+1))*reshape(uk.', rho*n(i), rx(i+1)).';
+            Q = reshape(Q, rx(i+1), ra(i+1), rho, n(i));
+            Q = reshape(permute(Q, [4, 2, 3, 1]), n(i)*ra(i+1), rho*rx(i+1));
+            Q = reshape(crA{i}, ra(i)*n(i), n(i)*ra(i+1))*Q;
+            Q = reshape(Q, ra(i), n(i), rho, rx(i+1));
+            Q = reshape(permute(Q, [2,4,3,1]), n(i)*rx(i+1)*rho, ra(i));
+            Q = Q*RsA{i}.';
+            r2 = size(Q,2);
+            Q = reshape(Q, n(i)*rx(i+1), rho*r2);
+            if (strcmp(pcatype, 'svd'))
+                [ukQ,skQ,vkQ]=svd(Q, 'econ');
+                ukQ = ukQ(:,1:min(kickrankQ, rho));
+            else
+                ukQ = uchol(Q.', kickrankQ+1);
+                ukQ = ukQ(:,end:-1:1);
+                ukQ = ukQ(:, 1:min([kickrankQ, rho, size(ukQ,2)]));
+            end;
+            uk = [uk,ukQ];
+        end;
 
         % kick itself
             [v,rv]=qr([v,uk], 0);
@@ -825,7 +844,7 @@ while (swp<=nswp)
         crx{i-1} = u;
         crx{i} = v;
         
-        if (strcmp(kicktype, 'tail')||strcmp(kicktype, 'realamr'))
+        if (strcmp(kicktype, 'tail'))&&(dirfilter>=0)
             % recompute the QRs of the residual
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
             x1 = reshape(permute(crx{i}, [2,1,3]), n(i), rx(i)*rx(i+1));
@@ -850,20 +869,6 @@ while (swp<=nswp)
             res2 = reshape(res2, r1, n(i)*r3);
             rr=qr(res2.', 0);
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
-        end;
-        if (strcmp(kicktype, 'realamr'))
-            res1 = reshape(res1, r1, n(i), r2);
-            res1 = permute(res1, [2, 1, 3]);
-            res1 = reshape(res1, n(i), r1*r2);
-            res2 = A1*res1;
-            res2 = reshape(res2, ra(i), n(i), ra(i+1), r1, r2);
-            res2 = permute(res2, [1, 4, 2, 3, 5]);
-            res2 = reshape(res2, ra(i)*r1*n(i), ra(i+1)*r2);
-            res2 = res2*RsQ{i+1};
-            r2 = size(RsQ{i+1}, 2);
-            res2 = reshape(res2, ra(i)*r1, n(i)*r2);
-            rr=qr(res2.', 0);
-            RsQ{i} = triu(rr(1:min(size(rr)), :)).';
         end;
     elseif ((dir>0)&&(i==d))||((dir<0)&&(i==1))
         % Just stuff back the last core
@@ -904,9 +909,9 @@ while (swp<=nswp)
                 last_sweep=true;
             end;
         else
-            if (max_res<tol)
+            if (max_res<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))
                 kickrank = 0;
-                % last_sweep=true; % comment out for tests
+                last_sweep=true; % comment out for tests
             end;
         end;
 
