@@ -17,7 +17,8 @@ ifeq ($(CPU),mpg-intel)
 	CC = icc
 	CFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
 	COPTIMFLAGS = -O2
-	LIBS2 = /opt/local/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/libifcoremt_pic.a
+	LIBS2 = /opt/local/intel/composer_xe_2013.0.079/compiler/lib/intel64/libifcoremt_pic.a
+#	LIBS2 = /opt/local/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/libifcoremt_pic.a
 	LDR = $(FC) -static-intel
 endif
 ifeq ($(CPU), mac-gfort)
