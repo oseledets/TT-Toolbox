@@ -27,7 +27,8 @@ ifeq ($(CPU), mac-gfort)
 	CC = gcc
 	CFLAGS = -fPIC
 	COPTIMFLAGS = -O2
-	LDR = $(FC)
+	LDR = $(CC) -lgfortran
+   #LDFLAGS = -exported_symbols_list,/Applications/MATLAB_R2011b.app/extern/lib/maci64/mexFunction.map
 endif
 
 ifeq ($(CPU),dc-laptop-intel)

@@ -125,12 +125,12 @@
         sz = 1
         call mxCopyPtrToReal8(mxGetPr(prhs(10)), eps, sz)
         call mxCopyPtrToInteger8(mxGetPr(prhs(11)), rmax, sz)
-	call mxCopyPtrToInteger8(mxGetPr(prhs(12)), nswp, sz)
-	call mxCopyPtrToInteger8(mxGetPr(prhs(13)), kickrank, sz)
-	call mxCopyPtrToInteger8(mxGetPr(prhs(14)), verb, sz)
+     call mxCopyPtrToInteger8(mxGetPr(prhs(12)), nswp, sz)
+     call mxCopyPtrToInteger8(mxGetPr(prhs(13)), kickrank, sz)
+     call mxCopyPtrToInteger8(mxGetPr(prhs(14)), verb, sz)
 
 !        call copy_int(%VAL(mxGetPr(prhs(3))), r, d+1);
-!        print *, ry
+!        print *, n
 !        print *, rmax
 !        call copy_int(%VAL(mxGetPr(prhs(4))), ps, d+1);
 !        print *, ps
@@ -139,9 +139,8 @@
 !        call copy_real(%VAL(mxGetPr(prhs(5))), cr, ps(d+1)-1);
 !        print *, cr
 
-	call tt_mvk4(d,n,m,rx,ra,crA,crX,crY,ry,eps,rmax,nswp=nswp,kickrank=kickrank,verb=verb)
+     call tt_mvk4(d,n,m,rx,ra,crA,crX,crY,ry,eps,rmax,nswp=nswp,kickrank=kickrank,verb=verb)
 
-! 	print *, 'mvk4 done'
 
 ! 	call mexPrintf(matlab_ist_dumme_kuh//achar(10));
 !         call tt_mvk4(d=d,n=n,m=m,rx=rx,ra=ra,crA=crA, crX=crX, crY0=crY, ry=ry, eps=eps, rmax=rmax, nswp=nswp, kickrank=kickrank)
@@ -166,7 +165,8 @@
 !     Create matrix for the return argument.
       sz = d+1; sz2=1
       dumme_kuh=0
-      plhs(1) = mxCreateNumericMatrix(sz,sz2, mxClassIDFromClassName('int64'), dumme_kuh)
+      plhs(1) = mxCreateNumericMatrix(sz,sz2, &
+      mxClassIDFromClassName('int64'), dumme_kuh)
 
       sz = sum(ry(2:d+1)*ry(1:d)*n(1:d))
       plhs(2) = mxCreateDoubleMatrix(sz,sz2,dumme_kuh)

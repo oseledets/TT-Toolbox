@@ -94,7 +94,7 @@
 
 ! PARAMS: nswp, kickrank, nrestart, niters, prec, verb
 
-	call tt_amr_solve(d,n,m,ry,ra,crA, crY, crX, rx, eps, kickrank=params(2), nswp=params(1), verb=params(5), nrestart=params(3), niters=params(4), prec=prec)
+     call tt_amr_solve(d,n,m,ry,ra,crA, crY, crX, rx, eps, kickrank=params(2), nswp=params(1), verb=params(5), nrestart=params(3), niters=params(4), prec=prec)
 
 
 ! 	call mexPrintf(matlab_ist_dumme_kuh//achar(10));
