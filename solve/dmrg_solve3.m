@@ -65,11 +65,13 @@ trunc_norm = 'residual';
 local_solver = 'gmres';
 % local_solver = 'pcg';
 
-ismex = true;
+ismex = false;
 
 % dirfilter = -1; % only backward
 % dirfilter = 1; % only forward
 dirfilter = 0; % both
+
+symm = false;
 
 verb=1;
 kickrank = 2;
@@ -98,6 +100,8 @@ for i=1:2:length(varargin)-1
             dirfilter=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'symm'
+            symm=varargin{i+1};            
         case  'max_full_size'
             max_full_size=varargin{i+1};
         case 'step_dpow'
@@ -141,14 +145,19 @@ if (isempty(block_order))
     block_order = [+(d-1), -(d-1)];
 end;
 
-ry = (y.r).*(A.r);
-ra = (A.r).^2;
-rx = x.r;
+if (symm)
+    ry = (y.r).*(A.r);
+    ra = (A.r).^2;
+    crA = core2cell(A'*A);
+    cry = core2cell(A'*y);
+else
+    ry = y.r;
+    ra = A.r;
+    crA = core2cell(A);
+    cry = core2cell(y);
+end;
 
-% crA = core2cell(A);  
-% cry = core2cell(y); 
-crA = core2cell(A'*A);
-cry = core2cell(A'*y);
+rx = x.r;
 crx = core2cell(x);
 
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
@@ -582,9 +591,9 @@ while (swp<=nswp)
         order_index = order_index+1;
         
         if (verb>0)
-             x = cell2core(tt_tensor, crx);
-             real_res = norm(A*x-y)/norm(y);
-             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+            x = cell2core(tt_tensor, crx);
+            real_res = norm(A*x-y)/norm(y);
+            somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
         end;        
         
@@ -599,7 +608,11 @@ while (swp<=nswp)
                 end;
             else
                 if (max_res<tol)
-%                     last_sweep=true; % comment out to test
+%                    if (dirfilter==0)
+%                        last_sweep=true; % comment out to test
+%                    else
+%                        break;
+%                    end;
                 end;
             end;
         

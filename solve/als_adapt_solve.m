@@ -197,9 +197,9 @@ if (kickrankQ>0)
 end;
 
 
-somedata = cell(7,1); % cond, real_res, V*Z^l, res_prev, dot(Z,Z^l)
-for i=1:6; somedata{i}=zeros(d,nswp*2); end;
-somedata{7}=zeros(d,nswp*2);
+somedata = cell(2,1); % local_res, real_res, %%%  V*Z^l, res_prev, dot(Z,Z^l)
+for i=1:1; somedata{i}=zeros(d,nswp*2); end;
+% somedata{7}=zeros(d,nswp*2);
 somedata{2}=zeros(nswp*2,1);
 
 
@@ -365,7 +365,7 @@ while (swp<=nswp)
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
 %             res_prev = norm(B*sol_prev-rhs)/norm_rhs;
             
-            somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+            somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
             
             if (res_prev>real_tol)&&((dir+dirfilter)~=0) % test the one-side sweeps
                 sol = B \ rhs;
@@ -410,7 +410,7 @@ while (swp<=nswp)
         if (norm_rhs~=0) % normal system
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
             
-            somedata{4}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+            somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
             
             if (res_prev>real_tol)&&((dir+dirfilter)~=0) % test the one-side sweeps
                 if (~ismex)
@@ -929,8 +929,12 @@ while (swp<=nswp)
             end;
         else
             if (max_res<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))
-%                 kickrank = 0;
-%                 last_sweep=true; % comment out for tests
+% %                 kickrank = 0;
+%                if (dirfilter==0)
+%                    last_sweep=true; % comment out to test
+%                else
+%                    break;
+%                end;
             end;
         end;
 
