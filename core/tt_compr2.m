@@ -25,9 +25,9 @@ exists_max_r=1;
 if ((nargin<3)||(isempty(max_r)))
     exists_max_r=0;
 end;
-if ((nargin<4)||(isempty(svd_gram)))
+% if ((nargin<4)||(isempty(svd_gram)))
    svd_gram=false;
-end;
+% end;
 
 
 if ( nrm_full < log(1e-200) ) %Something really small
