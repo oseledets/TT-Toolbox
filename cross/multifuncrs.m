@@ -5,7 +5,7 @@ function [y]=multifuncrs(X, funs, eps, varargin)
 %   X should be a cell array of nx TT-tensors of equal sizes.
 %   The function FUNS should receive a 2d array V of sizes I x N, where the
 %   first dimension stays for the reduced set of spatial indices, and  the
-%   second is the enumerator of X. 
+%   second is the enumerator of X.
 %   The returned sizes should be I x D2, where D2 is the number of
 %   components in FUNS. D2 should be either provided as the last (d+1)-th
 %   TT-rank of the initial guess, or given explicitly as an option (see
