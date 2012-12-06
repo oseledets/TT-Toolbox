@@ -1,31 +1,45 @@
 function [x,somedata]=als_adapt_solve(A, y, tol, varargin)
 %Solution of linear systems in TT-format via DMRG iteration
-%   [X,SWEEPS]=ALS_ADAPT_SOLVE(A,Y,TOL,OPTIONS) Attempts to solve the linear
-%   system A*X = Y with accuracy/residual TOL using the two-sided ALS+KICK iteration.
+%   [X,somedata]=ALS_ADAPT_SOLVE(A,Y,TOL,OPTIONS) Attempts to solve the linear
+%   system A*X = Y with accuracy/residual TOL using the AMR iteration.
 %   Matrix A has to be given in the TT-format, right-hand side Y should be
 %   given in the TT-format also. Options are provided in form
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
 %   on. The parameters are set to default (in brackets in the following)
 %   The list of option names and default values are:
 %       o x0 - initial approximation [random rank-2 tensor]
-%       o P - preconditioner  [I]
-%       o nswp - maximal number of DMRG sweeps [10]
+%       o nswp - maximal number of sweeps [50]
 %       o rmax - maximal TT-rank of the solution [1000]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
-%       o max_full_size - maximal size of the local matrix to full solver
-%       [2500]
-%       o local_prec: Local preconditioner, 'als' - ALS-Richardson
-%       iteration, 'selfprec' (Saad selfpreconditioner) ['als']
-%       o prec_compr - compression for local precs [1e-3]
-%       o prec_tol - tolerance for local precs [1e-1]
-%       o prec_iters - number of local iterations [15]
-%       o use_self_prec - Use self_prec [ true | {false} ]
-%       o gmres_iters - number of local gmres restarts [2]
-%       o nrestart - dimension of local gmres [40]
+%       o max_full_size - maximal size of the local matrix to full solver [50]
+%       o local_prec - local preconditioner: '' (no prec.), 'ljacobi',
+%         'cjacobi', 'rjacobi' ['']
+%       o local_iters - number of local gmres restarts [2]
+%       o local_restart - dimension of local gmres [40]
+%       o kickrank - compression rank of the residual Z, i.e. expansion
+%         size [4]
+%       o kickrankq - compression rank of Q=AZ (a counterpart of second
+%         Krylov vector) [0]
+%       o kicktype - part of the residual to use in Z: 'one', 'two',
+%         'tail', or just 'rand' ['one']
+%       o pcatype - how to truncate Z and Q: 'svd' or 'uchol' ['uchol']
+%       o tol2 - tolerance for local truncation and solution. For
+%         kicktype='one' you may need to set it smaller than tol [tol]
+%       o trunc_swp - perform truncations only each trunc_swp sweeps [1]
+%       o ismex - shall we use the MEX lib solve3d_2 for local solution [true]
+%       o dirfilter - perform core update at forward sweep only (1),
+%         backward sweep only (-1), or both (0) [1]
+%       o resid_damp - solve local problems with accuracy tol/resid_damp.
+%         Larger value may reduce a spurious noise from inexact local
+%         solutions, but increase CPU time [2]
+%       o trunc_norm - truncate in either Frob. ('fro'), or residual norm
+%       ('residual') ['residual']
+%
 %       Example:
 %           d=8; f=8;
 %           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
 %           rhs=tt_ones(2,d*f); Right-hand side of all ones
+%           sol = als_adapt_solve(mat, rhs, 1e-5); % solve the Poisson eqn.
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -51,7 +65,7 @@ max_full_size=50;
 
 resid_damp = 2; % Truncation error to true residual treshold
 
-nswp=10;
+nswp=50;
 local_restart=40;
 local_iters=2;
 
@@ -78,11 +92,15 @@ kicktype = 'one';
 pcatype = 'uchol';
 
 verb=1;
-kickrank = 5;
+kickrank = 4;
 kickrankQ = 0;
 trunc_swp = 1;
 x=[];
-block_order = [];
+
+% % Don't try an arbitrary block order, its useless. Use dirfilter instead to
+% % select one of three working approaches!
+% block_order = [];
+
 tol2 = [];
 
 for i=1:2:length(varargin)-1
@@ -123,8 +141,8 @@ for i=1:2:length(varargin)-1
             resid_damp = varargin{i+1};
         case 'trunc_norm'
             trunc_norm = varargin{i+1};
-        case 'block_order'
-            block_order=varargin{i+1};
+%         case 'block_order'
+%             block_order=varargin{i+1};
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -147,12 +165,12 @@ end;
 d = y.d;
 n = A.n;
 if (isempty(x))
-    x = tt_rand(n, A.d, kickrank);
+    x = tt_rand(n, A.d, 2);
 end;
 
-if (isempty(block_order))
+% if (isempty(block_order))
     block_order = [+(d), -(d)];
-end;
+% end;
 
 if (norm(y)==0) % Solution is a ground state. Keep it normalized
     x = x/norm(x);
@@ -418,7 +436,7 @@ while (swp<=nswp)
     end;
 
     if (verb>1)
-        fprintf('=als_adapt_solve=   block %d{%d}, dx: %3.3e, res: %3.3e, r: %d, drank: %d\n', i, dir, dx, res_prev, r, drank);
+        fprintf('=amr_solve=   block %d{%d}, dx: %3.3e, res: %3.3e, r: %d, drank: %d\n', i, dir, dx, res_prev, r, drank);
     end;
 
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
@@ -763,7 +781,7 @@ while (swp<=nswp)
 %             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
 %            end;
              
-             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, erank: %g\n', swp, order_index-1, max_dx, max_res, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
+             fprintf('=amr_solve= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, erank: %g\n', swp, order_index-1, max_dx, max_res, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;
 
         if (last_sweep)
