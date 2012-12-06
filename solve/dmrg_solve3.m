@@ -591,9 +591,9 @@ while (swp<=nswp)
         order_index = order_index+1;
         
         if (verb>0)
-            x = cell2core(tt_tensor, crx);
-            real_res = norm(A*x-y)/norm(y);
-            somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+%           x = cell2core(tt_tensor, crx);
+%           real_res = norm(A*x-y)/norm(y);
+%           somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
         end;        
         
@@ -608,12 +608,12 @@ while (swp<=nswp)
                 end;
             else
                 if (max_res<tol)
-%                    if (dirfilter==0)
-%                        last_sweep=true; % comment out to test
-%                    else
-%                        break;
-%                    end;
-                end;
+                     if (dirfilter==0)
+                         last_sweep=true; % comment out to test
+                     else
+                         break;
+                     end;
+               end;
             end;
         
             max_res = 0;

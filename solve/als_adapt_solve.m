@@ -39,6 +39,13 @@ function [x,somedata]=als_adapt_solve(A, y, tol, varargin)
 %---------------------------
 
 
+if (~isempty(varargin))
+    v1 = varargin{1};
+    if (isa(v1, 'cell'))
+        varargin=v1;
+    end;
+end;
+
 % Inner parameters
 max_full_size=2500;
 
@@ -904,11 +911,11 @@ while (swp<=nswp)
         order_index = order_index+1;
 
         if (verb>0)
-            if ((dir+dirfilter)~=0)
-             x = cell2core(x, crx); % for test
-             real_res = norm(A*x-y)/norm(y);
-             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
-            end;
+%            if ((dir+dirfilter)~=0)
+%             x = cell2core(x, crx); % for test
+%             real_res = norm(A*x-y)/norm(y);
+%             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+%            end;
              
              fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;
@@ -930,12 +937,12 @@ while (swp<=nswp)
         else
             if (max_res<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))
 % %                 kickrank = 0;
-%                if (dirfilter==0)
-%                    last_sweep=true; % comment out to test
-%                else
-%                    break;
-%                end;
-            end;
+                if (dirfilter==0)
+                    last_sweep=true; % comment out to test
+                else
+                    break;
+                end;
+           end;
         end;
 
         if (((dir+dirfilter)==0)||(dirfilter==0))
