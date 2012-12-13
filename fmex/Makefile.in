@@ -2,11 +2,11 @@ include Makefile.cpu
 ifeq ($(CPU),default)
       FOPT    =  -ffree-line-length-none -O2 -fPIC -Itt-fort/
       FC   = gfortran
-      LDR   = gfortran
+      LDR   = gfortran -fPIC -static-libgfortran -static-libgcc
       CC    = gcc
       COPT = -O2 -fPIC
       LIB   = 
-      MATLAB = /opt/local/matlab/bin/matlab
+      MATLAB = matlab
       MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
       MLLIB2 = 
 endif
