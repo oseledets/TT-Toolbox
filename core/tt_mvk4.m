@@ -18,6 +18,10 @@ verb=1;
 kickrank = 10;
  kicktype = 'mr';
 % kicktype = 'rand';
+
+% pcatype = 'svd';
+pcatype = 'uchol';
+
 y=[];
 block_order = [];
 
@@ -29,6 +33,8 @@ for i=1:2:length(varargin)-1
             rmax=varargin{i+1};
         case 'kicktype'
             kicktype=lower(varargin{i+1});
+        case 'pcatype'
+            pcatype=lower(varargin{i+1});            
         case 'y0'
             y=varargin{i+1};
         case 'verb'
@@ -250,8 +256,13 @@ while (swp<=nswp)
 %             newy = reshape(newy, ry(i)*n(i), ra(i+1)*rx(i+1));
             if (strcmp(kicktype, 'mr'))
                 leftresid = [reshape(u*v', ry(i)*n(i), ry(i+1)), -newy_save];
-                uk = uchol(leftresid.', kickrank*2);
-                uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
+                if (strcmp(pcatype, 'svd'))
+                    [uk,sk,vk]=svd(leftresid, 'econ');
+                    uk = uk(:,1:min(kickrank, size(uk,2)));
+                else
+                    uk = uchol(leftresid.', kickrank*2);
+                    uk = uk(:,size(uk,2):-1:max(size(uk,2)-kickrank+1,1));
+                end;
 
 %                 if (i+1<d)
 %                     newy = reshape(phia{i+3}, ry(i+3)*ra(i+3), rx(i+3));

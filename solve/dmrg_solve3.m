@@ -119,7 +119,9 @@ for i=1:2:length(varargin)-1
         case 'top_conv'
             top_conv=varargin{i+1};
         case 'block_order'
-            block_order=varargin{i+1};            
+            block_order=varargin{i+1};    
+        case 'ismex'
+            ismex=varargin{i+1};            
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
