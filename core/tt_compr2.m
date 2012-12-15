@@ -25,9 +25,9 @@ exists_max_r=1;
 if ((nargin<3)||(isempty(max_r)))
     exists_max_r=0;
 end;
-% if ((nargin<4)||(isempty(svd_gram)))
+if ((nargin<4)||(isempty(svd_gram)))
    svd_gram=false;
-% end;
+end;
 
 
 if ( nrm_full < log(1e-200) ) %Something really small
@@ -78,9 +78,10 @@ mat=tt{1};
 if (svd_gram)&&(size(mat,1)>size(mat,2))
 mat2 = mat'*mat;
 [u0,s0,ru]=svd(mat2, 'econ');
-s0 = sqrt(diag(s0));
+% s0 = sqrt(diag(s0));
 u0 = mat*ru;
-u0 = u0*diag(1./s0);
+s0 = sqrt(sum(u0.^2, 1));
+u0 = u0.*(ones(size(u0,1),1)*(1./s0));
 else
 [u0,s0,ru]=svd(mat,'econ'); 
 s0=diag(s0);
@@ -108,9 +109,9 @@ for i=2:d-1
   if (svd_gram)&&(size(core,1)>size(core,2))
   core2 = core'*core;
   [u0,s0,ru]=svd(core2, 'econ');
-  s0 = sqrt(diag(s0));
   u0 = core*ru;
-  u0=u0*diag(1./s0);
+  s0 = sqrt(sum(u0.^2, 1));
+  u0 = u0.*(ones(size(u0,1),1)*(1./s0));
   else
    [u0,s0,ru]=svd(core,'econ');
    s0 = diag(s0);
