@@ -2,7 +2,7 @@
 
 d0t = 13; % quantics dims for t
 d0x = 8; % quantics dims for x
-dpx = 4; % phys. dims for x
+dpx = 2; % phys. dims for x
 
 a = 0;
 b = 1;
