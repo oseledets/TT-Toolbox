@@ -23,9 +23,13 @@ function [y]=dmrg_cross(d,n,fun,eps,varargin)
 %       d=10; n=2; fun = @(ind) sum(ind);
 %       tt=dmrg_cross(d,n,fun,1e-7);
 %
+%  Vectorized version contributed by Prof. Le Song (http://www.cc.gatech.edu/~lsong/) 
 %
-% TT-Toolbox 2.2, 2009-2012
 %
+%
+% TT-Toolbox 2.2, 2009-2013
+%
+% 
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
@@ -35,16 +39,13 @@ function [y]=dmrg_cross(d,n,fun,eps,varargin)
 %---------------------------
 %Default parameters
 rmin=1;
-verb=1;
+verb=true;
 radd=0;
 kickrank=2;
 nswp=10;
 y=[];
 vectorized=false;
-
-trunctype = 'fro';
-% trunctype = 'cross'; % Kostyl, but works sometimes
-
+maxr = 20; 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -61,8 +62,8 @@ for i=1:2:length(varargin)-1
             vectorized=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
-        case 'trunctype'
-            trunctype=varargin{i+1};            
+      case 'maxr'
+        maxr = varargin{i+1}; 
 
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -80,14 +81,12 @@ end
 if ( ~vectorized ) 
     elem=@(ind) my_vec_fun(ind,fun);
 else
-    elem = @(ind)fun(ind);
+    elem = fun; 
 end
 y=round(y,0); %To avoid overranks
 ry=y.r;
 [y,rm]=qr(y,'rl');
 y=rm*y;
-ytt=y;
-y=core2cell(y);
 %Warmup procedure: orthogonalization from right to left of the initial
 %approximation & computation of the index sets & computation of the
 %right-to-left R matrix
@@ -149,19 +148,29 @@ while ( swp < nswp && not_converged )
     cr1=y{i}; cr2=y{i+1};
     ind1=index_array{i};
     ind2=index_array{i+2};
-    big_index=zeros(ry(i),n(i),n(i+1),ry(i+2),d);
-    for i1=1:n(i)
-        for i2=1:n(i+1)
-            for s1=1:ry(i)
-                for s2=1:ry(i+2)
-                    ind=[ind1(s1,:),i1,i2,ind2(:,s2)'];
-                    big_index(s1,i1,i2,s2,:)=ind;
-                end
-            end
-        end
-    end
-    big_index=reshape(big_index,[numel(big_index)/d,d]);
-    score=elem(big_index); 
+    
+%     big_index=zeros(ry(i),n(i),n(i+1),ry(i+2),d);
+%     for i1=1:n(i)
+%         for i2=1:n(i+1)
+%             for s1=1:ry(i)
+%                 for s2=1:ry(i+2)
+%                     ind=[ind1(s1,:),i1,i2,ind2(:,s2)'];
+%                     big_index(s1,i1,i2,s2,:)=ind;
+%                 end
+%             end
+%         end
+%     end
+%     big_index=reshape(big_index,[numel(big_index)/d,d]);
+    
+    big_index = [ ...
+      ind1(repmat((1:ry(i))', n(i)*n(i+1)*ry(i+2), 1),:), ...
+      kron(repmat((1:n(i))', n(i+1)*ry(i+2), 1), ones(ry(i),1)), ...
+      kron(repmat((1:n(i+1))', ry(i+2), 1), ones(ry(i)*n(i),1)), ...          
+      ind2(:, kron((1:ry(i+2))', ones(ry(i)*n(i)*n(i+1),1)))' ...      
+      ]; 
+    
+    score=elem(big_index');     
+    
     %Now plug in the rmax matrices
     score=reshape(score,[ry(i),n(i)*n(i+1)*ry(i+2)]);
     score=rmat{i}*score;
@@ -173,26 +182,17 @@ while ( swp < nswp && not_converged )
     %Do the SVD splitting (later on we can replace it by cross for large
     %mode sizes)
     score=reshape(score,[ry(i)*n(i),n(i+1)*ry(i+2)]);
-    [u,s,v]=svd(score,'econ');
-    s=diag(s);
-    if (strcmp(trunctype, 'fro'))
-        r = my_chop2(s, eps/sqrt(d)*norm(s));
-    else
-        % Truncate taking into account the (r+1) overhead in the cross
-        cums = (s.*(2:numel(s)+1)').^2;
-        cums = cumsum(cums(end:-1:1));
-        cums = cums(end:-1:1)./cums(1);
-        r = find(cums<(eps^2/d), 1);
-        if (isempty(r))
-            r = numel(s);
-        end;
-    end;
-%     r=my_chop2(s,norm(s)*eps/sqrt(d-1)); %Truncation
-    u=u(:,1:r); v=v(:,1:r); s=s(1:r); 
-    %Kick rank
-    
+        
+%     [u,s,v]=svd(score,'econ');
+    [u,s,v]=svds(score, maxr);
+    s=diag(s); 
+    r=my_chop2(s,norm(s)*eps/sqrt(d-1)); %Truncation
+    u=u(:,1:r); v=v(:,1:r); s=diag(s(1:r));
+        
+    %Kick rank    
     if ( dir == 1 ) 
-        v=v*diag(s);
+%         v=v*diag(s);
+        v = v * s'; 
         
         ur=randn(size(u,1),kickrank);
         u=reort(u,ur);
@@ -203,7 +203,9 @@ while ( swp < nswp && not_converged )
         end
         r=r+radd;
     else
-         u=u*diag(s);
+%          u=u*diag(s);
+         u = u * s; 
+
          vr=randn(size(v,1),kickrank);
          v=reort(v,vr);
          radd=size(v,2)-r;
@@ -215,6 +217,8 @@ while ( swp < nswp && not_converged )
     end
     
     v=v';
+    
+%     size(v)
 
     %Compute the previous approximation
     appr=reshape(cr1,[numel(cr1)/ry(i+1),ry(i+1)])*reshape(cr2,[ry(i+1),numel(cr2)/ry(i+1)]);
@@ -224,7 +228,7 @@ while ( swp < nswp && not_converged )
     appr=appr*rmat{i+2}; 
     er_loc=norm(score(:)-appr(:))/norm(score(:));
     er_max=max(er_max,er_loc);
-    if ( verb>1 ) 
+    if ( verb ) 
         fprintf('swp=%d block=%d new_rank=%d local_er=%3.1e\n',swp,i,r,er_loc);
     end
     ry(i+1)=r;
@@ -259,9 +263,6 @@ while ( swp < nswp && not_converged )
         index_array{i+1}=ind_new; 
         if ( i == d - 1 ) 
             dir = -dir;
-            if (verb>0)
-                fprintf('=dmrg_cross= swp=%d(1) mrank=%d max_er=%3.3e\n',swp,max(ry),er_max);
-            end;
         else
             i=i+1;
         end
@@ -292,9 +293,6 @@ while ( swp < nswp && not_converged )
         index_array{i+1}=ind_new;
         if ( i == 1 ) 
             dir=-dir;
-            if (verb>0)
-                fprintf('=dmrg_cross= swp=%d(2) mrank=%d max_er=%3.3e\n',swp,max(ry),er_max);
-            end;            
             swp = swp + 1;
             if ( er_max < eps ) 
                 not_converged=false;
@@ -306,7 +304,6 @@ while ( swp < nswp && not_converged )
         end
     end
 end
-y=cell2core(ytt,y);
 return
 end
 function val=my_vec_fun(ind,fun)
@@ -317,7 +314,8 @@ function val=my_vec_fun(ind,fun)
 M=size(ind,1);
 val=zeros(M,1);
 for i=1:M
-   ind_loc=ind(i,:); ind_loc=ind_loc(:);
+%    ind_loc=ind(i,:); ind_loc=ind_loc(:);
+   ind_loc = ind(:,i); 
    val(i)=fun(ind_loc);
 end
 return
