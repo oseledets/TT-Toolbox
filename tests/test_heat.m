@@ -1,6 +1,6 @@
 % Set d0t=0 for simple time-stepping solution
 
-d0t = 13; % quantics dims for t
+d0t = 12; % quantics dims for t
 d0x = 8; % quantics dims for x
 dpx = 2; % phys. dims for x
 

@@ -1,13 +1,13 @@
-L = 10;
+L = 7;
 
-Trange = [0:0.1e-6:0.001];
+Trange = [0:5e-3:0.1];
 d0ts = 12*ones(1,numel(Trange)-1);
 
 tol = 1e-5;
 eps = 1e-12;
 
 % initial distribution
-l0 = [900,300,0]; % H2, N2, HH3
+l0 = [90,30,0]; % H2, N2, HH3
 l=l0;
 
 % One shift z=-1 (for N2)
@@ -66,7 +66,9 @@ for t=1:Nt
     rhs = kron(rhs, e1t);
     U = kron(u, et);
     
-    U = als_adapt_solve(M, rhs, tol, 'x0', U, 'max_full_size', 1, 'dirfilter', 1, 'local_prec', 'ljacobi', 'kicktype', 'one', 'kickrank', 3, 'nswp', 10, 'resid_damp', 10);
+    U = als_adapt_solve(M, rhs, tol, 'x0', U, 'max_full_size', 1, 'dirfilter', 1, ...
+        'local_prec', 'ljacobi', 'kicktype', 'one', 'kickrank', 3, ...
+        'nswp', 10, 'resid_damp', 10, 'tol2', tol/2);
     
     % Extract the final solution
     ind = num2cell([1;2]*ones(1,3*L+d0t), 1);
@@ -83,6 +85,7 @@ for t=1:Nt
     meanconc(t,2) = dot(u, mkron(o,x,o));
     meanconc(t,3) = dot(u, mkron(o,o,x));
     
+    figure(1);
     plot(meanconc(1:t,:));
     legend('[H_2]', '[N_2]', '[NH_3]');
     drawnow;
@@ -105,7 +108,7 @@ for z=1:2^L
         sp(z, 3)=z-1;
         sp(z, 4)=log2(v);
     else
-        sp(z,:)=NaN;
+        sp(z,:)=-Inf;
     end;
 end;
 z = z-1;
@@ -116,5 +119,8 @@ scatter3(sp(1:z,1), sp(1:z,2), sp(1:z,3), 100, sp(1:z,4), 'filled');
 colorbar;
 
 outcome = meanconc(end, 3)/l0(2)*50
+
+figure(3);
+plot(2.^(sp(:,4)))
 
 % [V,L]=amr_eig_full(A, u0, tol, 5, 8);
