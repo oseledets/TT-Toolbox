@@ -27,8 +27,8 @@ end
 
 switch typ
  case {'fro','F'} % Frobenius norm
-  nrm=sqrt(abs(dot(t.tt,t.tt, true)));
-  
+  %nrm=sqrt(abs(dot(t.tt,t.tt, true)));
+  nrm = norm(t.tt); %More robust
  case {'2', 2} % 2-norm written by Thomas Mach
   maxit = 20; % 20 iterations
   tol = 0.01; % relative norm change
@@ -84,10 +84,10 @@ switch typ
   for i=1:maxit
     for j=1:s
       if (diag)
-	Mx{j}=round(t*x{j},eps1,rmax);
+	Mx{j} = round(t*x{j},eps1,rmax);
       end
-      x{j}=round(t*x{j},eps1,rmax);
-      x{j}=round(t'*x{j},eps1,rmax);
+      x{j} = round(t*x{j},eps1,rmax);
+      x{j} = round(t'*x{j},eps1,rmax);
     end
 
 % % diagonalizing
@@ -113,7 +113,7 @@ switch typ
     end
     
 % orthonormalize
-    n1=norm(x{1});
+    n1 = norm(x{1});
     x{1} = round(x{1}/n1,eps1,rmax);
     for j=2:s
       for k=1:j-1
@@ -124,16 +124,17 @@ switch typ
     end
     if (abs(n2-n1)/abs(n1)<tol) break; % termination by tolerance
     end 
-    n2=n1;
+    n2 = n1;
   end % Iteration
   
   for j=1:s
-    Mx{j}=round(t*x{j},eps1,rmax);
-    Mx{j}=round(t'*Mx{j},eps1,rmax);
+    Mx{j}=round(t * x{j},eps1,rmax);
+    Mx{j}=round(t' * Mx{j},eps1,rmax);
     for k=1:s
-      MU(j,k)=dot(x{k},Mx{j});
+      MU(j,k) = dot(x{k},Mx{j});
     end
   end
-  nrm=sqrt(max(eig(MU))); % approx. from below to the largest singular value
+  nrm = abs(sqrt(max(eig(MU)))); % approx. from below to the largest singular value
+  %The norm should be real 
   return
 end
