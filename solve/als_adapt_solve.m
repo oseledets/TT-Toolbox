@@ -227,7 +227,7 @@ end;
 somedata = cell(2,1); % local_res, real_res, %%%  V*Z^l, res_prev, dot(Z,Z^l)
 for i=1:1; somedata{i}=zeros(d,nswp*2); end;
 % somedata{7}=zeros(d,nswp*2);
-somedata{2}=zeros(nswp*2,1);
+somedata{2}=cell(nswp,1);
 
 
 % Orthogonalization
@@ -772,15 +772,18 @@ while (swp<=nswp)
     % New direction
     if (cur_order(order_index)==0)
         order_index = order_index+1;
+        
+        if (verb>=3)
+%             this is for tests
+            if ((dir+dirfilter)~=0)
+                x = cell2core(x, crx); % for test
+                somedata{2}{swp} = x;
+%                 real_res = norm(A*x-y)/norm(y);
+%                 somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+            end;
+        end;
 
-        if (verb>0)
-            % this is for tests
-%            if ((dir+dirfilter)~=0)
-%             x = cell2core(x, crx); % for test
-%             real_res = norm(A*x-y)/norm(y);
-%             somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
-%            end;
-             
+        if (verb>0)            
              fprintf('=amr_solve= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, erank: %g\n', swp, order_index-1, max_dx, max_res, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
         end;
 
@@ -789,7 +792,7 @@ while (swp<=nswp)
         end;
 
         if (strcmp(trunc_norm, 'fro'))
-            if (max_dx<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))
+            if (max_dx<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))&&(verb<3)
                 if (dirfilter==0)
                     last_sweep=true; % comment out to test
                 else
@@ -797,7 +800,7 @@ while (swp<=nswp)
                 end;
             end;
         else
-            if (max_res<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))
+            if (max_res<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))&&(verb<3)
                 if (dirfilter==0)
                     last_sweep=true; % comment out to test
                 else
