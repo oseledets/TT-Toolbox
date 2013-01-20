@@ -225,10 +225,12 @@ end;
 
 % This is some convergence output for test purposes
 somedata = cell(2,1); % local_res, real_res, %%%  V*Z^l, res_prev, dot(Z,Z^l)
-for i=1:1; somedata{i}=zeros(d,nswp*2); end;
+% for i=1:1; somedata{i}=zeros(d,nswp*2); end;
 % somedata{7}=zeros(d,nswp*2);
-somedata{2}=cell(nswp,1);
+somedata{1} = zeros(d, nswp);
+somedata{2}=cell(nswp, d);
 
+t_amr_solve = tic;
 
 % Orthogonalization
 for i=d:-1:2
@@ -343,7 +345,7 @@ while (swp<=nswp)
             if (~ismex)
                 sol = solve3d_2ml(Phi1, A1, Phi2, rhs, real_tol, sol_prev, local_prec_char, local_restart, local_iters);
             else % use MEX
-                sol = solve3d_2(Phi1, A1, Phi2, rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1,0));
+                sol = solve3d_2(Phi1, A1, Phi2, rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 0);
             end;
             
             res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
@@ -436,7 +438,7 @@ while (swp<=nswp)
     end;
 
     if (verb>1)
-        fprintf('=amr_solve=   block %d{%d}, dx: %3.3e, res: %3.3e, r: %d, drank: %d\n', i, dir, dx, res_prev, r, drank);
+        fprintf('=amr_solve=   block %d{%d}, dx: %3.3e, res: %3.3e, r: %d\n', i, dir, dx, res_prev, r);
     end;
 
     if (dir>0)&&(i<d) % left-to-right, kickrank, etc
@@ -764,24 +766,29 @@ while (swp<=nswp)
         crx{i} = sol;
     end;
 
+    if (verb>2)&&((dir+dirfilter)~=0)
+        somedata{1}(i,swp) = toc(t_amr_solve);
+        x = cell2core(x, crx); % for test
+        somedata{2}{swp, i} = x;
+    end;
 
     i = i+dir;
-
+    
     % Reversing, residue check, etc
     cur_order(order_index) = cur_order(order_index) - dir;
     % New direction
     if (cur_order(order_index)==0)
         order_index = order_index+1;
         
-        if (verb>=3)
-%             this is for tests
-            if ((dir+dirfilter)~=0)
-                x = cell2core(x, crx); % for test
-                somedata{2}{swp} = x;
-%                 real_res = norm(A*x-y)/norm(y);
-%                 somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
-            end;
-        end;
+%         if (verb>=3)
+% %             this is for tests
+%             if ((dir+dirfilter)~=0)
+%                 x = cell2core(x, crx); % for test
+%                 somedata{2}{swp} = x;
+% %                 real_res = norm(A*x-y)/norm(y);
+% %                 somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
+%             end;
+%         end;
 
         if (verb>0)            
              fprintf('=amr_solve= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, erank: %g\n', swp, order_index-1, max_dx, max_res, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));

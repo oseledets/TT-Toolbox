@@ -171,8 +171,9 @@ phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
 somedata = cell(2,1);
 somedata{1}=zeros(d,nswp*2);
-somedata{2}=zeros(nswp*2, 1);
+somedata{2}=cell(nswp*2, d);
 
+t_dmrg_solve = tic;
 
 % Orthogonalization
 for i=d:-1:2
@@ -259,7 +260,7 @@ while (swp<=nswp)
         
 %         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
-	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+% 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             sol = B \ rhs;
@@ -278,7 +279,7 @@ while (swp<=nswp)
     else % Structured solution.
         
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
-	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+% 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             if (~ismex)
@@ -530,7 +531,7 @@ while (swp<=nswp)
     r = min(r, rmax);
            
     if (verb>1)
-        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, res: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), chkres, iter, r);
+        fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), iter, r);
     end;
     
     if (dir>0) % left-to-right
@@ -584,6 +585,12 @@ while (swp<=nswp)
     crx{i} = u;
     crx{i+1} = v;
     
+    if (verb>2)
+        somedata{1}(i,(swp-1)*2+1.5-dir/2) = toc(t_dmrg_solve);
+        x = cell2core(tt_tensor, crx);
+        somedata{2}{(swp-1)*2+1.5-dir/2, i}=x;
+    end;
+    
     i = i+dir;
     
     % Reversing, residue check, etc
@@ -591,11 +598,8 @@ while (swp<=nswp)
     % New direction
     if (cur_order(order_index)==0)
         order_index = order_index+1;
-        
+               
         if (verb>0)
-%           x = cell2core(tt_tensor, crx);
-%           real_res = norm(A*x-y)/norm(y);
-%           somedata{2}((swp-1)*2+1.5-dir/2)=real_res;
             fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
         end;        
         
@@ -605,11 +609,11 @@ while (swp<=nswp)
 
             %residue
             if (strcmp(trunc_norm, 'fro'))
-                if (max_dx<tol)
+                if (max_dx<tol)&&(verb<3)
                     last_sweep=true;
                 end;
             else
-                if (max_res<tol)
+                if (max_res<tol)&&(verb<3)
                      if (dirfilter==0)
                          last_sweep=true; % comment out to test
                      else
