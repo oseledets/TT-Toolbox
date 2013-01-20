@@ -87,6 +87,7 @@ dirfilter = 1; % only forward
 kicktype = 'one';
 % kicktype = 'rand';
 % kicktype = 'tail';
+% kicktype = 'randtail';
 
 % pcatype = 'svd';
 pcatype = 'uchol';
@@ -187,6 +188,19 @@ crx = core2cell(x);
 % Interfaces
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
+% Try to compute the low-rank appr. to residual on-the-fly
+if (strcmp(kicktype, 'randtail'))
+    phiza = cell(d+1,1); phiza{1}=1; phiza{d+1}=1;
+    phizy = cell(d+1,1); phizy{1}=1; phizy{d+1}=1;
+    crz = round(y-A*x, tol, kickrank);
+    rz = crz.r;
+    if (max(rz)<kickrank)
+        crz = crz + tt_rand(n, d, kickrank-max(rz));
+        rz = crz.r;
+    end;
+    crz = core2cell(crz);
+end;
+
 
 % QR data of the residual tail
 if (strcmp(kicktype, 'tail'))
@@ -274,6 +288,22 @@ for i=d:-1:2
         rr=qr(res2.', 0);
         Rs{i} = triu(rr(1:min(size(rr)), :)).';
     end;
+    
+    if strcmp(kicktype, 'randtail')
+        cr = crz{i};
+        cr = reshape(cr, rz(i), n(i)*rz(i+1));
+        [cr, rv]=qr(cr.', 0);
+        cr2 = crz{i-1};
+        cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
+        cr2 = cr2*(rv.');
+        rz(i) = size(cr, 2);
+        cr = reshape(cr.', rz(i), n(i), rz(i+1));
+        crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
+        crz{i} = cr;
+        
+        phiza{i} = compute_next_Phi(phiza{i+1}, cr, crA{i}, crx{i}, 'rl');
+        phizy{i} = compute_next_Phi(phizy{i+1}, cr, [], cry{i}, 'rl');
+    end;
 
 end;
 
@@ -325,7 +355,7 @@ while (swp<=nswp)
         
         res_prev = norm(B*sol_prev - rhs)/norm_rhs;
         
-        somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+%         somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
         if (res_prev>real_tol)&&((dir+dirfilter)~=0) % test the one-side sweeps
             sol = B \ rhs;
@@ -339,7 +369,7 @@ while (swp<=nswp)
         
         res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
         
-        somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+%         somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
         if (res_prev>real_tol)&&((dir+dirfilter)~=0) % test the one-side sweeps
             if (~ismex)
@@ -447,28 +477,44 @@ while (swp<=nswp)
 
         rho = kickrank;
         
+        if (strcmp(kicktype, 'randtail'))
+            % Update crz (we don't want just random-svd)
+            if (rho>0)&&((dir+dirfilter)~=0)
+                crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
+                crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
+                crzy = phizy{i}*y1;
+                crzy = reshape(crzy, rz(i)*n(i), ry(i+1));
+                crzy = crzy*phizy{i+1};
+                crznew = crzy - crzAt;
+            else
+                crznew = reshape(crz{i}, rz(i)*n(i), rz(i+1));
+            end;
+        end;
+        
         if (rho>0)&&((dir+dirfilter)~=0)
             % Smarter kick: low-rank PCA in residual
             % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
-            leftresid = reshape(Phi1, rx(i)*rx(i), ra(i));
-            leftresid = leftresid.';
-            leftresid = reshape(leftresid, ra(i)*rx(i), rx(i));
-            leftresid = leftresid*reshape(u*v.', rx(i), n(i)*rx(i+1));
-            %         if (issparse(leftresid))
-            %             leftresid = full(leftresid);
-            %         end;
-            leftresid = reshape(leftresid, ra(i), rx(i), n(i), rx(i+1));
-            leftresid = permute(leftresid, [1, 3, 2, 4]);
-            leftresid = reshape(leftresid, ra(i)*n(i), rx(i)*rx(i+1));
-            leftresid = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*leftresid;
-            %         if (issparse(leftresid))
-            %             leftresid = full(leftresid);
-            %         end;
-            leftresid = reshape(leftresid, n(i), ra(i+1), rx(i), rx(i+1));
-            leftresid = permute(leftresid, [3,1,2,4]);
-            leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
-            lefty = phiy{i}*y1;
-            lefty = reshape(lefty, rx(i)*n(i), ry(i+1));
+            if (~strcmp(kicktype, 'randtail'))
+                leftresid = reshape(Phi1, rx(i)*rx(i), ra(i));
+                leftresid = leftresid.';
+                leftresid = reshape(leftresid, ra(i)*rx(i), rx(i));
+                leftresid = leftresid*reshape(u*v.', rx(i), n(i)*rx(i+1));
+                %         if (issparse(leftresid))
+                %             leftresid = full(leftresid);
+                %         end;
+                leftresid = reshape(leftresid, ra(i), rx(i), n(i), rx(i+1));
+                leftresid = permute(leftresid, [1, 3, 2, 4]);
+                leftresid = reshape(leftresid, ra(i)*n(i), rx(i)*rx(i+1));
+                leftresid = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*leftresid;
+                %         if (issparse(leftresid))
+                %             leftresid = full(leftresid);
+                %         end;
+                leftresid = reshape(leftresid, n(i), ra(i+1), rx(i), rx(i+1));
+                leftresid = permute(leftresid, [3,1,2,4]);
+                leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
+                lefty = phiy{i}*y1;
+                lefty = reshape(lefty, rx(i)*n(i), ry(i+1));
+            end;
             
             if (strcmp(kicktype, 'two'))
                 rightresid = reshape(phia{i+2}, rx(i+2), ra(i+2)*rx(i+2));
@@ -521,6 +567,20 @@ while (swp<=nswp)
                     uk = uchol(leftresid.', rho+1);
                     uk = uk(:,end:-1:max(end-rho+1,1));
                 end;
+            elseif (strcmp(kicktype, 'randtail'))
+                % Phi1: rz'1, rx1, ra1, or rz'1, ry1
+                % Phi2: rx2, ra2, rz'2, or ry2, rz'2
+                % leftresid: m, ra*rx, lefty: m, ry
+                % Enrichment in X
+                leftresid = bfun3(Phi1, A1, phiza{i+1}, u*v.');
+                leftresid = reshape(leftresid, rx(i)*n(i), rz(i+1));
+%                 phiz = permute(phiza{i+1}, [2,1,3]);
+%                 phiz = reshape(phiz, ra(i+1)*rx(i+1), rz(i+1));
+%                 leftresid = leftresid*phiz; % m, rz - OK
+                lefty = phiy{i}*y1;
+                lefty = reshape(lefty, rx(i)*n(i), ry(i+1));
+                lefty = lefty*phizy{i+1}; % m, rz - OK
+                uk = lefty - leftresid;
             else
                 uk = randn(rx(i)*n(i), rho);
             end;
@@ -601,34 +661,66 @@ while (swp<=nswp)
             rr=qr(res1, 0);
             Rs{i+1} = triu(rr(1:min(size(rr)), :));
         end;
+        
+        if strcmp(kicktype, 'randtail')
+            [crznew, rv]=qr(crznew, 0);
+            cr2 = crz{i+1};
+            cr2 = reshape(cr2, rz(i+1), n(i+1)*rz(i+2));
+            cr2 = rv*cr2;
+            rz(i+1) = size(crznew, 2);
+            crznew = reshape(crznew, rz(i), n(i), rz(i+1));
+            crz{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
+            crz{i} = crznew;
+            
+            phiza{i+1} = compute_next_Phi(phiza{i}, crznew, crA{i}, crx{i}, 'lr');
+            phizy{i+1} = compute_next_Phi(phizy{i}, crznew, [], cry{i}, 'lr');
+        end;
     elseif (dir<0)&&(i>1) % right-to-left
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
 
         rho = kickrank;
+
+        if (strcmp(kicktype, 'randtail'))
+            % Update crz (we don't want just random-svd)
+            if (rho>0)&&((dir+dirfilter)~=0)
+                crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
+                crzAt = reshape(crzAt, rz(i), n(i)*rz(i+1));
+                crzy = phizy{i}*y1;
+                crzy = reshape(crzy, rz(i)*n(i), ry(i+1));
+                crzy = crzy*phizy{i+1};
+                crzy = reshape(crzy, rz(i), n(i)*rz(i+1));
+                crznew = crzy - crzAt;
+            else
+                crznew = reshape(crz{i}, rz(i), n(i)*rz(i+1));
+            end;
+        end;
         
         if (rho>0)&&((dir+dirfilter)~=0) % test for one-side sweeps
             % Smarter kick: low-rank PCA in residual
             % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
             
-            rightresid = reshape(phia{i+1}, rx(i+1), ra(i+1)*rx(i+1));
-            rightresid = rightresid.'*reshape(u*v.', rx(i)*n(i), rx(i+1)).';
-            %         if (issparse(rightresid))
-            %             rightresid = full(rightresid);
-            %         end;
-            rightresid = reshape(rightresid, ra(i+1), rx(i+1), rx(i), n(i));
-            rightresid = permute(rightresid, [4, 1, 3, 2]);
-            rightresid = reshape(rightresid, n(i)*ra(i+1), rx(i)*rx(i+1));
-            rightresid = reshape(crA{i}, ra(i)*n(i), n(i)*ra(i+1))*rightresid;
-            %         if (issparse(rightresid))
-            %             rightresid = full(rightresid);
-            %         end;
-            rightresid = reshape(rightresid, ra(i), n(i), rx(i), rx(i+1));
-            rightresid = permute(rightresid, [2,4,1,3]);
-            rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i)*rx(i));
-            righty = reshape(cry{i}, ry(i)*n(i), ry(i+1));
-            righty = righty*phiy{i+1};
-            righty = reshape(righty, ry(i), n(i)*rx(i+1)).';
+            if (~strcmp(kicktype, 'randtail'))
+                rightresid = reshape(phia{i+1}, rx(i+1), ra(i+1)*rx(i+1));
+                rightresid = rightresid.'*reshape(u*v.', rx(i)*n(i), rx(i+1)).';
+                %         if (issparse(rightresid))
+                %             rightresid = full(rightresid);
+                %         end;
+                rightresid = reshape(rightresid, ra(i+1), rx(i+1), rx(i), n(i));
+                rightresid = permute(rightresid, [4, 1, 3, 2]);
+                rightresid = reshape(rightresid, n(i)*ra(i+1), rx(i)*rx(i+1));
+                rightresid = reshape(crA{i}, ra(i)*n(i), n(i)*ra(i+1))*rightresid;
+                %         if (issparse(rightresid))
+                %             rightresid = full(rightresid);
+                %         end;
+                rightresid = reshape(rightresid, ra(i), n(i), rx(i), rx(i+1));
+                rightresid = permute(rightresid, [2,4,1,3]);
+                rightresid = reshape(rightresid, n(i)*rx(i+1), ra(i)*rx(i));
+                righty = reshape(cry{i}, ry(i)*n(i), ry(i+1));
+                righty = righty*phiy{i+1};
+                righty = reshape(righty, ry(i), n(i)*rx(i+1)).';
+            end;
+            
             if (strcmp(kicktype, 'two'))
                 leftresid = reshape(phia{i-1}, rx(i-1)*rx(i-1), ra(i-1));
                 leftresid = leftresid.';
@@ -681,6 +773,19 @@ while (swp<=nswp)
                     uk = uchol(rightresid.', rho+1);
                     uk = uk(:,end:-1:max(end-rho+1,1));
                 end;
+            elseif (strcmp(kicktype, 'randtail'))
+                % Phi1: rz'1, rx1, ra1, or rz'1, ry1
+                % Phi2: rx2, ra2, rz'2, or ry2, rz'2
+                % leftresid: m, ra*rx, lefty: m, ry
+                % Enrichment in X
+                rightresid = bfun3(phiza{i}, A1, Phi2, u*v.');
+                leftresid = reshape(leftresid, rz(i), n(i)*rx(i+1));
+                lefty = phizy{i}*y1;
+                lefty = reshape(lefty, rz(i)*n(i), ry(i+1));
+                lefty = lefty*phiy{i+1}; 
+                lefty = reshape(lefty, rz(i), n(i)*rx(i+1));
+                uk = lefty - leftresid;
+                uk = uk.';
             else
                 uk = randn(n(i)*rx(i+1), rho);
             end;
@@ -758,6 +863,20 @@ while (swp<=nswp)
             res2 = reshape(res2, r1, n(i)*r3);
             rr=qr(res2.', 0);
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
+        end;
+        
+        if strcmp(kicktype, 'randtail')           
+            [crznew, rv]=qr(crznew.', 0);
+            cr2 = crz{i-1};
+            cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
+            cr2 = cr2*(rv.');
+            rz(i) = size(crznew, 2);
+            crznew = reshape(crznew.', rz(i), n(i), rz(i+1));
+            crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
+            crz{i} = crznew;
+            
+            phiza{i} = compute_next_Phi(phiza{i+1}, crznew, crA{i}, crx{i}, 'rl');
+            phizy{i} = compute_next_Phi(phizy{i+1}, crznew, [], cry{i}, 'rl');
         end;
     elseif ((dir>0)&&(i==d))||((dir<0)&&(i==1))
         % Just stuff back the last core
