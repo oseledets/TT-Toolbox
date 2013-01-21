@@ -87,7 +87,7 @@ dirfilter = 1; % only forward
 kicktype = 'one';
 % kicktype = 'rand';
 % kicktype = 'tail';
-% kicktype = 'randtail';
+% kicktype = 'tailals';
 
 % pcatype = 'svd';
 pcatype = 'uchol';
@@ -189,10 +189,11 @@ crx = core2cell(x);
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 % Try to compute the low-rank appr. to residual on-the-fly
-if (strcmp(kicktype, 'randtail'))
+if (strcmp(kicktype, 'tailals'))
     phiza = cell(d+1,1); phiza{1}=1; phiza{d+1}=1;
     phizy = cell(d+1,1); phizy{1}=1; phizy{d+1}=1;
-    crz = round(y-A*x, tol, kickrank);
+%     crz = round(y-A*x, tol, kickrank);
+    crz = round(y, tol, kickrank);
     rz = crz.r;
     if (max(rz)<kickrank)
         crz = crz + tt_rand(n, d, kickrank-max(rz));
@@ -289,7 +290,7 @@ for i=d:-1:2
         Rs{i} = triu(rr(1:min(size(rr)), :)).';
     end;
     
-    if strcmp(kicktype, 'randtail')
+    if strcmp(kicktype, 'tailals')
         cr = crz{i};
         cr = reshape(cr, rz(i), n(i)*rz(i+1));
         [cr, rv]=qr(cr.', 0);
@@ -477,9 +478,9 @@ while (swp<=nswp)
 
         rho = kickrank;
         
-        if (strcmp(kicktype, 'randtail'))
+        if (strcmp(kicktype, 'tailals'))
             % Update crz (we don't want just random-svd)
-            if (rho>0)&&((dir+dirfilter)~=0)
+            if (rho>0) %&&((dir+dirfilter)~=0)
                 crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
                 crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
                 crzy = phizy{i}*y1;
@@ -494,7 +495,7 @@ while (swp<=nswp)
         if (rho>0)&&((dir+dirfilter)~=0)
             % Smarter kick: low-rank PCA in residual
             % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
-            if (~strcmp(kicktype, 'randtail'))
+            if (~strcmp(kicktype, 'tailals'))
                 leftresid = reshape(Phi1, rx(i)*rx(i), ra(i));
                 leftresid = leftresid.';
                 leftresid = reshape(leftresid, ra(i)*rx(i), rx(i));
@@ -567,7 +568,7 @@ while (swp<=nswp)
                     uk = uchol(leftresid.', rho+1);
                     uk = uk(:,end:-1:max(end-rho+1,1));
                 end;
-            elseif (strcmp(kicktype, 'randtail'))
+            elseif (strcmp(kicktype, 'tailals'))
                 % Phi1: rz'1, rx1, ra1, or rz'1, ry1
                 % Phi2: rx2, ra2, rz'2, or ry2, rz'2
                 % leftresid: m, ra*rx, lefty: m, ry
@@ -662,7 +663,7 @@ while (swp<=nswp)
             Rs{i+1} = triu(rr(1:min(size(rr)), :));
         end;
         
-        if strcmp(kicktype, 'randtail')
+        if strcmp(kicktype, 'tailals')
             [crznew, rv]=qr(crznew, 0);
             cr2 = crz{i+1};
             cr2 = reshape(cr2, rz(i+1), n(i+1)*rz(i+2));
@@ -681,9 +682,9 @@ while (swp<=nswp)
 
         rho = kickrank;
 
-        if (strcmp(kicktype, 'randtail'))
+        if (strcmp(kicktype, 'tailals'))
             % Update crz (we don't want just random-svd)
-            if (rho>0)&&((dir+dirfilter)~=0)
+            if (rho>0) % &&((dir+dirfilter)~=0)
                 crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
                 crzAt = reshape(crzAt, rz(i), n(i)*rz(i+1));
                 crzy = phizy{i}*y1;
@@ -700,7 +701,7 @@ while (swp<=nswp)
             % Smarter kick: low-rank PCA in residual
             % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
             
-            if (~strcmp(kicktype, 'randtail'))
+            if (~strcmp(kicktype, 'tailals'))
                 rightresid = reshape(phia{i+1}, rx(i+1), ra(i+1)*rx(i+1));
                 rightresid = rightresid.'*reshape(u*v.', rx(i)*n(i), rx(i+1)).';
                 %         if (issparse(rightresid))
@@ -773,7 +774,7 @@ while (swp<=nswp)
                     uk = uchol(rightresid.', rho+1);
                     uk = uk(:,end:-1:max(end-rho+1,1));
                 end;
-            elseif (strcmp(kicktype, 'randtail'))
+            elseif (strcmp(kicktype, 'tailals'))
                 % Phi1: rz'1, rx1, ra1, or rz'1, ry1
                 % Phi2: rx2, ra2, rz'2, or ry2, rz'2
                 % leftresid: m, ra*rx, lefty: m, ry
@@ -865,7 +866,7 @@ while (swp<=nswp)
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
         end;
         
-        if strcmp(kicktype, 'randtail')           
+        if strcmp(kicktype, 'tailals')           
             [crznew, rv]=qr(crznew.', 0);
             cr2 = crz{i-1};
             cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
