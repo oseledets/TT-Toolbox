@@ -917,7 +917,11 @@ while (swp<=nswp)
         if (last_sweep)
             break;
         end;
-
+        
+        if (nswp==1)
+            break;
+        end;
+        
         if (strcmp(trunc_norm, 'fro'))
             if (max_dx<tol)&&(((dir+dirfilter)==0)||(dirfilter==0))&&(verb<3)
                 if (dirfilter==0)
