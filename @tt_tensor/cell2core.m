@@ -19,5 +19,6 @@ tt.n = n;
 tt.r = r;
 tt.ps = ps;
 tt.core = cr;
+tt.over = 0;
 
 end

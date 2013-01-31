@@ -102,5 +102,6 @@ cr(1:r(1)*n(1)*r(2)) = pp;
     cr(ps(i):ps(i+1)-1)=core1;
  end
  tt.core=cr;
+ tt.over=0;
 return
 end
