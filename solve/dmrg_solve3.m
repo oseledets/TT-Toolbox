@@ -530,7 +530,7 @@ while (swp<=nswp)
     r = min(r, numel(s));
     r = min(r, rmax);
            
-    if (verb>1)
+    if (verb==2)
         fprintf('=dmrg_solve3=   block %d{%d}, dx: %3.3e, iter: %d, r: %d\n', i, dir, dx(i), iter, r);
     end;
     

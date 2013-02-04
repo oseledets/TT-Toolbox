@@ -1,6 +1,6 @@
 function [x,testdata,z]=amr_solve2(A, y, tol, varargin)
 %Solution of linear systems in TT-format via DMRG iteration
-%   [X,somedata,z]=AMR_SOLVE2(A,Y,TOL,OPTIONS) Attempts to solve the linear
+%   [X,testdata,z]=AMR_SOLVE2(A,Y,TOL,OPTIONS) Attempts to solve the linear
 %   system A*X = Y with accuracy/residual TOL using the AMR iteration.
 %   Matrix A has to be given in the TT-format, right-hand side Y should be
 %   given in the TT-format also. Options are provided in form
@@ -25,6 +25,7 @@ function [x,testdata,z]=amr_solve2(A, y, tol, varargin)
 %         solutions, but increase CPU time [2]
 %       o trunc_norm - truncate in either Frob. ('fro'), or residual norm
 %       ('residual') ['residual']
+%       o z0 - initial guess for Z (kicktype=='als' only). 
 %
 %       Example:
 %           d=8; f=8;
@@ -40,6 +41,7 @@ function [x,testdata,z]=amr_solve2(A, y, tol, varargin)
 %   http://arxiv.org/abs/1301.6068
 %
 %   Part II with more relevant details will come soon...
+%   Use {sergey.v.dolgov, drraug}@gmail.com for feedback
 %
 %   Some other techniques taken from
 %   S. Dolgov, I. Oseledets,
@@ -188,7 +190,7 @@ end;
 
 
 % This is some convergence output for test purposes
-testdata = cell(2,1);
+testdata = cell(3,1);
 testdata{1} = zeros(d, nswp); % CPU times
 testdata{2} = cell(d, nswp); % interm. solutions
 testdata{3} = zeros(d, nswp); % local residuals (res_prev)
@@ -196,7 +198,7 @@ testdata{3} = zeros(d, nswp); % local residuals (res_prev)
 t_amr_solve = tic;
 
 % AMR sweeps
-for swp=1:nswp;
+for swp=1:nswp
     % Orthogonalization
     for i=d:-1:2
         cr = crx{i};
@@ -402,7 +404,7 @@ for swp=1:nswp;
             s = ones(r,1);
         end;
         
-        if (verb>1)
+        if (verb==2)
             fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
         end;
         
