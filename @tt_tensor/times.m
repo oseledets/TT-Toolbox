@@ -56,6 +56,7 @@ if (nargin == 2 )
     a.r=ra;
     a.ps=psa;
     a.core=cra;
+    a.over=erank(a)-max(max(erank(b)-b.over,erank(c)-c.over),0);
 elseif (nargin == 3)
      error('Krylov method is not yet supported, come again later');
 end

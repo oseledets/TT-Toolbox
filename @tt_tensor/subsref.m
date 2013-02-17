@@ -4,7 +4,6 @@ function [elem] = subsref(tt,s)
 %
 %   ELEM=TT(IND) computes element with index IND of the tensor TT
 %   
-%
 % TT-Toolbox 2.2, 2009-2012
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
@@ -82,6 +81,12 @@ switch s(1).type
 %                 else
 %                     elem=tt.r;
 %                 end;
+            case 'over'
+                elem = tt.over;
+                if (numel(s)>1)
+                    s = s(2:end);
+                    elem = subsref(elem, s);
+                end;
             case 'core'
                 if (numel(s)>1)&&(strcmp(s(2).type,'()'))
                     elem = tt.core(s(2).subs{1});

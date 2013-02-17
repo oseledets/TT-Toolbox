@@ -38,6 +38,7 @@ if (nargin == 0)
     t.n    = 0;
     t.core = 0;                    % empty tensor
     t.ps   = 0;
+    t.over = 0;             % estimate of the rank over the optimal 
     t = class(t, 'tt_tensor');
     return;
 end
@@ -50,6 +51,7 @@ if (nargin == 1) && isa(varargin{1}, 'tt_tensor')
     t.n = varargin{1}.n;
     t.core=varargin{1}.core;
     t.ps = varargin{1}.ps;
+    t.over = varargin{1}.over;
     return;
 end
 %From tt_matrix (unfold)
@@ -99,6 +101,7 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
        cr=tt{d}; cr=permute(cr,[2,1]);
        t.core(ps(d):ps(d+1)-1) = cr(:);
        t.ps=ps;
+       t.over=0;
        return
     else
        t=tt_tensor;
@@ -127,6 +130,7 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
           crp(t.ps(i):t.ps(i+1)-1)=cr(:);
        end
        t.core=crp;
+       t.over=0;
        return
     end
 end
@@ -138,6 +142,7 @@ if (nargin == 1) && isa(varargin{1}, 'struct')
     t.n    = varargin{1}.n;
     t.core = varargin{1}.core;                    % empty tensor
     t.ps   = cumsum([1;t.n.*t.r(1:t.d).*t.r(2:t.d+1)]);
+    t.over = varargin{1}.over;
     t = class(t, 'tt_tensor');      
     return;
 end;
@@ -156,6 +161,7 @@ if (nargin == 1) && isa(varargin{1}, 'char')
     t.n = n;
     t.core = core;
     t.ps=cumsum([1;t.n.*t.r(1:d).*t.r(2:d+1)]);
+    t.over = 0;
     t = class(t, 'tt_tensor');
     return
 end;
@@ -204,6 +210,7 @@ if isa(varargin{1},'double')
         t.r=r;
         t.ps=ps;
         t.core=core;
+        t.over=0;
         return
     end
     
@@ -230,7 +237,7 @@ if isa(varargin{1},'double')
     t.r=r;
     t.ps=ps;
     t.core=core;
-    
+    t.over=0; 
     return;
 end;
 
