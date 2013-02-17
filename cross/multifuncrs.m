@@ -24,6 +24,7 @@ function [y]=multifuncrs(X, funs, eps, varargin)
 %       o kickrank - the rank-increasing parameter [5]
 %       o d2 - the last rank of y, that is dim(FUNS) [1]
 %       o qr - do (or not) qr before maxvol [false]
+%       o pcatype - How to compute the enrichment of the basis, 'uchol' - Incomplete Cholesky, 'svd' - SVD [svd]
 %
 %   The method is based on the alternating approximation, with 
 %   the one-block enrichment via KICKRANK random vectors or randomized AMR.
