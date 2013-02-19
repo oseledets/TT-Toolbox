@@ -319,9 +319,9 @@ for swp=1:nswp
             
             if (res_prev>real_tol)
                 if (~ismex)
-                    sol = solve3d_2ml(Phi1, A1, Phi2, rhs, real_tol, sol_prev, local_prec_char, local_restart, local_iters);
+                    sol = solve3d_2ml(Phi1, A1, Phi2, rhs, real_tol*norm_rhs, sol_prev, local_prec_char, local_restart, local_iters);
                 else % use MEX
-                    sol = solve3d_2(Phi1, A1, Phi2, rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 0);
+                    sol = solve3d_2(Phi1, A1, Phi2, rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1, 0));
                 end;
                 
                 res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;

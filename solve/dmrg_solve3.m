@@ -169,9 +169,10 @@ phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 % cphia = cell(d+1,1); cphia{1}=1; cphia{d+1}=1;
 % cphiy = cell(d+1,1); cphiy{1}=1; cphiy{d+1}=1;
 
-somedata = cell(2,1);
+somedata = cell(3,1);
 somedata{1}=zeros(d,nswp*2);
 somedata{2}=cell(nswp*2, d);
+somedata{3}=zeros(d,nswp*2);
 
 t_dmrg_solve = tic;
 
@@ -260,7 +261,7 @@ while (swp<=nswp)
         
 %         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
-% 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+        somedata{3}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             sol = B \ rhs;
@@ -279,7 +280,7 @@ while (swp<=nswp)
     else % Structured solution.
         
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
-% 	somedata{1}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+        somedata{3}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             if (~ismex)
