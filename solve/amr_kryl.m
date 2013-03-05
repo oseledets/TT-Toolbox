@@ -97,42 +97,42 @@ phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phix = cell(d+1,1); phix{1}=1; phix{d+1}=1;
 
 % Initial ort
-for i=d:-1:2
-    cr = reshape(V{i}, rv(i), n(i)*rv(i+1));
-    [cr,R]=qr(cr.', 0);
-    cr2 = reshape(V{i-1}, rv(i-1)*n(i-1), rv(i));
-    cr2 = cr2*R.';
-    rv(i) = size(cr, 2);
-    V{i} = reshape(cr.', rv(i), n(i), rv(i+1));
-    V{i-1} = reshape(cr2, rv(i-1), n(i-1), rv(i));
-    phia{i} = compute_next_Phi(phia{i+1}, V{i}, A{i}, V{i}, 'rl');
-    phix{i} = compute_next_Phi(phix{i+1}, V{i}, [], x{i}, 'rl');
+for i=1:d-1
+    cr = reshape(V{i}, rv(i)*n(i), rv(i+1));
+    [cr,R]=qr(cr, 0);
+    cr2 = reshape(V{i+1}, rv(i+1), n(i+1)*rv(i+2));
+    cr2 = R*cr2;
+    rv(i+1) = size(cr, 2);
+    V{i} = reshape(cr, rv(i), n(i), rv(i+1));
+    V{i+1} = reshape(cr2, rv(i+1), n(i+1), rv(i+2));
+    phia{i+1} = compute_next_Phi(phia{i}, V{i}, A{i}, V{i}, 'lr');
+    phix{i+1} = compute_next_Phi(phix{i}, V{i}, [], x{i}, 'lr');
     
     if (kickrank>0)
-        cr = reshape(z{i}, rz(i), n(i)*rz(i+1));
-        [cr,R]=qr(cr.', 0);
-        cr2 = reshape(z{i-1}, rz(i-1)*n(i-1), rz(i));
-        cr2 = cr2*R.';
-        rz(i) = size(cr, 2);
-        z{i} = reshape(cr.', rz(i), n(i), rz(i+1));
-        z{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
-        phizax{i} = compute_next_Phi(phizax{i+1}, z{i}, A{i}, V{i}, 'rl');
+        cr = reshape(z{i}, rz(i)*n(i), rz(i+1));
+        [cr,R]=qr(cr, 0);
+        cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
+        cr2 = R*cr2;
+        rz(i+1) = size(cr, 2);
+        z{i} = reshape(cr, rz(i), n(i), rz(i+1));
+        z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
+        phizax{i+1} = compute_next_Phi(phizax{i}, z{i}, A{i}, V{i}, 'lr');
     end;
 end;
 
-i = 1;
-dir = 1;
+i = d;
+dir = -1;
 swp = 1;
 max_dx = 0;
-b = rv(1); % Initially, the enum rank is in V{1}
-V{1} = reshape(V{1}, b, n(1)*rv(2));
+b = rv(d+1); % Initially, the enum rank is in V{d}
+V{d} = reshape(V{d}, rv(d)*n(d), b);
 % Add space for a new Krylov vector
 if ((b+1)<=Mmax)
-    V{1} = [V{1}; zeros(1,n(1)*rv(2))];
+    V{d} = [V{d}, zeros(rv(d)*n(d), 1)];
     b=b+1;
 end;
-V{1} = reshape(V{1}.', 1, n(1), rv(2), b);
-rv(1) = 1;
+V{d} = reshape(V{d}, rv(d), n(d), 1, b);
+rv(d+1) = 1;
 
 
 while (swp<=nswp)
