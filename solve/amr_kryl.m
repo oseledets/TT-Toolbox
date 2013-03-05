@@ -133,7 +133,7 @@ if ((b+1)<=Mmax)
 end;
 V{d} = reshape(V{d}, rv(d), n(d), 1, b);
 rv(d+1) = 1;
-
+b_new = 1;
 
 while (swp<=nswp)
     % Project the generating vector
@@ -158,6 +158,7 @@ while (swp<=nswp)
     w = bfun3(phia{i}, A{i}, phia{i+1}, crv);
     B = crv'*w;
     y = funA(B, eye(b,1)*(crv(:,1)'*crx));
+    b_new = max(b_new, find(abs(y)/abs(y(1))<tol, 1));
     
     % Caution #2: in the previous iteration there could be different b
     V_prev = reshape(V{i}, rv(i)*n(i)*rv(i+1), size(V{i}, 4));
@@ -291,10 +292,12 @@ while (swp<=nswp)
                 b = b+1;
             end;
             V{i} = reshape(crv, rv(i), n(i), rv(i+1), b);
-            max_dx = 0;
             if (dir>0); swp = swp+1; end;
         end;
         dir = -dir;
+        max_dx = 0;
+        b = b_new;
+        b_new = 0;
     else
         i = i+dir;
     end;
