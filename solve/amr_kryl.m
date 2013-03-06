@@ -158,7 +158,11 @@ while (swp<=nswp)
     w = bfun3(phia{i}, A{i}, phia{i+1}, crv);
     B = crv'*w;
     y = funA(B, eye(b,1)*(crv(:,1)'*crx));
-    b_new = max(b_new, find(abs(y)/abs(y(1))<tol, 1));
+    inew = find(abs(y)/abs(y(1))<tol, 1);
+    if (isempty(inew))
+        inew = b;
+    end;
+    b_new = max(b_new, inew);
     
     % Caution #2: in the previous iteration there could be different b
     V_prev = reshape(V{i}, rv(i)*n(i)*rv(i+1), size(V{i}, 4));
@@ -183,7 +187,7 @@ while (swp<=nswp)
             
             % Prepare enrichment, if needed
             if (kickrank>0)
-                crv = u*v';
+                crv = u*v.';
                 crv = reshape(crv, rv(i)*n(i)*rv(i+1), b);
                 % Take next Krylov vector A*V_b into z
                 crv = crv(:,b);
@@ -287,6 +291,9 @@ while (swp<=nswp)
         else
             % We are at the terminal block
             % Here, we may allocate the space for a new krylov vector
+            b = b_new;
+            b_new = 0;
+            crv = crv(:,1:b);
             if ((b+1)<=Mmax)
                 crv = [crv, zeros(rv(i)*n(i)*rv(i+1), 1)];
                 b = b+1;
@@ -296,8 +303,6 @@ while (swp<=nswp)
         end;
         dir = -dir;
         max_dx = 0;
-        b = b_new;
-        b_new = 0;
     else
         i = i+dir;
     end;
