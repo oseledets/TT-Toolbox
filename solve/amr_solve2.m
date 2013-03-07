@@ -41,7 +41,7 @@ function [x,testdata,z]=amr_solve2(A, y, tol, varargin)
 %   http://arxiv.org/abs/1301.6068
 %
 %   Part II with more relevant details will come soon...
-%   Use {sergey.v.dolgov, drraug}@gmail.com for feedback
+%   Use {sergey.v.dolgov, dmitry.savostyanov}@gmail.com for feedback
 %
 %   Some other techniques taken from
 %   S. Dolgov, I. Oseledets,
