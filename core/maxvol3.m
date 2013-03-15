@@ -1,4 +1,4 @@
-function [ind]=maxvol2(a,ind,varargin)
+function [ind,b]=maxvol3(a,ind,varargin)
 %Maximal volume submatrix in an tall matrix
 %   [IND]=MAXVOL2(A,IND) Computes maximal volume submatrix in A starting from IND
 %   [IND]=MAXVOL2(A) Computes maximal volume submatrix in A starting from LU
@@ -22,7 +22,7 @@ function [ind]=maxvol2(a,ind,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 n=size(a,1); r=size(a,2);
-if ( n <= r )
+if ( n <= r ) 
     ind = 1:n;
     return
 end
@@ -54,10 +54,8 @@ end
 
 %Initialize
 if ( do_lu )
-    %[l_dmp,u_dmp,p]=lu(a,'vector');
-    %ind = p(1:r);
-    ind = lu_full(a);
-    %ind = 1:r;
+    [l_dmp,u_dmp,p]=lu(a,'vector');
+    ind = p(1:r);
 end    
     
 sbm = a(ind,:);
@@ -70,7 +68,7 @@ while (iter <= niters);
 [mx0,big_ind] = max(abs(b(:)));
 [i0,j0] = ind2sub([n,r],big_ind);
 if ( mx0 <= 1 + eps ) 
-    ind=sort(ind);
+    %ind=sort(ind);
     return
     
 end 

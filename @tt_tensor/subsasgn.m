@@ -48,7 +48,7 @@ function t = subsasgn(t,s,b)
              case 'core'                 
                  if (size(b,1)==1)
                      b=b.';
-                 end;
+                 end
                  % I don't want to dispatch all the rest subs to the core,
                  % because MATLAB will copy it. Fortunately, only () is
                  % reasonable here.
@@ -65,7 +65,7 @@ function t = subsasgn(t,s,b)
              case 'ps'
                  if (size(b,1)==1)
                      b=b.';
-                 end;
+                 end
                  if (numel(s)>1)&&(strcmp(s(2).type,'()'))
                      if (size(s(2).subs{1},1)==1)
                          s(2).subs{1}=s(2).subs{1}';
@@ -73,7 +73,7 @@ function t = subsasgn(t,s,b)
                      t.ps(s(2).subs{1})=b;
                  else
                      t.ps=b;
-                 end;
+                 end
              otherwise
                  error(['Cannot change field ', s.subs, ' directly.']);
          end

@@ -312,10 +312,10 @@ function val=my_vec_fun(ind,fun)
 %   elements of a tensor given in the index array IND. IND is a M x d
 %   array, where M is the number of indices to be computed. 
 M=size(ind,1);
-val=zeros(M,1);
+val=zeros(1,M);
 for i=1:M
-%    ind_loc=ind(i,:); ind_loc=ind_loc(:);
-   ind_loc = ind(:,i); 
+    ind_loc=ind(i,:); ind_loc=ind_loc(:);
+%   ind_loc = ind(:,i); 
    val(i)=fun(ind_loc);
 end
 return
