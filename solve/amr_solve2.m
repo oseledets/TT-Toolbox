@@ -41,7 +41,7 @@ function [x,testdata,z]=amr_solve2(A, y, tol, varargin)
 %   http://arxiv.org/abs/1301.6068
 %
 %   Part II with more relevant details will come soon...
-%   Use {sergey.v.dolgov, drraug}@gmail.com for feedback
+%   Use {sergey.v.dolgov, dmitry.savostyanov}@gmail.com for feedback
 %
 %   Some other techniques taken from
 %   S. Dolgov, I. Oseledets,
@@ -85,6 +85,8 @@ trunc_norm = 'residual';
 trunc_norm_char = 1;
 % trunc_norm = 'fro';
 
+tol_exit = tol;
+
 ismex = true;
 
 % kicktype = 'svd';
@@ -127,6 +129,8 @@ for i=1:2:length(varargin)-1
             resid_damp = varargin{i+1};
         case 'trunc_norm'
             trunc_norm = varargin{i+1};
+        case 'tol_exit'
+            tol_exit = varargin{i+1};
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -516,11 +520,11 @@ for swp=1:nswp
     end;
     
     if (strcmp(trunc_norm, 'fro'))
-        if (max_dx<tol)&&(verb<3)
+        if (max_dx<tol_exit)&&(verb<3)
             break;
         end;
     else
-        if (max_res<tol)&&(verb<3)
+        if (max_res<tol_exit)&&(verb<3)
             break;
         end;
     end;

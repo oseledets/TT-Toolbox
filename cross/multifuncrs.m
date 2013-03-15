@@ -214,7 +214,8 @@ while (swp<=nswp)||(dir>0)
             % Truncate taking into account the (r+1) overhead in the cross
             cums = (s.*(2:numel(s)+1)').^2;
             cums = cumsum(cums(end:-1:1));
-            cums = cums(end:-1:1)./cums(1);
+            cums = cums(end:-1:1);
+            cums = cums./cums(1); % NOW cums(1) is the greatest element, not a line ago
             r = find(cums<(eps^2/d), 1);
             if (isempty(r))
                 r = numel(s);

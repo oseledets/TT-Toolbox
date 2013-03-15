@@ -526,8 +526,9 @@ for swp=1:nswp
 %         real_res = norm(Au-y)/norm(y);
 %         fprintf('=als_rake_solve= sweep %d, \t\t\t real_res: %3.3e\n', swp, real_res);
         if (max_res<tol)
-            kickrank = 0;
-            last_sweep = true;
+            break;
+%             kickrank = 0;
+%             last_sweep = true;
         end;
 %         if (max_res<tol)&&(kickrank<=-als_iters)
 %             last_sweep=true;
@@ -729,7 +730,7 @@ else
             end;
             
 %             sol = solve3d(permute(Phi1,[1,3,2]), A1, permute(Phi2, [1,3,2]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
-            sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 1);
+            sol = solve3d_2(permute(Phi1,[1,3,2]), A1, permute(Phi2, [3,2,1]), rhs, tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 0);
            
             res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
             flg=0;
