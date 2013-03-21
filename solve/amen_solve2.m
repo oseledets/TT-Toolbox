@@ -1,7 +1,7 @@
-function [x,testdata,z]=amr_solve2(A, y, tol, varargin)
+function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %Solution of linear systems in TT-format via DMRG iteration
-%   [X,testdata,z]=AMR_SOLVE2(A,Y,TOL,OPTIONS) Attempts to solve the linear
-%   system A*X = Y with accuracy/residual TOL using the AMR iteration.
+%   [X,testdata,z]=AMEN_SOLVE2(A,Y,TOL,OPTIONS) Attempts to solve the linear
+%   system A*X = Y with accuracy/residual TOL using the AMEn iteration.
 %   Matrix A has to be given in the TT-format, right-hand side Y should be
 %   given in the TT-format also. Options are provided in form
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
