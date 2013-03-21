@@ -24,7 +24,6 @@ function [y]=multifuncrs(X, funs, eps, varargin)
 %       o kickrank - the rank-increasing parameter [5]
 %       o d2 - the last rank of y, that is dim(FUNS) [1]
 %       o qr - do (or not) qr before maxvol [false]
-%       o pcatype - How to compute the enrichment of the basis, 'uchol' - Incomplete Cholesky, 'svd' - SVD [svd]
 %
 %   The method is based on the alternating approximation, with 
 %   the one-block enrichment via KICKRANK random vectors or randomized AMR.
@@ -214,8 +213,7 @@ while (swp<=nswp)||(dir>0)
             % Truncate taking into account the (r+1) overhead in the cross
             cums = (s.*(2:numel(s)+1)').^2;
             cums = cumsum(cums(end:-1:1));
-            cums = cums(end:-1:1);
-            cums = cums./cums(1); % NOW cums(1) is the greatest element, not a line ago
+            cums = cums(end:-1:1)./cums(1);
             r = find(cums<(eps^2/d), 1);
             if (isempty(r))
                 r = numel(s);
@@ -226,13 +224,13 @@ while (swp<=nswp)||(dir>0)
     else
         if (dir>0)
             [u,v]=qr(newy, 0);
-            v = v';
+            v=v';
             r = size(u,2);
             s = ones(r,1);
         else
             [v,u]=qr(newy.', 0);
-            v = conj(v);
-            u = u.';
+            v=conj(v);
+            u=u.';
             r = size(u,2);
             s = ones(r,1);
         end;
@@ -281,10 +279,10 @@ while (swp<=nswp)||(dir>0)
                 uk = reshape(uk, ry(i)*n(i), rkick*d2);
                 if (strcmp(pcatype, 'svd'))
                     [uk,sk,vk]=svd(uk, 'econ');
-                    uk = uk(:, 1:min(kickrank, size(uk,2)));
+                    uk = uk(:,1:min(kickrank, size(uk,2)));
                 else
                     uk = uchol(uk.', kickrank+1);
-                    uk = uk(:, end:-1:max(end-kickrank+1,1));
+                    uk = uk(:,end:-1:max(end-kickrank+1,1));
                 end;
             else
                 uk = rand(ry(i)*n(i), kickrank);
@@ -360,10 +358,11 @@ while (swp<=nswp)||(dir>0)
                 end;                
             else
                 uk = rand(n(i)*ry(i+1), kickrank);
-            end
+            end;            
+%             uk = rand(n(i)*ry(i+1), kickrank);
             [v,rv]=qr([v,uk], 0);
             radd = size(uk,2);
-        end
+        end;
         u = [u, zeros(d2*ry(i), radd)];
         u = u*(rv.');
         r = size(v,2);
@@ -409,7 +408,7 @@ while (swp<=nswp)||(dir>0)
     end;
     
     
-    i = i + dir;
+    i = i+dir;
     % Reversing, residue check, etc
     cur_order(order_index) = cur_order(order_index) - dir;
     % New direction
@@ -442,7 +441,7 @@ while (swp<=nswp)||(dir>0)
         end;
 
         dir = sign(cur_order(order_index));
-        i = i + dir;
+        i = i+dir;
     end;
 end
 
