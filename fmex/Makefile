@@ -4,7 +4,7 @@
 include Makefile.in
 
 
-all: mytt.a fort_mvk4_mex fort_amr_solve_mex uchol solve3d solve3d_2 tt_read tt_write
+all: mytt.a fort_mvk4_mex fort_amen_solve_mex uchol solve3d solve3d_2 tt_read tt_write
 
 mytt.a:
 	cd tt-fort; make
@@ -12,8 +12,8 @@ mytt.a:
 fort_mvk4_mex: fort_mvk4_mex.F90 mytt.a
 	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims fort_mvk4_mex.F90 tt-fort/mytt.a -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)"; exit;'
 
-fort_amr_solve_mex: mytt.a fort_amr_solve_mex.F90
-	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims fort_amr_solve_mex.F90 tt-fort/mytt.a -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)"; exit;'
+fort_amen_solve_mex: mytt.a fort_amen_solve_mex.F90
+	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims fort_amen_solve_mex.F90 tt-fort/mytt.a -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)"; exit;'
 
 
 uchol_full.o: uchol_full.c
