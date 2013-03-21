@@ -188,6 +188,7 @@ while (swp<=nswp)||(dir>0)
         newy = (Ry{i}) \ newy;
         newy = reshape(newy, ry(i)*n(i)*ry(i+1), d2);
         newy = reshape(newy.', d2*ry(i)*n(i), ry(i+1));
+        %disp(size(Ry{i+1}));
         newy = newy / (Ry{i+1});
         newy = reshape(newy, d2*ry(i)*n(i)*ry(i+1), 1);
     else
@@ -226,13 +227,13 @@ while (swp<=nswp)||(dir>0)
     else
         if (dir>0)
             [u,v]=qr(newy, 0);
-            v=v';
+            v = v';
             r = size(u,2);
             s = ones(r,1);
         else
             [v,u]=qr(newy.', 0);
-            v=conj(v);
-            u=u.';
+            v = conj(v);
+            u = u.';
             r = size(u,2);
             s = ones(r,1);
         end;
@@ -281,10 +282,10 @@ while (swp<=nswp)||(dir>0)
                 uk = reshape(uk, ry(i)*n(i), rkick*d2);
                 if (strcmp(pcatype, 'svd'))
                     [uk,sk,vk]=svd(uk, 'econ');
-                    uk = uk(:,1:min(kickrank, size(uk,2)));
+                    uk = uk(:, 1:min(kickrank, size(uk,2)));
                 else
                     uk = uchol(uk.', kickrank+1);
-                    uk = uk(:,end:-1:max(end-kickrank+1,1));
+                    uk = uk(:, end:-1:max(end-kickrank+1,1));
                 end;
             else
                 uk = rand(ry(i)*n(i), kickrank);
@@ -360,11 +361,8 @@ while (swp<=nswp)||(dir>0)
                 end;                
             else
                 uk = rand(n(i)*ry(i+1), kickrank);
-            end;            
-%             uk = rand(n(i)*ry(i+1), kickrank);
-            [v,rv]=qr([v,uk], 0);
-            radd = size(uk,2);
-        end;
+            end
+        end
         u = [u, zeros(d2*ry(i), radd)];
         u = u*(rv.');
         r = size(v,2);
@@ -410,7 +408,7 @@ while (swp<=nswp)||(dir>0)
     end;
     
     
-    i = i+dir;
+    i = i + dir;
     % Reversing, residue check, etc
     cur_order(order_index) = cur_order(order_index) - dir;
     % New direction
@@ -443,7 +441,7 @@ while (swp<=nswp)||(dir>0)
         end;
 
         dir = sign(cur_order(order_index));
-        i = i+dir;
+        i = i + dir;
     end;
 end
 
