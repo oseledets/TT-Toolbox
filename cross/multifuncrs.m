@@ -188,7 +188,6 @@ while (swp<=nswp)||(dir>0)
         newy = (Ry{i}) \ newy;
         newy = reshape(newy, ry(i)*n(i)*ry(i+1), d2);
         newy = reshape(newy.', d2*ry(i)*n(i), ry(i+1));
-        %disp(size(Ry{i+1}));
         newy = newy / (Ry{i+1});
         newy = reshape(newy, d2*ry(i)*n(i)*ry(i+1), 1);
     else
@@ -362,6 +361,8 @@ while (swp<=nswp)||(dir>0)
             else
                 uk = rand(n(i)*ry(i+1), kickrank);
             end
+            [v,rv]=qr([v,uk], 0);
+            radd = size(uk,2);
         end
         u = [u, zeros(d2*ry(i), radd)];
         u = u*(rv.');
