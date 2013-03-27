@@ -29,6 +29,7 @@ end
 
 do_qr = false;
 do_lu = true;
+do_lu_full = false;
 niters = 100;
 eps = 5e-2;
 
@@ -42,6 +43,8 @@ for i=1:2:length(varargin)-1
             niters = varargin{i+1};
         case 'ind'
             ind = varargin{i+1};
+        case 'lu_full'
+            do_lu_full = varargin{i+1}
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
@@ -53,11 +56,11 @@ end
 
 
 %Initialize
-if ( do_lu )
-    %[l_dmp,u_dmp,p]=lu(a,'vector');
-    %ind = p(1:r);
+if ( do_lu_full )
     ind = lu_full(a);
-    %ind = 1:r;
+else
+    [l_dmp,u_dmp,p]=lu(a,'vector');
+    ind = p(1:r);
 end    
     
 sbm = a(ind,:);
