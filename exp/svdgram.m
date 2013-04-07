@@ -19,6 +19,9 @@ if (nargin>1)&&(~isempty(tol))
     v = v(:,1:p);
 end;
 u = u*spdiags(1./s, 0, numel(s), numel(s)); 
+if (issparse(u))
+    u = full(u);
+end;
 r = diag(s)*v';
 
 % Run chol for reortogonalization.
