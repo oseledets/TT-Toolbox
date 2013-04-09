@@ -28,7 +28,6 @@ if ( n <= r )
 end
 
 do_qr = false;
-do_lu = true;
 do_lu_full = false;
 niters = 100;
 eps = 5e-2;
@@ -44,7 +43,7 @@ for i=1:2:length(varargin)-1
         case 'ind'
             ind = varargin{i+1};
         case 'lu_full'
-            do_lu_full = varargin{i+1}
+            do_lu_full = varargin{i+1};
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
