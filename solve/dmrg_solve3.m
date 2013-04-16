@@ -261,7 +261,6 @@ while (swp<=nswp)
         
 %         res_prev = norm(B*sol_prev-rhs)/norm_rhs;
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
-        somedata{3}(i,(swp-1)*2+1.5-dir/2) = res_prev;
 
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             sol = B \ rhs;
@@ -280,7 +279,6 @@ while (swp<=nswp)
     else % Structured solution.
         
         res_prev = norm(bfun3(Phi1, A1, A2, Phi2, sol_prev) - rhs)/norm_rhs;
-        somedata{3}(i,(swp-1)*2+1.5-dir/2) = res_prev;
         
         if (res_prev>real_tol)&&((dir+dirfilter)~=0)
             if (~ismex)
@@ -438,6 +436,12 @@ while (swp<=nswp)
     
     dx(i) = norm(sol-sol_prev)/norm(sol);
     max_dx = max(max_dx, dx(i));
+    
+    if (strcmp(trunc_norm, 'fro'))
+        somedata{3}(i,(swp-1)*2+1.5-dir/2) = dx(i);
+    else
+        somedata{3}(i,(swp-1)*2+1.5-dir/2) = res_prev;
+    end;
     
     % The new core does not converge - increase rank
     if (dx(i)/dx_old(i)>top_conv)&&(dx(i)>tol)

@@ -1,6 +1,6 @@
-function [y]=amen_mv(A, x, tol, varargin)
+function [y,z]=amen_mv(A, x, tol, varargin)
 %Approximate the matrix-by-vector via the AMEn iteration
-%   [y]=amen_mv(A, x, tol, varargin)
+%   [y,z]=amen_mv(A, x, tol, varargin)
 %   Attempts to approximate the y = A*x
 %   with accuracy TOL using the AMEn+ALS iteration.
 %   Matrix A has to be given in the TT-format, right-hand side x should be
@@ -10,11 +10,18 @@ function [y]=amen_mv(A, x, tol, varargin)
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
 %   on. The parameters are set to default (in brackets in the following)
 %   The list of option names and default values are:
-%       o v0 - initial approximation to Krylov basis [x]
+%       o y0 - initial approximation to Ax [rand rank-2]
 %       o nswp - maximal number of sweeps [20]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o kickrank - compression rank of the error, 
 %         i.e. enrichment size [3]
+%       o init_qr - perform QR of the input (save some time in ts, etc) [true]
+%       o renorm - Orthog. and truncation methods: direct (svd,qr) or gram
+%         (apply svd to the gram matrix, faster for m>>n) [direct]
+%       o fkick - Perform solution enrichment during forward sweeps [false]
+%         (rather questionable yet; false makes error higher, but "better
+%         structured": it does not explode in e.g. subsequent matvecs)
+%       o z0 - initial approximation to the error Ax-y [rand rank-kickrank]
 %
 %
 %********
@@ -22,9 +29,16 @@ function [y]=amen_mv(A, x, tol, varargin)
 %   S. Dolgov, D. Savostyanov,
 %   Alternating minimal energy methods for linear systems
 %   in higher dimensions. Part I: SPD systems,
-%   http://arxiv.org/abs/1301.6068
+%   http://arxiv.org/abs/1301.6068,
 %
-%   Part II with more relevant details will come soon...
+%   and
+%
+%   Part II with more relevant details:
+%   S. Dolgov, D. Savostyanov,
+%   Alternating minimal energy methods for linear systems in higher dimensions. 
+%   Faster algorithm and application to nonsymmetric systems,
+%   http://arxiv.org/abs/1304.1222
+%
 %   Use {sergey.v.dolgov, drraug}@gmail.com for feedback
 %********
 %
@@ -44,9 +58,12 @@ nswp = 20;
 kickrank = 3;
 verb = 1;
 y = [];
+z = [];
 init_qr = true;
 renorm = 'direct';
 % renorm = 'gram';
+fkick = false;
+% fkick = true;
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -54,6 +71,8 @@ for i=1:2:length(varargin)-1
             nswp=varargin{i+1};
         case 'y0'
             y=varargin{i+1};
+        case 'z0'
+            z=varargin{i+1};            
         case 'verb'
             verb=varargin{i+1};
         case 'kickrank'
@@ -62,6 +81,8 @@ for i=1:2:length(varargin)-1
             init_qr = varargin{i+1};
         case 'renorm'
             renorm = varargin{i+1};
+        case 'fkick'
+            fkick = varargin{i+1};            
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -122,13 +143,24 @@ for i=1:d
 end;
 
 if (kickrank>0)
-    z = cell(d,1);
-    rz = [1; kickrank*ones(d-1, 1); 1];
-    z{1} = rand(1, n(1), kickrank);
-    for i=2:d-1
-        z{i} = rand(kickrank, n(i), kickrank);
+    if (isempty(z))
+        z = cell(d,1);
+        rz = [1; kickrank*ones(d-1, 1); 1];
+        z{1} = rand(1, n(1), kickrank);
+        for i=2:d-1
+            z{i} = rand(kickrank, n(i), kickrank);
+        end;
+        z{d} = rand(kickrank, n(d), 1);
+    else
+        if (isa(z, 'tt_tensor'))
+            z = core2cell(z);
+        end;
+        rz = ones(d+1,1);
+        for i=1:d
+            rz(i+1) = size(z{i}, 3);
+        end;
     end;
-    z{d} = rand(kickrank, n(d), 1);
+    
     phizax = cell(d+1,1); 
     if (atype==1)
         phizax{1}=1; phizax{d+1}=1;
@@ -220,18 +252,20 @@ while (swp<=nswp)
             yz = reshape(yz, rz(i)*n(i), rz(i+1));
             crz = crz - yz;
             % For adding into solution
-            crs = bfun3(phiyax{i}, A{i}, phizax{i+1}, crx);
-            crs = reshape(crs, ry(i)*n(i), rz(i+1));
-            crs = crs - ys;
-            u = [u,crs];
-            if (strcmp(renorm, 'gram'))&&(ry(i)*n(i)>5*(ry(i+1)+rz(i+1)))
-                [u,s,R]=svdgram(u);
-            else
-                [u,R]=qr(u, 0);
+            if (fkick)
+                crs = bfun3(phiyax{i}, A{i}, phizax{i+1}, crx);
+                crs = reshape(crs, ry(i)*n(i), rz(i+1));
+                crs = crs - ys;
+                u = [u,crs];
+                if (strcmp(renorm, 'gram'))&&(ry(i)*n(i)>5*(ry(i+1)+rz(i+1)))
+                    [u,s,R]=svdgram(u);
+                else
+                    [u,R]=qr(u, 0);
+                end;
+                v = [v, zeros(ry(i+1), rz(i+1))];
+                v = v*R.';
+                r = size(u, 2);
             end;
-            v = [v, zeros(ry(i+1), rz(i+1))];
-            v = v*R.';
-            r = size(u, 2);
         end;
         y{i} = reshape(u, ry(i), n(i), r);
         
@@ -250,11 +284,9 @@ while (swp<=nswp)
             else
                 [crz,R]=qr(crz, 0);
             end;
-            cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
-            cr2 = R*cr2;
             rz(i+1) = size(crz, 2);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
-            z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
+            % z{i+1} will be recomputed from scratch in the next step
             
             phizax{i+1} = compute_next_Phi(phizax{i}, z{i}, A{i}, x{i}, 'lr');
             phizy{i+1} = compute_next_Phi(phizy{i}, z{i}, [], y{i}, 'lr');
@@ -314,11 +346,9 @@ while (swp<=nswp)
             else
                 [crz,R]=qr(crz.', 0);
             end;
-            cr2 = reshape(z{i-1}, rz(i-1)*n(i-1), rz(i));
-            cr2 = cr2*R.';
             rz(i) = size(crz, 2);
             z{i} = reshape(crz.', rz(i), n(i), rz(i+1));
-            z{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
+            % don't update z{i-1}, it will be recomputed from scratch
             
             phizax{i} = compute_next_Phi(phizax{i+1}, z{i}, A{i}, x{i}, 'rl');
             phizy{i} = compute_next_Phi(phizy{i+1}, z{i}, [], y{i}, 'rl');
@@ -326,34 +356,35 @@ while (swp<=nswp)
     end;
     
     if (verb>1)
-        fprintf('amr-mv: swp=[%d,%d], dx=%3.3e, r=%d\n', swp, i, dx, r);
+        fprintf('amen-mv: swp=[%d,%d], dx=%3.3e, r=%d\n', swp, i, dx, r);
     end;
     
     % Stopping or reversing
     if ((dir>0)&&(i==d))||((dir<0)&&(i==1))
         if (verb>0)
-            fprintf('amr-mv: swp=%d{%d}, max_dx=%3.3e, max_r=%d\n', swp, (1-dir)/2, max_dx, max(ry));
+            fprintf('amen-mv: swp=%d{%d}, max_dx=%3.3e, max_r=%d\n', swp, (1-dir)/2, max_dx, max(ry));
         end;
-        if (max_dx<tol)
+        if ((max_dx<tol)||(swp==nswp))&&(dir>0)
             break;
         else
             % We are at the terminal block
             y{i} = reshape(cry, ry(i), n(i), ry(i+1));
             if (dir>0); swp = swp+1; end;
         end;
+        if (dir<0); max_dx = 0; end;        
         dir = -dir;
-        max_dx = 0;
     else
         i = i+dir;
     end;
 end;
-if (dir>0)
+% if (dir>0)
     y{d} = reshape(cry, ry(d), n(d), ry(d+1));
-else
-    y{1} = reshape(cry, ry(1), n(1), ry(2));
-end;
+% else
+%     y{1} = reshape(cry, ry(1), n(1), ry(2));
+% end;
 if (vectype==1)
     y = cell2core(tt_tensor, y);
+    z = cell2core(tt_tensor, z);
 end;
 end
 

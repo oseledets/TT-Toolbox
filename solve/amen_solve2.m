@@ -91,12 +91,15 @@ ismex = true;
 
 % kicktype = 'svd';
 kicktype = 'als';
+% kicktype = 'chol';
 % kicktype = 'rand';
 
 verb=1;
 kickrank = 4;
 x=[];
 crz = [];
+
+symm = false;
 
 
 for i=1:2:length(varargin)-1
@@ -131,6 +134,8 @@ for i=1:2:length(varargin)-1
             trunc_norm = varargin{i+1};
         case 'tol_exit'
             tol_exit = varargin{i+1};
+        case 'symm'
+            symm = varargin{i+1};
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
@@ -153,14 +158,21 @@ if (isempty(x))
     x = tt_rand(n, A.d, 2);
 end;
 
-
-ry = y.r;
-ra = A.r;
 rx = x.r;
-
-cry = core2cell(y);
-crA = core2cell(A);
 crx = core2cell(x);
+
+if (symm)
+    ra = A.r;    
+    ry = (y.r).*ra;
+    ra = ra.^2;
+    cry = core2cell(A'*y);
+    crA = core2cell(A'*A);
+else
+    ry = y.r;
+    ra = A.r;
+    cry = core2cell(y);
+    crA = core2cell(A);
+end;
 
 % Partial projections X'AX and X'Y
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
@@ -190,6 +202,12 @@ end;
 if (strcmp(kicktype, 'svd'))&&(kickrank>0)
     Rs = cell(d+1,1);
     Rs{1} = 1; Rs{d+1}=1;
+end;
+
+if (strcmp(kicktype, 'chol'))&&(kickrank>0)
+    Rs = cell(3,d+1);
+    Rs{1,1}=1; Rs{2,1}=1; Rs{3,1}=1;
+    Rs{1,d+1}=1; Rs{2,d+1}=1; Rs{3,d+1}=1;
 end;
 
 
@@ -244,6 +262,33 @@ for swp=1:nswp
             res2 = reshape(res2, r1, n(i)*r3);
             rr=qr(res2.', 0);
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
+        end;
+        
+        if (strcmp(kicktype, 'chol'))&&(kickrank>0)
+            % Cholestky factors Z_k*Z_k' = [y'y,y'Ax,x'A'y,x'A'Ax]
+            Rs{1,i} = compute_next_Phi(Rs{1,i+1}, cry{i}, [], cry{i}, 'rl');
+            Rs{2,i} = compute_next_Phi(Rs{2,i+1}, cry{i}, crA{i}, crx{i}, 'rl');
+            % The most heavy, (Ax)^2. Do it carefully to keep r^5 cmplx.
+            % Phi2: rx2, ra2, ra2', rx2'
+            Rs{3,i} = reshape(Rs{3,i+1}, rx(i+1), ra(i+1)*ra(i+1)*rx(i+1));
+            Rs{3,i} = reshape(crx{i}, rx(i)*n(i), rx(i+1))*Rs{3,i};
+            Rs{3,i} = reshape(Rs{3,i}, rx(i), n(i)*ra(i+1)*ra(i+1)*rx(i+1));
+            Rs{3,i} = Rs{3,i}.';
+            Rs{3,i} = reshape(Rs{3,i}, n(i)*ra(i+1), ra(i+1)*rx(i+1)*rx(i));
+            Rs{3,i} = reshape(crA{i}, ra(i)*n(i), n(i)*ra(i+1))*Rs{3,i};
+            Rs{3,i} = reshape(Rs{3,i}, ra(i), n(i)*ra(i+1)*rx(i+1)*rx(i));
+            Rs{3,i} = Rs{3,i}.';
+            Rs{3,i} = reshape(Rs{3,i}, n(i)*ra(i+1), rx(i+1)*rx(i)*ra(i));
+            % Now, not Ak, but Ak'
+            A1 = permute(crA{i}, [1,3,2,4]);
+            A1 = conj(reshape(A1, ra(i)*n(i), n(i)*ra(i+1)));
+            Rs{3,i} = A1*Rs{3,i};
+            Rs{3,i} = reshape(Rs{3,i}, ra(i), n(i)*rx(i+1)*rx(i)*ra(i));
+            Rs{3,i} = Rs{3,i}.';
+            Rs{3,i} = reshape(Rs{3,i}, n(i)*rx(i+1), rx(i)*ra(i)*ra(i)); % 2nd: rx,ra,ra'
+            Rs{3,i} = conj(reshape(crx{i}, rx(i), n(i)*rx(i+1)))*Rs{3,i};
+            Rs{3,i} = Rs{3,i}.'; % now rx,ra,ra',rx'
+            Rs{3,i} = reshape(Rs{3,i}, rx(i)*ra(i), ra(i)*rx(i));
         end;
         
         if strcmp(kicktype, 'als')&&(kickrank>0)
@@ -305,8 +350,6 @@ for swp=1:nswp
             
             res_prev = norm(B*sol_prev - rhs)/norm_rhs;
             
-            testdata{3}(i,swp) = res_prev;
-            
             if (res_prev>real_tol)
                 sol = B \ rhs;
                 res_new = norm(B*sol-rhs)/norm_rhs;
@@ -319,13 +362,11 @@ for swp=1:nswp
             
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
             
-            testdata{3}(i,swp) = res_prev;
-            
             if (res_prev>real_tol)
                 if (~ismex)
                     sol = solve3d_2ml(Phi1, A1, Phi2, rhs, real_tol*norm_rhs, sol_prev, local_prec_char, local_restart, local_iters);
                 else % use MEX
-                    sol = solve3d_2(Phi1, A1, Phi2, rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1, 0));
+                    sol = solve3d_2(Phi1, A1, Phi2, rhs, real_tol, trunc_norm_char, sol_prev, local_prec_char, local_restart, local_iters, 0);
                 end;
                 
                 res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
@@ -346,6 +387,12 @@ for swp=1:nswp
         dx = norm(sol-sol_prev)/norm(sol);
         max_dx = max(max_dx, dx);
         max_res = max(max_res, res_prev);
+        
+        if (strcmp(trunc_norm, 'fro'))
+            testdata{3}(i,swp) = dx;
+        else
+            testdata{3}(i,swp) = res_prev;
+        end;
         
         % Truncation
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
@@ -447,6 +494,56 @@ for swp=1:nswp
                     leftresid = [leftresid, -lefty]*Rs{i+1};
                     [uk,sk,vk]=svd(leftresid, 'econ');
                     uk = uk(:,1:min(kickrank, size(uk,2)));
+                elseif (strcmp(kicktype, 'chol'))
+                    leftresid = reshape(Phi1, rx(i)*rx(i), ra(i));
+                    leftresid = leftresid.';
+                    leftresid = reshape(leftresid, ra(i)*rx(i), rx(i));
+                    leftresid = leftresid*reshape(u*v.', rx(i), n(i)*rx(i+1));
+                    leftresid = reshape(leftresid, ra(i), rx(i), n(i), rx(i+1));
+                    leftresid = permute(leftresid, [1, 3, 2, 4]);
+                    leftresid = reshape(leftresid, ra(i)*n(i), rx(i)*rx(i+1));
+                    leftresid = reshape(permute(A1, [2,4,1,3]), n(i)*ra(i+1), ra(i)*n(i))*leftresid;
+                    leftresid = reshape(leftresid, n(i), ra(i+1), rx(i), rx(i+1));
+                    leftresid = permute(leftresid, [3,1,2,4]);
+                    leftresid = reshape(leftresid, rx(i)*n(i), ra(i+1)*rx(i+1));
+                    lefty = phiy{i}*y1;
+                    lefty = reshape(lefty, rx(i)*n(i), ry(i+1));
+                    
+                    leftresid1 = reshape(leftresid, rx(i)*n(i), ra(i+1), rx(i+1));
+                    leftresid1 = permute(leftresid1, [1,3,2]);
+                    leftresid1 = reshape(leftresid1, rx(i)*n(i), rx(i+1)*ra(i+1));
+                    leftresid2 = leftresid1*Rs{3,i+1};
+                    leftresid2 = leftresid2*leftresid'; % Ax*Ax' is ready
+                    
+                    % Rs2: rx2, ra2, ry2'. 
+                    leftyAx = reshape(Rs{2,i+1}, rx(i+1)*ra(i+1), ry(i+1));
+                    leftyAx = leftresid1*leftyAx;
+                    leftyAx = leftyAx*lefty'; % Ax*y' is ready
+                    % Rs1: ry2, ry2'
+                    lefty2 = lefty*Rs{1,i+1};
+                    lefty2 = lefty2*lefty'; % y*y' is ready
+                    % Finally, collect the Gramian
+                    leftresid2 = lefty2 - leftyAx - leftyAx' + leftresid2;
+                    % Inline choletsky - for fully generated Gramian
+                    uk = [];
+                    lam = [];
+                    dresid2 = diag(leftresid2);
+                    for k=1:min(kickrank, rx(i)*n(i))
+                        [vmax,imax]=max(dresid2);
+                        ucur = leftresid2(:,imax);
+                        if (k>1)
+                            ucur = ucur - uk*lam*uk(imax,:)';
+                        end;
+                        vmax = sqrt(abs(ucur(imax)));
+                        if (vmax<1e-150); break; end;
+                        ucur = ucur/vmax;
+                        dresid2 = dresid2 - ucur.^2;
+                        [uk, rv]=qr([uk, ucur], 0);
+                        lam = [[lam, zeros(k-1,1)]; zeros(1,k)];
+                        lam = lam + rv(:,k)*rv(:,k)';
+                        [rv,lam]=eig(lam);
+                        uk = uk*rv;
+                    end;
                 elseif (strcmp(kicktype, 'als'))
                     % Phi1: rz'1, rx1, ra1, or rz'1, ry1
                     % Phi2: rx2, ra2, rz'2, or ry2, rz'2

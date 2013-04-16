@@ -239,11 +239,12 @@ end;
 
 
 % This is some convergence output for test purposes
-somedata = cell(2,1); % local_res, real_res, %%%  V*Z^l, res_prev, dot(Z,Z^l)
+somedata = cell(3,1); % local_res, real_res, %%%  V*Z^l, res_prev, dot(Z,Z^l)
 % for i=1:1; somedata{i}=zeros(d,nswp*2); end;
 % somedata{7}=zeros(d,nswp*2);
 somedata{1} = zeros(d, nswp);
-somedata{2}=cell(nswp, d);
+somedata{2} = cell(nswp, d);
+somedata{3} = zeros(d, nswp);
 
 t_amr_solve = tic;
 
@@ -393,9 +394,14 @@ while (swp<=nswp)
 
     dx = norm(sol-sol_prev)/norm(sol);
     max_dx = max(max_dx, dx);
-
     max_res = max(max_res, res_prev);
-
+    
+    if (strcmp(trunc_norm, 'fro'))
+        somedata{3}(i,swp) = dx;
+    else
+        somedata{3}(i,swp) = res_prev;
+    end;
+    
     % Truncation
     if (dir>0) % left-to-right
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
@@ -468,7 +474,7 @@ while (swp<=nswp)
         end;
     end;
 
-    if (verb>1)
+    if (verb==2)
         fprintf('=amr_solve=   block %d{%d}, dx: %3.3e, res: %3.3e, r: %d\n', i, dir, dx, res_prev, r);
     end;
 
