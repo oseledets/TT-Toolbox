@@ -35,12 +35,11 @@ function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %
 %********
 %   For description of adaptive ALS please see
-%   S. Dolgov, D. Savostyanov,
-%   Alternating minimal energy methods for linear systems
-%   in higher dimensions. Part I: SPD systems,
-%   http://arxiv.org/abs/1301.6068
+%   Sergey V. Dolgov, Dmitry V. Savostyanov,
+%   Alternating minimal energy methods for linear systems in higher dimensions. 
+%   Part I: SPD systems, http://arxiv.org/abs/1301.6068,
+%   Part II: Faster algorithm and application to nonsymmetric systems, http://arxiv.org/abs/1304.1222
 %
-%   Part II with more relevant details will come soon...
 %   Use {sergey.v.dolgov, dmitry.savostyanov}@gmail.com for feedback
 %
 %   Some other techniques taken from

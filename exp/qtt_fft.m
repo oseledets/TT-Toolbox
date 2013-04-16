@@ -11,9 +11,9 @@ function [y]=qtt_fft(x, ds, tol)
 %
 %   !!WARNING!! employs a (probably) costly rank reverse procedure.
 %   
-%   See Dolgov,Khoromskij,Savostyanov, 
-%   "Superfast Fourier Transform Using QTT Approximation" (2012)
-%   for further details.
+%   See S. Dolgov, B. Khoromskij, D. Savostyanov, 
+%   Superfast Fourier transform using QTT approximation,
+%   J. Fourier Anal. Appl., 18(5), 2012.
 
 
 D = numel(ds);

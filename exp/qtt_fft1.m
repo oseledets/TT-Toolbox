@@ -6,9 +6,9 @@ function [y]=qtt_fft1(x, tol)
 %   Returns the frequency bits in the correct ordering. The tail ranks
 %   (if ~=1) will be reversed.
 %   
-%   See Dolgov,Khoromskij,Savostyanov, 
-%   "Superfast Fourier Transform Using QTT Approximation" (2012)
-%   for further details.
+%   See S. Dolgov, B. Khoromskij, D. Savostyanov, 
+%   Superfast Fourier transform using QTT approximation,
+%   J. Fourier Anal. Appl., 18(5), 2012.
 
 d = x.d;
 r = x.r;
