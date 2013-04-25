@@ -182,17 +182,9 @@ if (strcmp(kicktype, 'als'))&&(kickrank>0)
     phiza = cell(d+1,1); phiza{1}=1; phiza{d+1}=1;
     phizy = cell(d+1,1); phizy{1}=1; phizy{d+1}=1;
     if (isempty(crz))
-        % For a large-rank x0 it is not efficient to compute z.
-        % Try just RHS. Or a predefined z0 (e.g. in time-dependent problem)
-        crz = round(y, tol, kickrank);
+        crz = tt_rand(n, d, kickrank);
     end;
     rz = crz.r;
-    % The RHS might have smaller rank than kickrank, but the residual rank
-    % may grow. Make it equal to the required value.
-    if (max(rz)<kickrank)
-        crz = crz + tt_rand(n, d, kickrank-max(rz));
-        rz = crz.r;
-    end;
     crz = core2cell(crz);
 end;
 
