@@ -72,8 +72,7 @@ for i=1:d
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
-
-    sol = expv(tau, B, sol_prev, 1e-10, 30) + tau*rhs;
+    sol = expv_full(tau*B,sol_prev,1e-10,30,true) + tau*rhs;
 
     if (i<d) % we have S and V(implicitly)
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
@@ -98,8 +97,8 @@ for i=1:d
         rhss = reshape(rhss, rnew*rx(i+1), 1);
         
         S_prev = reshape(S_prev, rnew*rx(i+1), 1);
-        
-        S = expv(tau, -Bs, S_prev, 1e-10, 30) - tau*rhss;
+                
+        S = expv_full(-tau*Bs,S_prev,1e-10,30,true) - tau*rhss;
         
         % Stuff back and recompute phis
         S = reshape(S, rnew, rx(i+1));
@@ -153,7 +152,7 @@ for i=d:-1:1
         B = permute(B, [1, 3, 2, 4]);
         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
-        sol = expv(tau, B, sol_prev, 1e-10, 30) + tau*rhs;
+        sol = expv_full(tau*B,sol_prev,1e-10,30,true) + tau*rhs;
 
     if (i>1) % we have S and K(implicitly)
         
@@ -179,7 +178,7 @@ for i=d:-1:1
         
         S_prev = reshape(S_prev, rx(i)*rnew, 1);
         
-        S = expv(tau, -Bs, S_prev, 1e-10, 30) - tau*rhss;
+        S = expv_full(-tau*Bs,S_prev,1e-10,30,true) - tau*rhss;
         
         % Stuff back and recompute phis
         S = reshape(S, rx(i), rnew);
