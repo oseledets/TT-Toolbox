@@ -23,11 +23,13 @@ ps = c.ps;
 r = ra;
 for i=2:nargin
     b = varargin{i};
-    rb = b.r;
-    if (r(1)~=rb(1))
-        error('Inconsistent r(1) found, please check the arguments');
-    end
-    r(2:d+1) = r(2:d+1)+rb(2:d+1);
+    if (~isempty(b))
+        rb = b.r;
+        if (r(1)~=rb(1))
+            error('Inconsistent r(1) found, please check the arguments');
+        end
+        r(2:d+1) = r(2:d+1)+rb(2:d+1);
+    end;
 end;
 
 cr = cell(d,1);
@@ -39,13 +41,15 @@ end;
 curr = ra;
 for j=2:nargin
     b = varargin{j};
-    rb = b.r;
-    ps = b.ps;
-    cr{1}(1:r(1), :, curr(2)+1:curr(2)+rb(2)) = reshape(b.core(ps(1):ps(2)-1), rb(1), n(1), rb(2));
-    for i=2:d
-        cr{i}(curr(i)+1:curr(i)+rb(i), :, curr(i+1)+1:curr(i+1)+rb(i+1)) = reshape(b.core(ps(i):ps(i+1)-1), rb(i), n(i), rb(i+1));
+    if (~isempty(b))
+        rb = b.r;
+        ps = b.ps;
+        cr{1}(1:r(1), :, curr(2)+1:curr(2)+rb(2)) = reshape(b.core(ps(1):ps(2)-1), rb(1), n(1), rb(2));
+        for i=2:d
+            cr{i}(curr(i)+1:curr(i)+rb(i), :, curr(i+1)+1:curr(i+1)+rb(i+1)) = reshape(b.core(ps(i):ps(i+1)-1), rb(i), n(i), rb(i+1));
+        end;
+        curr = curr+rb;
     end;
-    curr = curr+rb;
 end;
 
 c = cell2core(c, cr);

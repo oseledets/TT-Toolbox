@@ -415,10 +415,8 @@ while (swp<=nswp)
         if ((max_dx<tol)||(swp==nswp))&&(dir>0)
             break;
         end;
-        if (dir>0) 
-            max_dx = 0; 
-            swp = swp+1;
-        end;        
+        if (dir<0); max_dx = 0; end;
+        if (dir>0); swp = swp+1; end;
         dir = -dir;
     else
         i = i+dir;

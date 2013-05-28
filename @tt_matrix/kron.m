@@ -1,5 +1,5 @@
 function [c] = kron(a,b)
-%Kronecker product of two TT-matrices
+%Kronecker product of two TT-matrices, canonical type
 %   [C]=KRON(A,B) Kronecker product of two TT-matrices. One of the
 %   arguments can be empty. Result has the same dimension as the arguments.
 %   Mode sizes are multiplied.

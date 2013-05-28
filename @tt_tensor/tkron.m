@@ -1,7 +1,8 @@
 function [c] = tkron(a,b)
-%Kronecker product of two TT-tensors
-%   [C]=TKRON(A,B)
-%       It computes the product in the "reverse fashion" by stacking the cores from first to the second
+%Kronecker product of two TT-tensors, little-endian tensor type
+%   [C] = TKRON(A, B) Kronecker product of two TT-tensors, gluing the TT
+%   representations of A and B
+%   For a MATLAB-compatible ("canonical") function, please use KRON(A, B)
 %
 % TT-Toolbox 2.2, 2009-2012
 %
