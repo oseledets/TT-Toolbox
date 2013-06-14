@@ -34,18 +34,13 @@ function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %           sol = amr_solve2(mat, rhs, 1e-5); % solve the Poisson eqn.
 %
 %********
-%   For description of adaptive ALS please see
-%   Sergey V. Dolgov, Dmitry V. Savostyanov,
-%   Alternating minimal energy methods for linear systems in higher dimensions. 
-%   Part I: SPD systems, http://arxiv.org/abs/1301.6068,
-%   Part II: Faster algorithm and application to nonsymmetric systems, http://arxiv.org/abs/1304.1222
+%   References:
+%   S. Dolgov, D. Savostyanov.
+%   http://arxiv.org/abs/1301.6068 
+%   http://arxiv.org/abs/1304.1222
+%   
+%   Please send feedback to: {sergey.v.dolgov,dmitry.savostyanov}@gmail.com
 %
-%   Use {sergey.v.dolgov, dmitry.savostyanov}@gmail.com for feedback
-%
-%   Some other techniques taken from
-%   S. Dolgov, I. Oseledets,
-%   Solution of linear systems and matrix inversion in the TT-format,
-%   SISC '12, doi:10.1137/110833142
 %********
 %
 % TT-Toolbox 2.2, 2009-2012

@@ -137,4 +137,8 @@ switch typ
   nrm = abs(sqrt(max(eig(MU)))); % approx. from below to the largest singular value
   %The norm should be real 
   return
+ otherwise
+     warning('unknown norm type');
+     nrm=-1;
+end
 end
