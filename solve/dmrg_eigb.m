@@ -38,7 +38,7 @@ rmax=2500;
 nswp=4;
 msize=1000;
 max_l_steps=200;
-kick_rank=5;
+kick_rank=0;
 verb=true;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -251,54 +251,56 @@ while ( swp <= nswp && not_converged )
            wnew=permute(wnew,[1,2,5,3,4]); wnew=reshape(wnew,[ry(i)*n(i)*k,n(i+1)*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s); 
            %Truncation block
-           %rnew=my_chop2(s,eps*norm(s)); 
-           %u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
-           %u=u*diag(s); %u has to be reshaped 
-           r0=1; r1=min(numel(s),rmax);
-           r=1;
+           rnew=my_chop2(s,eps*norm(s)); 
+           u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
+           u=u*diag(s); %u has to be reshaped 
            
-           while ( (r ~= r0 || r ~= r1) && r0 <= r1)
-            r=min(floor((r0+r1)/2),rmax);
-            %er0=norm(s(r+1:numel(s)));
-            u1=u(:,1:r)*diag(s(1:r)); 
-            %Sonate u1
-            u1=reshape(u1,[ry(i)*n(i),k,r]);
-            u1=permute(u1,[1,3,2]);
-            u1=reshape(u1,[numel(u1)/k,k]);
-            [u2,~,v2]=svd(u1,'econ');
-            u1=u2*v2';
-            u1=reshape(u1,[ry(i)*n(i),r,k]);
-            u1=permute(u1,[1,3,2]);
-            u1=reshape(u1,[numel(u1)/r,r]);
-            sol = u1*(v(:,1:r))';
-            
-            sol = reshape(sol,[ry(i),n(i),k,n(i+1),ry(i+2)]);
-            sol=permute(sol,[1,2,4,5,3]); sol=reshape(sol,[numel(sol)/k,k]);
-            %if ( norm(sol'*sol-eye(k))>1e-3 )
-            %  keyboard
-            %end
-            if (strcmp(matvec,'full'))
-                resid = norm(fm*sol-rhs)/norm(rhs);
-            else
-                resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
-            end;
-            if ( verb )
-            fprintf('sweep %d, block %d, r0=%d, r1=%d, r=%d, resid=%g, MatVec=%s\n', swp, i, r0, r1, r, resid,matvec);
-            end
-            if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
-              r1=r;
-            else %Is not OK.
-              r0=min(r+1,rmax);
-            end;
-            
-           end
-           rnew=r;
-           if ( norm(sol'*sol-eye(k)) > 1e-7 )
-             keyboard;
-           end
+           % Residual truncation
+%            r0=1; r1=min(numel(s),rmax);
+%            r=1;           
+%            while ( (r ~= r0 || r ~= r1) && r0 <= r1)
+%             r=min(floor((r0+r1)/2),rmax);
+%             %er0=norm(s(r+1:numel(s)));
+%             u1=u(:,1:r)*diag(s(1:r)); 
+%             %Sonate u1
+%             u1=reshape(u1,[ry(i)*n(i),k,r]);
+%             u1=permute(u1,[1,3,2]);
+%             u1=reshape(u1,[numel(u1)/k,k]);
+%             [u2,~,v2]=svd(u1,'econ');
+%             u1=u2*v2';
+%             u1=reshape(u1,[ry(i)*n(i),r,k]);
+%             u1=permute(u1,[1,3,2]);
+%             u1=reshape(u1,[numel(u1)/r,r]);
+%             sol = u1*(v(:,1:r))';
+%             
+%             sol = reshape(sol,[ry(i),n(i),k,n(i+1),ry(i+2)]);
+%             sol=permute(sol,[1,2,4,5,3]); sol=reshape(sol,[numel(sol)/k,k]);
+%             %if ( norm(sol'*sol-eye(k))>1e-3 )
+%             %  keyboard
+%             %end
+%             if (strcmp(matvec,'full'))
+%                 resid = norm(fm*sol-rhs)/norm(rhs);
+%             else
+%                 resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
+%             end;
+%             if ( verb )
+%             fprintf('sweep %d, block %d, r0=%d, r1=%d, r=%d, resid=%g, MatVec=%s\n', swp, i, r0, r1, r, resid,matvec);
+%             end
+%             if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
+%               r1=r;
+%             else %Is not OK.
+%               r0=min(r+1,rmax);
+%             end;
+%             
+%            end           
+%            rnew=r;
+%            u=u1; v=v(:,1:rnew);           
+           
+%            if ( norm(sol'*sol-eye(k)) > 1e-7 )
+%              keyboard;
+%            end
            %u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
            %u=u*diag(s); %u has to be reshaped 
-           u=u1; v=v(:,1:rnew);
            
            
            %Random restart block
@@ -375,46 +377,48 @@ while ( swp <= nswp && not_converged )
            wnew=reshape(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]); 
            wnew=permute(wnew,[1,2,3,5,4]); wnew=reshape(wnew,[ry(i)*n(i),n(i+1)*k*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s);
-           r0=1; r1=min(size(s,1),rmax);
-           r=1;
-           
-           while ( (r ~= r0 || r ~= r1) && r0 <= r1)
-            r=min(floor((r0+r1)/2),rmax);
-            %er0=norm(s(r+1:numel(s)));
-            v1=v(:,1:r)*diag(s(1:r)); 
-            %Sonate v1
-            v1=reshape(v1,[n(i+1),k,ry(i+2),r]);
-            v1=permute(v1,[1,3,4,2]);
-            v1=reshape(v1,[numel(v1)/k,k]);
-            [u2,~,v2]=svd(v1,'econ');
-            v1=u2*v2';
-            v1=reshape(v1,[n(i+1),ry(i+2),r,k]);
-            v1=permute(v1,[1,4,2,3]);
-            v1=reshape(v1,[numel(v1)/r,r]);
-            sol=u(:,1:r)*v1';
-            sol = reshape(sol,[ry(i),n(i),n(i+1),k,ry(i+2)]);
-            sol=permute(sol,[1,2,3,5,4]); sol=reshape(sol,[numel(sol)/k,k]);
-            if (strcmp(matvec,'full'))
-                resid = norm(fm*sol-rhs)/norm(rhs);
-            else
-                resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
-            end;
-            if ( verb )
-            fprintf('sweep %d, block %d, r0=%d r1=%d r=%d, resid=%g, MatVec=%s\n', swp, i, r0, r1, r, resid,matvec);
-            end
-            if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
-              r1=r;
-            else %Is not OK.
-              r0=min(r+1,rmax);
-            end;
-           end
-           rnew=r;         
-         
+           rnew=my_chop2(s,eps*norm(s)); 
+           u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
+           v=v*diag(s); %u has to be reshaped 
            
            
-           %Truncation block
-           %rnew=my_chop2(s,eps*norm(s));
-           u=u(:,1:rnew); v=v1;
+           % Residual truncation
+%            r0=1; r1=min(size(s,1),rmax);
+%            r=1;           
+%            while ( (r ~= r0 || r ~= r1) && r0 <= r1)
+%             r=min(floor((r0+r1)/2),rmax);
+%             %er0=norm(s(r+1:numel(s)));
+%             v1=v(:,1:r)*diag(s(1:r)); 
+%             %Sonate v1
+%             v1=reshape(v1,[n(i+1),k,ry(i+2),r]);
+%             v1=permute(v1,[1,3,4,2]);
+%             v1=reshape(v1,[numel(v1)/k,k]);
+%             [u2,~,v2]=svd(v1,'econ');
+%             v1=u2*v2';
+%             v1=reshape(v1,[n(i+1),ry(i+2),r,k]);
+%             v1=permute(v1,[1,4,2,3]);
+%             v1=reshape(v1,[numel(v1)/r,r]);
+%             sol=u(:,1:r)*v1';
+%             sol = reshape(sol,[ry(i),n(i),n(i+1),k,ry(i+2)]);
+%             sol=permute(sol,[1,2,3,5,4]); sol=reshape(sol,[numel(sol)/k,k]);
+%             if (strcmp(matvec,'full'))
+%                 resid = norm(fm*sol-rhs)/norm(rhs);
+%             else
+%                 resid = norm(bfun(mm,sol)-rhs)/norm(rhs);
+%             end;
+%             if ( verb )
+%             fprintf('sweep %d, block %d, r0=%d r1=%d r=%d, resid=%g, MatVec=%s\n', swp, i, r0, r1, r, resid,matvec);
+%             end
+%             if ((resid<max(res_true*1.2, eps)) ) %Value of the rank is OK
+%               r1=r;
+%             else %Is not OK.
+%               r0=min(r+1,rmax);
+%             end;
+%            end
+%            rnew=r;         
+%            %Truncation block
+%            %rnew=my_chop2(s,eps*norm(s));
+%            u=u(:,1:rnew); v=v1;
            
            %Random restart block
            radd=min(kick_rank,size(u,1)-rnew);

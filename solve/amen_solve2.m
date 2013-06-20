@@ -79,7 +79,7 @@ trunc_norm = 'residual';
 trunc_norm_char = 1;
 % trunc_norm = 'fro';
 
-tol_exit = tol;
+tol_exit = [];
 
 ismex = true;
 
@@ -95,6 +95,56 @@ crz = [];
 
 symm = false;
 
+% Global values
+global amengl_nswp
+global amengl_resid_damp
+global amengl_max_full_size
+global amengl_trunc_norm
+global amengl_verb
+global amengl_plusrank
+global amengl_tol
+global amengl_tol_exit
+global amengl_local_restart
+global amengl_local_iters
+global amengl_local_prec
+
+if (~isempty(amengl_tol))&&(isempty(tol))
+    tol = amengl_tol;
+end;
+if (~isempty(amengl_tol_exit))
+    tol_exit = amengl_tol_exit;
+end;
+if (~isempty(amengl_nswp))
+    nswp = amengl_nswp;
+end;
+if (~isempty(amengl_resid_damp))
+    resid_damp = amengl_resid_damp;
+end;
+if (~isempty(amengl_max_full_size))
+    max_full_size = amengl_max_full_size;
+end;
+if (~isempty(amengl_trunc_norm))
+    trunc_norm = amengl_trunc_norm;
+end;
+if (~isempty(amengl_verb))
+    verb = amengl_verb;
+end;
+if (~isempty(amengl_plusrank))
+    kickrank = amengl_plusrank;
+end;
+if (~isempty(amengl_local_restart))
+    local_restart = amengl_local_restart;
+end;
+if (~isempty(amengl_local_iters))
+    local_iters = amengl_local_iters;
+end;
+if (~isempty(amengl_local_prec))
+    local_prec = amengl_local_prec;
+end;
+
+if (isempty(tol_exit))
+    tol_exit = tol;
+end;
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
