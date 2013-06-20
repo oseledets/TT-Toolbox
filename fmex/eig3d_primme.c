@@ -55,7 +55,7 @@ void PrimmeMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 #define int __int32
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-// Input: Phi1 [r1,r1',ra1], A[ra1,n,n',ra2], Phi2[r2',ra2,r2], tol, B, sol_prev, max_matvecs = 500, max_basis_size = 100
+// Input: Phi1 [r1',r1,ra1], A[ra1,n',n,ra2], Phi2[r2,ra2,r2'], tol, B, sol_prev, max_matvecs = 500, max_basis_size = 100
 // Output: sol, lambda, num_matvecs
 {
 
@@ -151,14 +151,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     primme.numEvals = B;
 
     primme.matrixMatvec = PrimmeMatvec;
-    primme.printLevel = 3;
+    primme.printLevel = 1;
     primme.maxMatvecs = max_matvecs;
     primme.minRestartSize = B+1;
     if (B+1>rx1*n*rx2-1) { primme.minRestartSize = rx1*n*rx2-1; }
     primme.maxBasisSize = max_basis_size;
 
     primme.eps = tol;
-    primme.initSize = 0;
+//     primme.aNorm = 1.0; // It should be 1 to truncate in the residual norm. Default is fro
+
+    primme.initSize = B;
 
     i = rx1*n*rx2*B;
     j = 1;
