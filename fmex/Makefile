@@ -29,6 +29,9 @@ solve3d: solve3d.c
 solve3d_2: solve3d_2.c mytt.a
 	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims solve3d_2.c tt-fort/mytt.a -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)"; exit;'
 
+eig3d_primme: eig3d_primme.c tt-fort/primme/primme.a
+	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims eig3d_primme.c tt-fort/primme/primme.a -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)"; exit;'
+
 tt_read: tt_read.c
 	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims tt_read.c -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)"; exit;'
 
