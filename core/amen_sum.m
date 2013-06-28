@@ -87,39 +87,40 @@ end
 N = size(c,1);
 M = size(c,2);
 
-for j=1:N
-    if (isa(X{j}, 'tt_tensor'))
+Xin = X;
+
+for j=1:N    
+    if (isa(Xin{j}, 'tt_tensor'))
         if (j==1)
-            d = X{j}.d;
-            n = X{j}.n;
+            d = Xin{j}.d;
+            n = Xin{j}.n;
+            X = cell(d,N);
             rx = zeros(d+1,N);
         end;
-        rx(:,j) = X{j}.r;
-        X{j} = core2cell(X{j});
+        rx(:,j) = Xin{j}.r;
+        X(:,j) = core2cell(Xin{j});
         vectype = 1; % tt_tensor        
     else
         if (j==1)
-            d = numel(X{j});
+            d = numel(Xin{j});
             n = zeros(d,1);
             rx = ones(d+1,N);
             for i=1:d
-                n(i) = size(X{j}{i}, 2);
+                n(i) = size(Xin{j}{i}, 2);
             end;
+            X = cell(d,N);
         end;
         for i=1:d
-            rx(i+1,j) = size(X{j}{i}, 3);
+            rx(i+1,j) = size(Xin{j}{i}, 3);
         end;
+        X(:,j) = Xin{j};
         vectype = 0; % cell
     end;
 end;
 
 if (isempty(y))
-    y = cell(d,1);
-    y{1} = rand(1, n(1), 2);
-    for i=2:d-1
-        y{i} = rand(2, n(i), 2);
-    end;
-    y{d} = rand(2, n(d), 1);
+    init_qr = false;
+    y = gen_rand(n,d,2);
 else
     if (isa(y, 'tt_tensor'))
         y = core2cell(y);
@@ -132,14 +133,11 @@ end;
 
 if (kickrank>0)
     if (isempty(z))
-        z = cell(d,1);
-        rz = [1; kickrank*ones(d-1, 1); 1];
-        z{1} = rand(1, n(1), kickrank);
-        for i=2:d-1
-            z{i} = rand(kickrank, n(i), kickrank);
-        end;
-        z{d} = rand(kickrank, n(d), 1);
+        z = gen_rand(n,d,kickrank);
+        rz = [1; kickrank*ones(d-1,1); 1];
+        init_qr_z = false;
     else
+        init_qr_z = true;
         if (isa(z, 'tt_tensor'))
             z = core2cell(z);
         end;
@@ -176,26 +174,29 @@ for i=1:d-1
         y{i} = reshape(cr, ry(i), n(i), ry(i+1));
         y{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2));
     end;
-    for j=1:N
-        phiyx{i+1,j} = compute_next_Phi(phiyx{i,j}, y{i}, [], X{j}{i}, 'lr');
-    end;
+%     for j=1:N
+        phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr');
+%     end;
     
     if (kickrank>0)
-        cr = reshape(z{i}, rz(i)*n(i), rz(i+1));
-        if (strcmp(renorm, 'gram'))&&(rz(i)*n(i)>5*rz(i+1))
-            [cr,s,R]=svdgram(cr);
-        else
-            [cr,R]=qr(cr, 0);
+        if (init_qr_z)
+            cr = reshape(z{i}, rz(i)*n(i), rz(i+1));
+            if (strcmp(renorm, 'gram'))&&(rz(i)*n(i)>5*rz(i+1))
+                [cr,s,R]=svdgram(cr);
+            else
+                [cr,R]=qr(cr, 0);
+            end;
+            cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
+            cr2 = R*cr2;
+            rz(i+1) = size(cr, 2);
+            z{i} = reshape(cr, rz(i), n(i), rz(i+1));
+            z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
         end;
-        cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
-        cr2 = R*cr2;
-        rz(i+1) = size(cr, 2);
-        z{i} = reshape(cr, rz(i), n(i), rz(i+1));
-        z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
-        for j=1:N
-            phizx{i+1,j} = compute_next_Phi(phizx{i,j}, z{i}, [], X{j}{i}, 'lr');
-        end;
-        phizy{i+1} = compute_next_Phi(phizy{i}, z{i}, [], y{i}, 'lr');
+        
+%         for j=1:N
+            phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr');
+%         end;
+        phizy(i+1) = compute_next_Phi(phizy(i), z{i}, y(i), 'lr');
     end;
 end;
 
@@ -211,14 +212,17 @@ ry(d+1) = 1;
 
 while (swp<=nswp)
     % Project the sum
-    cry = zeros(ry(i)*n(i)*ry(i+1), N);
+%     cry = zeros(ry(i)*n(i)*ry(i+1), N);
+    cry = cell(1,N);
     for j=1:N
-        cryj = reshape(X{j}{i}, rx(i,j), n(i)*rx(i+1,j));
-        cryj = phiyx{i,j}*cryj;
-        cryj = reshape(cryj, ry(i)*n(i), rx(i+1,j));
-        cryj = cryj*phiyx{i+1,j};
-        cry(:,j) = reshape(cryj, ry(i)*n(i)*ry(i+1), 1);
+        cry{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
+        cry{j} = phiyx{i,j}*cry{j};
+        cry{j} = reshape(cry{j}, ry(i)*n(i), rx(i+1,j));
+        cry{j} = cry{j}*phiyx{i+1,j};
+        cry{j} = reshape(cry{j}, ry(i)*n(i)*ry(i+1), 1);
     end;
+    cry = cat(ry(i)*n(i)*ry(i+1), cry{:});
+    cry = reshape(cry, ry(i)*n(i)*ry(i+1), N);
     cry = cry*c;
     
     y{i} = reshape(y{i}, ry(i)*n(i)*ry(i+1), M);
@@ -253,14 +257,17 @@ while (swp<=nswp)
             cryz = reshape(crys, ry(i), n(i)*rz(i+1)*M);
             cryz = phizy{i}*cryz;
             cryz = reshape(cryz, rz(i)*n(i)*rz(i+1), M);
-            crz = zeros(rz(i)*n(i)*rz(i+1), N);
+%             crz = zeros(rz(i)*n(i)*rz(i+1), N);
+            crz = cell(1,N);
             for j=1:N
-                crzj = reshape(X{j}{i}, rx(i,j), n(i)*rx(i+1,j));
-                crzj = phizx{i,j}*crzj;
-                crzj = reshape(crzj, rz(i)*n(i), rx(i+1,j));
-                crzj = crzj*phizx{i+1,j};
-                crz(:,j) = reshape(crzj, rz(i)*n(i)*rz(i+1), 1);
+                crz{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                crz{j} = phizx{i,j}*crz{j};
+                crz{j} = reshape(crz{j}, rz(i)*n(i), rx(i+1,j));
+                crz{j} = crz{j}*phizx{i+1,j};
+                crz{j} = reshape(crz{j}, rz(i)*n(i)*rz(i+1), 1);
             end;
+            crz = cat(rz(i)*n(i)*rz(i+1), crz{:});
+            crz = reshape(crz, rz(i)*n(i)*rz(i+1), N);            
             crz = crz*c;
             crz = crz - cryz;
             crz = reshape(crz, rz(i)*n(i), rz(i+1)*M);
@@ -268,14 +275,17 @@ while (swp<=nswp)
             crz = crz(:, 1:min(size(crz,2), kickrank));
             % For adding into solution
             if (fkick)
-                crs = zeros(ry(i)*n(i)*rz(i+1), N);
+%                 crs = zeros(ry(i)*n(i)*rz(i+1), N);
+                crs = cell(1,N);
                 for j=1:N
-                    crsj = reshape(X{j}{i}, rx(i,j), n(i)*rx(i+1,j));
-                    crsj = phiyx{i,j}*crsj;
-                    crsj = reshape(crsj, ry(i)*n(i), rx(i+1,j));
-                    crsj = crsj*phizx{i+1,j};
-                    crs(:,j) = reshape(crsj, ry(i)*n(i)*rz(i+1), 1);
+                    crs{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                    crs{j} = phiyx{i,j}*crs{j};
+                    crs{j} = reshape(crs{j}, ry(i)*n(i), rx(i+1,j));
+                    crs{j} = crs{j}*phizx{i+1,j};
+                    crs{j} = reshape(crs{j}, ry(i)*n(i)*rz(i+1), 1);
                 end;
+                crs = cat(ry(i)*n(i)*rz(i+1), crs{:});
+                crs = reshape(crs, ry(i)*n(i)*rz(i+1), N);
                 crs = crs*c;
                 crs = crs - crys;
                 crs = reshape(crs, ry(i)*n(i), rz(i+1)*M);
@@ -302,18 +312,18 @@ while (swp<=nswp)
         
         ry(i+1) = r;
         
-        for j=1:N
-            phiyx{i+1,j} = compute_next_Phi(phiyx{i,j}, y{i}, [], X{j}{i}, 'lr');
-        end;
+%         for j=1:N
+            phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr');
+%         end;
         
         if (kickrank>0)
             rz(i+1) = size(crz, 2);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
-            for j=1:N
-                phizx{i+1,j} = compute_next_Phi(phizx{i,j}, z{i}, [], X{j}{i}, 'lr');
-            end;
-            phizy{i+1} = compute_next_Phi(phizy{i}, z{i}, [], y{i}, 'lr');
+%             for j=1:N
+                phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr');
+%             end;
+            phizy(i+1) = compute_next_Phi(phizy(i), z{i}, y(i), 'lr');
         end;
     elseif ((dir<0)&&(i>1))
         cry = reshape(cry.', M*ry(i), n(i)*ry(i+1));
@@ -336,14 +346,17 @@ while (swp<=nswp)
             cryz = cryz*phizy{i+1};
             cryz = reshape(cryz, M, rz(i)*n(i)*rz(i+1));
             cryz = cryz.';
-            crz = zeros(rz(i)*n(i)*rz(i+1), N);
+%             crz = zeros(rz(i)*n(i)*rz(i+1), N);
+            crz = cell(1,N);
             for j=1:N
-                crzj = reshape(X{j}{i}, rx(i,j), n(i)*rx(i+1,j));
-                crzj = phizx{i,j}*crzj;
-                crzj = reshape(crzj, rz(i)*n(i), rx(i+1,j));
-                crzj = crzj*phizx{i+1,j};
-                crz(:,j) = reshape(crzj, rz(i)*n(i)*rz(i+1), 1);
+                crz{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                crz{j} = phizx{i,j}*crz{j};
+                crz{j} = reshape(crz{j}, rz(i)*n(i), rx(i+1,j));
+                crz{j} = crz{j}*phizx{i+1,j};
+                crz{j} = reshape(crz{j}, rz(i)*n(i)*rz(i+1), 1);
             end;
+            crz = cat(rz(i)*n(i)*rz(i+1), crz{:});
+            crz = reshape(crz, rz(i)*n(i)*rz(i+1), N);
             crz = crz*c;
             crz = crz - cryz;
             crz = reshape(crz.', M*rz(i), n(i)*rz(i+1));
@@ -351,14 +364,17 @@ while (swp<=nswp)
             crz = crz(:, 1:min(size(crz,2), kickrank));
             crz = crz';
             % For adding into solution
-                crs = zeros(rz(i)*n(i)*ry(i+1), N);
+%                 crs = zeros(rz(i)*n(i)*ry(i+1), N);
+                crs = cell(1,N);
                 for j=1:N
-                    crsj = reshape(X{j}{i}, rx(i,j), n(i)*rx(i+1,j));
-                    crsj = phizx{i,j}*crsj;
-                    crsj = reshape(crsj, rz(i)*n(i), rx(i+1,j));
-                    crsj = crsj*phiyx{i+1,j};
-                    crs(:,j) = reshape(crsj, rz(i)*n(i)*ry(i+1), 1);
+                    crs{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                    crs{j} = phizx{i,j}*crs{j};
+                    crs{j} = reshape(crs{j}, rz(i)*n(i), rx(i+1,j));
+                    crs{j} = crs{j}*phiyx{i+1,j};
+                    crs{j} = reshape(crs{j}, rz(i)*n(i)*ry(i+1), 1);
                 end;
+                crs = cat(rz(i)*n(i)*ry(i+1), crs{:});
+                crs = reshape(crs, rz(i)*n(i)*ry(i+1), N);
                 crs = crs*c;
                 crs = crs - crys;
                 crs = reshape(crs.', M*rz(i), n(i)*ry(i+1));
@@ -386,18 +402,18 @@ while (swp<=nswp)
         
         ry(i) = r;
         
-        for j=1:N
-            phiyx{i,j} = compute_next_Phi(phiyx{i+1,j}, y{i}, [], X{j}{i}, 'rl');
-        end;
+%         for j=1:N
+            phiyx(i,:) = compute_next_Phi(phiyx(i+1,:), y{i}, X(i,:), 'rl');
+%         end;
         
         if (kickrank>0)
             rz(i) = size(crz, 1);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
-            for j=1:N
-                phizx{i,j} = compute_next_Phi(phizx{i+1,j}, z{i}, [], X{j}{i}, 'rl');
-            end;
-            phizy{i} = compute_next_Phi(phizy{i+1}, z{i}, [], y{i}, 'rl');
+%             for j=1:N
+                phizx(i,:) = compute_next_Phi(phizx(i+1,:), z{i}, X(i,:), 'rl');
+%             end;
+            phizy(i) = compute_next_Phi(phizy(i+1), z{i}, y(i), 'rl');
         end;
     else
         y{i} = reshape(y{i}, ry(i), n(i), ry(i+1), M);
@@ -431,104 +447,61 @@ end
 
 
 % new
-function [Phi] = compute_next_Phi(Phi_prev, x, A, y, direction)
+function [Phi] = compute_next_Phi(Phi_prev, x, Y, direction)
 % Performs the recurrent Phi (or Psi) matrix computation
-% Phi = Phi_prev * (x'Ay).
+% Phi = Phi_prev * (x'y).
 % If direction is 'lr', computes Psi
 % if direction is 'rl', computes Phi
 % A can be empty, then only x'y is computed.
 
-% Phi1: rx1, ry1, ra1, or {rx1, ry1}_ra, or rx1, ry1
-% Phi2: ry2, ra2, rx2, or {ry2, rx2}_ra, or ry2, rx2
-
+% Phi1:  rx1, ry1
+% Phi2:  ry2, rx2
 
 rx1 = size(x,1); n = size(x,2); rx2 = size(x,3);
-ry1 = size(y,1); m = size(y,2); ry2 = size(y,3);
-if (~isempty(A))
-    if (isa(A, 'cell'))
-        % A is a canonical block
-        ra = numel(A); 
-    else
-        % Just full format
-        ra1 = size(A,1)/n; ra2 = size(A,2)/m;
+N = numel(Y);
+Phi = cell(1,N);
+if (strcmp(direction, 'lr'))
+    %lr: Phi1
+    x = reshape(x, rx1, n*rx2);
+    for i=1:N
+        y = Y{i};
+        ry1 = size(y,1); ry2 = size(y,3);
+        Phi{i} = x'*Phi_prev{i};
+        Phi{i} = reshape(Phi{i}, n, rx2*ry1);
+        Phi{i} = Phi{i}.';
+        Phi{i} = reshape(Phi{i}, rx2, ry1*n);
+        y = reshape(y, ry1*n, ry2);
+        Phi{i} = Phi{i}*y;
+        Phi{i} = reshape(Phi{i}, rx2, ry2);
     end;
 else
-    ra1 = 1; ra2 = 1;
+    %rl: Phi2
+    x = reshape(x, rx1, n*rx2);
+    for i=1:N
+        y = Y{i};
+        ry1 = size(y,1); ry2 = size(y,3);
+        y = reshape(y, ry1*n, ry2);
+        Phi{i} = y*Phi_prev{i};
+        Phi{i} = reshape(Phi{i}, ry1, n*rx2);
+        Phi{i} = Phi{i}*x';
+        Phi{i} = reshape(Phi{i}, ry1, rx1);
+    end;
 end;
 
-if (isa(Phi_prev, 'cell'))
-    Phi = cell(ra, 1);
-    if (strcmp(direction, 'lr'))
-        %lr: Phi1
-        x = reshape(x, rx1, n*rx2);
-        y = reshape(y, ry1*m, ry2);
-        for i=1:ra
-            Phi{i} = x'*Phi_prev{i};
-            Phi{i} = reshape(Phi{i}, n, rx2*ry1);            
-            Phi{i} = Phi{i}.';            
-            Phi{i} = Phi{i}*A{i};
-            Phi{i} = reshape(Phi{i}, rx2, ry1*m);
-            Phi{i} = Phi{i}*y;
-        end;
-    else
-        %rl: Phi2
-        y = reshape(y, ry1, m*ry2);
-        x = reshape(x, rx1*n, rx2);
-        for i=1:ra
-            Phi{i} = Phi_prev{i}*x';
-            Phi{i} = reshape(Phi{i}, ry2*rx1, n);
-            Phi{i} = Phi{i}*A{i};
-            Phi{i} = Phi{i}.';
-            Phi{i} = reshape(Phi{i}, m*ry2, rx1);
-            Phi{i} = y*Phi{i};
-        end;
-    end;
-else
-    if (strcmp(direction, 'lr'))
-        %lr: Phi1
-        x = reshape(x, rx1, n*rx2);
-        Phi = reshape(Phi_prev, rx1, ry1*ra1);
-        Phi = x'*Phi;
-        if (~isempty(A))
-            Phi = reshape(Phi, n*rx2*ry1, ra1);
-            Phi = Phi.';
-            Phi = reshape(Phi, ra1*n, rx2*ry1);
-            Phi = A.'*Phi;
-            Phi = reshape(Phi, m, ra2*rx2*ry1);
-        else
-            Phi = reshape(Phi, n, rx2*ry1);
-        end;
-        Phi = Phi.';
-        Phi = reshape(Phi, ra2*rx2, ry1*m);        
-        y = reshape(y, ry1*m, ry2);
-        Phi = Phi*y;
-        if (~isempty(A))
-            Phi = reshape(Phi, ra2, rx2*ry2);
-            Phi = Phi.';
-        end;
-        Phi = reshape(Phi, rx2, ry2, ra2);
-    else
-        %rl: Phi2
-        y = reshape(y, ry1*m, ry2);
-        Phi = reshape(Phi_prev, ry2, ra2*rx2);
-        Phi = y*Phi;
-        if (~isempty(A))
-            Phi = reshape(Phi, ry1, m*ra2*rx2);
-            Phi = Phi.';
-            Phi = reshape(Phi, m*ra2, rx2*ry1);
-            Phi = A*Phi;
-            Phi = reshape(Phi, ra1*n*rx2, ry1);
-            Phi = Phi.';
-        end;        
-        Phi = reshape(Phi, ry1*ra1, n*rx2);
-        x = reshape(x, rx1, n*rx2);
-        Phi = Phi*x';
-        if (~isempty(A))
-            Phi = reshape(Phi, ry1, ra1, rx1);
-        else
-            Phi = reshape(Phi, ry1, rx1);
-        end;
-    end;
+end
+
+
+function [x]=gen_rand(n,d,r)
+% Generate an orthogonal random vector
+
+if (numel(r)==1)
+    r = [1; r*ones(d-1,1); 1];
+end;
+x = cell(d,1);
+for i=1:d
+    cr = randn(r(i)*n(i), r(i+1));
+    [cr,R]=qr(cr,0);
+    x{i} = reshape(cr, r(i), n(i), r(i+1));
 end;
 
 end
