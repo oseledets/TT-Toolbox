@@ -270,6 +270,7 @@ while (swp<=nswp)
             crz = reshape(crz, rz(i)*n(i)*rz(i+1), N);            
             crz = crz*c;
             crz = crz - cryz;
+            nrmz = norm(crz, 'fro');
             crz = reshape(crz, rz(i)*n(i), rz(i+1)*M);
             [crz,sz,vz]=svd(crz, 'econ');
             crz = crz(:, 1:min(size(crz,2), kickrank));
@@ -359,6 +360,7 @@ while (swp<=nswp)
             crz = reshape(crz, rz(i)*n(i)*rz(i+1), N);
             crz = crz*c;
             crz = crz - cryz;
+            nrmz = norm(crz, 'fro');
             crz = reshape(crz.', M*rz(i), n(i)*rz(i+1));
             [vz,sz,crz]=svd(crz, 'econ');
             crz = crz(:, 1:min(size(crz,2), kickrank));
@@ -420,7 +422,7 @@ while (swp<=nswp)
     end;
     
     if (verb>1)
-        fprintf('amen-sum: swp=[%d,%d], dx=%3.3e, r=%d\n', swp, i, dx, r);
+        fprintf('amen-sum: swp=[%d,%d], dx=%3.3e, r=%d, |y|=%3.3e, |z|=%3.3e\n', swp, i, dx, r, norm(cry, 'fro'), nrmz);
     end;
     
     % Stopping or reversing
