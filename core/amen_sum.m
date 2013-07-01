@@ -102,11 +102,12 @@ if (can)
     N = 1;
     % X itself is already given in the required format
     d = numel(X);
+    R = size(X{1}, 2);    
+    nrms = ones(d,1);
     n = zeros(d,1);
     for i=1:d
         n(i) = size(X{i}, 1);
     end;
-    R = size(X{1}, 2);
     vectype = 1;
 else
     R = 1;
@@ -116,6 +117,11 @@ else
                 d = Xin{j}.d;
                 n = Xin{j}.n;
                 X = cell(d,N);
+                
+                % A storage for norms.
+                % Z may be kept normalized, but for y we will have y_real = y*prod(nrms).
+                % The same for all x. But note that we keep only the _scale_ for all x vecs.
+                nrms = ones(d,1);
             end;
             X(:,j) = core2cell(Xin{j});
             vectype = 1; % tt_tensor
@@ -191,8 +197,7 @@ for i=1:d-1
         y{i} = reshape(cr, ry(i), n(i), ry(i+1));
         y{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2));
     end;
-    phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
-    
+    [phiyx(i+1,:),nrms(i)] = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
     
     if (kickrank>0)
         if (init_qr_z)
@@ -227,6 +232,10 @@ ry(d+1) = 1;
 while (swp<=nswp)
     % Project the sum
     cry = proj_sum(phiyx(i,:), X(i,:), phiyx(i+1,:), c);
+    % It will survive in the terminal block. All we need.
+    nrms(i) = norm(cry, 'fro');
+    % The main goal is to keep y{i} of norm 1
+    cry = cry/nrms(i);
     
     % Check stopping criteria
     y{i} = reshape(y{i}, ry(i)*n(i)*ry(i+1), M);
@@ -301,7 +310,7 @@ while (swp<=nswp)
         
         ry(i+1) = r;
         
-        phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
+        [phiyx(i+1,:), nrms(i)] = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
         
         if (kickrank>0)
             rz(i+1) = size(crz, 2);
@@ -367,7 +376,7 @@ while (swp<=nswp)
         
         ry(i) = r;
         
-        phiyx(i,:) = compute_next_Phi(phiyx(i+1,:), y{i}, X(i,:), 'rl', can);
+        [phiyx(i,:), nrms(i)] = compute_next_Phi(phiyx(i+1,:), y{i}, X(i,:), 'rl', can);
         
         if (kickrank>0)
             rz(i) = size(crz, 1);
@@ -392,22 +401,34 @@ while (swp<=nswp)
         if ((max_dx<tol)||(swp==nswp))&&(dir>0)
             break;
         end;
-        if (dir<0); max_dx = 0; end;
+        max_dx = 0;
         if (dir>0); swp = swp+1; end;
         dir = -dir;
     else
         i = i+dir;
     end;
 end;
+
 y{d} = reshape(cry, ry(d), n(d), M);
+
+% Distribute norms equally...
+nrms = log(nrms);
+nrms = mean(nrms)*ones(d,1);
+nrms = exp(nrms);
+% ... and plug them into y
+for i=1:d
+    y{i} = y{i}*nrms(i);
+end;
+
 if (vectype==1)
     y = cell2core(tt_tensor, y);
     z = cell2core(tt_tensor, z);
 end;
+
 end
 
 
-function [Phi] = compute_next_Phi(Phi_prev, x, Y, direction, can)
+function [Phi,nrm] = compute_next_Phi(Phi_prev, x, Y, direction, can)
 % Performs the recurrent Phi (or Psi) matrix computation
 % Phi = Phi_prev * (x'y).
 % If direction is 'lr', computes Psi
@@ -439,6 +460,9 @@ if (can) % We are working with the canonical format
         Phi{1} = reshape(Phi{1}, n, rx2*R);
         Phi{1} = sum(Phi{1}, 1);
         Phi{1} = reshape(Phi{1}, rx2, R);
+        % Extract the scale to prevent overload
+        nrm = norm(Phi{1}, 'fro');
+        Phi{1} = Phi{1}/nrm;
     else
         %rl: Phi2
         x = reshape(x, rx1*n, rx2);
@@ -450,12 +474,16 @@ if (can) % We are working with the canonical format
         Phi{1} = reshape(Phi{1}, R*rx1, n);
         Phi{1} = sum(Phi{1}, 2);
         Phi{1} = reshape(Phi{1}, R, rx1);
+        % Extract the scale to prevent overload
+        nrm = norm(Phi{1}, 'fro');
+        Phi{1} = Phi{1}/nrm;        
     end;
 else % a set of TT-tensors
     Phi = cell(1,N);
     if (strcmp(direction, 'lr'))
         %lr: Phi1
         x = reshape(x, rx1, n*rx2);
+        nrm = 0;
         for i=1:N
             y = Y{i};
             ry1 = size(y,1); ry2 = size(y,3);
@@ -466,10 +494,16 @@ else % a set of TT-tensors
             y = reshape(y, ry1*n, ry2);
             Phi{i} = Phi{i}*y;
             Phi{i} = reshape(Phi{i}, rx2, ry2);
+            nrm = max(nrm, norm(Phi{i}, 'fro'));
+        end;
+        % Extract the scale to prevent overload
+        for i=1:N
+            Phi{i} = Phi{i}/nrm;
         end;
     else
         %rl: Phi2
         x = reshape(x, rx1, n*rx2);
+        nrm = 0;
         for i=1:N
             y = Y{i};
             ry1 = size(y,1); ry2 = size(y,3);
@@ -478,6 +512,11 @@ else % a set of TT-tensors
             Phi{i} = reshape(Phi{i}, ry1, n*rx2);
             Phi{i} = Phi{i}*x';
             Phi{i} = reshape(Phi{i}, ry1, rx1);
+            nrm = max(nrm, norm(Phi{i}, 'fro'));
+        end;
+        % Extract the scale to prevent overload
+        for i=1:N
+            Phi{i} = Phi{i}/nrm;
         end;
     end;
 end;
