@@ -42,6 +42,7 @@ function [y,z]=amen_sum(X, c, tol, varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 
+% Special case: amen_sum called from another amen package
 if (~isempty(varargin))
     v1 = varargin{1};
     if (isa(v1, 'cell'))
@@ -49,6 +50,7 @@ if (~isempty(varargin))
     end;
 end;
 
+% Default valuse
 nswp = 20;
 kickrank = 4;
 verb = 1;
@@ -62,7 +64,7 @@ rmax = Inf;
 
 can = false; % Whether the input is the canonical format
 
-
+% Read parameters from input sequence
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -70,7 +72,7 @@ for i=1:2:length(varargin)-1
         case 'y0'
             y=varargin{i+1};
         case 'z0'
-            z=varargin{i+1};            
+            z=varargin{i+1};
         case 'verb'
             verb=varargin{i+1};
         case 'kickrank'
@@ -82,7 +84,7 @@ for i=1:2:length(varargin)-1
         case 'fkick'
             fkick = varargin{i+1};
         case 'rmax'
-            rmax = varargin{i+1};          
+            rmax = varargin{i+1};
         case 'can'
             can = varargin{i+1};
             
@@ -91,9 +93,9 @@ for i=1:2:length(varargin)-1
     end
 end
 
+% Convert input to canonical or TT cell array
 N = size(c,1);
 M = size(c,2);
-
 Xin = X;
 
 if (can)
@@ -106,7 +108,7 @@ if (can)
     end;
     R = size(X{1}, 2);
     vectype = 1;
-else   
+else
     R = 1;
     for j=1:N
         if (isa(Xin{j}, 'tt_tensor'))
@@ -132,6 +134,7 @@ else
     end;
 end;
 
+% Initial guess
 if (isempty(y))
     init_qr = false;
     [y,ry] = gen_rand(n,d,2);
@@ -145,6 +148,7 @@ else
     end;
 end;
 
+% Enrichment vector
 if (kickrank>0)
     if (isempty(z))
         [z,rz] = gen_rand(n,d,kickrank);
@@ -160,7 +164,7 @@ if (kickrank>0)
         end;
     end;
     
-    phizx = cell(d+1,N); 
+    phizx = cell(d+1,N);
     for j=1:N
         phizx{1,j}=ones(1,R); phizx{d+1,j}=ones(R,1);
     end;
@@ -177,7 +181,7 @@ for i=1:d-1
     if (init_qr)
         cr = reshape(y{i}, ry(i)*n(i), ry(i+1));
         if (strcmp(renorm, 'gram'))&&(ry(i)*n(i)>5*ry(i+1))
-            [cr,s,R]=svdgram(cr);
+            [cr,~,R]=svdgram(cr);
         else
             [cr,R]=qr(cr, 0);
         end;
@@ -187,15 +191,14 @@ for i=1:d-1
         y{i} = reshape(cr, ry(i), n(i), ry(i+1));
         y{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2));
     end;
-%     for j=1:N
-        phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
-%     end;
+    phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
+    
     
     if (kickrank>0)
         if (init_qr_z)
             cr = reshape(z{i}, rz(i)*n(i), rz(i+1));
             if (strcmp(renorm, 'gram'))&&(rz(i)*n(i)>5*rz(i+1))
-                [cr,s,R]=svdgram(cr);
+                [cr,~,R]=svdgram(cr);
             else
                 [cr,R]=qr(cr, 0);
             end;
@@ -206,9 +209,7 @@ for i=1:d-1
             z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
         end;
         
-%         for j=1:N
-            phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can);
-%         end;
+        phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can);
         phizy(i+1) = compute_next_Phi(phizy(i), z{i}, y(i), 'lr');
     end;
 end;
@@ -225,20 +226,9 @@ ry(d+1) = 1;
 
 while (swp<=nswp)
     % Project the sum
-%     cry = zeros(ry(i)*n(i)*ry(i+1), N);
-%     cry = cell(1,N);
-%     for j=1:N
-%         cry{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
-%         cry{j} = phiyx{i,j}*cry{j};
-%         cry{j} = reshape(cry{j}, ry(i)*n(i), rx(i+1,j));
-%         cry{j} = cry{j}*phiyx{i+1,j};
-%         cry{j} = reshape(cry{j}, ry(i)*n(i)*ry(i+1), 1);
-%     end;
-%     cry = cat(ry(i)*n(i)*ry(i+1), cry{:});
-%     cry = reshape(cry, ry(i)*n(i)*ry(i+1), N);
-%     cry = cry*c;
     cry = proj_sum(phiyx(i,:), X(i,:), phiyx(i+1,:), c);
     
+    % Check stopping criteria
     y{i} = reshape(y{i}, ry(i)*n(i)*ry(i+1), M);
     dx = norm(cry-y{i}, 'fro')/norm(cry, 'fro');
     max_dx = max(max_dx, dx);
@@ -247,7 +237,7 @@ while (swp<=nswp)
     if ((dir>0)&&(i<d))
         cry = reshape(cry, ry(i)*n(i), ry(i+1)*M);
         if (strcmp(renorm, 'gram'))
-            [u,s,v]=svdgram(cry, tol/sqrt(d));
+            [u,~,v]=svdgram(cry, tol/sqrt(d));
             v = v.';
             if (size(u,2)>rmax)
                 u = u(:,1:rmax);
@@ -261,7 +251,7 @@ while (swp<=nswp)
             r = min(r,rmax);
             u = u(:,1:r);
             v = conj(v(:,1:r))*diag(s(1:r));
-        end;        
+        end;
         
         % Prepare enrichment, if needed
         if (kickrank>0)
@@ -276,46 +266,23 @@ while (swp<=nswp)
             cryz = reshape(crys, ry(i), n(i)*rz(i+1)*M);
             cryz = phizy{i}*cryz;
             cryz = reshape(cryz, rz(i)*n(i)*rz(i+1), M);
-%             crz = zeros(rz(i)*n(i)*rz(i+1), N);
-%             crz = cell(1,N);
-%             for j=1:N
-%                 crz{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
-%                 crz{j} = phizx{i,j}*crz{j};
-%                 crz{j} = reshape(crz{j}, rz(i)*n(i), rx(i+1,j));
-%                 crz{j} = crz{j}*phizx{i+1,j};
-%                 crz{j} = reshape(crz{j}, rz(i)*n(i)*rz(i+1), 1);
-%             end;
-%             crz = cat(rz(i)*n(i)*rz(i+1), crz{:});
-%             crz = reshape(crz, rz(i)*n(i)*rz(i+1), N);            
-%             crz = crz*c;
+            
             crz = proj_sum(phizx(i,:), X(i,:), phizx(i+1,:), c);
             crz = crz - cryz;
             nrmz = norm(crz, 'fro');
             crz = reshape(crz, rz(i)*n(i), rz(i+1)*M);
-            [crz,sz,vz]=svd(crz, 'econ');
+            [crz,~,~]=svd(crz, 'econ');
             crz = crz(:, 1:min(size(crz,2), kickrank));
             % For adding into solution
             if (fkick)
-%                 crs = zeros(ry(i)*n(i)*rz(i+1), N);
-%                 crs = cell(1,N);
-%                 for j=1:N
-%                     crs{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
-%                     crs{j} = phiyx{i,j}*crs{j};
-%                     crs{j} = reshape(crs{j}, ry(i)*n(i), rx(i+1,j));
-%                     crs{j} = crs{j}*phizx{i+1,j};
-%                     crs{j} = reshape(crs{j}, ry(i)*n(i)*rz(i+1), 1);
-%                 end;
-%                 crs = cat(ry(i)*n(i)*rz(i+1), crs{:});
-%                 crs = reshape(crs, ry(i)*n(i)*rz(i+1), N);
-%                 crs = crs*c;
                 crs = proj_sum(phiyx(i,:), X(i,:), phizx(i+1,:), c);
                 crs = crs - crys;
                 crs = reshape(crs, ry(i)*n(i), rz(i+1)*M);
-                [crs,sz,vz]=svd(crs, 'econ');
+                [crs,~,~]=svd(crs, 'econ');
                 crs = crs(:, 1:min(size(crs,2), kickrank));
                 u = [u,crs];
                 if (strcmp(renorm, 'gram'))&&(ry(i)*n(i)>5*(ry(i+1)+rz(i+1)))
-                    [u,s,R]=svdgram(u);
+                    [u,~,R]=svdgram(u);
                 else
                     [u,R]=qr(u, 0);
                 end;
@@ -334,17 +301,13 @@ while (swp<=nswp)
         
         ry(i+1) = r;
         
-%         for j=1:N
-            phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
-%         end;
+        phiyx(i+1,:) = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
         
         if (kickrank>0)
             rz(i+1) = size(crz, 2);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
-%             for j=1:N
-                phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can);
-%             end;
+            phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can);
             phizy(i+1) = compute_next_Phi(phizy(i), z{i}, y(i), 'lr');
         end;
     elseif ((dir<0)&&(i>1))
@@ -369,52 +332,28 @@ while (swp<=nswp)
             cryz = cryz*phizy{i+1};
             cryz = reshape(cryz, M, rz(i)*n(i)*rz(i+1));
             cryz = cryz.';
-%             crz = zeros(rz(i)*n(i)*rz(i+1), N);
-%             crz = cell(1,N);
-%             for j=1:N
-%                 crz{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
-%                 crz{j} = phizx{i,j}*crz{j};
-%                 crz{j} = reshape(crz{j}, rz(i)*n(i), rx(i+1,j));
-%                 crz{j} = crz{j}*phizx{i+1,j};
-%                 crz{j} = reshape(crz{j}, rz(i)*n(i)*rz(i+1), 1);
-%             end;
-%             crz = cat(rz(i)*n(i)*rz(i+1), crz{:});
-%             crz = reshape(crz, rz(i)*n(i)*rz(i+1), N);
-%             crz = crz*c;
             crz = proj_sum(phizx(i,:), X(i,:), phizx(i+1,:), c);
             crz = crz - cryz;
             nrmz = norm(crz, 'fro');
             crz = reshape(crz.', M*rz(i), n(i)*rz(i+1));
-            [vz,sz,crz]=svd(crz, 'econ');
+            [~,~,crz]=svd(crz, 'econ');
             crz = crz(:, 1:min(size(crz,2), kickrank));
             crz = crz';
-            % For adding into solution
-%                 crs = zeros(rz(i)*n(i)*ry(i+1), N);
-%                 crs = cell(1,N);
-%                 for j=1:N
-%                     crs{j} = reshape(X{i,j}, rx(i,j), n(i)*rx(i+1,j));
-%                     crs{j} = phizx{i,j}*crs{j};
-%                     crs{j} = reshape(crs{j}, rz(i)*n(i), rx(i+1,j));
-%                     crs{j} = crs{j}*phiyx{i+1,j};
-%                     crs{j} = reshape(crs{j}, rz(i)*n(i)*ry(i+1), 1);
-%                 end;
-%                 crs = cat(rz(i)*n(i)*ry(i+1), crs{:});
-%                 crs = reshape(crs, rz(i)*n(i)*ry(i+1), N);
-%                 crs = crs*c;
-                crs = proj_sum(phizx(i,:), X(i,:), phiyx(i+1,:), c);
-                crs = crs - crys;
-                crs = reshape(crs.', M*rz(i), n(i)*ry(i+1));
-                [vz,sz,crs]=svd(crs, 'econ');
-                crs = crs(:, 1:min(size(crs,2), kickrank));
-                v = [v,conj(crs)];
-                if (strcmp(renorm, 'gram'))&&(ry(i+1)*n(i)>5*(ry(i)+rz(i)))
-                    [v,s,R]=svdgram(v);
-                else
-                    [v,R]=qr(v, 0);
-                end;
-                u = [u, zeros(M*ry(i), size(crs,2))];
-                u = u*R.';
-                r = size(v, 2);
+            % To add into solution
+            crs = proj_sum(phizx(i,:), X(i,:), phiyx(i+1,:), c);
+            crs = crs - crys;
+            crs = reshape(crs.', M*rz(i), n(i)*ry(i+1));
+            [~,~,crs]=svd(crs, 'econ');
+            crs = crs(:, 1:min(size(crs,2), kickrank));
+            v = [v,conj(crs)];
+            if (strcmp(renorm, 'gram'))&&(ry(i+1)*n(i)>5*(ry(i)+rz(i)))
+                [v,~,R]=svdgram(v);
+            else
+                [v,R]=qr(v, 0);
+            end;
+            u = [u, zeros(M*ry(i), size(crs,2))];
+            u = u*R.';
+            r = size(v, 2);
         end;
         y{i} = reshape(v.', r, n(i), ry(i+1));
         
@@ -428,17 +367,13 @@ while (swp<=nswp)
         
         ry(i) = r;
         
-%         for j=1:N
-            phiyx(i,:) = compute_next_Phi(phiyx(i+1,:), y{i}, X(i,:), 'rl', can);
-%         end;
+        phiyx(i,:) = compute_next_Phi(phiyx(i+1,:), y{i}, X(i,:), 'rl', can);
         
         if (kickrank>0)
             rz(i) = size(crz, 1);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
-%             for j=1:N
-                phizx(i,:) = compute_next_Phi(phizx(i+1,:), z{i}, X(i,:), 'rl', can);
-%             end;
+            phizx(i,:) = compute_next_Phi(phizx(i+1,:), z{i}, X(i,:), 'rl', can);
             phizy(i) = compute_next_Phi(phizy(i+1), z{i}, y(i), 'rl');
         end;
     else
@@ -472,7 +407,6 @@ end;
 end
 
 
-% new
 function [Phi] = compute_next_Phi(Phi_prev, x, Y, direction, can)
 % Performs the recurrent Phi (or Psi) matrix computation
 % Phi = Phi_prev * (x'y).
@@ -553,18 +487,16 @@ end
 
 function [x,r]=gen_rand(n,d,r)
 % Generate an orthogonal random vector
-
 if (numel(r)==1)
     r = [1; r*ones(d-1,1); 1];
 end;
 x = cell(d,1);
 for i=1:d
     cr = randn(r(i)*n(i), r(i+1));
-    [cr,R]=qr(cr,0);
+    [cr,~]=qr(cr,0);
     r(i+1) = size(cr,2);
     x{i} = reshape(cr, r(i), n(i), r(i+1));
 end;
-
 end
 
 function [y]=proj_sum(Phi1, X, Phi2, c)
