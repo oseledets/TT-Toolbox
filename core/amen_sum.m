@@ -235,7 +235,9 @@ while (swp<=nswp)
     % It will survive in the terminal block. All we need.
     nrms(i) = norm(cry, 'fro');
     % The main goal is to keep y{i} of norm 1
-    cry = cry/nrms(i);
+    if (nrms(i)>0)
+        cry = cry/nrms(i);
+    end;
     
     % Check stopping criteria
     y{i} = reshape(y{i}, ry(i)*n(i)*ry(i+1), M);
@@ -462,7 +464,9 @@ if (can) % We are working with the canonical format
         Phi{1} = reshape(Phi{1}, rx2, R);
         % Extract the scale to prevent overload
         nrm = norm(Phi{1}, 'fro');
-        Phi{1} = Phi{1}/nrm;
+        if (nrm>0)
+            Phi{1} = Phi{1}/nrm;
+        end;
     else
         %rl: Phi2
         x = reshape(x, rx1*n, rx2);
@@ -476,7 +480,9 @@ if (can) % We are working with the canonical format
         Phi{1} = reshape(Phi{1}, R, rx1);
         % Extract the scale to prevent overload
         nrm = norm(Phi{1}, 'fro');
-        Phi{1} = Phi{1}/nrm;        
+        if (nrm>0)
+            Phi{1} = Phi{1}/nrm;
+        end;
     end;
 else % a set of TT-tensors
     Phi = cell(1,N);
@@ -497,8 +503,10 @@ else % a set of TT-tensors
             nrm = max(nrm, norm(Phi{i}, 'fro'));
         end;
         % Extract the scale to prevent overload
-        for i=1:N
-            Phi{i} = Phi{i}/nrm;
+        if (nrm>0)
+            for i=1:N
+                Phi{i} = Phi{i}/nrm;
+            end;
         end;
     else
         %rl: Phi2
@@ -515,8 +523,10 @@ else % a set of TT-tensors
             nrm = max(nrm, norm(Phi{i}, 'fro'));
         end;
         % Extract the scale to prevent overload
-        for i=1:N
-            Phi{i} = Phi{i}/nrm;
+        if (nrm>0)
+            for i=1:N
+                Phi{i} = Phi{i}/nrm;
+            end;
         end;
     end;
 end;
