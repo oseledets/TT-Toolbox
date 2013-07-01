@@ -134,21 +134,20 @@ end;
 
 if (isempty(y))
     init_qr = false;
-    y = gen_rand(n,d,2);
+    [y,ry] = gen_rand(n,d,2);
 else
     if (isa(y, 'tt_tensor'))
         y = core2cell(y);
     end;
-end;
-ry = ones(d+1,1);
-for i=1:d
-    ry(i+1) = size(y{i}, 3);
+    ry = ones(d+1,1);
+    for i=1:d
+        ry(i+1) = size(y{i}, 3);
+    end;
 end;
 
 if (kickrank>0)
     if (isempty(z))
-        z = gen_rand(n,d,kickrank);
-        rz = [1; kickrank*ones(d-1,1); 1];
+        [z,rz] = gen_rand(n,d,kickrank);
         init_qr_z = false;
     else
         init_qr_z = true;
@@ -552,7 +551,7 @@ end;
 end
 
 
-function [x]=gen_rand(n,d,r)
+function [x,r]=gen_rand(n,d,r)
 % Generate an orthogonal random vector
 
 if (numel(r)==1)
@@ -562,6 +561,7 @@ x = cell(d,1);
 for i=1:d
     cr = randn(r(i)*n(i), r(i+1));
     [cr,R]=qr(cr,0);
+    r(i+1) = size(cr,2);
     x{i} = reshape(cr, r(i), n(i), r(i+1));
 end;
 
