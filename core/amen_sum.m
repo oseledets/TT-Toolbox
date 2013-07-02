@@ -191,6 +191,7 @@ for i=1:d-1
         else
             [cr,R]=qr(cr, 0);
         end;
+        R = R/norm(R, 'fro');
         cr2 = reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
         cr2 = R*cr2;
         ry(i+1) = size(cr, 2);
@@ -207,6 +208,7 @@ for i=1:d-1
             else
                 [cr,R]=qr(cr, 0);
             end;
+            R = R/norm(R, 'fro');
             cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
             cr2 = R*cr2;
             rz(i+1) = size(cr, 2);
