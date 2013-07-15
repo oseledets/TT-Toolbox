@@ -190,14 +190,18 @@ for i=1:d-1
             [cr,~,R]=svdgram(cr);
         else
             [cr,R]=qr(cr, 0);
+        end;        
+        nrmr = norm(R, 'fro');
+        if (nrmr>0)
+            R = R/nrmr;
         end;
-        R = R/norm(R, 'fro');
         cr2 = reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
         cr2 = R*cr2;
         ry(i+1) = size(cr, 2);
         y{i} = reshape(cr, ry(i), n(i), ry(i+1));
         y{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2));
     end;
+    % We will extract the norms of Y'X
     [phiyx(i+1,:),nrms(i)] = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
     
     if (kickrank>0)
@@ -208,7 +212,10 @@ for i=1:d-1
             else
                 [cr,R]=qr(cr, 0);
             end;
-            R = R/norm(R, 'fro');
+            nrmr = norm(R, 'fro');
+            if (nrmr>0)
+                R = R/nrmr;
+            end;
             cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
             cr2 = R*cr2;
             rz(i+1) = size(cr, 2);
@@ -216,7 +223,10 @@ for i=1:d-1
             z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
         end;
         
-        phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can);
+        % But we have to renorm Z'X/|Y'X| to keep Z in the same
+        % scale. Hope it will not make |Z'X| too small
+        phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can, nrms(i));
+        % Z'Y is actually an orthogonal matrix and does not require renorm
         phizy(i+1) = compute_next_Phi(phizy(i), z{i}, y(i), 'lr');
     end;
 end;
@@ -239,6 +249,8 @@ while (swp<=nswp)
     % The main goal is to keep y{i} of norm 1
     if (nrms(i)>0)
         cry = cry/nrms(i);
+    else
+        nrms(i)=1;
     end;
     
     % Check stopping criteria
@@ -281,7 +293,7 @@ while (swp<=nswp)
             cryz = reshape(cryz, rz(i)*n(i)*rz(i+1), M);
             
             crz = proj_sum(phizx(i,:), X(i,:), phizx(i+1,:), c);
-            crz = crz - cryz;
+            crz = crz/nrms(i) - cryz;
             nrmz = norm(crz, 'fro');
             crz = reshape(crz, rz(i)*n(i), rz(i+1)*M);
             [crz,~,~]=svd(crz, 'econ');
@@ -289,7 +301,7 @@ while (swp<=nswp)
             % For adding into solution
             if (fkick)
                 crs = proj_sum(phiyx(i,:), X(i,:), phizx(i+1,:), c);
-                crs = crs - crys;
+                crs = crs/nrms(i) - crys;
                 crs = reshape(crs, ry(i)*n(i), rz(i+1)*M);
                 [crs,~,~]=svd(crs, 'econ');
                 crs = crs(:, 1:min(size(crs,2), kickrank));
@@ -320,7 +332,7 @@ while (swp<=nswp)
             rz(i+1) = size(crz, 2);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
-            phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can);
+            phizx(i+1,:) = compute_next_Phi(phizx(i,:), z{i}, X(i,:), 'lr', can, nrms(i));
             phizy(i+1) = compute_next_Phi(phizy(i), z{i}, y(i), 'lr');
         end;
     elseif ((dir<0)&&(i>1))
@@ -346,7 +358,7 @@ while (swp<=nswp)
             cryz = reshape(cryz, M, rz(i)*n(i)*rz(i+1));
             cryz = cryz.';
             crz = proj_sum(phizx(i,:), X(i,:), phizx(i+1,:), c);
-            crz = crz - cryz;
+            crz = crz/nrms(i) - cryz;
             nrmz = norm(crz, 'fro');
             crz = reshape(crz.', M*rz(i), n(i)*rz(i+1));
             [~,~,crz]=svd(crz, 'econ');
@@ -354,7 +366,7 @@ while (swp<=nswp)
             crz = crz';
             % To add into solution
             crs = proj_sum(phizx(i,:), X(i,:), phiyx(i+1,:), c);
-            crs = crs - crys;
+            crs = crs/nrms(i) - crys;
             crs = reshape(crs.', M*rz(i), n(i)*ry(i+1));
             [~,~,crs]=svd(crs, 'econ');
             crs = crs(:, 1:min(size(crs,2), kickrank));
@@ -386,7 +398,7 @@ while (swp<=nswp)
             rz(i) = size(crz, 1);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
-            phizx(i,:) = compute_next_Phi(phizx(i+1,:), z{i}, X(i,:), 'rl', can);
+            phizx(i,:) = compute_next_Phi(phizx(i+1,:), z{i}, X(i,:), 'rl', can, nrms(i));
             phizy(i) = compute_next_Phi(phizy(i+1), z{i}, y(i), 'rl');
         end;
     else
@@ -432,7 +444,7 @@ end;
 end
 
 
-function [Phi,nrm] = compute_next_Phi(Phi_prev, x, Y, direction, can)
+function [Phi,nrm] = compute_next_Phi(Phi_prev, x, Y, direction, can, extnrm)
 % Performs the recurrent Phi (or Psi) matrix computation
 % Phi = Phi_prev * (x'y).
 % If direction is 'lr', computes Psi
@@ -444,6 +456,9 @@ function [Phi,nrm] = compute_next_Phi(Phi_prev, x, Y, direction, can)
 
 if (nargin<5)||(isempty(can))
     can = false;
+end;
+if (nargin<6)
+    extnrm = [];
 end;
 
 rx1 = size(x,1); n = size(x,2); rx2 = size(x,3);
@@ -464,10 +479,17 @@ if (can) % We are working with the canonical format
         Phi{1} = reshape(Phi{1}, n, rx2*R);
         Phi{1} = sum(Phi{1}, 1);
         Phi{1} = reshape(Phi{1}, rx2, R);
-        % Extract the scale to prevent overload
-        nrm = norm(Phi{1}, 'fro');
-        if (nrm>0)
-            Phi{1} = Phi{1}/nrm;
+        if (nargout>1)
+            % Extract the scale to prevent overload
+            nrm = norm(Phi{1}, 'fro');
+            if (nrm>0)
+                Phi{1} = Phi{1}/nrm;
+            else
+                nrm=1;
+            end;
+        elseif (~isempty(extnrm))
+            % Override the normalization by the external one
+            Phi{1} = Phi{1}/extnrm;
         end;
     else
         %rl: Phi2
@@ -480,10 +502,17 @@ if (can) % We are working with the canonical format
         Phi{1} = reshape(Phi{1}, R*rx1, n);
         Phi{1} = sum(Phi{1}, 2);
         Phi{1} = reshape(Phi{1}, R, rx1);
-        % Extract the scale to prevent overload
-        nrm = norm(Phi{1}, 'fro');
-        if (nrm>0)
-            Phi{1} = Phi{1}/nrm;
+        if (nargout>1)
+            % Extract the scale to prevent overload
+            nrm = norm(Phi{1}, 'fro');
+            if (nrm>0)
+                Phi{1} = Phi{1}/nrm;
+            else
+                nrm=1;
+            end;
+        elseif (~isempty(extnrm))
+            % Override the normalization by the external one
+            Phi{1} = Phi{1}/extnrm;
         end;
     end;
 else % a set of TT-tensors
@@ -491,7 +520,9 @@ else % a set of TT-tensors
     if (strcmp(direction, 'lr'))
         %lr: Phi1
         x = reshape(x, rx1, n*rx2);
-        nrm = 0;
+        if (nargout>1)
+            nrm = 0;
+        end;
         for i=1:N
             y = Y{i};
             ry1 = size(y,1); ry2 = size(y,3);
@@ -502,18 +533,31 @@ else % a set of TT-tensors
             y = reshape(y, ry1*n, ry2);
             Phi{i} = Phi{i}*y;
             Phi{i} = reshape(Phi{i}, rx2, ry2);
-            nrm = max(nrm, norm(Phi{i}, 'fro'));
+            if (nargout>1)
+                nrm = max(nrm, norm(Phi{i}, 'fro'));
+            end;
         end;
-        % Extract the scale to prevent overload
-        if (nrm>0)
+        if (nargout>1)
+            % Extract the scale to prevent overload
+            if (nrm>0)
+                for i=1:N
+                    Phi{i} = Phi{i}/nrm;
+                end;
+            else
+                nrm=1;
+            end;
+        elseif (~isempty(extnrm))
+            % Override the normalization
             for i=1:N
-                Phi{i} = Phi{i}/nrm;
+                Phi{i} = Phi{i}/extnrm;
             end;
         end;
     else
         %rl: Phi2
         x = reshape(x, rx1, n*rx2);
-        nrm = 0;
+        if (nargout>1)
+            nrm = 0;
+        end;
         for i=1:N
             y = Y{i};
             ry1 = size(y,1); ry2 = size(y,3);
@@ -522,12 +566,23 @@ else % a set of TT-tensors
             Phi{i} = reshape(Phi{i}, ry1, n*rx2);
             Phi{i} = Phi{i}*x';
             Phi{i} = reshape(Phi{i}, ry1, rx1);
-            nrm = max(nrm, norm(Phi{i}, 'fro'));
+            if (nargout>1)
+                nrm = max(nrm, norm(Phi{i}, 'fro'));
+            end;
         end;
-        % Extract the scale to prevent overload
-        if (nrm>0)
+        if (nargout>1)
+            % Extract the scale to prevent overload
+            if (nrm>0)
+                for i=1:N
+                    Phi{i} = Phi{i}/nrm;
+                end;
+            else
+                nrm=1;
+            end;
+        elseif (~isempty(extnrm))
+            % Override the normalization
             for i=1:N
-                Phi{i} = Phi{i}/nrm;
+                Phi{i} = Phi{i}/extnrm;
             end;
         end;
     end;

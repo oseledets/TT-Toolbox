@@ -191,7 +191,6 @@ if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
 if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
 % if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
 
-
 if (A.n~=A.m)
     error(' AMR does not know how to solve rectangular systems!\n Use amr_solve2(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
 end;
@@ -247,6 +246,11 @@ if (strcmp(kicktype, 'chol'))&&(kickrank>0)
 end;
 
 
+% Norm extractors
+nrmsa = ones(d,1);
+nrmsy = ones(d,1);
+nrmsx = ones(d,1);
+
 % This is some convergence output for test purposes
 testdata = cell(3,1);
 testdata{1} = zeros(d, nswp); % CPU times
@@ -262,6 +266,13 @@ for swp=1:nswp
         cr = crx{i};
         cr = reshape(cr, rx(i), n(i)*rx(i+1));
         [cr, rv]=qr(cr.', 0);
+        curnorm = norm(rv, 'fro');
+        if (curnorm>0)
+            rv = rv/curnorm;
+        else
+            curnorm=1;
+        end;
+        nrmsx(i) = nrmsx(i)*curnorm;
         cr2 = crx{i-1};
         cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
         cr2 = cr2*(rv.');
@@ -270,8 +281,8 @@ for swp=1:nswp
         crx{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
         crx{i} = cr;
         
-        phia{i} = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
-        phiy{i} = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
+        [phia{i},nrmsa(i)] = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
+        [phiy{i},nrmsy(i)] = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
         
         % Prepare QRs of the residual
         if (strcmp(kicktype, 'svd'))&&(kickrank>0)
@@ -298,6 +309,10 @@ for swp=1:nswp
             res2 = reshape(res2, r1, n(i)*r3);
             rr=qr(res2.', 0);
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
+            curnorm = norm(Rs{i}, 'fro');
+            if (Rs{i}>0)
+                Rs{i} = Rs{i}/curnorm;
+            end;
         end;
         
         if (strcmp(kicktype, 'chol'))&&(kickrank>0)
@@ -332,6 +347,10 @@ for swp=1:nswp
             cr = crz{i};
             cr = reshape(cr, rz(i), n(i)*rz(i+1));
             [cr, rv]=qr(cr.', 0);
+            curnorm = norm(rv, 'fro');
+            if (curnorm>0)
+                rv = rv/curnorm;
+            end;
             cr2 = crz{i-1};
             cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
             cr2 = cr2*(rv.');
@@ -340,21 +359,41 @@ for swp=1:nswp
             crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
             crz{i} = cr;
             
-            phiza{i} = compute_next_Phi(phiza{i+1}, cr, crA{i}, crx{i}, 'rl');
-            phizy{i} = compute_next_Phi(phizy{i+1}, cr, [], cry{i}, 'rl');
+            phiza{i} = compute_next_Phi(phiza{i+1}, cr, crA{i}, crx{i}, 'rl', nrmsa(i));
+            phizy{i} = compute_next_Phi(phizy{i+1}, cr, [], cry{i}, 'rl', nrmsy(i));
         end;
         
     end;
     
+    % We will need to correct y by |y|/(|A||x|).
+    % Prepare the logarithms of norms
+    curnorm = norm(crx{1}(:), 'fro');
+    if (curnorm>0)
+        crx{1} = crx{1}/curnorm;
+    else
+        curnorm=1;
+    end;
+    nrmsx(1)=nrmsx(1)*curnorm;
+    nrmsc = sum(log(nrmsy(2:d))-log(nrmsa(2:d))-log(nrmsx(2:d))); % our correction=exp(nrmsc) should be O(1)    
+
     max_res = 0;
     max_dx = 0;
     
     for i=1:d
-        % Extract partial projections
+        % Extract partial projections (and scales)
         Phi1 = phia{i}; Phi2 = phia{i+1};
         % Phi1: rx'1, rx1, ra1, or rx'1, ry1
         % Phi2: rx2, ra2, rx'2, or ry2, rx'2
         A1 = crA{i}; y1 = cry{i};
+        nrmsa(i) = norm(A1(:), 'fro');
+        A1 = A1/nrmsa(i);
+        nrmsy(i) = norm(y1(:), 'fro');
+        y1 = y1/nrmsy(i);
+        % sol_prev
+        sol_prev = reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1);
+        % Rescale the RHS
+        y1 = y1*exp(nrmsc + (log(nrmsy(i))-log(nrmsa(i))-log(nrmsx(i))));
+        
         % RHS - rewrite it in accordance with new index ordering
         rhs = phiy{i}; % rx'1, ry1
         y1 = reshape(y1, ry(i), n(i)*ry(i+1));
@@ -363,8 +402,6 @@ for swp=1:nswp
         rhs = rhs*phiy{i+1};
         rhs = reshape(rhs, rx(i)*n(i)*rx(i+1),1);
         norm_rhs = norm(rhs);
-        % sol_prev
-        sol_prev = reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1);
         
         % We need slightly better accuracy for the solution, since otherwise
         % the truncation will catch the noise and report the full rank
@@ -491,13 +528,16 @@ for swp=1:nswp
             s = ones(r,1);
         end;
         
-        if (verb==2)
-            fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
-        end;
-        
         if (i<d) %  enrichment, etc
             u = u(:,1:r);
-            v = conj(v(:,1:r))*diag(s(1:r));
+            v = conj(v(:,1:r))*diag(s(1:r));            
+            curnorm = norm(v, 'fro');
+            if (curnorm>0)
+                v = v/curnorm;
+            else
+                curnorm=1;
+            end;
+            nrmsx(i)=nrmsx(i)*curnorm;
             
             if (strcmp(kicktype, 'als'))&&(kickrank>0)
                 % Update crz (we don't want just random-svd)
@@ -608,11 +648,23 @@ for swp=1:nswp
             r = size(u,2);
             
             u = reshape(u, rx(i), n(i), r);
-            v = reshape(v, r, n(i+1), rx(i+2));
+            v = reshape(v, r, n(i+1), rx(i+2));                  
             
+            % Remove old scale component from nrmsc
+            nrmsc = nrmsc - (log(nrmsy(i+1))-log(nrmsa(i+1))-log(nrmsx(i+1)));
             % Recompute phi.
-            phia{i+1} = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
-            phiy{i+1} = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
+            [phia{i+1},nrmsa(i)] = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
+            [phiy{i+1},nrmsy(i)] = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
+            % Add new scales
+            nrmsc = nrmsc + (log(nrmsy(i))-log(nrmsa(i))-log(nrmsx(i)));
+            
+            if (verb==2)
+                if (strcmp(kicktype, 'als'))&&(kickrank>0)
+                    fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |z|: %3.3e\n', i, dx, res_prev, r, norm(crznew));
+                else
+                    fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
+                end;
+            end;
             
             % Stuff back
             rx(i+1) = r;
@@ -622,6 +674,10 @@ for swp=1:nswp
             % Update z and its projections
             if strcmp(kicktype, 'als')&&(kickrank>0)
                 [crznew, rv]=qr(crznew, 0);
+                curnorm=norm(rv, 'fro');
+                if (curnorm>0)
+                    rv = rv/curnorm;
+                end;
                 cr2 = crz{i+1};
                 cr2 = reshape(cr2, rz(i+1), n(i+1)*rz(i+2));
                 cr2 = rv*cr2;
@@ -630,8 +686,8 @@ for swp=1:nswp
                 crz{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
                 crz{i} = crznew;
                 
-                phiza{i+1} = compute_next_Phi(phiza{i}, crznew, crA{i}, crx{i}, 'lr');
-                phizy{i+1} = compute_next_Phi(phizy{i}, crznew, [], cry{i}, 'lr');
+                phiza{i+1} = compute_next_Phi(phiza{i}, crznew, crA{i}, crx{i}, 'lr', nrmsa(i));
+                phizy{i+1} = compute_next_Phi(phizy{i}, crznew, [], cry{i}, 'lr', nrmsy(i));
             end;
         else % i==d
             % Just stuff back the last core
@@ -665,6 +721,18 @@ for swp=1:nswp
     
 end;
 
+% Recover the scales
+% |x{d}| may be changed in the last sweep
+nrmsx(d) = nrmsx(d)*norm(crx{d}, 'fro');
+% Distribute norms equally...
+nrmsx = log(nrmsx);
+nrmsx = mean(nrmsx)*ones(d,1);
+nrmsx = exp(nrmsx);
+% ... and plug them into x
+for i=1:d
+    crx{i} = crx{i}*nrmsx(i);
+end;
+
 x = cell2core(x, crx);
 if (nargout>2)
     if (strcmp(kicktype, 'als'))&&(kickrank>0)
@@ -677,7 +745,7 @@ end;
 end
 
 % new
-function [Phi] = compute_next_Phi(Phi_prev, x, A, y, direction)
+function [Phi,nrm] = compute_next_Phi(Phi_prev, x, A, y, direction, extnrm)
 % Performs the recurrent Phi (or Psi) matrix computation
 % Phi = Phi_prev * (x'Ay).
 % If direction is 'lr', computes Psi
@@ -687,6 +755,10 @@ function [Phi] = compute_next_Phi(Phi_prev, x, A, y, direction)
 % Phi1: rx1, ry1, ra1, or rx1, ry1
 % Phi2: ry2, ra2, rx2, or ry2, rx2
 
+
+if (nargin<6)
+    extnrm = [];
+end;
 
 rx1 = size(x,1); n = size(x,2); rx2 = size(x,3);
 ry1 = size(y,1); m = size(y,2); ry2 = size(y,3);
@@ -746,6 +818,18 @@ else
     end;
 end;
 
+if (nargout>1)
+    % Extract the scale to prevent overload
+    nrm = norm(Phi(:), 'fro');
+    if (nrm>0)
+        Phi = Phi/nrm;
+    else
+        nrm=1;
+    end;
+elseif (~isempty(extnrm))
+    % Override the normalization by the external one
+    Phi = Phi/extnrm;
+end;
 
 end
 
