@@ -35,13 +35,20 @@ else
     j = 1;
 end;
 
-jj = tt_ind2sub(reshape(n, 1, d), j);
+tt=cell(d,1);
 
- tt=cell(d,1);
- for k=1:d
-    tt{k} = zeros(n(k),1);
-    tt{k}(jj(k)) = 1;
- end
- tt=tt_tensor(tt); %Bydlocode @
+if j==1
+    for k=1:d
+        tt{k} = zeros(n(k),1);
+        tt{k}(1) = 1;
+    end
+else
+    jj = tt_ind2sub(reshape(n, 1, d), j);
+    for k=1:d
+        tt{k} = zeros(n(k),1);
+        tt{k}(jj(k)) = 1;
+    end
+end
+tt=tt_tensor(tt); %Bydlocode @
 return
 end
