@@ -428,12 +428,10 @@ end;
 y{d} = reshape(cry, ry(d), n(d), M);
 
 % Distribute norms equally...
-nrms = log(nrms);
-nrms = mean(nrms)*ones(d,1);
-nrms = exp(nrms);
+nrms = exp(sum(log(nrms))/d);
 % ... and plug them into y
 for i=1:d
-    y{i} = y{i}*nrms(i);
+    y{i} = y{i}*nrms;
 end;
 
 if (vectype==1)

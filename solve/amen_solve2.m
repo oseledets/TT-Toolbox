@@ -247,9 +247,12 @@ end;
 
 
 % Norm extractors
-nrmsa = ones(d,1);
-nrmsy = ones(d,1);
-nrmsx = ones(d,1);
+nrmsa = ones(d-1,1);
+nrmsy = ones(d-1,1);
+nrmsx = ones(d-1,1);
+% We will need to correct y by |y|/(|A||x|).
+% % Store the logarithms of norms in nrmsc
+nrmsc = 1;
 
 % This is some convergence output for test purposes
 testdata = cell(3,1);
@@ -263,27 +266,37 @@ t_amr_solve = tic;
 for swp=1:nswp
     % Orthogonalization
     for i=d:-1:2
+        % Remove old norm correction
+        if (swp>1)            
+            nrmsc = nrmsc/(nrmsy(i-1)/(nrmsa(i-1)*nrmsx(i-1)));
+        end;
+        
         cr = crx{i};
         cr = reshape(cr, rx(i), n(i)*rx(i+1));
         [cr, rv]=qr(cr.', 0);
-        curnorm = norm(rv, 'fro');
-        if (curnorm>0)
-            rv = rv/curnorm;
-        else
-            curnorm=1;
-        end;
-        nrmsx(i) = nrmsx(i)*curnorm;
         cr2 = crx{i-1};
         cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
         cr2 = cr2*(rv.');
+        
+        curnorm = norm(cr2, 'fro');
+        if (curnorm>0)
+            cr2 = cr2/curnorm;
+        else
+            curnorm=1;
+        end;
+        nrmsx(i-1) = nrmsx(i-1)*curnorm;
+        
         rx(i) = size(cr, 2);
         cr = reshape(cr.', rx(i), n(i), rx(i+1));
         crx{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
         crx{i} = cr;
         
-        [phia{i},nrmsa(i)] = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
-        [phiy{i},nrmsy(i)] = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
+        [phia{i},nrmsa(i-1)] = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
+        [phiy{i},nrmsy(i-1)] = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
         
+        % Add new scales
+        nrmsc = nrmsc*(nrmsy(i-1)/(nrmsa(i-1)*nrmsx(i-1)));
+                
         % Prepare QRs of the residual
         if (strcmp(kicktype, 'svd'))&&(kickrank>0)
             % We need to assemble the core [Y^k & A^k X^k] and orthogonalize
@@ -359,23 +372,12 @@ for swp=1:nswp
             crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
             crz{i} = cr;
             
-            phiza{i} = compute_next_Phi(phiza{i+1}, cr, crA{i}, crx{i}, 'rl', nrmsa(i));
-            phizy{i} = compute_next_Phi(phizy{i+1}, cr, [], cry{i}, 'rl', nrmsy(i));
+            phiza{i} = compute_next_Phi(phiza{i+1}, cr, crA{i}, crx{i}, 'rl', nrmsa(i-1));
+            phizy{i} = compute_next_Phi(phizy{i+1}, cr, [], cry{i}, 'rl', nrmsy(i-1));
         end;
         
     end;
     
-    % We will need to correct y by |y|/(|A||x|).
-    % Prepare the logarithms of norms
-    curnorm = norm(crx{1}(:), 'fro');
-    if (curnorm>0)
-        crx{1} = crx{1}/curnorm;
-    else
-        curnorm=1;
-    end;
-    nrmsx(1)=nrmsx(1)*curnorm;
-    nrmsc = sum(log(nrmsy(2:d))-log(nrmsa(2:d))-log(nrmsx(2:d))); % our correction=exp(nrmsc) should be O(1)    
-
     max_res = 0;
     max_dx = 0;
     
@@ -385,14 +387,10 @@ for swp=1:nswp
         % Phi1: rx'1, rx1, ra1, or rx'1, ry1
         % Phi2: rx2, ra2, rx'2, or ry2, rx'2
         A1 = crA{i}; y1 = cry{i};
-        nrmsa(i) = norm(A1(:), 'fro');
-        A1 = A1/nrmsa(i);
-        nrmsy(i) = norm(y1(:), 'fro');
-        y1 = y1/nrmsy(i);
         % sol_prev
         sol_prev = reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1);
         % Rescale the RHS
-        y1 = y1*exp(nrmsc + (log(nrmsy(i))-log(nrmsa(i))-log(nrmsx(i))));
+        y1 = y1*nrmsc;
         
         % RHS - rewrite it in accordance with new index ordering
         rhs = phiy{i}; % rx'1, ry1
@@ -531,13 +529,6 @@ for swp=1:nswp
         if (i<d) %  enrichment, etc
             u = u(:,1:r);
             v = conj(v(:,1:r))*diag(s(1:r));            
-            curnorm = norm(v, 'fro');
-            if (curnorm>0)
-                v = v/curnorm;
-            else
-                curnorm=1;
-            end;
-            nrmsx(i)=nrmsx(i)*curnorm;
             
             if (strcmp(kicktype, 'als'))&&(kickrank>0)
                 % Update crz (we don't want just random-svd)
@@ -644,19 +635,28 @@ for swp=1:nswp
             cr2 = crx{i+1};
             cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
             v = v.'*cr2; % size r+radd, n2, r3
+
+            % Remove old scale component from nrmsc
+            nrmsc = nrmsc/(nrmsy(i)/(nrmsa(i)*nrmsx(i)));            
+            
+            curnorm = norm(v, 'fro');
+            if (curnorm>0)
+                v = v/curnorm;
+            else
+                curnorm=1;
+            end;
+            nrmsx(i)=nrmsx(i)*curnorm;            
             
             r = size(u,2);
             
             u = reshape(u, rx(i), n(i), r);
             v = reshape(v, r, n(i+1), rx(i+2));                  
             
-            % Remove old scale component from nrmsc
-            nrmsc = nrmsc - (log(nrmsy(i+1))-log(nrmsa(i+1))-log(nrmsx(i+1)));
             % Recompute phi.
             [phia{i+1},nrmsa(i)] = compute_next_Phi(phia{i}, u, crA{i}, u, 'lr');
             [phiy{i+1},nrmsy(i)] = compute_next_Phi(phiy{i}, u, [], cry{i}, 'lr');
             % Add new scales
-            nrmsc = nrmsc + (log(nrmsy(i))-log(nrmsa(i))-log(nrmsx(i)));
+            nrmsc = nrmsc*(nrmsy(i)/(nrmsa(i)*nrmsx(i)));
             
             if (verb==2)
                 if (strcmp(kicktype, 'als'))&&(kickrank>0)
@@ -722,15 +722,11 @@ for swp=1:nswp
 end;
 
 % Recover the scales
-% |x{d}| may be changed in the last sweep
-nrmsx(d) = nrmsx(d)*norm(crx{d}, 'fro');
 % Distribute norms equally...
-nrmsx = log(nrmsx);
-nrmsx = mean(nrmsx)*ones(d,1);
-nrmsx = exp(nrmsx);
+nrmsx = exp(sum(log(nrmsx))/d);
 % ... and plug them into x
 for i=1:d
-    crx{i} = crx{i}*nrmsx(i);
+    crx{i} = crx{i}*nrmsx;
 end;
 
 x = cell2core(x, crx);
