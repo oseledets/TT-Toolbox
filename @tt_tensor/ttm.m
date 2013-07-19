@@ -1,4 +1,4 @@
-function [tt]=ttm(tt,k,mat)
+function [tt] = ttm(tt, k, mat)
 %Tensor by matrix multiplication over a given mode
 %   [TT]=TTM(TT,K,MAT) Multiplies TT-tensor over the K-th mode 
 %   with the matrix MAT

@@ -23,7 +23,7 @@ if isempty(b)
     return;
 end
 if ndims(a) == ndims(b)
-    c=tt_tensor;
+    c = tt_tensor;
     na = a.n; nb = b.n;
     c.n=na.*nb;
     d = ndims(a);

@@ -17,6 +17,6 @@ function [sz] = size(tt,dim)
 if exist('dim','var')
     sz = tt.n(dim);
 else
-    sz=tt.n;
-    
+    sz = tt.n;
+    sz = reshape(sz, 1, numel(sz));
 end

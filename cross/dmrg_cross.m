@@ -169,7 +169,7 @@ while ( swp < nswp && not_converged )
       ind2(:, kron((1:ry(i+2))', ones(ry(i)*n(i)*n(i+1),1)))' ...      
       ]; 
     
-    score=elem(big_index');     
+    score=elem(big_index);     
     
     %Now plug in the rmax matrices
     score=reshape(score,[ry(i),n(i)*n(i+1)*ry(i+2)]);
@@ -306,17 +306,17 @@ while ( swp < nswp && not_converged )
 end
 return
 end
-function val=my_vec_fun(ind,fun)
+function val = my_vec_fun(ind, fun)
 %Trivial vectorized computation of the elements of a tensor
 %   [VAL]=MY_VEC_FUN(IND,FUN) Given a function handle FUN, compute all
 %   elements of a tensor given in the index array IND. IND is a M x d
 %   array, where M is the number of indices to be computed. 
-M=size(ind,1);
-val=zeros(1,M);
-for i=1:M
-    ind_loc=ind(i,:); ind_loc=ind_loc(:);
+M = size(ind, 1);
+val = zeros(1, M);
+for i = 1:M
+    ind_loc = ind(i,:); ind_loc=ind_loc(:);
 %   ind_loc = ind(:,i); 
-   val(i)=fun(ind_loc);
+   val(i) = fun(ind_loc);
 end
 return
 end
