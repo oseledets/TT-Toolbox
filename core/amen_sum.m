@@ -20,6 +20,9 @@ function [y,z]=amen_sum(X, c, tol, varargin)
 %         (rather questionable yet; false makes error higher, but "better
 %         structured": it does not explode in e.g. subsequent matvecs)
 %       o z0 - initial approximation to the error Ax-y [rand rank-kickrank]
+%       o can - whether the input is in CP format [false]
+%       o multrank - shall we try to grow ranks multiplicatively by adding
+%       the previous iterand [false]
 %
 %
 %********
@@ -61,6 +64,7 @@ renorm = 'direct';
 % renorm = 'gram';
 fkick = false;
 rmax = Inf;
+multrank = false;
 
 can = false; % Whether the input is the canonical format
 
@@ -87,6 +91,8 @@ for i=1:2:length(varargin)-1
             rmax = varargin{i+1};
         case 'can'
             can = varargin{i+1};
+        case 'multrank'
+            multrank = varargin{i+1};            
             
         otherwise
             warning('Unrecognized option: %s\n',varargin{i});
@@ -261,7 +267,7 @@ while (swp<=nswp)
     % Truncation and enrichment
     if ((dir>0)&&(i<d))
         cry = reshape(cry, ry(i)*n(i), ry(i+1)*M);
-        if (M==1)
+        if (M==1)&&(multrank)
             % Try to accelerate the rank growth
             cry = [cry, reshape(y{i}, ry(i)*n(i), ry(i+1))];
         end;
@@ -281,7 +287,7 @@ while (swp<=nswp)
             u = u(:,1:r);
             v = conj(v(:,1:r))*diag(s(1:r));
         end;        
-        if (M==1)
+        if (M==1)&&(multrank)
             % Remove auxiliary previous solution
             v = reshape(v, ry(i+1), 2, r);
             v = v(:,1,:);
@@ -347,7 +353,7 @@ while (swp<=nswp)
         end;
     elseif ((dir<0)&&(i>1))
         cry = reshape(cry.', M*ry(i), n(i)*ry(i+1));
-        if (M==1)
+        if (M==1)&&(multrank)
             % Try to accelerate the rank growth
             cry = [cry; reshape(y{i}, ry(i), n(i)*ry(i+1))];
         end;
@@ -358,7 +364,7 @@ while (swp<=nswp)
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
         
-        if (M==1)
+        if (M==1)&&(multrank)
             % Remove auxiliary previous solution
             u = reshape(u, ry(i), 2, r);
             u = u(:,1,:);
