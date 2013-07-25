@@ -261,6 +261,10 @@ while (swp<=nswp)
     % Truncation and enrichment
     if ((dir>0)&&(i<d))
         cry = reshape(cry, ry(i)*n(i), ry(i+1)*M);
+        if (M==1)
+            % Try to accelerate the rank growth
+            cry = [cry, reshape(y{i}, ry(i)*n(i), ry(i+1))];
+        end;
         if (strcmp(renorm, 'gram'))
             [u,~,v]=svdgram(cry, tol/sqrt(d));
             v = v.';
@@ -276,6 +280,12 @@ while (swp<=nswp)
             r = min(r,rmax);
             u = u(:,1:r);
             v = conj(v(:,1:r))*diag(s(1:r));
+        end;        
+        if (M==1)
+            % Remove auxiliary previous solution
+            v = reshape(v, ry(i+1), 2, r);
+            v = v(:,1,:);
+            v = reshape(v, ry(i+1), r);
         end;
         
         % Prepare enrichment, if needed
@@ -337,12 +347,23 @@ while (swp<=nswp)
         end;
     elseif ((dir<0)&&(i>1))
         cry = reshape(cry.', M*ry(i), n(i)*ry(i+1));
+        if (M==1)
+            % Try to accelerate the rank growth
+            cry = [cry; reshape(y{i}, ry(i), n(i)*ry(i+1))];
+        end;
         [u,s,v]=svd(cry, 'econ');
         s = diag(s);
         r = my_chop2(s, tol*norm(s)/sqrt(d));
         r = min(r,rmax);
         u = u(:,1:r)*diag(s(1:r));
         v = conj(v(:,1:r));
+        
+        if (M==1)
+            % Remove auxiliary previous solution
+            u = reshape(u, ry(i), 2, r);
+            u = u(:,1,:);
+            u = reshape(u, ry(i), r);
+        end;             
         
         % Prepare enrichment, if needed
         if (kickrank>0)
