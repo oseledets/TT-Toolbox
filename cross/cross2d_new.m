@@ -1,4 +1,4 @@
-function [u, v] = cross2d_new(f, n, m, eps)
+function [u, v] = cross2d_new(f, n, m, eps, varargin)
 %Classical maxvol-based cross
 %       [U, V] = CROSS2D(F, N, M, EPS)
 %       Computes the maxvol-based cross with requested accuracy EPS
@@ -14,20 +14,24 @@ function [u, v] = cross2d_new(f, n, m, eps)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-
 r0 = 2;
-eps0 = 1e-3; %Trunc parameter
+full_check = false;
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'full_check'
+            full_check = varargin{i+1};
+        case 'r0'
+            r0 = varargin{i+1};
+        otherwise
+            error('Unrecognized option: %s\n',varargin{i});
+    end
+end
+
+
 u = randn(n, r0);
 v = randn(m, r0);
 
-Phi = zeros(r0); 
 er = 2 * eps;
-ru = r0;
-rv = r0;
-ru_tot = 0;
-rv_tot = 0;
-ru_add = 0; 
-rv_add = 0;
 
 
 
@@ -41,10 +45,12 @@ vv = v / v(indv, :);
 %v = v \ sbmv;
 indu_add = indu;
 indv_add = indv; 
-fmat = zeros(n, m);
-for i = 1:n
-    for j = 1:m
-        fmat(i, j) = f(i, j);
+if ( full_check )
+    fmat = zeros(n, m);
+    for i = 1:n
+        for j = 1:m
+            fmat(i, j) = f(i, j);
+        end
     end
 end
 ru = numel(indu);
@@ -134,9 +140,10 @@ while ( er > eps )
     indu = indu1;
     indv = indv1;
     
-    appr = uu * Phi * vv.';
-    
-    fprintf('tr: %3.1e est: %3.1e fu: %3.1f fv: %3.1f r: %d \n', norm(appr - fmat,'fro') / norm(appr, 'fro'), er2, fu, fv, size(uu, 2));
+    if ( full_check)
+        appr = uu * Phi * vv.';
+        fprintf('tr: %3.1e est: %3.1e fu: %3.1f fv: %3.1f r: %d \n', norm(appr - fmat,'fro') / norm(appr, 'fro'), er2, fu, fv, size(uu, 2));
+    end
 end
  u = uu * Phi;
  v = vv;
