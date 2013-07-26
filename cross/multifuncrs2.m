@@ -335,33 +335,37 @@ while (swp<=nswp)||(dir>0)
             % Assemble y at z indices (sic!) and subtract
             dzy = reshape(u*v.', ry(i)*n(i)*ry(i+1), d2);
             dzy = reshape(dzy.', d2*ry(i)*n(i), ry(i+1));
+            % Cast dzy from core items to samples at right indices
             dzy = dzy*Ryz{i+1};
             dzy = reshape(dzy, d2, ry(i)*n(i)*rz(i+1));
             dzy = dzy.';
-            zy = zy - dzy; % now it is error indeed
+            % zy still requires casting from samples to core entries
+            zy = reshape(zy, ry(i), n(i)*rz(i+1)*d2);
+            zy = Ry{i}\zy;
+            zy = reshape(zy, ry(i)*n(i)*rz(i+1), d2);
+            zy = zy - dzy; % Core elements from the left, indices from right
+            % Prepare pure Z:
+            % cast dzy from core items to samples at left idx as well
             dzy = reshape(dzy, ry(i), n(i)*rz(i+1)*d2);
             dzy = Ryz{i}*dzy;
             dzy = reshape(dzy, rz(i)*n(i)*rz(i+1), d2);
-            zz = zz - dzy; % now it is error indeed
+            zz = zz - dzy; % Samples from both sides
 
-            % Multiply with inverted Ry
-            % for kick
-            zy = reshape(zy, ry(i), n(i)*rz(i+1)*d2);
-            zy = (Ry{i}) \ zy;
-            zy = reshape(zy, ry(i)*n(i)*rz(i+1), d2);
+            % Interp all remaining samples into core elements
+            % ...for kick
             zy = reshape(zy.', d2*ry(i)*n(i), rz(i+1));
-            zy = zy / (Rz{i+1});
+            zy = zy / Rz{i+1};
             zy = reshape(zy, d2, ry(i)*n(i)*rz(i+1));
             zy = reshape(zy.', ry(i)*n(i), rz(i+1)*d2);
             % SVD to eliminate d2 and possibly overestimated rz
             [zy,sz,vz]=svd(zy, 'econ');
             zy = zy(:, 1:min(kickrank,size(zy,2)));
-            % for z update
+            % ...for z update
             zz = reshape(zz, rz(i), n(i)*rz(i+1)*d2);
-            zz = (Rz{i}) \ zz;
+            zz = Rz{i} \ zz;
             zz = reshape(zz, rz(i)*n(i)*rz(i+1), d2);
             zz = reshape(zz.', d2*rz(i)*n(i), rz(i+1));
-            zz = zz / (Rz{i+1});
+            zz = zz / Rz{i+1};
             zz = reshape(zz, d2,rz(i)*n(i)*rz(i+1));
             zz = reshape(zz.', rz(i)*n(i), rz(i+1)*d2);
             [zz,sz,vz]=svd(zz, 'econ');            
@@ -456,24 +460,28 @@ while (swp<=nswp)||(dir>0)
             dzy = reshape(u*v.', ry(i), n(i)*ry(i+1)*d2);
             dzy = Ryz{i}*dzy;
             dzy = reshape(dzy, rz(i)*n(i)*ry(i+1), d2);
-            zy = zy - dzy; % now it is error indeed
-            dzy = reshape(dzy, rz(i)*n(i)*ry(i+1), d2);
+            % zy still requires casting from samples to core entries
+            zy = zy.';
+            zy = reshape(zy, d2*rz(i)*n(i), ry(i+1));
+            zy = zy/Ry{i+1};
+            zy = reshape(zy, d2, rz(i)*n(i)*ry(i+1));
+            zy = zy.';
+            zy = zy - dzy; % samples at left, core elems at right
             dzy = reshape(dzy.', d2*rz(i)*n(i), ry(i+1));
             dzy = dzy*Ryz{i+1};
             dzy = reshape(dzy, d2, rz(i)*n(i)*rz(i+1));
-            zz = zz - (dzy.'); % now it is error indeed
+            zz = zz - (dzy.'); % samles everywhere
             
-            % Multiply with inverted Ry
-            % for kick
+            % Cast sample indices to core elements
+            % ...for kick
             zy = reshape(zy, rz(i), n(i)*ry(i+1)*d2);
             zy = (Rz{i}) \ zy;
             zy = reshape(zy, rz(i)*n(i)*ry(i+1), d2);
-            zy = reshape(zy.', d2*rz(i)*n(i), ry(i+1));
-            zy = zy / (Ry{i+1});
+            zy = zy.';
             zy = reshape(zy, d2*rz(i), n(i)*ry(i+1));
             [zu,zs,zy]=svd(zy, 'econ');
             zy = conj(zy(:, 1:min(kickrank,size(zy,2))));
-            % for z update
+            % ...for z update
             zz = reshape(zz, rz(i), n(i)*rz(i+1)*d2);
             zz = (Rz{i}) \ zz;
             zz = reshape(zz, rz(i)*n(i)*rz(i+1), d2);

@@ -14,10 +14,10 @@ function [ind]=tt_sub2ind(siz, idx)
 %---------------------------
 
 d=numel(siz);
-ind = 0;
+ind = zeros(size(idx,1), 1);
 shift=1;
 for i=1:d
-    ind=ind+shift*(idx(i)-1);
+    ind=ind+shift*(idx(:,i)-1);
     shift = shift*siz(i);
 end;
 ind=ind+1;

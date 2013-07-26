@@ -87,19 +87,9 @@ cr(1:r(1)*n(1)*r(2)) = pp;
  %All cores are orthogonal except the first one. Thus, we know the norm
  nrm0=sum(log(abs(nrm))); 
  nrm0=nrm0/d; nrm0=exp(nrm0);
- if (nrm0~=0)
-     %Construct normalization of norm
-     for i=1:d-1
-         nrm(i+1)=nrm(i+1)*nrm(i)/nrm0;
-         nrm(i)=nrm0;
-     end
- end;
- %Finally redistribute the norm
  ps=tt.ps;
  for i=1:d
-    core1=cr(ps(i):ps(i+1)-1);
-    core1=core1*nrm(i);
-    cr(ps(i):ps(i+1)-1)=core1;
+    cr(ps(i):ps(i+1)-1)=nrm0*cr(ps(i):ps(i+1)-1);
  end
  tt.core=cr;
  tt.over=0;
