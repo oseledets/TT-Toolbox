@@ -198,7 +198,7 @@ end;
 d = y.d;
 n = A.n;
 if (isempty(x))
-    x = tt_rand(n, A.d, 2);
+    x = tt_rand(n, A.d, 2, -1); %RL orthogonal
 end;
 
 rx = x.r;
@@ -422,8 +422,8 @@ for swp=1:nswp
             res_prev = norm(B*sol_prev - rhs)/norm_rhs;
             
             if (res_prev>real_tol)
-                sol = pinv(B)*rhs;
-%                 sol = B \ rhs;
+%                 sol = pinv(B)*rhs;
+                sol = B \ rhs;
                 res_new = norm(B*sol-rhs)/norm_rhs;
             else
                 sol = sol_prev;
