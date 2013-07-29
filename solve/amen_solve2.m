@@ -293,6 +293,10 @@ for swp=1:nswp
         
         [phia{i},nrmsa(i-1)] = compute_next_Phi(phia{i+1}, cr, crA{i}, cr, 'rl');
         [phiy{i},nrmsy(i-1)] = compute_next_Phi(phiy{i+1}, cr, [], cry{i}, 'rl');
+        if ((~isreal(phia{i}))||(~isreal(phiy{i})))&&(ismex)
+            warning('Complex data detected, turning MEX local solver off');
+            ismex = false;
+        end;
         
         % Add new scales
         nrmsc = nrmsc*(nrmsy(i-1)/(nrmsa(i-1)*nrmsx(i-1)));
@@ -661,7 +665,7 @@ for swp=1:nswp
             
             if (verb==2)
                 if (strcmp(kicktype, 'als'))&&(kickrank>0)
-                    fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |z|: %3.3e\n', i, dx, res_prev, r, norm(crznew));
+                    fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |y|: %3.3e, |z|: %3.3e\n', i, dx, res_prev, r, norm(v(:)), norm(crznew(:)));
                 else
                     fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
                 end;
@@ -706,7 +710,7 @@ for swp=1:nswp
     end;
     
     if (verb>0)
-        fprintf('=amr_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, erank: %g\n', swp, max_dx, max_res, sqrt(rx(1:d)'*(n.*rx(2:d+1))/sum(n)));
+        fprintf('=amr_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, max_rank: %g\n', swp, max_dx, max_res, max(rx));
     end;
     
     if (strcmp(trunc_norm, 'fro'))
