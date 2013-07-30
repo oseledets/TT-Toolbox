@@ -124,12 +124,8 @@ elseif (isa(A, 'cell'))
 end;
 
 if (isempty(y))
-    y = cell(d,1);
-    y{1} = rand(1, n(1), 2);
-    for i=2:d-1
-        y{i} = rand(2, n(i), 2);
-    end;
-    y{d} = rand(2, n(d), 1);
+    y = tt_rand(n, d, 2);
+    y = core2cell(y);
 else
     if (isa(y, 'tt_tensor'))
         y = core2cell(y);
@@ -142,13 +138,9 @@ end;
 
 if (kickrank>0)
     if (isempty(z))
-        z = cell(d,1);
-        rz = [1; kickrank*ones(d-1, 1); 1];
-        z{1} = rand(1, n(1), kickrank);
-        for i=2:d-1
-            z{i} = rand(kickrank, n(i), kickrank);
-        end;
-        z{d} = rand(kickrank, n(d), 1);
+        z = tt_rand(n,d,kickrank);
+        rz = z.r;
+        z = core2cell(z);
     else
         if (isa(z, 'tt_tensor'))
             z = core2cell(z);
@@ -175,6 +167,8 @@ else
     phiyax{1}=num2cell(ones(1,ra)); phiyax{d+1}=num2cell(ones(1,ra));
 end;
 
+nrms = ones(d,1);
+
 % Initial ort
 for i=1:d-1
     if (init_qr)
@@ -184,13 +178,17 @@ for i=1:d-1
         else
             [cr,R]=qr(cr, 0);
         end;
+        nrmr = norm(R, 'fro');
+        if (nrmr>0)
+            R = R/nrmr;
+        end;        
         cr2 = reshape(y{i+1}, ry(i+1), n(i+1)*ry(i+2));
         cr2 = R*cr2;
         ry(i+1) = size(cr, 2);
         y{i} = reshape(cr, ry(i), n(i), ry(i+1));
         y{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2));
     end;
-    phiyax{i+1} = compute_next_Phi(phiyax{i}, y{i}, A{i}, x{i}, 'lr');
+    [phiyax{i+1},nrms(i)] = compute_next_Phi(phiyax{i}, y{i}, A{i}, x{i}, 'lr');
     
     if (kickrank>0)
         cr = reshape(z{i}, rz(i)*n(i), rz(i+1));
@@ -199,12 +197,16 @@ for i=1:d-1
         else
             [cr,R]=qr(cr, 0);
         end;
+        nrmr = norm(R, 'fro');
+        if (nrmr>0)
+            R = R/nrmr;
+        end;        
         cr2 = reshape(z{i+1}, rz(i+1), n(i+1)*rz(i+2));
         cr2 = R*cr2;
         rz(i+1) = size(cr, 2);
         z{i} = reshape(cr, rz(i), n(i), rz(i+1));
         z{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
-        phizax{i+1} = compute_next_Phi(phizax{i}, z{i}, A{i}, x{i}, 'lr');
+        phizax{i+1} = compute_next_Phi(phizax{i}, z{i}, A{i}, x{i}, 'lr', nrms(i));
         phizy{i+1} = compute_next_Phi(phizy{i}, z{i}, [], y{i}, 'lr');
     end;
 end;
@@ -218,8 +220,15 @@ while (swp<=nswp)
     % Project the MatVec generating vector
     crx = reshape(x{i}, rx(i)*m(i)*rx(i+1), 1);
     cry = bfun3(phiyax{i}, A{i}, phiyax{i+1}, crx);
+    nrms(i) = norm(cry, 'fro');
+    % The main goal is to keep y{i} of norm 1
+    if (nrms(i)>0)
+        cry = cry/nrms(i);
+    else
+        nrms(i)=1;
+    end;    
     y{i} = reshape(y{i}, ry(i)*n(i)*ry(i+1), 1);
-    dx = norm(cry-y{i})/norm(cry);
+    dx = norm(cry-y{i});
     max_dx = max(max_dx, dx);
     
     % Truncation and enrichment
@@ -248,12 +257,13 @@ while (swp<=nswp)
             yz = reshape(ys, ry(i), n(i)*rz(i+1));
             yz = phizy{i}*yz;
             yz = reshape(yz, rz(i)*n(i), rz(i+1));
-            crz = crz - yz;
+            crz = crz/nrms(i) - yz;
+            nrmz = norm(crz,'fro');
             % For adding into solution
             if (fkick)
                 crs = bfun3(phiyax{i}, A{i}, phizax{i+1}, crx);
                 crs = reshape(crs, ry(i)*n(i), rz(i+1));
-                crs = crs - ys;
+                crs = crs/nrms(i) - ys;
                 u = [u,crs];
                 if (strcmp(renorm, 'gram'))&&(ry(i)*n(i)>5*(ry(i+1)+rz(i+1)))
                     [u,s,R]=svdgram(u);
@@ -274,7 +284,7 @@ while (swp<=nswp)
         
         ry(i+1) = r;
         
-        phiyax{i+1} = compute_next_Phi(phiyax{i}, y{i}, A{i}, x{i}, 'lr');
+        [phiyax{i+1}, nrms(i)] = compute_next_Phi(phiyax{i}, y{i}, A{i}, x{i}, 'lr');
         
         if (kickrank>0)
             if (strcmp(renorm, 'gram'))&&(rz(i)*n(i)>5*rz(i+1))
@@ -286,7 +296,7 @@ while (swp<=nswp)
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
             
-            phizax{i+1} = compute_next_Phi(phizax{i}, z{i}, A{i}, x{i}, 'lr');
+            phizax{i+1} = compute_next_Phi(phizax{i}, z{i}, A{i}, x{i}, 'lr', nrms(i));
             phizy{i+1} = compute_next_Phi(phizy{i}, z{i}, [], y{i}, 'lr');
         end;
     elseif ((dir<0)&&(i>1))
@@ -314,11 +324,12 @@ while (swp<=nswp)
             yz = reshape(ys, rz(i)*n(i), ry(i+1));
             yz = yz*phizy{i+1};
             yz = reshape(yz, rz(i), n(i)*rz(i+1));
-            crz = crz - yz;
+            crz = crz/nrms(i) - yz;
+            nrmz = norm(crz,'fro');
             % For adding into solution
             crs = bfun3(phizax{i}, A{i}, phiyax{i+1}, crx);
             crs = reshape(crs, rz(i), n(i)*ry(i+1));
-            crs = crs - ys;
+            crs = crs/nrms(i) - ys;
             v = [v,crs.'];
             if (strcmp(renorm, 'gram'))&&(n(i)*ry(i+1)>5*(ry(i)+rz(i)))
                 [v,s,R]=svdgram(v);
@@ -336,7 +347,7 @@ while (swp<=nswp)
         
         ry(i) = r;
         
-        phiyax{i} = compute_next_Phi(phiyax{i+1}, y{i}, A{i}, x{i}, 'rl');
+        [phiyax{i},nrms(i)] = compute_next_Phi(phiyax{i+1}, y{i}, A{i}, x{i}, 'rl');
         
         if (kickrank>0)
             if (strcmp(renorm, 'gram'))&&(n(i)*rz(i+1)>5*rz(i))
@@ -348,13 +359,13 @@ while (swp<=nswp)
             z{i} = reshape(crz.', rz(i), n(i), rz(i+1));
             % don't update z{i-1}, it will be recomputed from scratch
             
-            phizax{i} = compute_next_Phi(phizax{i+1}, z{i}, A{i}, x{i}, 'rl');
+            phizax{i} = compute_next_Phi(phizax{i+1}, z{i}, A{i}, x{i}, 'rl', nrms(i));
             phizy{i} = compute_next_Phi(phizy{i+1}, z{i}, [], y{i}, 'rl');
         end;
     end;
     
     if (verb>1)
-        fprintf('amen-mv: swp=[%d,%d], dx=%3.3e, r=%d\n', swp, i, dx, r);
+        fprintf('amen-mv: swp=[%d,%d], dx=%3.3e, r=%d, |y|=%3.3e, |z|=%3.3e\n', swp, i, dx, r, norm(cry,'fro'), nrmz);
     end;
     
     % Stopping or reversing
@@ -380,6 +391,15 @@ end;
 % else
 %     y{1} = reshape(cry, ry(1), n(1), ry(2));
 % end;
+
+% Distribute norms equally...
+nrms = exp(sum(log(nrms))/d);
+% ... and plug them into y
+for i=1:d
+    y{i} = y{i}*nrms;
+end;
+
+
 if (vectype==1)
     y = cell2core(tt_tensor, y);
     z = cell2core(tt_tensor, z);
@@ -388,7 +408,7 @@ end
 
 
 % new
-function [Phi] = compute_next_Phi(Phi_prev, x, A, y, direction)
+function [Phi,nrm] = compute_next_Phi(Phi_prev, x, A, y, direction,extnrm)
 % Performs the recurrent Phi (or Psi) matrix computation
 % Phi = Phi_prev * (x'Ay).
 % If direction is 'lr', computes Psi
@@ -397,6 +417,10 @@ function [Phi] = compute_next_Phi(Phi_prev, x, A, y, direction)
 
 % Phi1: rx1, ry1, ra1, or {rx1, ry1}_ra, or rx1, ry1
 % Phi2: ry2, ra2, rx2, or {ry2, rx2}_ra, or ry2, rx2
+
+if (nargin<6)
+    extnrm = [];
+end;
 
 
 rx1 = size(x,1); n = size(x,2); rx2 = size(x,3);
@@ -415,6 +439,9 @@ end;
 
 if (isa(Phi_prev, 'cell'))
     Phi = cell(ra, 1);
+    if (nargout>1)
+        nrm = 0;
+    end;
     if (strcmp(direction, 'lr'))
         %lr: Phi1
         x = reshape(x, rx1, n*rx2);
@@ -426,6 +453,9 @@ if (isa(Phi_prev, 'cell'))
             Phi{i} = Phi{i}*A{i};
             Phi{i} = reshape(Phi{i}, rx2, ry1*m);
             Phi{i} = Phi{i}*y;
+            if (nargout>1)
+                nrm = max(nrm, norm(Phi{i}, 'fro'));
+            end;            
         end;
     else
         %rl: Phi2
@@ -438,6 +468,24 @@ if (isa(Phi_prev, 'cell'))
             Phi{i} = Phi{i}.';
             Phi{i} = reshape(Phi{i}, m*ry2, rx1);
             Phi{i} = y*Phi{i};
+            if (nargout>1)
+                nrm = max(nrm, norm(Phi{i}, 'fro'));
+            end;
+        end;
+    end;
+    if (nargout>1)
+        % Extract the scale to prevent overload
+        if (nrm>0)
+            for i=1:ra
+                Phi{i} = Phi{i}/nrm;
+            end;
+        else
+            nrm=1;
+        end;
+    elseif (~isempty(extnrm))
+        % Override the normalization
+        for i=1:ra
+            Phi{i} = Phi{i}/extnrm;
         end;
     end;
 else
@@ -485,6 +533,19 @@ else
         else
             Phi = reshape(Phi, ry1, rx1);
         end;
+    end;
+    
+    if (nargout>1)
+        % Extract the scale to prevent overload
+        nrm = norm(Phi(:), 'fro');
+        if (nrm>0)
+            Phi = Phi/nrm;
+        else
+            nrm=1;
+        end;
+    elseif (~isempty(extnrm))
+        % Override the normalization by the external one
+        Phi = Phi/extnrm;
     end;
 end;
 
