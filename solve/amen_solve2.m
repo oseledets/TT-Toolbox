@@ -19,7 +19,7 @@ function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %       o kickrank - compression rank of the residual Z, i.e. enrichment
 %         size [4]
 %       o kicktype - how to truncate Z: 'svd', 'als' or 'rand' ['als']
-%       o ismex - shall we use the MEX lib solve3d_2 for local solution [true]
+%       o ismex - shall we use the MEX lib solve3d_2 for local solution [false]
 %       o resid_damp - local problems are solved with accuracy tol/resid_damp.
 %         Larger value may reduce a spurious noise from inexact local
 %         solutions, but increase CPU time [2]
@@ -81,7 +81,7 @@ trunc_norm_char = 1;
 
 tol_exit = [];
 
-ismex = true;
+ismex = false;
 
 % kicktype = 'svd';
 kicktype = 'als';
