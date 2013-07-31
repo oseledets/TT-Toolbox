@@ -56,6 +56,7 @@ end;
 % Default valuse
 nswp = 20;
 kickrank = 4;
+kickrank2 = 0;
 verb = 1;
 y = [];
 z = [];
@@ -81,6 +82,8 @@ for i=1:2:length(varargin)-1
             verb=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'kickrank2'
+            kickrank2=varargin{i+1};            
         case 'init_qr'
             init_qr = varargin{i+1};
         case 'renorm'
@@ -161,9 +164,9 @@ else
 end;
 
 % Enrichment vector
-if (kickrank>0)
+if (kickrank+kickrank2>0)
     if (isempty(z))
-        [z,rz] = gen_rand(n,d,kickrank);
+        [z,rz] = gen_rand(n,d,kickrank+kickrank2);
         init_qr_z = false;
     else
         init_qr_z = true;
@@ -210,7 +213,7 @@ for i=1:d-1
     % We will extract the norms of Y'X
     [phiyx(i+1,:),nrms(i)] = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
     
-    if (kickrank>0)
+    if (kickrank+kickrank2>0)
         if (init_qr_z)
             cr = reshape(z{i}, rz(i)*n(i), rz(i+1));
             if (strcmp(renorm, 'gram'))&&(rz(i)*n(i)>5*rz(i+1))
@@ -295,7 +298,7 @@ while (swp<=nswp)
         end;
         
         % Prepare enrichment, if needed
-        if (kickrank>0)
+        if (kickrank+kickrank2>0)
             cry = u*v.';
             cry = reshape(cry, ry(i)*n(i)*ry(i+1), M);
             % For updating z
@@ -314,6 +317,10 @@ while (swp<=nswp)
             crz = reshape(crz, rz(i)*n(i), rz(i+1)*M);
             [crz,~,~]=svd(crz, 'econ');
             crz = crz(:, 1:min(size(crz,2), kickrank));
+            if (kickrank2>0)
+                crz = [crz, randn(rz(i)*n(i), kickrank2)];
+                [crz,~]=qr(crz,0);
+            end;
             % For adding into solution
             if (fkick)
                 crs = proj_sum(phiyx(i,:), X(i,:), phizx(i+1,:), c);
@@ -344,7 +351,7 @@ while (swp<=nswp)
         
         [phiyx(i+1,:), nrms(i)] = compute_next_Phi(phiyx(i,:), y{i}, X(i,:), 'lr', can);
         
-        if (kickrank>0)
+        if (kickrank+kickrank2>0)
             rz(i+1) = size(crz, 2);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step
@@ -372,7 +379,7 @@ while (swp<=nswp)
         end;             
         
         % Prepare enrichment, if needed
-        if (kickrank>0)
+        if (kickrank+kickrank2>0)
             cry = u*v.';
             cry = reshape(cry, M, ry(i)*n(i)*ry(i+1));
             % For updating z
@@ -390,6 +397,10 @@ while (swp<=nswp)
             crz = reshape(crz.', M*rz(i), n(i)*rz(i+1));
             [~,~,crz]=svd(crz, 'econ');
             crz = crz(:, 1:min(size(crz,2), kickrank));
+            if (kickrank2>0)
+                crz = [crz, randn(n(i)*rz(i+1), kickrank2)];
+                [crz,~]=qr(crz,0);
+            end;            
             crz = crz';
             % To add into solution
             crs = proj_sum(phizx(i,:), X(i,:), phiyx(i+1,:), c);
@@ -421,7 +432,7 @@ while (swp<=nswp)
         
         [phiyx(i,:), nrms(i)] = compute_next_Phi(phiyx(i+1,:), y{i}, X(i,:), 'rl', can);
         
-        if (kickrank>0)
+        if (kickrank+kickrank2>0)
             rz(i) = size(crz, 1);
             z{i} = reshape(crz, rz(i), n(i), rz(i+1));
             % z{i+1} will be recomputed from scratch in the next step

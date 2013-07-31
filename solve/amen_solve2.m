@@ -90,6 +90,7 @@ kicktype = 'als';
 
 verb=1;
 kickrank = 4;
+kickrank2 = 0;
 x=[];
 crz = [];
 
@@ -166,6 +167,8 @@ for i=1:2:length(varargin)-1
             local_iters=varargin{i+1};
         case 'kickrank'
             kickrank=varargin{i+1};
+        case 'kickrank2'
+            kickrank2=varargin{i+1};            
         case 'kicktype'
             kicktype=varargin{i+1};
         case 'ismex'
@@ -221,12 +224,12 @@ end;
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 % Try to compute the low-rank appr. to residual on-the-fly
-if (strcmp(kicktype, 'als'))&&(kickrank>0)
+if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
     % Partial projections Z'AX, Z'Y
     phiza = cell(d+1,1); phiza{1}=1; phiza{d+1}=1;
     phizy = cell(d+1,1); phizy{1}=1; phizy{d+1}=1;
     if (isempty(crz))
-        crz = tt_rand(n, d, kickrank);
+        crz = tt_rand(n, d, kickrank+kickrank2);
     end;
     rz = crz.r;
     crz = core2cell(crz);
@@ -267,7 +270,7 @@ for swp=1:nswp
     % Orthogonalization
     for i=d:-1:2
         % Update the Z in the ALS version
-        if (strcmp(kicktype, 'als'))&&(kickrank>0)
+        if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
             if (swp>1)
                 % Update crz (we don't want just random-svd)
                 crzAt = bfun3(phiza{i}, crA{i}, phiza{i+1}, reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1));
@@ -280,7 +283,7 @@ for swp=1:nswp
                 [vz, sz, crznew]=svd(crznew, 'econ');
                 crznew = conj(crznew(:,1:min(kickrank, size(crznew,2))));
                 if (i<d)
-                    crznew = [crznew, randn(n(i)*rz(i+1), kickrank)];
+                    crznew = [crznew, randn(n(i)*rz(i+1), kickrank2)];
                 end;
             else
                 crznew = reshape(crz{i}, rz(i), n(i)*rz(i+1)).';
@@ -385,22 +388,7 @@ for swp=1:nswp
             Rs{3,i} = reshape(Rs{3,i}, rx(i)*ra(i), ra(i)*rx(i));
         end;
         
-        if strcmp(kicktype, 'als')&&(kickrank>0)
-%             % Just ortgonalize z and recompute Z'AX, Z'Y.
-%             cr = crz{i};
-%             cr = reshape(cr, rz(i), n(i)*rz(i+1));
-%             [cr, rv]=qr(cr.', 0);
-%             curnorm = norm(rv, 'fro');
-%             if (curnorm>0)
-%                 rv = rv/curnorm;
-%             end;
-%             cr2 = crz{i-1};
-%             cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
-%             cr2 = cr2*(rv.');
-%             rz(i) = size(cr, 2);
-%             cr = reshape(cr.', rz(i), n(i), rz(i+1));
-%             crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
-%             crz{i} = cr;
+        if strcmp(kicktype, 'als')&&(kickrank+kickrank2>0)
             rz(i) = rznew;
             phiza{i} = compute_next_Phi(phiza{i+1}, crz{i}, crA{i}, crx{i}, 'rl', nrmsa(i-1));
             phizy{i} = compute_next_Phi(phizy{i+1}, crz{i}, [], cry{i}, 'rl', nrmsy(i-1));
@@ -559,7 +547,7 @@ for swp=1:nswp
         
         u = u(:,1:r);
         v = conj(v(:,1:r))*diag(s(1:r));
-        if (strcmp(kicktype, 'als'))&&(kickrank>0)
+        if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
             % Update crz (we don't want just random-svd)
             crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
             crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
@@ -570,7 +558,7 @@ for swp=1:nswp
             [crznew, sz,vz]=svd(crznew, 'econ');
             crznew = crznew(:,1:min(kickrank, size(crznew,2)));
             if (i<d)
-                crznew = [crznew, randn(rz(i)*n(i), kickrank)];
+                crznew = [crznew, randn(rz(i)*n(i), kickrank2)];
             end;
             
             [crznew, rv]=qr(crznew, 0);
@@ -699,7 +687,7 @@ for swp=1:nswp
             nrmsc = nrmsc*(nrmsy(i)/(nrmsa(i)*nrmsx(i)));
             
             if (verb==2)
-                if (strcmp(kicktype, 'als'))&&(kickrank>0)
+                if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
                     fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |y|: %3.3e, |z|: %3.3e\n', i, dx, res_prev, r, norm(v(:)), norm(crznew(:)));
                 else
                     fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
@@ -712,7 +700,7 @@ for swp=1:nswp
             crx{i+1} = v;
             
             % Update z and its projections
-            if strcmp(kicktype, 'als')&&(kickrank>0)
+            if strcmp(kicktype, 'als')&&(kickrank+kickrank2>0)
                 rz(i+1) = rznew;
                 phiza{i+1} = compute_next_Phi(phiza{i}, crznew, crA{i}, crx{i}, 'lr', nrmsa(i));
                 phizy{i+1} = compute_next_Phi(phizy{i}, crznew, [], cry{i}, 'lr', nrmsy(i));
