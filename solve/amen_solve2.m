@@ -266,10 +266,36 @@ t_amr_solve = tic;
 for swp=1:nswp
     % Orthogonalization
     for i=d:-1:2
-        % Remove old norm correction
-        if (swp>1)            
+        % Update the Z in the ALS version
+        if (strcmp(kicktype, 'als'))&&(kickrank>0)
+            if (swp>1)
+                % Update crz (we don't want just random-svd)
+                crzAt = bfun3(phiza{i}, crA{i}, phiza{i+1}, reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1));
+                crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
+                crzy = phizy{i}*reshape(cry{i}, ry(i), n(i)*ry(i+1));
+                crzy = reshape(crzy, rz(i)*n(i), ry(i+1));
+                crzy = crzy*phizy{i+1};
+                crznew = crzy*nrmsc - crzAt;
+                crznew = reshape(crznew, rz(i), n(i)*rz(i+1));
+                [vz, sz, crznew]=svd(crznew, 'econ');
+                crznew = conj(crznew(:,1:min(kickrank, size(crznew,2))));
+                if (i<d)
+                    crznew = [crznew, randn(n(i)*rz(i+1), kickrank)];
+                end;
+            else
+                crznew = reshape(crz{i}, rz(i), n(i)*rz(i+1)).';
+            end;
+            
+            [crznew, rv]=qr(crznew, 0);
+            rznew = size(crznew, 2);
+            crznew = reshape(crznew.', rznew, n(i), rz(i+1));
+            crz{i} = crznew;
+        end;
+        if (swp>1)
+            % Remove old norm correction
             nrmsc = nrmsc/(nrmsy(i-1)/(nrmsa(i-1)*nrmsx(i-1)));
         end;
+        
         
         cr = crx{i};
         cr = reshape(cr, rx(i), n(i)*rx(i+1));
@@ -360,24 +386,24 @@ for swp=1:nswp
         end;
         
         if strcmp(kicktype, 'als')&&(kickrank>0)
-            % Just ortgonalize z and recompute Z'AX, Z'Y.
-            cr = crz{i};
-            cr = reshape(cr, rz(i), n(i)*rz(i+1));
-            [cr, rv]=qr(cr.', 0);
-            curnorm = norm(rv, 'fro');
-            if (curnorm>0)
-                rv = rv/curnorm;
-            end;
-            cr2 = crz{i-1};
-            cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
-            cr2 = cr2*(rv.');
-            rz(i) = size(cr, 2);
-            cr = reshape(cr.', rz(i), n(i), rz(i+1));
-            crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
-            crz{i} = cr;
-            
-            phiza{i} = compute_next_Phi(phiza{i+1}, cr, crA{i}, crx{i}, 'rl', nrmsa(i-1));
-            phizy{i} = compute_next_Phi(phizy{i+1}, cr, [], cry{i}, 'rl', nrmsy(i-1));
+%             % Just ortgonalize z and recompute Z'AX, Z'Y.
+%             cr = crz{i};
+%             cr = reshape(cr, rz(i), n(i)*rz(i+1));
+%             [cr, rv]=qr(cr.', 0);
+%             curnorm = norm(rv, 'fro');
+%             if (curnorm>0)
+%                 rv = rv/curnorm;
+%             end;
+%             cr2 = crz{i-1};
+%             cr2 = reshape(cr2, rz(i-1)*n(i-1), rz(i));
+%             cr2 = cr2*(rv.');
+%             rz(i) = size(cr, 2);
+%             cr = reshape(cr.', rz(i), n(i), rz(i+1));
+%             crz{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
+%             crz{i} = cr;
+            rz(i) = rznew;
+            phiza{i} = compute_next_Phi(phiza{i+1}, crz{i}, crA{i}, crx{i}, 'rl', nrmsa(i-1));
+            phizy{i} = compute_next_Phi(phizy{i+1}, crz{i}, [], cry{i}, 'rl', nrmsy(i-1));
         end;
         
     end;
@@ -473,7 +499,7 @@ for swp=1:nswp
         % Truncation
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
         
-        if (kickrank>=0)
+        if (kickrank>=0)&&(i<d)
             [u,s,v]=svd(sol, 'econ');
             s = diag(s);
             
@@ -531,20 +557,29 @@ for swp=1:nswp
             s = ones(r,1);
         end;
         
-        if (i<d) %  enrichment, etc
-            u = u(:,1:r);
-            v = conj(v(:,1:r))*diag(s(1:r));            
-            
-            if (strcmp(kicktype, 'als'))&&(kickrank>0)
-                % Update crz (we don't want just random-svd)
-                crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
-                crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
-                crzy = phizy{i}*y1;
-                crzy = reshape(crzy, rz(i)*n(i), ry(i+1));
-                crzy = crzy*phizy{i+1};
-                crznew = crzy - crzAt;
+        u = u(:,1:r);
+        v = conj(v(:,1:r))*diag(s(1:r));
+        if (strcmp(kicktype, 'als'))&&(kickrank>0)
+            % Update crz (we don't want just random-svd)
+            crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
+            crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
+            crzy = phizy{i}*y1;
+            crzy = reshape(crzy, rz(i)*n(i), ry(i+1));
+            crzy = crzy*phizy{i+1};
+            crznew = crzy - crzAt;
+            [crznew, sz,vz]=svd(crznew, 'econ');
+            crznew = crznew(:,1:min(kickrank, size(crznew,2)));
+            if (i<d)
+                crznew = [crznew, randn(rz(i)*n(i), kickrank)];
             end;
             
+            [crznew, rv]=qr(crznew, 0);
+            rznew = size(crznew, 2);
+            crznew = reshape(crznew, rz(i), n(i), rznew);
+            crz{i} = crznew;
+        end;
+        
+        if (i<d) %  enrichment, etc
             if (kickrank>0)
                 % Smarter kick: low-rank PCA in residual
                 % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
@@ -678,25 +713,13 @@ for swp=1:nswp
             
             % Update z and its projections
             if strcmp(kicktype, 'als')&&(kickrank>0)
-                [crznew, rv]=qr(crznew, 0);
-                curnorm=norm(rv, 'fro');
-                if (curnorm>0)
-                    rv = rv/curnorm;
-                end;
-                cr2 = crz{i+1};
-                cr2 = reshape(cr2, rz(i+1), n(i+1)*rz(i+2));
-                cr2 = rv*cr2;
-                rz(i+1) = size(crznew, 2);
-                crznew = reshape(crznew, rz(i), n(i), rz(i+1));
-                crz{i+1} = reshape(cr2, rz(i+1), n(i+1), rz(i+2));
-                crz{i} = crznew;
-                
+                rz(i+1) = rznew;
                 phiza{i+1} = compute_next_Phi(phiza{i}, crznew, crA{i}, crx{i}, 'lr', nrmsa(i));
                 phizy{i+1} = compute_next_Phi(phizy{i}, crznew, [], cry{i}, 'lr', nrmsy(i));
             end;
         else % i==d
             % Just stuff back the last core
-            sol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
+%             sol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
             sol = reshape(sol, rx(i), n(i), rx(i+1));
             crx{i} = sol;
         end;
