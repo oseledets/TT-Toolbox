@@ -12,6 +12,6 @@ function [n]=nnz(a)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-n=nnz(a.tt.core)
+n=nnz(a.tt.core);
 return
 end
