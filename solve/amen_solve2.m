@@ -229,7 +229,7 @@ if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
     phiza = cell(d+1,1); phiza{1}=1; phiza{d+1}=1;
     phizy = cell(d+1,1); phizy{1}=1; phizy{d+1}=1;
     if (isempty(crz))
-        crz = tt_rand(n, d, kickrank+kickrank2);
+        crz = tt_rand(n, d, kickrank+kickrank2, -1);
     end;
     rz = crz.r;
     crz = core2cell(crz);
