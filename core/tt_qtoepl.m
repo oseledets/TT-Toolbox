@@ -48,7 +48,8 @@ for K = 1:D
 	p = size(tt{ind + d(K)}, 1);
 	q = size(tt{ind + d(K)}, 3);
 	r = size(tt{ind + d(K) + 1}, 3);
-	tt1{ind1 + d(K)} = reshape(reshape(tt{ind+d(K)},[4*p,q])*reshape(tt{ind+d(K)+1},[q,r]),[4,p,r]);
+	tt1{ind1 + d(K)} = reshape(reshape(permute(tt{ind+d(K)},[2, 1, 3]),[4*p,q])*...
+        reshape(permute(tt{ind+d(K)+1},[2, 1, 3]),[q,r]),[4,p,r]);
     tt1{ind1 + d(K)} = permute(tt1{ind1 + d(K)}, [2, 1, 3]);
 	ind=ind+d(K)+1;
 	ind1=ind1+d(K);
