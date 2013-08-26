@@ -6,12 +6,12 @@ function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %   given in the TT-format also. Options are provided in form
 %   'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so
 %   on. The parameters are set to default (in brackets in the following)
-%   The list of option names and default values are:
+%   The list of option names and default values:
 %       o x0 - initial approximation [random rank-2 tensor]
 %       o nswp - maximal number of sweeps [50]
 %       o rmax - maximal TT-rank of the solution [1000]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
-%       o max_full_size - maximal size of the local matrix for full solver [50]
+%       o max_full_size - maximal size of the local matrix for the full solver [50]
 %       o local_prec - local preconditioner: '' (no prec.), 'ljacobi',
 %         'cjacobi', 'rjacobi' ['']
 %       o local_iters - number of local gmres restarts [2]
@@ -19,19 +19,25 @@ function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %       o kickrank - compression rank of the residual Z, i.e. enrichment
 %         size [4]
 %       o kicktype - how to truncate Z: 'svd', 'als' or 'rand' ['als']
+%       o kickrank2 - size of the secondary random enrichment for Z 
+%         (kicktype=='als' only) [0]
 %       o ismex - shall we use the MEX lib solve3d_2 for local solution [false]
-%       o resid_damp - local problems are solved with accuracy tol/resid_damp.
+%       o resid_damp - solve local problems with accuracy tol/resid_damp.
 %         Larger value may reduce a spurious noise from inexact local
 %         solutions, but increase CPU time [2]
 %       o trunc_norm - truncate in either Frob. ('fro'), or residual norm
-%       ('residual') ['residual']
+%         ('residual') ['residual']
 %       o z0 - initial guess for Z (kicktype=='als' only). 
+%       o tol_exit - stopping difference between consecutive iterations 
+%         (if trunc_norm=='fro') or residual (trunc_norm=='resid') [tol]
+%       o symm - shall we symmetrize the problem (A'Ax=A'y) before 
+%         the solution [false]
 %
 %       Example:
 %           d=8; f=8;
 %           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
-%           rhs=tt_ones(2,d*f); Right-hand side of all ones
-%           sol = amr_solve2(mat, rhs, 1e-5); % solve the Poisson eqn.
+%           rhs=tt_ones(2,d*f); % Right-hand side of all ones
+%           sol = amen_solve2(mat, rhs, 1e-5); % solve the Poisson eqn.
 %
 %********
 %   References:
@@ -195,7 +201,7 @@ if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
 % if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
 
 if (A.n~=A.m)
-    error(' AMR does not know how to solve rectangular systems!\n Use amr_solve2(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
+    error(' AMEn does not know how to solve rectangular systems!\n Use amen_solve2(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
 end;
 
 d = y.d;
@@ -263,9 +269,9 @@ testdata{1} = zeros(d, nswp); % CPU times
 testdata{2} = cell(d, nswp); % interm. solutions
 testdata{3} = zeros(d, nswp); % local residuals (res_prev)
 
-t_amr_solve = tic;
+t_amen_solve = tic;
 
-% AMR sweeps
+% AMEn sweeps
 for swp=1:nswp
     % Orthogonalization
     for i=d:-1:2
@@ -688,9 +694,9 @@ for swp=1:nswp
             
             if (verb==2)
                 if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
-                    fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |y|: %3.3e, |z|: %3.3e\n', i, dx, res_prev, r, norm(v(:)), norm(crznew(:)));
+                    fprintf('=amen_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |y|: %3.3e, |z|: %3.3e\n', i, dx, res_prev, r, norm(v(:)), norm(crznew(:)));
                 else
-                    fprintf('=amr_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
+                    fprintf('=amen_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
                 end;
             end;
             
@@ -712,7 +718,7 @@ for swp=1:nswp
             crx{i} = sol;
         end;
         
-        testdata{1}(i,swp) = toc(t_amr_solve);
+        testdata{1}(i,swp) = toc(t_amen_solve);
         if (verb>2)
             x = cell2core(x, crx); % for test
             testdata{2}{i,swp} = x;
@@ -721,7 +727,7 @@ for swp=1:nswp
     end;
     
     if (verb>0)
-        fprintf('=amr_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, max_rank: %g\n', swp, max_dx, max_res, max(rx));
+        fprintf('=amen_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, max_rank: %g\n', swp, max_dx, max_res, max(rx));
     end;
     
     if (strcmp(trunc_norm, 'fro'))

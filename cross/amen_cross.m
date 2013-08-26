@@ -1,11 +1,46 @@
 function [y]=amen_cross(n, fun, tol, varargin)
 % Block cross with error-based enrichment.
 % function [y]=amen_cross(n, fun, tol, varargin)
+% Tries to interpolate the function fun(ind) via the error-enriched 
+% maxvol-cross.
 %
-% fun = @(i)fun(i)
-% i comes as an array of sizes M x d,
+% n should be a column vector of mode sizes.
+% fun = @(ind)fun(ind) is a sought function of index ind,
+% ind comes as an array of sizes M x d,
 % fun should return the block M x b (vectorized variant).
 % M=1 if vec=false, hence the return may be either 1 x b or b x 1.
+%
+% Optional arguments are provided in the form
+% 'PropertyName1',PropertyValue1,'PropertyName2',PropertyValue2 and so on. 
+% The list of option names and default values:
+%       o y0 - initial approximation [random rank-2 tensor]
+%       o nswp - maximal number of sweeps [20]
+%       o kickrank - rank of the error Z, i.e. enrichment size [4]
+%       o kickrank2 - size of the secondary random enrichment for Z [0]
+%       o tol_exit - stopping difference between consecutive iterations [tol]
+%       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
+%       o vec - whether fun can accept and return vectorized values [false]
+%
+%********
+%   References for the alternating optimization with enrichment (AMEn):
+%   S. Dolgov, D. Savostyanov.
+%   http://arxiv.org/abs/1301.6068 
+%   http://arxiv.org/abs/1304.1222
+%   
+%   Please send feedback to: {sergey.v.dolgov,dmitry.savostyanov}@gmail.com
+%
+%********
+%
+% TT-Toolbox 2.2, 2009-2012
+%
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+%
+%For all questions, bugs and suggestions please mail
+%ivan.oseledets@gmail.com
+%---------------------------
+
 
 vars = varargin;
 
