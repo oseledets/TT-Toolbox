@@ -67,6 +67,9 @@ if (trans)
     S{1} = permute(S{1}, [1,3,2,4]);
 end;
 
+if (d==1)
+    S{d} = sum(S{d}, 4);
+end;
 
 S = cell2core(tt_matrix,S);
 

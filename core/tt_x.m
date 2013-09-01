@@ -18,8 +18,12 @@ function [res]=tt_x(n,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 if (numel(n) == 1)
-  d=varargin{1}; 
-  n=n*ones(1,d);
+    if (numel(varargin)>0)
+        d=varargin{1};
+    else
+        d=1;
+    end;
+    n=n*ones(1,d);
 else
   d=numel(n);
 end
@@ -28,13 +32,6 @@ end
 
 res=cell(d,1);
 
-res{1}=ones(n(1),2);
-res{1}(:,1)=0:n(1)-1;
-
-% shabl=zeros(n(1),2,2);
-% for j=1:n
-%     shabl(j,:,:)=eye(2,2);
-% end
 ni=n(1);
 
 for i=2:d-1
@@ -50,6 +47,13 @@ end
 
 res{d}=ones(n(d),2);
 res{d}(:,2)=ni.*(0:n(d)-1);
+
+res{1}=ones(n(1),2);
+res{1}(:,1)=0:n(1)-1;
+
+if (d==1)
+    res{1}=res{1}*[1;0];
+end;
 
 res = tt_tensor(res); % Bydlocode
 return

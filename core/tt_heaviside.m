@@ -41,6 +41,9 @@ t{L} = zeros(2,n(L),1);
 t{L}(1,:,1)=[zeros(ind(L)-1,1); 1; zeros(n(L)-ind(L), 1)];
 t{L}(2,:,1)=heaviside((1:n(L))-ind(L)-1);
 
+if (L==1)
+    t{1} = sum(t{1}, 1);
+end;
 
 t = cell2core(tt_tensor,t);
 end
