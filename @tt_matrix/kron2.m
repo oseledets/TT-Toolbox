@@ -16,7 +16,14 @@ function [tt]=kron2(tt1,tt2)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-%Zaglushka!
+if ( isempty(tt1) )
+  tt=tt2;
+  return
+elseif ( isempty(tt2) )
+  tt=tt1;
+  return
+end
+
 n1=tt1.n; m1=tt1.m; n2=tt2.n; m2=tt2.m;
 t1=tt1.tt; t2=tt2.tt;
 cr1=t1.core; cr2=t2.core; r1=t1.r; r2=t2.r; ps1=t1.ps; ps2=t2.ps;
