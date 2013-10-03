@@ -77,13 +77,13 @@ end;
 
 d = numel(n);
 if (isempty(y))
-    y = tt_rand(n, d, 2);
+    y = tt_rand(n, d, 2, -1);
 end;
 ry = y.r;
 y = core2cell(y);
 
 if (kickrank>0)
-    z = tt_rand(n,d,kickrank);
+    z = tt_rand(n,d,kickrank,-1);
     rz = z.r;
     z = core2cell(z);
     % Interp matrices for z and y->z    
@@ -103,6 +103,9 @@ phiyy{d+1}=1;
 Jy = cell(d+1,1);
 Jz = cell(d+1,1);
 
+% Store factorized norm
+nrms = ones(d,1);
+
 % Initial orthog and indices: maxvol over y, z
 for i=d:-1:2
     cry = reshape(y{i}, ry(i), n(i)*ry(i+1));
@@ -118,6 +121,9 @@ for i=d:-1:2
     cry = reshape(cry, ry(i), n(i)*ry(i+1));
     ind = maxvol2(cry.');
     phiyy{i} = cry(:,ind);
+    % Extract the scale
+    nrms(i) = 1./min(svd(phiyy{i}));
+    phiyy{i} = phiyy{i}.*nrms(i);    
     Jy{i} = [kron(ones(ry(i+1),1), (1:n(i))'), kron(Jy{i+1}, ones(n(i),1))]; % n*r2, d+1-i
     Jy{i} = Jy{i}(ind,:);
     
@@ -136,6 +142,7 @@ for i=d:-1:2
         crz = reshape(crz, rz(i), n(i)*rz(i+1));
         ind = maxvol2(crz.');
         phizz{i} = crz(:,ind);
+        phizz{i} = phizz{i}.*nrms(i);
         Jz{i} = [kron(ones(rz(i+1),1), (1:n(i))'), kron(Jz{i+1}, ones(n(i),1))]; % n*r2, d+1-i
         Jz{i} = Jz{i}(ind,:);
         % Extract z indices from y.
@@ -143,6 +150,7 @@ for i=d:-1:2
         cry = cry*phizy{i+1};
         cry = reshape(cry, ry(i), n(i)*rz(i+1));
         phizy{i} = cry(:, ind);
+        phizy{i} = phizy{i}.*nrms(i);
     end;
 end;
 
@@ -184,10 +192,14 @@ while (swp<=nswp)
     cry = reshape(cry, b*ry(i)*n(i), ry(i+1));
     cry = cry/phiyy{i+1};
     cry = reshape(cry, b, ry(i)*n(i)*ry(i+1));
-    cry = cry.';
+    cry = cry.';       
+    
+    nrms(i) = norm(cry, 'fro');
+    cry = cry./nrms(i);
     
     y_prev = reshape(y{i}, ry(i)*n(i)*ry(i+1), b);
-    dx = norm(cry-y_prev, 'fro')/norm(cry, 'fro');
+    y_prev = y_prev./norm(y_prev, 'fro');
+    dx = norm(cry-y_prev, 'fro');
     max_dx = max(max_dx,dx);
     
     % Truncation, etc
@@ -197,7 +209,7 @@ while (swp<=nswp)
         s = diag(s);
         r = my_chop2(s, norm(s)*tol/sqrt(d));
         u = u(:,1:r);
-        v = diag(s(1:r))*v(:,1:r)';
+        v = diag(s(1:r))*v(:,1:r)';       
         
         if (kickrank>0)
             % Project onto Ez
@@ -224,7 +236,7 @@ while (swp<=nswp)
                     crz(j,:) = fun(J(j,:));
                 end;
             end;    
-            crz = crz - cryz;            
+            crz = crz/nrms(i) - cryz;
             % Apply interpolation matrices
             crz = reshape(crz, rz(i), n(i)*rz(i+1)*b);
             crz = phizz{i} \ crz;
@@ -260,7 +272,7 @@ while (swp<=nswp)
             crs = phiyy{i} \ crs;
             crs = reshape(crs, ry(i)*n(i)*rz(i+1), b);
             
-            crs = crs - crys;
+            crs = crs/nrms(i) - crys;
             
             crs = crs.';
             crs = reshape(crs, b*ry(i)*n(i), rz(i+1));
@@ -295,6 +307,9 @@ while (swp<=nswp)
         u = reshape(u, ry(i)*n(i), ry(i+1));
         ind = maxvol2(u);
         phiyy{i+1} = u(ind,:);
+        % Extract scales
+        nrms(i) = 1./min(svd(phiyy{i+1}));
+        phiyy{i+1} = phiyy{i+1}.*nrms(i);
         Jy{i+1} = [kron(ones(n(i),1), Jy{i}), kron((1:n(i))', ones(ry(i),1))];
         Jy{i+1} = Jy{i+1}(ind,:);
         if (kickrank>0)
@@ -305,12 +320,14 @@ while (swp<=nswp)
             crz = reshape(crz, rz(i)*n(i), rz(i+1));
             ind = maxvol2(crz);
             phizz{i+1} = crz(ind,:);
+            phizz{i+1} = phizz{i+1}.*nrms(i);
             Jz{i+1} = [kron(ones(n(i),1), Jz{i}), kron((1:n(i))', ones(rz(i),1))];
             Jz{i+1} = Jz{i+1}(ind,:);
             phizy{i+1} = reshape(y{i}, ry(i), n(i)*ry(i+1));
             phizy{i+1} = phizy{i}*phizy{i+1};
             phizy{i+1} = reshape(phizy{i+1}, rz(i)*n(i), ry(i+1));
             phizy{i+1} = phizy{i+1}(ind,:);
+            phizy{i+1} = phizy{i+1}.*nrms(i);
         end;
     elseif (dir<0)&&(i>1)
         cry = cry.';
@@ -347,7 +364,7 @@ while (swp<=nswp)
                     crz(:,j) = fun(J(j,:));
                 end;
             end;    
-            crz = crz - cryz;            
+            crz = crz/nrms(i) - cryz;
             % Apply interpolation matrices
             crz = reshape(crz, b*rz(i)*n(i), rz(i+1));
             crz = crz/phizz{i+1};            
@@ -384,7 +401,7 @@ while (swp<=nswp)
             crs = crs/phiyy{i+1};            
             crs = reshape(crs, b, rz(i)*n(i)*ry(i+1));
             
-            crs = crs - crys;
+            crs = crs/nrms(i) - crys;
 
             crs = crs.';
             crs = reshape(crs, rz(i), n(i)*ry(i+1)*b);
@@ -418,6 +435,9 @@ while (swp<=nswp)
         v = reshape(v, ry(i), n(i)*ry(i+1));
         ind = maxvol2(v.');
         phiyy{i} = v(:,ind);
+        % Extract scales
+        nrms(i) = 1./min(svd(phiyy{i}));
+        phiyy{i} = phiyy{i}.*nrms(i);        
         Jy{i} = [kron(ones(ry(i+1),1), (1:n(i))'), kron(Jy{i+1}, ones(n(i),1))]; % n*r2, d+1-i
         Jy{i} = Jy{i}(ind,:);        
         if (kickrank>0)
@@ -428,6 +448,7 @@ while (swp<=nswp)
             crz = reshape(crz, rz(i), n(i)*rz(i+1));
             ind = maxvol2(crz.');
             phizz{i} = crz(:,ind);
+            phizz{i} = phizz{i}.*nrms(i);   
             Jz{i} = [kron(ones(rz(i+1),1), (1:n(i))'), kron(Jz{i+1}, ones(n(i),1))]; % n*r2, d+1-i
             Jz{i} = Jz{i}(ind,:);
             % Extract indices from y.
@@ -435,6 +456,7 @@ while (swp<=nswp)
             cry = cry*phizy{i+1};
             cry = reshape(cry, ry(i), n(i)*rz(i+1));
             phizy{i} = cry(:, ind);
+            phizy{i} = phizy{i}.*nrms(i);   
         end;
     else
         y{i} = reshape(cry, ry(i), n(i), ry(i+1), b);
@@ -459,6 +481,14 @@ while (swp<=nswp)
         i = i+dir;
         swp = swp+1;
     end;
+end;
+
+% Recover the scales
+% Distribute norms equally...
+nrms = exp(sum(log(nrms))/d);
+% ... and plug them into x
+for i=1:d
+    y{i} = y{i}*nrms;
 end;
 
 y{d} = reshape(y{d}, ry(d), n(d), b);
