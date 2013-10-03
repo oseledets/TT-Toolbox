@@ -154,6 +154,7 @@ for i=d:-1:2
     end;
 end;
 
+last_sweep = false;
 evalcnt = 0;
 b = []; % A block size will be stored here
 max_dx = 0;
@@ -211,7 +212,7 @@ while (swp<=nswp)
         u = u(:,1:r);
         v = diag(s(1:r))*v(:,1:r)';       
         
-        if (kickrank>0)
+        if (kickrank>0)&&(~last_sweep)
             % Project onto Ez
             crys = u*v;
             crys = reshape(crys, ry(i)*n(i)*ry(i+1), b);
@@ -312,7 +313,7 @@ while (swp<=nswp)
         phiyy{i+1} = phiyy{i+1}.*nrms(i);
         Jy{i+1} = [kron(ones(n(i),1), Jy{i}), kron((1:n(i))', ones(ry(i),1))];
         Jy{i+1} = Jy{i+1}(ind,:);
-        if (kickrank>0)
+        if (kickrank>0)&&(~last_sweep)
             rz(i+1) = size(crz,2);
             z{i} = crz;
             crz = reshape(crz, rz(i), n(i)*rz(i+1));
@@ -338,7 +339,7 @@ while (swp<=nswp)
         u = u(:,1:r)*diag(s(1:r));
         v = v(:,1:r)';
         
-        if (kickrank>0)
+        if (kickrank>0)&&(~last_sweep)
             % Project onto Ez
             crys = u*v;
             crys = reshape(crys, b, ry(i)*n(i)*ry(i+1));
@@ -440,7 +441,7 @@ while (swp<=nswp)
         phiyy{i} = phiyy{i}.*nrms(i);        
         Jy{i} = [kron(ones(ry(i+1),1), (1:n(i))'), kron(Jy{i+1}, ones(n(i),1))]; % n*r2, d+1-i
         Jy{i} = Jy{i}(ind,:);        
-        if (kickrank>0)
+        if (kickrank>0)&&(~last_sweep)
             rz(i) = size(crz,1);
             z{i} = crz;
             crz = reshape(crz, rz(i)*n(i), rz(i+1));
@@ -470,9 +471,13 @@ while (swp<=nswp)
             fprintf('=amen_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d\n', swp, max_dx, max(ry), evalcnt);
         end;
         
-        if (dir>0)
+        if (dir>0)&&(last_sweep)
+            break;
+        end;
+        
+        if (dir<0)
             if (max_dx<tol_exit)
-                break;
+                last_sweep = true;
             end;
         end;
         
