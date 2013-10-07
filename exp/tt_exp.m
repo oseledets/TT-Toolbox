@@ -10,9 +10,9 @@ function [y]=tt_exp(x, eps, varargin)
 
 % nrm = norm(x);
 if (isa(x, 'tt_tensor'))
-    nrm = tt_max(x);
+    nrm = tt_max_abs(x);
 else
-    nrm = tt_max(qtttucker_to_linqtt(x, eps));
+    nrm = tt_max_abs(qtttucker_to_linqtt(x, eps));
 end;
 n0 = floor(max(log2(nrm), 0))+1;
 x = x./(2^n0);

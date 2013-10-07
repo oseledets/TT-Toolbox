@@ -2,8 +2,8 @@
                 "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-  <title>Description of tt_min</title>
-  <meta name="keywords" content="tt_min">
+  <title>Description of tt_min_abs</title>
+  <meta name="keywords" content="tt_min_abs">
   <meta name="description" content="Computes approximation to the minimal absolute value in a TT-tensor">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
@@ -12,23 +12,23 @@
 </head>
 <body>
 <a name="_top"></a>
-<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_min.m</div>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_min_abs.m</div>
 
 <!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
 <td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
 
-<h1>tt_min
+<h1>tt_min_abs
 </h1>
 
 <h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
 <div class="box"><strong>Computes approximation to the minimal absolute value in a TT-tensor</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
-<div class="box"><strong>function [res,ind]=tt_min(tt) </strong></div>
+<div class="box"><strong>function [res,ind]=tt_min_abs(tt) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
 <div class="fragment"><pre class="comment">Computes approximation to the minimal absolute value in a TT-tensor
-   [RES,IND]=TT_MIN(TT) Tries to compute the minimal absolute value in
+   [RES,IND]=TT_MIN_ABS(TT) Tries to compute the minimal absolute value in
    TT-tensor
 
 
@@ -46,7 +46,7 @@ ivan.oseledets@gmail.com
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../../matlabicon.gif)">
-<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>	Compute the (supposedly) maximal in modulus element in a TT-tensor</li><li><a href="tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>	Tensor of all ones</li></ul>
+<li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="tt_max_abs.html" class="code" title="function [mx,ind_full]=tt_max_abs(tt)">tt_max_abs</a>	Compute the (supposedly) maximal in modulus element in a TT-tensor</li><li><a href="tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>	Tensor of all ones</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../../matlabicon.gif)">
 </ul>
@@ -55,9 +55,9 @@ This function is called by:
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [res,ind]=tt_min(tt)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [res,ind]=tt_min_abs(tt)</a>
 0002 <span class="comment">%Computes approximation to the minimal absolute value in a TT-tensor</span>
-0003 <span class="comment">%   [RES,IND]=TT_MIN(TT) Tries to compute the minimal absolute value in</span>
+0003 <span class="comment">%   [RES,IND]=TT_MIN_ABS(TT) Tries to compute the minimal absolute value in</span>
 0004 <span class="comment">%   TT-tensor</span>
 0005 <span class="comment">%</span>
 0006 <span class="comment">%</span>
@@ -71,10 +71,10 @@ This function is called by:
 0014 <span class="comment">%ivan.oseledets@gmail.com</span>
 0015 <span class="comment">%---------------------------</span>
 0016 
-0017 resmax = <a href="tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>(tt);
+0017 resmax = <a href="tt_max_abs.html" class="code" title="function [mx,ind_full]=tt_max_abs(tt)">tt_max_abs</a>(tt);
 0018 ons = <a href="tt_ones.html" class="code" title="function [tt] = tt_ones(n,varargin)">tt_ones</a>(<a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>(tt));
 0019 
-0020 [res,ind]=<a href="tt_max.html" class="code" title="function [mx,ind_full]=tt_max(tt)">tt_max</a>(tt-ons*resmax);
+0020 [res,ind]=<a href="tt_max_abs.html" class="code" title="function [mx,ind_full]=tt_max_abs(tt)">tt_max_abs</a>(tt-ons*resmax);
 0021 res = resmax - res;
 0022 
 0023 <span class="keyword">end</span></pre></div>
