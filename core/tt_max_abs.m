@@ -1,6 +1,6 @@
-function [mx,ind_full]=tt_max(tt)
+function [mx,ind_full]=tt_max_abs(tt)
 %Compute the (supposedly) maximal in modulus element in a TT-tensor
-%   [MX,IND_FULL]=TT_MAX(TT) Compute element quasi-maximal in modulus in 
+%   [MX,IND_FULL]=TT_MAX_ABS(TT) Compute element quasi-maximal in modulus in 
 %   a TT tensor TT by computing. It return the value MX and the multiindex
 %   IND_FULL where this element is located.
 %

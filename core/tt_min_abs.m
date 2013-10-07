@@ -1,6 +1,6 @@
-function [res,ind]=tt_min(tt)
+function [res,ind]=tt_min_abs(tt)
 %Computes approximation to the minimal absolute value in a TT-tensor
-%   [RES,IND]=TT_MIN(TT) Tries to compute the minimal absolute value in
+%   [RES,IND]=TT_MIN_ABS(TT) Tries to compute the minimal absolute value in
 %   TT-tensor
 %
 %
@@ -14,10 +14,10 @@ function [res,ind]=tt_min(tt)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-resmax = tt_max(tt);
+resmax = tt_max_abs(tt);
 ons = tt_ones(size(tt));
 
-[res,ind]=tt_max(tt-ons*resmax);
+[res,ind]=tt_max_abs(tt-ons*resmax);
 res = resmax - res;
 
 end
