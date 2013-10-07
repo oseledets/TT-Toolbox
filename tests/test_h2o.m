@@ -76,7 +76,7 @@ for t=1:Nt
     u2 = tt_reshape(u, 2^L*ones(1,3));
     % It should be the delta-function
     % Find the final distribution
-    [v,l]=tt_max(u2);
+    [v,l]=tt_max_abs(u2);
     l=l-1
     ll(t,:)=l;
 end;
@@ -84,7 +84,7 @@ toc;
 
 sp = zeros(2^L, 4);
 for z=1:2^L
-    [v,l]=tt_max(u2(:,:,z));
+    [v,l]=tt_max_abs(u2(:,:,z));
     if (v>tol)
         sp(z, 1)=l(1)-1;
         sp(z, 2)=l(2)-1;
@@ -95,7 +95,7 @@ for z=1:2^L
     end;
 end;
 z = z-1;
-% [v,l]=tt_max(u2);
+% [v,l]=tt_max_abs(u2);
 % z = l(3);
 scatter3(sp(1:z,1), sp(1:z,2), sp(1:z,3), 100, sp(1:z,4), 'filled');
 

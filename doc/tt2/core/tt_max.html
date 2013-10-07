@@ -2,8 +2,8 @@
                 "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-  <title>Description of tt_max</title>
-  <meta name="keywords" content="tt_max">
+  <title>Description of tt_max_abs</title>
+  <meta name="keywords" content="tt_max_abs">
   <meta name="description" content="Compute the (supposedly) maximal in modulus element in a TT-tensor">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
@@ -12,23 +12,23 @@
 </head>
 <body>
 <a name="_top"></a>
-<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_max.m</div>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">tt2</a> &gt; <a href="index.html">core</a> &gt; tt_max_abs.m</div>
 
 <!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
 <td align="right"><a href="index.html">Index for tt2/core&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
 
-<h1>tt_max
+<h1>tt_max_abs
 </h1>
 
 <h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
 <div class="box"><strong>Compute the (supposedly) maximal in modulus element in a TT-tensor</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
-<div class="box"><strong>function [mx,ind_full]=tt_max(tt) </strong></div>
+<div class="box"><strong>function [mx,ind_full]=tt_max_abs(tt) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
 <div class="fragment"><pre class="comment">Compute the (supposedly) maximal in modulus element in a TT-tensor
-   [MX,IND_FULL]=TT_MAX(TT) Compute element quasi-maximal in modulus in 
+   [MX,IND_FULL]=TT_MAX_ABS(TT) Compute element quasi-maximal in modulus in 
    a TT tensor TT by computing. It return the value MX and the multiindex
    IND_FULL where this element is located.
 
@@ -50,15 +50,15 @@ This function calls:
 <li><a href="../../tt2/@tt_matrix/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-matrix to TT1 cell-array format</li><li><a href="../../tt2/@tt_matrix/size.html" class="code" title="function [sz] = size(tt)">size</a>	Mode sizes of the TT-matrix</li><li><a href="../../tt2/@tt_tensor/core.html" class="code" title="function [tt] = core(tt1,varargin)">core</a>	Converts TT-tensor TT1 to old-cell array format.</li><li><a href="../../tt2/@tt_tensor/qr.html" class="code" title="function [tt,rm]=qr(tt,op)">qr</a>	Left and right orthogonalization of the TT-format</li><li><a href="../../tt2/@tt_tensor/reshape.html" class="code" title="function [tt2]=reshape(tt1,sz,eps, rl, rr)">reshape</a>	Reshape of the TT-tensor</li><li><a href="../../tt2/@tt_tensor/size.html" class="code" title="function [sz] = size(tt,dim)">size</a>	Mode sizes of the TT-tensor</li><li><a href="maxvol2.html" class="code" title="function [ind]=maxvol2(a,ind)">maxvol2</a>	Maximal volume submatrix in an tall matrix</li><li><a href="ten_conv.html" class="code" title="function [new_core] = ten_conv(core, k, mat)">ten_conv</a>	Tensor-by-matrix multiplication of three-dimensional tensor</li><li><a href="tt_ind2sub.html" class="code" title="function [ind] = tt_ind2sub(siz,ndx)">tt_ind2sub</a>	Correct conversion of an index to a multiindex</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../../matlabicon.gif)">
-<li><a href="tt_min.html" class="code" title="function [res,ind]=tt_min(tt)">tt_min</a>	Computes approximation to the minimal absolute value in a TT-tensor</li></ul>
+<li><a href="tt_min_abs.html" class="code" title="function [res,ind]=tt_min_abs(tt)">tt_min_abs</a>	Computes approximation to the minimal absolute value in a TT-tensor</li></ul>
 <!-- crossreference -->
 
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mx,ind_full]=tt_max(tt)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mx,ind_full]=tt_max_abs(tt)</a>
 0002 <span class="comment">%Compute the (supposedly) maximal in modulus element in a TT-tensor</span>
-0003 <span class="comment">%   [MX,IND_FULL]=TT_MAX(TT) Compute element quasi-maximal in modulus in</span>
+0003 <span class="comment">%   [MX,IND_FULL]=TT_MAX_ABS(TT) Compute element quasi-maximal in modulus in</span>
 0004 <span class="comment">%   a TT tensor TT by computing. It return the value MX and the multiindex</span>
 0005 <span class="comment">%   IND_FULL where this element is located.</span>
 0006 <span class="comment">%</span>
