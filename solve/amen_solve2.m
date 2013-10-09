@@ -153,6 +153,7 @@ if (isempty(tol_exit))
     tol_exit = tol;
 end;
 
+obs = [];
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -163,6 +164,8 @@ for i=1:2:length(varargin)-1
             x=varargin{i+1};
         case 'z0'
             crz=varargin{i+1};
+        case 'obs'
+            obs=varargin{i+1};
         case 'verb'
             verb=varargin{i+1};
         case 'local_prec'
@@ -254,6 +257,11 @@ if (strcmp(kicktype, 'chol'))&&(kickrank>0)
     Rs{1,d+1}=1; Rs{2,d+1}=1; Rs{3,d+1}=1;
 end;
 
+if (~isempty(obs))
+    robs = obs.r;
+    obs = core2cell(obs);
+end;
+
 
 % Norm extractors
 nrmsa = ones(d-1,1);
@@ -269,14 +277,18 @@ testdata{1} = zeros(d, nswp); % CPU times
 testdata{2} = cell(d, nswp); % interm. solutions
 testdata{3} = zeros(d, nswp); % local residuals (res_prev)
 
+
+last_sweep = false;
+
 t_amen_solve = tic;
 
 % AMEn sweeps
 for swp=1:nswp
     % Orthogonalization
+    phiobs = 1;    
     for i=d:-1:2
         % Update the Z in the ALS version
-        if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
+        if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)&&(~last_sweep)
             if (swp>1)
                 % Update crz (we don't want just random-svd)
                 crzAt = bfun3(phiza{i}, crA{i}, phiza{i+1}, reshape(crx{i}, rx(i)*n(i)*rx(i+1), 1));
@@ -308,7 +320,20 @@ for swp=1:nswp
         
         cr = crx{i};
         cr = reshape(cr, rx(i), n(i)*rx(i+1));
-        [cr, rv]=qr(cr.', 0);
+        cr = cr.';
+        % Add a linear functional if we track such invariant
+        if (~isempty(obs))
+            crobs = reshape(obs{i}, robs(i)*n(i), robs(i+1));
+            crobs = crobs*phiobs.';
+            crobs = reshape(crobs, robs(i), n(i)*rx(i+1));
+            crobs = crobs.';
+            cr = [cr,crobs];
+        end;
+        [cr, rv]=qr(cr, 0);        
+        if (~isempty(obs))
+            phiobs = rv(:,rx(i)+1:rx(i)+robs(i));
+            rv = rv(:,1:rx(i));
+        end;
         cr2 = crx{i-1};
         cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
         cr2 = cr2*(rv.');
@@ -337,7 +362,7 @@ for swp=1:nswp
         nrmsc = nrmsc*(nrmsy(i-1)/(nrmsa(i-1)*nrmsx(i-1)));
                 
         % Prepare QRs of the residual
-        if (strcmp(kicktype, 'svd'))&&(kickrank>0)
+        if (strcmp(kicktype, 'svd'))&&(kickrank>0)&&(~last_sweep)
             % We need to assemble the core [Y^k & A^k X^k] and orthogonalize
             % it.
             A1 = reshape(permute(crA{i}, [1,2,4,3]), ra(i)*n(i)*ra(i+1), n(i));
@@ -367,7 +392,7 @@ for swp=1:nswp
             end;
         end;
         
-        if (strcmp(kicktype, 'chol'))&&(kickrank>0)
+        if (strcmp(kicktype, 'chol'))&&(kickrank>0)&&(~last_sweep)
             % Cholestky factors Z_k*Z_k' = [y'y,y'Ax,x'A'y,x'A'Ax]
             Rs{1,i} = compute_next_Phi(Rs{1,i+1}, cry{i}, [], cry{i}, 'rl');
             Rs{2,i} = compute_next_Phi(Rs{2,i+1}, cry{i}, crA{i}, crx{i}, 'rl');
@@ -394,7 +419,7 @@ for swp=1:nswp
             Rs{3,i} = reshape(Rs{3,i}, rx(i)*ra(i), ra(i)*rx(i));
         end;
         
-        if strcmp(kicktype, 'als')&&(kickrank+kickrank2>0)
+        if strcmp(kicktype, 'als')&&(kickrank+kickrank2>0)&&(~last_sweep)
             rz(i) = rznew;
             phiza{i} = compute_next_Phi(phiza{i+1}, crz{i}, crA{i}, crx{i}, 'rl', nrmsa(i-1));
             phizy{i} = compute_next_Phi(phizy{i+1}, crz{i}, [], cry{i}, 'rl', nrmsy(i-1));
@@ -404,6 +429,7 @@ for swp=1:nswp
     
     max_res = 0;
     max_dx = 0;
+    phiobs = 1;
     
     for i=1:d
         % Extract partial projections (and scales)
@@ -553,7 +579,7 @@ for swp=1:nswp
         
         u = u(:,1:r);
         v = conj(v(:,1:r))*diag(s(1:r));
-        if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
+        if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)&&(~last_sweep)
             % Update crz (we don't want just random-svd)
             crzAt = bfun3(phiza{i}, A1, phiza{i+1}, u*v.');
             crzAt = reshape(crzAt, rz(i)*n(i), rz(i+1));
@@ -574,7 +600,7 @@ for swp=1:nswp
         end;
         
         if (i<d) %  enrichment, etc
-            if (kickrank>0)
+            if (kickrank>0)&&(~last_sweep)
                 % Smarter kick: low-rank PCA in residual
                 % Matrix: Phi1-A{i}, rhs: Phi1-y{i}, sizes rx(i)*n - ra(i+1)
                 if (strcmp(kicktype, 'svd'))
@@ -666,6 +692,20 @@ for swp=1:nswp
                 v = [v, zeros(rx(i+1), radd)];
                 v = v*(rv.');
             end;
+            r = size(u,2);            
+            % Add a linear functional to the frame
+            if (~isempty(obs))
+                crobs = reshape(obs{i}, robs(i), n(i)*robs(i+1));
+                crobs = phiobs*crobs;
+                crobs = reshape(crobs, rx(i)*n(i), robs(i+1));
+                u = [u,crobs];
+                [u,rv]=qr(u, 0);
+                phiobs = rv(:,r+1:r+robs(i+1));
+                rv = rv(:,1:r);
+                v = v*rv.';
+                r = size(u,2);
+            end;
+            
             cr2 = crx{i+1};
             cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
             v = v.'*cr2; % size r+radd, n2, r3
@@ -681,8 +721,6 @@ for swp=1:nswp
             end;
             nrmsx(i)=nrmsx(i)*curnorm;            
             
-            r = size(u,2);
-            
             u = reshape(u, rx(i), n(i), r);
             v = reshape(v, r, n(i+1), rx(i+2));                  
             
@@ -693,7 +731,7 @@ for swp=1:nswp
             nrmsc = nrmsc*(nrmsy(i)/(nrmsa(i)*nrmsx(i)));
             
             if (verb==2)
-                if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)
+                if (strcmp(kicktype, 'als'))&&(kickrank+kickrank2>0)&&(~last_sweep)
                     fprintf('=amen_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d, |y|: %3.3e, |z|: %3.3e\n', i, dx, res_prev, r, norm(v(:)), norm(crznew(:)));
                 else
                     fprintf('=amen_solve2=   block %d, dx: %3.3e, res: %3.3e, r: %d\n', i, dx, res_prev, r);
@@ -706,7 +744,7 @@ for swp=1:nswp
             crx{i+1} = v;
             
             % Update z and its projections
-            if strcmp(kicktype, 'als')&&(kickrank+kickrank2>0)
+            if strcmp(kicktype, 'als')&&(kickrank+kickrank2>0)&&(~last_sweep)
                 rz(i+1) = rznew;
                 phiza{i+1} = compute_next_Phi(phiza{i}, crznew, crA{i}, crx{i}, 'lr', nrmsa(i));
                 phizy{i+1} = compute_next_Phi(phizy{i}, crznew, [], cry{i}, 'lr', nrmsy(i));
@@ -730,13 +768,17 @@ for swp=1:nswp
         fprintf('=amen_solve= sweep %d, max_dx: %3.3e, max_res: %3.3e, max_rank: %g\n', swp, max_dx, max_res, max(rx));
     end;
     
+    if (last_sweep)
+        break;
+    end;
+    
     if (strcmp(trunc_norm, 'fro'))
         if (max_dx<tol_exit)&&(verb<3)
-            break;
+            last_sweep = true;
         end;
     else
         if (max_res<tol_exit)&&(verb<3)
-            break;
+            last_sweep = true;
         end;
     end;
     

@@ -1,9 +1,7 @@
 function t = tt_tensor(varargin)
 %TT-tensor constructor
 %   T=TT_TENSOR(ARRAY) Converts from a full array with accuracy 1e-14
-
 %   T=TT_TENSOR(ARRAY,EPS) Converts from a full array with accuracy EPS
-
 %   T=TT_TENSOR(ARRAY,EPS,SZ,R1,R2) Converts from a full array which is 
 %   treated as an array with mode sizes SZ and tail ranks R1 and R2. The
 %   accuracy is set to EPS

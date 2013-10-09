@@ -20,8 +20,11 @@ cra = core2cell(A);
 phia = cell(d+1,1); phia{1}=1; phia{d+1}=1;
 phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
-tau = tau/2;
+exp_tol = 1e-12;
+% passes = 1;
+passes = 2;
 
+tau = tau/passes;
 
 % orth, phi
 for i=d:-1:2
@@ -62,17 +65,17 @@ for i=1:d
         %      |     |    |
         % B = Phi1 - A1 - Phi2
         %      |     |    |
-        B = reshape(Phi1, rx(i)*rx(i), ra(i));
-        B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-        B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
-        B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
-        B = B*reshape(permute(Phi2, [2, 3, 1]), ra(i+1), rx(i+1)*rx(i+1));
-        B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
-        B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
+%         B = reshape(Phi1, rx(i)*rx(i), ra(i));
+%         B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+%         B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
+%         B = permute(B, [1, 3, 2, 4]);
+%         B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
+%         B = B*reshape(permute(Phi2, [2, 3, 1]), ra(i+1), rx(i+1)*rx(i+1));
+%         B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
+%         B = permute(B, [1, 3, 2, 4]);
+%         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
-    sol = expv_full(tau*B,sol_prev,1e-10,30,true) + tau*rhs;
+    sol = expv_full(@(x)(tau*bfun3(Phi1,A1,Phi2,x)),sol_prev,exp_tol) + tau*rhs;
 
     if (i<d) % we have S and V(implicitly)
         sol = reshape(sol, rx(i)*n(i), rx(i+1));
@@ -82,23 +85,27 @@ for i=1:d
         %S
         S_prev = S_prev*V_prev';
         % Project matrix, rhs.
-        Bs = reshape(B, rx(i)*n(i), rx(i+1)*rx(i)*n(i)*rx(i+1));
-        Bs = U'*Bs;
-        Bs = reshape(Bs, rnew*rx(i+1), rx(i)*n(i), rx(i+1));
-        Bs = permute(Bs, [1,3,2]);
-        Bs = reshape(Bs, rnew*rx(i+1)*rx(i+1), rx(i)*n(i));
-        Bs = Bs*U;
-        Bs = reshape(Bs, rnew*rx(i+1), rx(i+1), rnew);
-        Bs = permute(Bs, [1,3,2]);
-        Bs = reshape(Bs, rnew*rx(i+1), rnew*rx(i+1));
+        crx{i} = reshape(U, rx(i), n(i), rnew);        
+        phia{i+1} = compute_next_Phi(phia{i}, crx{i}, cra{i}, crx{i}, 'lr');
+        % phia{i+1} is rnew',rnew,ra2
+        
+%         Bs = reshape(B, rx(i)*n(i), rx(i+1)*rx(i)*n(i)*rx(i+1));
+%         Bs = U'*Bs;
+%         Bs = reshape(Bs, rnew*rx(i+1), rx(i)*n(i), rx(i+1));
+%         Bs = permute(Bs, [1,3,2]);
+%         Bs = reshape(Bs, rnew*rx(i+1)*rx(i+1), rx(i)*n(i));
+%         Bs = Bs*U;
+%         Bs = reshape(Bs, rnew*rx(i+1), rx(i+1), rnew);
+%         Bs = permute(Bs, [1,3,2]);
+%         Bs = reshape(Bs, rnew*rx(i+1), rnew*rx(i+1));
         
         rhss = reshape(rhs, rx(i)*n(i), rx(i+1));
         rhss = U'*rhss;
         rhss = reshape(rhss, rnew*rx(i+1), 1);
         
         S_prev = reshape(S_prev, rnew*rx(i+1), 1);
-                
-        S = expv_full(-tau*Bs,S_prev,1e-10,30,true) - tau*rhss;
+        
+        S = expv_full(@(x)(-tau*bfun2(phia{i+1},Phi2,x)),S_prev,exp_tol) - tau*rhss;
         
         % Stuff back and recompute phis
         S = reshape(S, rnew, rx(i+1));
@@ -106,10 +113,8 @@ for i=1:d
         cr2 = reshape(crx{i+1}, rx(i+1), n(i+1)*rx(i+2));
         cr2 = S*cr2;
         rx(i+1) = rnew;
-        crx{i+1} = reshape(cr2, rx(i+1), n(i+1), rx(i+2));
-        crx{i} = reshape(U, rx(i), n(i), rx(i+1));
+        crx{i+1} = reshape(cr2, rx(i+1), n(i+1), rx(i+2));        
         
-        phia{i+1} = compute_next_Phi(phia{i}, crx{i}, cra{i}, crx{i}, 'lr');
         phiy{i+1} = compute_next_Phi(phiy{i}, crx{i}, [], cry{i}, 'lr');
         
         % V is done implicitly via recursion
@@ -120,6 +125,7 @@ for i=1:d
 end;
 
 % backward: propagation2
+if (passes>1)
 for i=d:-1:1
     %V
     
@@ -142,17 +148,17 @@ for i=d:-1:1
         %      |     |    |
         % B = Phi1 - A1 - Phi2
         %      |     |    |
-        B = reshape(Phi1, rx(i)*rx(i), ra(i));
-        B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
-        B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
-        B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
-        B = B*reshape(permute(Phi2, [2, 3, 1]), ra(i+1), rx(i+1)*rx(i+1));
-        B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
-        B = permute(B, [1, 3, 2, 4]);
-        B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
+%         B = reshape(Phi1, rx(i)*rx(i), ra(i));
+%         B = B*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+%         B = reshape(B, rx(i), rx(i), n(i), n(i)*ra(i+1));
+%         B = permute(B, [1, 3, 2, 4]);
+%         B = reshape(B, rx(i)*n(i)*rx(i)*n(i), ra(i+1));
+%         B = B*reshape(permute(Phi2, [2, 3, 1]), ra(i+1), rx(i+1)*rx(i+1));
+%         B = reshape(B, rx(i)*n(i), rx(i)*n(i), rx(i+1), rx(i+1));
+%         B = permute(B, [1, 3, 2, 4]);
+%         B = reshape(B, rx(i)*n(i)*rx(i+1), rx(i)*n(i)*rx(i+1));
         
-        sol = expv_full(tau*B,sol_prev,1e-10,30,true) + tau*rhs;
+        sol = expv_full(@(x)(tau*bfun3(Phi1,A1,Phi2,x)),sol_prev,exp_tol) + tau*rhs;
 
     if (i>1) % we have S and K(implicitly)
         
@@ -160,17 +166,21 @@ for i=d:-1:1
         sol = reshape(sol, rx(i), n(i)*rx(i+1));
         [V,S_prev,V_prev] = svd(sol.', 'econ');
         S_prev = (S_prev*V_prev').';
-        rnew = size(V,2);
+        rnew = size(V,2);        
         % Project matrix, rhs.
-        Bs = reshape(B, rx(i)*n(i)*rx(i+1)*rx(i), n(i)*rx(i+1));
-        Bs = Bs*V;
-        Bs = reshape(Bs, rx(i), n(i)*rx(i+1), rx(i)*rnew);
-        Bs = permute(Bs, [2,1,3]);
-        Bs = reshape(Bs, n(i)*rx(i+1), rx(i)*rx(i)*rnew);
-        Bs = V'*Bs;
-        Bs = reshape(Bs, rnew, rx(i), rx(i)*rnew);
-        Bs = permute(Bs, [2,1,3]);
-        Bs = reshape(Bs, rx(i)*rnew, rx(i)*rnew);
+        crx{i} = reshape(V.', rnew, n(i), rx(i+1));        
+        phia{i} = compute_next_Phi(phia{i+1}, crx{i}, cra{i}, crx{i}, 'rl');
+
+        
+%         Bs = reshape(B, rx(i)*n(i)*rx(i+1)*rx(i), n(i)*rx(i+1));
+%         Bs = Bs*V;
+%         Bs = reshape(Bs, rx(i), n(i)*rx(i+1), rx(i)*rnew);
+%         Bs = permute(Bs, [2,1,3]);
+%         Bs = reshape(Bs, n(i)*rx(i+1), rx(i)*rx(i)*rnew);
+%         Bs = V'*Bs;
+%         Bs = reshape(Bs, rnew, rx(i), rx(i)*rnew);
+%         Bs = permute(Bs, [2,1,3]);
+%         Bs = reshape(Bs, rx(i)*rnew, rx(i)*rnew);
         
         rhss = reshape(rhs, rx(i), n(i)*rx(i+1));
         rhss = rhss*conj(V);
@@ -178,7 +188,7 @@ for i=d:-1:1
         
         S_prev = reshape(S_prev, rx(i)*rnew, 1);
         
-        S = expv_full(-tau*Bs,S_prev,1e-10,30,true) - tau*rhss;
+        S = expv_full(@(x)(-tau*bfun2(Phi1,phia{i},x)),S_prev,exp_tol) - tau*rhss;
         
         % Stuff back and recompute phis
         S = reshape(S, rx(i), rnew);
@@ -186,9 +196,7 @@ for i=d:-1:1
         cr2 = cr2*S;
         rx(i) = rnew;
         crx{i-1} = reshape(cr2, rx(i-1), n(i-1), rx(i));
-        crx{i} = reshape(V.', rx(i), n(i), rx(i+1));
         
-        phia{i} = compute_next_Phi(phia{i+1}, crx{i}, cra{i}, crx{i}, 'rl');
         phiy{i} = compute_next_Phi(phiy{i+1}, crx{i}, [], cry{i}, 'rl');
         
         % K is done implicitly via recursion
@@ -196,6 +204,7 @@ for i=d:-1:1
         % K is V, stuff back
         crx{i} = reshape(sol, rx(i), n(i), rx(i+1));
     end;
+end;
 end;
 
 x = cell2core(tt_tensor, crx);
@@ -273,4 +282,53 @@ else
 end;
 
 
+end
+
+function [y]=bfun3(Phi1, A, Phi2, x)
+% Phi1: ry1, rx1, ra1
+ry1 = size(Phi1,1);
+rx1 = size(Phi1,2);
+ra1 = size(Phi1,3);
+% Phi2: rx2, ra2, ry2
+ry2 = size(Phi2,3);
+rx2 = size(Phi2,1);
+ra2 = size(Phi2,2);
+
+n = size(A,2);
+m = size(A,3);
+
+y = reshape(x, rx1*m, rx2);
+Phi2 = reshape(Phi2, rx2, ra2*ry2);
+y = y*Phi2;
+y = reshape(y, rx1, m*ra2*ry2);
+y = y.';
+y = reshape(y, m*ra2, ry2*rx1);
+A = reshape(A, ra1*n, m*ra2);
+y = A*y;
+y = reshape(y, ra1*n*ry2, rx1);
+y = y.';
+y = reshape(y, rx1*ra1, n*ry2);
+Phi1 = reshape(Phi1, ry1, rx1*ra1);
+y = Phi1*y;
+y = reshape(y, ry1*n*ry2, 1);
+end
+
+
+function [y]=bfun2(Phi1, Phi2, x)
+% A two-dimensional matvec - for S propagation
+% Phi1: ry1, rx1, ra1
+ry1 = size(Phi1,1);
+rx1 = size(Phi1,2);
+ra = size(Phi1,3);
+% Phi2: rx2, ra2, ry2
+ry2 = size(Phi2,3);
+rx2 = size(Phi2,1);
+
+y = reshape(x, rx1, rx2);
+Phi2 = reshape(Phi2, rx2, ra*ry2);
+y = y*Phi2;
+y = reshape(y, rx1*ra, ry2);
+Phi1 = reshape(Phi1, ry1, rx1*ra);
+y = Phi1*y;
+y = reshape(y, ry1*ry2, 1);
 end
