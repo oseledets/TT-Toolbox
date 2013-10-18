@@ -231,8 +231,10 @@ while ( swp <= nswp && not_converged )
        er1=norm(bfun(mm,wnew)-wnew*diag(ev),'fro')/norm(wnew,'fro');
 
        fv=sum(ev); %The functional we minimize;
-       fprintf('sweep=%d block=%d fv=%10.15f loc solve=%3.2e old_solve=%3.2e \n',swp,i,fv,er1,er0);
-        disp(erc);
+       if ( verb )
+         fprintf('sweep=%d block=%d fv=%10.15f loc solve=%3.2e old_solve=%3.2e \n',swp,i,fv,er1,er0);
+         disp(erc);
+       end
        if ( strcmp(dir,'rl') ) %Implant the auxiliary core into the i-th core
            %(a1,i1,a2,a2,i2*g,a3)-> (a1,i1*g,a2,a2,i2,a3)
            %Delete old block from the core_left, add new block to the core
