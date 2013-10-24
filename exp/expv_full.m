@@ -1,5 +1,21 @@
-function [u]=expv_full(A, u0, tol, m, rescale)
-% function [u]=expv_full(A, u0, tol, m, rescale)
+function [u]=expv_full(A, u0, tol, varargin)
+% function [u]=expv_full(A, u0, tol, [m, rescale, verb])
+
+m = 20;
+rescale = true;
+verb = 0;
+for i=1:2:length(varargin)-1
+    switch lower(varargin{i})
+        case 'm'
+            m=varargin{i+1};
+        case 'rescale'
+            rescale=varargin{i+1};
+        case 'verb'
+            verb=varargin{i+1};
+        otherwise
+            error('expv_full: unknown option %s\n', varargin{i});
+    end;
+end;
 
 atype = 0;
 if (isa(A, 'function_handle'))
@@ -17,7 +33,9 @@ if (rescale)
         v = v/nrmA;
     end;
     nrmA = ceil(nrmA);
-%     fprintf('exp-full: found |A|=%3.3e\n', nrmA);
+    if (verb>0)
+        fprintf('exp-full: found |A|=%3.3e\n', nrmA);
+    end;
 else
     nrmA = 1;
 end;
@@ -30,7 +48,9 @@ for t=1:nrmA
         du = mvfun(A,atype,du);
         du = du/((i-1)*nrmA);
         u = u+du;
-%         fprintf('exp-full: t=%d, i=%d, |du|=%3.3e\n', t, i, norm(du)/nrm0);
+        if (verb>0)
+            fprintf('exp-full: t=%d, i=%d, |du|=%3.3e\n', t, i, norm(du)/nrm0);
+        end;
         if (norm(du)/nrm0<tol)
             break;
         end;
