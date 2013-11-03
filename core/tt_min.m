@@ -21,8 +21,8 @@ while res > 0
 	% Lets add a constant to the tensor and recalculate tt_max_abs.
 	tt_biased = tt - bias;
 	[~, ind] = tt_max_abs(tt_biased);
-	res = tt_biased(ind)
-	bias = bias + res
+	res = tt_biased(ind);
+	bias = bias + res;
 end
 res = tt(ind);
 end
