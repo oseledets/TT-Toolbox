@@ -38,7 +38,7 @@ rmax=2500;
 nswp=4;
 msize=1000;
 max_l_steps=200;
-kick_rank=0;
+kick_rank=5;
 verb=true;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
