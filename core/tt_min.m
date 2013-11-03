@@ -15,7 +15,7 @@ function [res,ind]=tt_min(tt)
 %---------------------------
 [~, ind] = tt_max_abs(tt);
 res = tt(ind);
-bias = res
+bias = res;
 while res > 0
 	% Possibly we found maximum element instead of minimum.
 	% Lets add a constant to the tensor and recalculate tt_max_abs.
