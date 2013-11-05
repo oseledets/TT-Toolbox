@@ -43,8 +43,8 @@ if (isa(varargin{1}, 'tt_tensor'))
     tt=varargin{1};
     d=tt.d;
     if (nargin==3)&&(isa(varargin{2},'double'))&&(isa(varargin{3},'double'))
-        n=varargin{2};
-        m=varargin{3};
+        n=varargin{2}(:);
+        m=varargin{3}(:);
         if ( numel(n) == 1 )
             n=n*ones(d,1);
         end
