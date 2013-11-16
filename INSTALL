@@ -26,7 +26,10 @@
 	These files should contain one line:
 		CPU = your_cpu_alias
 	where "your_cpu_alias" shall be one of possible variants from Makefile.in 
-	(note that there are different Makefile*(s) for fmex/ and tt-fort/)
+	### Important ###
+	1) There are separate Makefile.in and Makefile.cpu in fmex/ and fmex/tt-fort
+	2) In fmex/tt-fort, you must choose a preset with 8-byte integers: i8-gnu or i8-intel 
+	################
 	You may take any of our presets (eg. "default", "default-x64") given in Makefile.in,
 	or write your own, naming the variables (CC, COPT and so on) similarly to the existing aliases. 
 	After that, run make in fmex/.
