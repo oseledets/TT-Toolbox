@@ -510,7 +510,7 @@ if (can) % We are working with the canonical format
         x = reshape(x, rx1, n*rx2);
         Phi{1} = x'*Phi_prev{1};
         Phi{1} = reshape(Phi{1}, n*rx2, R);
-        Y = kron(ones(rx2,1), Y{1}); % equalize the sizes for Hadamard product
+        Y = repmat(Y{1}, rx2, 1); % equalize the sizes for Hadamard product
         Phi{1} = Phi{1}.*Y;
         Phi{1} = reshape(Phi{1}, n, rx2*R);
         Phi{1} = sum(Phi{1}, 1);
@@ -533,7 +533,8 @@ if (can) % We are working with the canonical format
         Phi{1} = Phi_prev{1}*x';
         Phi{1} = reshape(Phi{1}, R, rx1*n);
         Y = Y{1}.';
-        Y = kron(Y, ones(1,rx1)); % equalize the sizes for Hadamard product
+        Y = repmat(Y,rx1,1); % equalize the sizes for Hadamard product
+        Y = reshape(Y, R, rx1*n);
         Phi{1} = Phi{1}.*Y;
         Phi{1} = reshape(Phi{1}, R*rx1, n);
         Phi{1} = sum(Phi{1}, 2);
@@ -649,13 +650,16 @@ ry1 = size(Phi1{1},1);
 ry2 = size(Phi2{1},2);
 
 if (numel(X)==1) % Canonical format
-    X = X{1};
+    X = X{1};    
     n = size(X,1);
-    Phi1 = kron(ones(n,1), Phi1{1}); % size ry1*n, R
-    X = kron(X, ones(ry1, 1));
+    Phi1 = repmat(Phi1{1}, n, 1); % size ry1*n, R
+    X = reshape(X,  1, n*N);
+    X = repmat(X, ry1, 1);
+    X = reshape(X, ry1*n, N);
     y = X.*Phi1;
-    c = kron(c, ones(1,ry2)); % size R, ry2*M
-    Phi2 = kron(ones(1,M), Phi2{1});
+    c = repmat(c, ry2, 1); % size N*ry2, M
+    c = reshape(c, N, ry2*M);
+    Phi2 = repmat(Phi2{1}, 1, M); % size N, ry2*M
     Phi2 = Phi2.*c;
     y = y*Phi2;
     y = reshape(y, ry1*n*ry2, M);
