@@ -1,11 +1,6 @@
 1 Setting path
-	Add to path this directory
-	by 
-	addpath(pwd)
-	and
-	solve/ exp/ core/ cross/ misc/ fmex/
-	subdirectories
-	(also use addpath)
+	Use the script startup.m in this directory.
+	It will add all subfolders to the MATLAB path automatically.
 
 
 2. Compiling the MEX libraries
