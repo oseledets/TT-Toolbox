@@ -60,9 +60,23 @@ for i=d:-1:2
      core1=cr(pos(i-1):pos(i)-1); 
      core0=reshape(core0,[r(i),n(i)*r(i+1)]);
      core1=reshape(core1,[r(i-1)*n(i-1),r(i)]);
-     [u,s,v]=svd(core0,'econ');
-     s=diag(s); r1=my_chop2(s,norm(s)*ep);
+
+     try
+       [u,s,v]=svd(core0, 'econ');
+     catch err
+       if (strcmp(err.identifier,'MATLAB:svd:svdNoConvergence'))
+         % When svd doesn't converge, svds usually works fine (but much slower).
+         warning('SVD did not converge, switched to svds.');
+         [u,s,v]=svds(core0, min(size(core0)));
+       else
+         rethrow(err);
+       end
+     end
+
+     s=diag(s);
+     r1=my_chop2(s,norm(s)*ep);
      r1=min(r1,rmax(i));
+
      u=u(:,1:r1);s=s(1:r1); v=v(:,1:r1);
      u=u*diag(s);
      r(i)=r1;
