@@ -13,13 +13,22 @@ function [ind]=tt_sub2ind(siz, idx)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-d=numel(siz);
-ind = zeros(size(idx,1), 1);
-shift=1;
-for i=1:d
-    ind=ind+shift*(idx(:,i)-1);
-    shift = shift*siz(i);
-end;
-ind=ind+1;
+% Make it vectorized
+n=numel(siz);
+k = reshape(siz, n, 1);
+k(1)=1;
+k(2:n)=siz(1:n-1);
+k = cumprod(k);
+ind = idx-1;
+ind = ind*k;
+ind = ind+1;
+
+% ind = zeros(size(idx,1), 1);
+% shift=1;
+% for i=1:d
+%     ind=ind+shift*(idx(:,i)-1);
+%     shift = shift*siz(i);
+% end;
+% ind=ind+1;
 
 end

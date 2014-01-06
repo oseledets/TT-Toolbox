@@ -25,7 +25,7 @@ function [x,somedata]=dmrg_solve3(A, y, tol, varargin)
 %       Example:
 %           d=8; f=8; 
 %           mat=tt_qlaplace_dd(d*ones(1,f)); %Laplace in the QTT-format
-%           rhs=tt_ones(2,d*f); Right-hand side of all ones
+%           rhs=tt_ones(2,d*f); % Right-hand side of all ones
 %           sol=dmrg_solve3(mat,rhs,1e-6);
 %
 %
@@ -590,7 +590,7 @@ while (swp<=nswp)
     crx{i} = u;
     crx{i+1} = v;
     
-    if (verb>2)
+    if (verb>2)&&(i==d-1)
         somedata{1}(i,(swp-1)*2+1.5-dir/2) = toc(t_dmrg_solve);
         x = cell2core(tt_tensor, crx);
         somedata{2}{(swp-1)*2+1.5-dir/2, i}=x;
@@ -605,7 +605,7 @@ while (swp<=nswp)
         order_index = order_index+1;
                
         if (verb>0)
-            fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, erank: %g\n', swp, order_index-1, max_dx, max_res, max_iter, erank(x));
+            fprintf('=dmrg_solve3= sweep %d{%d}, max_dx: %3.3e, max_res: %3.3e, max_iter: %d, mrank: %d\n', swp, order_index-1, max_dx, max_res, max_iter, max(rx));
         end;        
         
         if (last_sweep)
@@ -627,10 +627,12 @@ while (swp<=nswp)
                end;
             end;
         
-            max_res = 0;
-            max_dx = 0;
-            max_iter = 0;
-            dx_old = dx;            
+            if ((dir+dirfilter)==0)
+                max_res = 0;
+                max_dx = 0;
+                max_iter = 0;
+                dx_old = dx;
+            end;
         
         if (order_index>numel(cur_order)) % New global sweep
             cur_order = block_order;
