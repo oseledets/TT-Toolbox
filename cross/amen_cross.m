@@ -499,10 +499,10 @@ while (swp<=nswp)
         end;
         if (~isempty(ffun))
             for j=1:nx
-                phiyx{i+1} = reshape(crX{i,j}, rx(i,j), n(i)*rx(i+1,j));
-                phiyx{i+1} = phiyx{i}*phiyx{i+1};
-                phiyx{i+1} = reshape(phiyx{i+1}, ry(i)*n(i), rx(i+1,j));
-                phiyx{i+1} = phiyx{i+1}(ind,:);
+                phiyx{i+1,j} = reshape(crX{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                phiyx{i+1,j} = phiyx{i,j}*phiyx{i+1,j};
+                phiyx{i+1,j} = reshape(phiyx{i+1,j}, ry(i)*n(i), rx(i+1,j));
+                phiyx{i+1,j} = phiyx{i+1,j}(ind,:);
             end;
         end;
         if (zrank>0)&&(~last_sweep)
@@ -521,10 +521,10 @@ while (swp<=nswp)
             end;
             if (~isempty(ffun))
                 for j=1:nx
-                    phizx{i+1} = reshape(crX{i,j}, rx(i,j), n(i)*rx(i+1,j));
-                    phizx{i+1} = phizx{i}*phizx{i+1};
-                    phizx{i+1} = reshape(phizx{i+1}, rz(i)*n(i), rx(i+1,j));
-                    phizx{i+1} = phizx{i+1}(ind,:);
+                    phizx{i+1,j} = reshape(crX{i,j}, rx(i,j), n(i)*rx(i+1,j));
+                    phizx{i+1,j} = phizx{i,j}*phizx{i+1,j};
+                    phizx{i+1,j} = reshape(phizx{i+1,j}, rz(i)*n(i), rx(i+1,j));
+                    phizx{i+1,j} = phizx{i+1,j}(ind,:);
                 end;
             end;
             phizy{i+1} = reshape(y{i}, ry(i), n(i)*ry(i+1));
