@@ -25,8 +25,8 @@ function [y]=amen_cross(inp, fun, tol, varargin)
 % The list of option names and default values:
 %       o y0 - initial approximation [random rank-2 tensor]
 %       o nswp - maximal number of sweeps [20]
-%       o zrank - rank of the error approx. Z [4]
-%       o zrank2 - size of the secondary random enrichment for Z [0]
+%       o zrank - rank of the error approx. Z [5]
+%       o zrank2 - size of the secondary random enrichment for Z [zrank/2]
 %       o kickrank - actual enrichment size [2]
 %       o tol_exit - stopping difference between consecutive iterations [tol]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
@@ -64,8 +64,8 @@ vars = varargin;
 
 y = [];
 nswp = 20;
-zrank = 4;
-zrank2 = 0;
+zrank = 5;
+zrank2 = [];
 kickrank = 2;
 tol_exit = tol;
 verb = 1;
@@ -101,6 +101,11 @@ while (i<length(vars))
             warning('Option %s was not recognized', vars{i});
     end;
     i=i+2;
+end;
+
+% Half of Z rank will be enriched randomly
+if (isempty(zrank2))
+    zrank2 = round(zrank/2);
 end;
 
 X = [];
