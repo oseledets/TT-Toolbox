@@ -1,5 +1,5 @@
 1 Setting path
-	Use the script startup.m in this directory.
+	Use the script setup.m in this directory.
 	It will add all subfolders to the MATLAB path automatically.
 
 
