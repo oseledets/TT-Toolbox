@@ -25,7 +25,9 @@
 	1) There are separate Makefile.in and Makefile.cpu in fmex/ and fmex/tt-fort
 	2) In fmex/tt-fort, you must choose a preset with 8-byte integers: i8-gnu or i8-intel 
 	################
-	You may take any of our presets (eg. "default", "default-x64") given in Makefile.in,
-	or write your own, naming the variables (CC, COPT and so on) similarly to the existing aliases. 
+	You may take any of our presets (eg. "default") given in Makefile.in,
+	or write your own, naming the variables (CC, COPT and so on) similarly to the existing aliases.
+	Please make sure that 8-byte integers are used, i.e. the parameters -fdefault-integer-8 for 
+	gfortran or -i8 for Intel are passed in the compiler options.
 	After that, run make in fmex/.
 	The library mytt.a will be built in tt-fort/ automatically, followed by the MEX files in fmex/.

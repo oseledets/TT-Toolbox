@@ -1,8 +1,8 @@
 include Makefile.cpu
 ifeq ($(CPU),default)
-      FOPT    =  -ffree-line-length-none -O2 -fPIC -Itt-fort/
+      FOPT    = -fdefault-integer-8 -ffree-line-length-none -O2 -fPIC -Itt-fort/
       FC   = gfortran
-      LDR   = gfortran -fPIC -static-libgfortran -static-libgcc
+      LDR   = gfortran -fPIC
       CC    = gcc
       COPT = -O2 -fPIC
       LIB   = 
@@ -72,7 +72,7 @@ ifeq ($(CPU),mpg-intel)
       LIB   = -mkl
       MATLAB = /opt/local/matlab2011b/bin/matlab
       MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
-      MLLIB2 = /opt/local/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/libifcoremt_pic.a
+      MLLIB2 = /opt/local/intel/composer_xe_2013.4.183/compiler/lib/intel64/libifcoremt_pic.a
 endif
 ifeq ($(CPU),mpg-gfort)
       FORT     = gfortran -O2 -ffree-line-length-none ${FOPT}
