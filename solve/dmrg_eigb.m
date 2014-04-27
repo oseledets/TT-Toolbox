@@ -34,18 +34,17 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 
 %Default parameters
 y0=[];
-rmax=2500;
 nswp=4;
-msize=1000;
+msize=1;
 max_l_steps=200;
-kick_rank=5;
+kickrank=4;
 verb=true;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
             nswp=varargin{i+1};
-        case 'rmax'
-            rmax=lower(varargin{i+1});
+        case 'kickrank'
+            kickrank=lower(varargin{i+1});
         case 'x0'
             y0=varargin{i+1};
         case 'msize'
@@ -306,7 +305,7 @@ while ( swp <= nswp && not_converged )
            
            
            %Random restart block
-           radd=min(kick_rank,size(v,1)-rnew);
+           radd=min(kickrank,size(v,1)-rnew);
            rnew=rnew+radd;
            if ( radd >  0 )
              vr=randn(size(v,1),radd);
@@ -423,7 +422,7 @@ while ( swp <= nswp && not_converged )
 %            u=u(:,1:rnew); v=v1;
            
            %Random restart block
-           radd=min(kick_rank,size(u,1)-rnew);
+           radd=min(kickrank,size(u,1)-rnew);
            rnew=rnew+radd;
            if ( radd >  0 )
              vr=zeros(size(v,1),radd);
