@@ -500,7 +500,7 @@ blockVectorAX = blockVectorAX*coordX;
 if ~isempty(operatorB)
     blockVectorBX = blockVectorBX*coordX;
 end
-clear coordX
+% clear coordX
 
 condestGhistory(1)=-log10(eps)/2;  %if too small cause unnecessary restarts
 
@@ -651,7 +651,7 @@ for iterationNumber=1:maxIterations
         end
         
     end
-    clear gramRBR;
+%     clear gramRBR;
     
     if ischar(operatorA)
         blockVectorAR(:,activeMask) = operatorA*blockVectorR(:,activeMask);
@@ -700,11 +700,12 @@ for iterationNumber=1:maxIterations
                 break
             end
         end
-        clear gramPBP
+%         clear gramPBP
     end
     
-    condestGmean = mean(condestGhistory(max(1,iterationNumber-10-...
-        round(log(currentBlockSize))):iterationNumber));
+%     condestGmean = mean(condestGhistory(max(1,iterationNumber-10-...
+%         round(log(currentBlockSize))):iterationNumber));
+    condestGmean = 1; % !!!!!!!!!!!!!!!!! Speed Hack !!!!!!!!!!!!!!!!!!!!!
     
     %  restart=1;
     
@@ -768,7 +769,7 @@ for iterationNumber=1:maxIterations
                     gramXAP'      gramRAP'  gramPAP ];
             end
             
-            clear gramXAP  gramRAP gramPAP
+%             clear gramXAP  gramRAP gramPAP
             
             if isempty(operatorB)
                 gramXBP=full(blockVectorX'*blockVectorP(:,activeMask));
@@ -793,14 +794,14 @@ for iterationNumber=1:maxIterations
                 gramB = [ gramXBX  gramXBR  gramXBP
                     gramXBR' gramRBR  gramRBP
                     gramXBP' gramRBP' gramPBP ];
-                clear   gramPBP
+%                 clear   gramPBP
             else
                 gramB=[eye(blockSize) zeros(blockSize,activeRSize) gramXBP
                     zeros(blockSize,activeRSize)' eye(activeRSize) gramRBP
                     gramXBP' gramRBP' eye(activePSize) ];
             end
             
-            clear gramXBP  gramRBP;
+%             clear gramXBP  gramRBP;
             
         else
             
@@ -809,18 +810,19 @@ for iterationNumber=1:maxIterations
                     gramXAR'    gramRAR  ];
                 gramB = [ gramXBX  gramXBR
                     gramXBR' eye(activeRSize)  ];
-                clear gramXAX gramXBX gramXBR
+%                 clear gramXAX gramXBX gramXBR
             else
                 gramA = [ diag(lambda)  gramXAR
                     gramXAR'        gramRAR  ];
                 gramB = eye(blockSize+activeRSize);
             end
             
-            clear gramXAR gramRAR;
+%             clear gramXAR gramRAR;
             
         end
         
-        condestG = log10(cond(gramB))+1;
+%         condestG = log10(cond(gramB))+1;
+        condestG = 1; % !!!!!!!!!!!!!!!!! Speed Hack !!!!!!!!!!!!
         if (condestG/condestGmean > 2 && condestG > 2 )|| condestG > 8
             %black magic - need to guess the restart
             if verbosityLevel
@@ -843,7 +845,7 @@ for iterationNumber=1:maxIterations
     lambda=diag(gramB(1:blockSize,1:blockSize)); 
     coordX=gramA(:,1:blockSize);
     
-    clear gramA gramB
+%     clear gramA gramB
     
     if issparse(blockVectorX)
         coordX=sparse(coordX);
@@ -882,7 +884,7 @@ for iterationNumber=1:maxIterations
     if ~isempty(operatorB)
         blockVectorBX=blockVectorBX*coordX(1:blockSize,:) + blockVectorBP;
     end
-    clear coordX
+%     clear coordX
     %%end RR
     
     lambdaHistory(1:blockSize,iterationNumber+1)=lambda;

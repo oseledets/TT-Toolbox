@@ -590,7 +590,7 @@ while (swp<=nswp)
     crx{i} = u;
     crx{i+1} = v;
     
-    if (verb>2)&&(i==d-1)
+    if (verb>2) % &&(i==d-1)
         somedata{1}(i,(swp-1)*2+1.5-dir/2) = toc(t_dmrg_solve);
         x = cell2core(tt_tensor, crx);
         somedata{2}{(swp-1)*2+1.5-dir/2, i}=x;

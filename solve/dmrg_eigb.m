@@ -39,6 +39,7 @@ msize=1;
 max_l_steps=200;
 kickrank=4;
 verb=true;
+rmax = Inf;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
         case 'nswp'
@@ -51,6 +52,8 @@ for i=1:2:length(varargin)-1
             msize=varargin{i+1};
         case 'verb'
             verb=varargin{i+1};
+        case 'rmax'
+            rmax=varargin{i+1};
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
             
@@ -252,7 +255,13 @@ while ( swp <= nswp && not_converged )
            wnew=permute(wnew,[1,2,5,3,4]); wnew=reshape(wnew,[ry(i)*n(i)*k,n(i+1)*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s); 
            %Truncation block
-           rnew=my_chop2(s,eps*norm(s)); 
+           rnew=my_chop2(s,eps*norm(s));
+           
+           %%%
+           rnew = min(rnew, numel(s));
+           rnew = min(rnew, rmax);
+           %%%%
+           
            u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
            u=u*diag(s); %u has to be reshaped 
            
@@ -379,6 +388,12 @@ while ( swp <= nswp && not_converged )
            wnew=permute(wnew,[1,2,3,5,4]); wnew=reshape(wnew,[ry(i)*n(i),n(i+1)*k*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s);
            rnew=my_chop2(s,eps*norm(s)); 
+           
+           %%%%
+           rnew = min(rnew, rmax);
+           rnew = min(rnew, numel(s));
+           %%%%
+           
            u=u(:,1:rnew); s=s(1:rnew); v=v(:,1:rnew);% v=v';
            v=v*diag(s); %u has to be reshaped 
            

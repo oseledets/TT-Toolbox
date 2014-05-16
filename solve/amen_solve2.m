@@ -756,8 +756,8 @@ for swp=1:nswp
             crx{i} = sol;
         end;
         
-        testdata{1}(i,swp) = toc(t_amen_solve);
-        if (verb>2)&&(i==d)
+        if (verb>2) % &&(i==d)
+            testdata{1}(i,swp) = toc(t_amen_solve);
             x = cell2core(x, crx)*exp(sum(log(nrmsx))); % for test
             testdata{2}{i,swp} = x;
         end;
