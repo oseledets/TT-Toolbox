@@ -65,7 +65,7 @@ trunc_norm = 'residual';
 local_solver = 'gmres';
 % local_solver = 'pcg';
 
-ismex = false;
+ismex = true;
 
 % dirfilter = -1; % only backward
 % dirfilter = 1; % only forward
@@ -137,6 +137,12 @@ if (A.n~=A.m)
     error(' DMRG does not know how to solve rectangular systems!\n Use dmrg_solve3(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
 end;
 
+% Disable MEX if it does not exist
+if (ismex)&&(exist('solve3d_2', 'file')<2)
+    warning('MEX local solver is not found, disabled');
+    ismex = false;
+end;
+
 d = y.d;
 n = A.n;
 if (isempty(x))
@@ -171,7 +177,7 @@ phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 
 somedata = cell(3,1);
 somedata{1}=zeros(d,nswp*2);
-somedata{2}=cell(nswp*2, d);
+somedata{2}=cell(d, nswp*2);
 somedata{3}=zeros(d,nswp*2);
 
 t_dmrg_solve = tic;
@@ -407,12 +413,33 @@ while (swp<=nswp)
             sol = sol_prev + dsol;
             
             else % ismex
-                Amex = reshape(A1, ra(i)*n(i)*n(i), ra(i+1));
-                Amex = Amex*reshape(A2, ra(i+1), n(i+1)*n(i+1)*ra(i+2));
-                Amex = reshape(Amex, ra(i), n(i), n(i), n(i+1), n(i+1), ra(i+2));
-                Amex = permute(Amex, [1, 2, 4, 3, 5, 6]);
-                Amex = reshape(Amex, ra(i), n(i)*n(i+1), n(i)*n(i+1), ra(i+2));
-                sol = solve3d_2(permute(Phi1,[1,3,2]), Amex, permute(Phi2, [3,2,1]), rhs, real_tol, 1, sol_prev, local_prec_char, local_restart, local_iters, max(verb-1,0));
+                % Since we only have MEX for 3 blocks, we have to merge some
+                if (rx(i)*n(i)<=min(n(i)*n(i+1), n(i+1)*rx(i+2)))
+                    Phi1mex = reshape(permute(Phi1, [1, 3, 2]), rx(i)*rx(i), ra(i));
+                    Phi1mex = Phi1mex*reshape(A1, ra(i), n(i)*n(i)*ra(i+1));
+                    Phi1mex = reshape(Phi1mex, rx(i), rx(i), n(i), n(i), ra(i+1));
+                    Phi1mex = permute(Phi1mex, [1, 3, 2, 4, 5]);
+                    Phi1mex = reshape(Phi1mex, rx(i)*n(i), rx(i)*n(i), ra(i+1));   
+                    Amex = reshape(A2, ra(i+1), n(i+1), n(i+1), ra(i+2));
+                    Phi2mex = permute(Phi2, [3,2,1]);
+                elseif (n(i)*n(i+1)<=min(rx(i)*n(i), n(i+1)*rx(i+2)))
+                    Amex = reshape(A1, ra(i)*n(i)*n(i), ra(i+1));
+                    Amex = Amex*reshape(A2, ra(i+1), n(i+1)*n(i+1)*ra(i+2));
+                    Amex = reshape(Amex, ra(i), n(i), n(i), n(i+1), n(i+1), ra(i+2));
+                    Amex = permute(Amex, [1, 2, 4, 3, 5, 6]);
+                    Amex = reshape(Amex, ra(i), n(i)*n(i+1), n(i)*n(i+1), ra(i+2));
+                    Phi1mex = permute(Phi1, [1,3,2]);
+                    Phi2mex = permute(Phi2, [3,2,1]); % rx', ra, rx -> rx,ra,rx'
+                else 
+                    Phi1mex = permute(Phi1, [1,3,2]);
+                    Amex = reshape(A1, ra(i), n(i), n(i), ra(i+1));
+                    Phi2mex = reshape(A2, ra(i+1)*n(i+1)*n(i+1), ra(i+2));
+                    Phi2mex = Phi2mex*reshape(permute(Phi2, [2, 1, 3]), ra(i+2), rx(i+2)*rx(i+2));
+                    Phi2mex = reshape(Phi2mex, ra(i+1), n(i+1), n(i+1), rx(i+2), rx(i+2));
+                    Phi2mex = permute(Phi2mex, [3,5, 1, 2,4]);
+                    Phi2mex = reshape(Phi2mex, n(i+1)*rx(i+2), ra(i+1), n(i+1)*rx(i+2));
+                end;
+                sol = solve3d_2(Phi1mex, Amex, Phi2mex, rhs, real_tol, 1, sol_prev, local_prec_char, local_restart, local_iters, 0);
                 flg = 0;
                 iter = 1;
             end;
@@ -590,10 +617,13 @@ while (swp<=nswp)
     crx{i} = u;
     crx{i+1} = v;
     
-    if (verb>2) % &&(i==d-1)
+    if (verb>2)
         somedata{1}(i,(swp-1)*2+1.5-dir/2) = toc(t_dmrg_solve);
-        x = cell2core(tt_tensor, crx);
-        somedata{2}{(swp-1)*2+1.5-dir/2, i}=x;
+        if (verb>3)||(i==d-1) % each microstep is returned only if really asked for
+            % Otherwise the memory will blow up
+            x = cell2core(tt_tensor, crx);
+            somedata{2}{i, (swp-1)*2+1.5-dir/2}=x;
+        end;
     end;
     
     i = i+dir;

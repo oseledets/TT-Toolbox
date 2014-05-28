@@ -70,6 +70,7 @@ kicktype = 'svd';
 kickrank = 4;
 x=[];
 symm = false;
+verb = 3;
 
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -95,11 +96,19 @@ for i=1:2:length(varargin)-1
             resid_damp = varargin{i+1};
         case 'symm'
             symm=varargin{i+1};
+        case 'verb'
+            verb=varargin{i+1};
             
         otherwise
             error('Unrecognized option: %s\n',varargin{i});
     end
 end
+
+% Disable MEX if it does not exist
+if (ismex)&&(exist('solve3d_2', 'file')<2)
+    warning('MEX local solver is not found, disabled');
+    ismex = false;
+end;
 
 % Extract sizes and TT blocks
 d = y.d;
@@ -122,9 +131,9 @@ end;
 
 % Test output data -- e.g. for convergence tracking
 testdata = cell(3,1);
-testdata{2} = cell(nswp, d);
-testdata{1} = zeros(nswp, d);
-testdata{3} = zeros(nswp, 1);
+testdata{2} = cell(d, nswp);
+testdata{1} = zeros(d, nswp);
+testdata{3} = zeros(1, nswp);
 t_corr_amen = tic;
 
 % ALS(t+z) sweeps
@@ -192,12 +201,12 @@ for swp=1:nswp
     t_old = toc(t_corr_amen);
     % Update via the ALS iteration
     if (symm)
-        [x,td_als] = als_solve(A2, Ay, tol,  'max_full_size', max_full_size, 'x0', x, 'verb', 3, 'local_prec', local_prec, 'local_iters', local_iters, 'local_restart', local_restart, 'resid_damp', resid_damp, 'ismex', ismex);
+        [x,td_als] = als_solve(A2, Ay, tol,  'max_full_size', max_full_size, 'x0', x, 'verb', verb, 'local_prec', local_prec, 'local_iters', local_iters, 'local_restart', local_restart, 'resid_damp', resid_damp, 'ismex', ismex);
     else
-        [x,td_als] = als_solve(A, y, tol,  'max_full_size', max_full_size, 'x0', x, 'verb', 3,  'local_prec', local_prec, 'local_iters', local_iters, 'local_restart', local_restart, 'resid_damp', resid_damp, 'ismex', ismex);
+        [x,td_als] = als_solve(A, y, tol,  'max_full_size', max_full_size, 'x0', x, 'verb', verb,  'local_prec', local_prec, 'local_iters', local_iters, 'local_restart', local_restart, 'resid_damp', resid_damp, 'ismex', ismex);
     end;
-    testdata{1}(swp,:) = t_old+td_als{1}(:,1);
-    testdata{2}(swp,:) = td_als{2};
+    testdata{1}(:, swp) = t_old+td_als{1}(:,1);
+    testdata{2}(:, swp) = td_als{2};
     testdata{3}(swp) = max(td_als{3});
 end;
 
@@ -267,7 +276,7 @@ phiy = cell(d+1,1); phiy{1}=1; phiy{d+1}=1;
 % This is some convergence output for test purposes
 td = cell(3,1); 
 td{1} = zeros(d, 1);
-td{2} = cell(1, d);
+td{2} = cell(d, 1);
 td{3} = zeros(d, 1);
 
 t_amr_solve = tic;
@@ -396,11 +405,14 @@ for i=1:d
         sol = reshape(sol, rx(i), n(i), rx(i+1));
         crx{i} = sol;
     end;
-
-    if (verb>2)&&(i==d)
+    
+    if (verb>2)
         td{1}(i) = toc(t_amr_solve);
-        x = cell2core(x, crx); % for test
-        td{2}{i} = x;
+        if (verb>3)||(i==d) % each microstep is returned only if really asked for
+            % Otherwise the memory will blow up
+            x = cell2core(x, crx); % for test
+            td{2}{i} = x;
+        end;
     end;
 
 end;

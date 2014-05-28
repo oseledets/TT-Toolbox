@@ -87,7 +87,7 @@ trunc_norm_char = 1;
 
 tol_exit = [];
 
-ismex = false;
+ismex = true;
 
 % kicktype = 'svd';
 kicktype = 'als';
@@ -202,6 +202,12 @@ if (strcmp(local_prec, 'cjacobi')); local_prec_char = 1;  end;
 if (strcmp(local_prec, 'ljacobi')); local_prec_char = 2;  end;
 if (strcmp(local_prec, 'rjacobi')); local_prec_char = 3;  end;
 % if (strcmp(trunc_norm, 'fro')); trunc_norm_char = 0; end;
+
+% Disable MEX if it does not exist
+if (ismex)&&(exist('solve3d_2', 'file')<2)
+    warning('MEX local solver is not found, disabled');
+    ismex = false;
+end;
 
 if (A.n~=A.m)
     error(' AMEn does not know how to solve rectangular systems!\n Use amen_solve2(ctranspose(A)*A, ctranspose(A)*f, tol) instead.');
@@ -756,10 +762,13 @@ for swp=1:nswp
             crx{i} = sol;
         end;
         
-        if (verb>2) % &&(i==d)
+        if (verb>2)
             testdata{1}(i,swp) = toc(t_amen_solve);
-            x = cell2core(x, crx)*exp(sum(log(nrmsx))); % for test
-            testdata{2}{i,swp} = x;
+            if (verb>3)||(i==d) % each microstep is returned only if really asked for
+                % Otherwise the memory will blow up
+                x = cell2core(x, crx)*exp(sum(log(nrmsx))); % for test
+                testdata{2}{i,swp} = x;
+            end;
         end;
         
     end;
