@@ -59,9 +59,9 @@ ifeq ($(CPU),dc-laptop-intel)
       CC    = icc
       COPT = -O2 -fPIC
       LIB   = -mkl
-      MATLAB = /home/dc/matlab_inst/bin/matlab
+      MATLAB = matlab
       MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
-      MLLIB2 = /opt/intel/composerxe/lib/intel64/libifcoremt_pic.a
+      MLLIB2 = /opt/intel/composerxe-2013.2.144/compiler/lib/intel64/libifcoremt_pic.a 
 endif
 ifeq ($(CPU),mpg-intel)
       FOPT    = -i8 -O2 -fPIC -vec-report=0 -Itt-fort/
