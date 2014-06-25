@@ -10,6 +10,19 @@ ifeq ($(CPU),default)
       MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
       MLLIB2 = 
 endif
+ifeq ($(CPU),default-intel)
+      FOPT    = -i8 -O2 -fPIC -vec-report=0 -Itt-fort/
+      FC   = ifort
+      LDR   = ifort -fPIC -static-intel
+      CC    = icc
+      COPT = -O2 -fPIC
+      LIB   = -mkl
+      MATLAB = matlab
+      MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+      MLLIB2 = ${MKLROOT}/../compiler/lib/intel64/libifcoremt_pic.a 
+endif
+
+
 ifeq ($(CPU),mac-gfort)
       FOPT    = -m64 -std=f2008 -ffree-line-length-none -fdefault-integer-8 #-xSSE4.2
       FC = gfortran

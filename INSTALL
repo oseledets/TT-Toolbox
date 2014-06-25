@@ -16,7 +16,8 @@
 	As soon as you have just cloned/downloaded the TT-Toolbox, fmex/ contains an empty directory tt-fort/.
 	This is for our another repository https://github.com/oseledets/tt-fort, containing some FORTRAN and C
 	codes for TT algebra, etc.
-	Please clone or download it.
+	Please pull it as a GIT submodule: staying in the TT-Toolbox directory, invoke
+		git submodule update
 	Now, create new files named Makefile.cpu in both fmex/ and fmex/tt-fort/.
 	These files should contain one line:
 		CPU = your_cpu_alias
@@ -27,7 +28,12 @@
 	################
 	You may take any of our presets (eg. "default") given in Makefile.in,
 	or write your own, naming the variables (CC, COPT and so on) similarly to the existing aliases.
+	A reasonable idea is to start from the example Makefile.cpu.default files.
+	You may invoke
+		cp Makefile.cpu.default Makefile.cpu
+	staying in fmex/ and fmex/tt-fort/ directories.
 	Please make sure that 8-byte integers are used, i.e. the parameters -fdefault-integer-8 for 
 	gfortran or -i8 for Intel are passed in the compiler options.
 	After that, run make in fmex/.
 	The library mytt.a will be built in tt-fort/ automatically, followed by the MEX files in fmex/.
+
