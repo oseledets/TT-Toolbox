@@ -17,6 +17,7 @@
 	This is for our another repository https://github.com/oseledets/tt-fort, containing some FORTRAN and C
 	codes for TT algebra, etc.
 	Please pull it as a GIT submodule: staying in the TT-Toolbox directory, invoke
+		git submodule init
 		git submodule update
 	Now, create new files named Makefile.cpu in both fmex/ and fmex/tt-fort/.
 	These files should contain one line:
@@ -36,4 +37,13 @@
 	gfortran or -i8 for Intel are passed in the compiler options.
 	After that, run make in fmex/.
 	The library mytt.a will be built in tt-fort/ automatically, followed by the MEX files in fmex/.
+
+	The whole sequence of commands for the default GNU compilation thus may be as follows:
+		git submodule init
+		git submodule update
+		cd fmex/tt-fort
+		cp Makefile.cpu.default Makefile.cpu
+		cd ../
+		cp Makefile.cpu.default Makefile.cpu
+		make
 
