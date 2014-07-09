@@ -38,7 +38,7 @@ nswp=4;
 msize=1;
 max_l_steps=200;
 kickrank=4;
-verb=true;
+verb=1;
 rmax = Inf;
 for i=1:2:length(varargin)-1
     switch lower(varargin{i})
@@ -70,6 +70,8 @@ if ( isempty(y0) )
     y0=tt_random(n,d,r);
 end
 y=round(y0,0);
+
+local_eps = eps/sqrt(d);
 
 %We start from the orthogonalization of the y vector from left-to-right
 %(it does not influence the TT-ranks)
@@ -152,6 +154,7 @@ psy=y.ps;
 %Now start the main DMRG sweep
 swp=1;
 not_converged=true;
+err_max = 0;
 %ry(1)=1;
 ry(d+1)=1;
 dir='rl';
@@ -214,10 +217,10 @@ while ( swp <= nswp && not_converged )
         for j=1:size(w,2)
             erc(j)=norm(er_old(:,j));
         end
-           er0=norm(er_old,'fro')/norm(w,'fro');
+           er0=norm(er_old,'fro')/norm(w,'fro');          
        if ( size(w,1) >= max(5*k,msize) )
            matvec='bfun';
-           [wnew,ev,fail_flag]=lobpcg(w,@(x) bfun(mm,x),eps,max_l_steps);
+           [wnew,ev,fail_flag]=lobpcg(w,@(x) bfun(mm,x),local_eps,max_l_steps);
        else
           matvec='full';
           fm=full(tt_matrix(mm)); 
@@ -231,9 +234,12 @@ while ( swp <= nswp && not_converged )
           ev=ev(1:k);
        end
        er1=norm(bfun(mm,wnew)-wnew*diag(ev),'fro')/norm(wnew,'fro');
+       
+       % Check the distance between iterations
+       dx = norm(wnew*(wnew'*w)-w);
 
        fv=sum(ev); %The functional we minimize;
-       if ( verb )
+       if ( verb>1 )
          fprintf('sweep=%d block=%d fv=%10.15f loc solve=%3.2e old_solve=%3.2e \n',swp,i,fv,er1,er0);
          disp(erc);
        end
@@ -255,7 +261,7 @@ while ( swp <= nswp && not_converged )
            wnew=permute(wnew,[1,2,5,3,4]); wnew=reshape(wnew,[ry(i)*n(i)*k,n(i+1)*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s); 
            %Truncation block
-           rnew=my_chop2(s,eps*norm(s));
+           rnew=my_chop2(s,local_eps*norm(s));
            
            %%%
            rnew = min(rnew, numel(s));
@@ -387,7 +393,7 @@ while ( swp <= nswp && not_converged )
            wnew=reshape(wnew,[ry(i),n(i),n(i+1),ry(i+2),k]); 
            wnew=permute(wnew,[1,2,3,5,4]); wnew=reshape(wnew,[ry(i)*n(i),n(i+1)*k*ry(i+2)]);
            [u,s,v]=svd(wnew,'econ'); s=diag(s);
-           rnew=my_chop2(s,eps*norm(s)); 
+           rnew=my_chop2(s,local_eps*norm(s)); 
            
            %%%%
            rnew = min(rnew, rmax);
@@ -497,6 +503,8 @@ while ( swp <= nswp && not_converged )
            phx=permute(phx,[1,2,3]);
            phi{i+1}=phx;
        end
+       
+   err_max = max(err_max, dx);
    %Choose the next direction block; now implement the simple case
    if ( strcmp(dir,'rl') )
      if ( i > 1 )
@@ -506,7 +514,12 @@ while ( swp <= nswp && not_converged )
        %One block should go from cry_right to cry_left
        cry_left=cry_right(1:ry(1)*n(1)*ry(2)*k); %This seems correct
        cry_right(1:ry(1)*n(1)*ry(2)*k)=[];
+       if (verb>0)
+        fprintf('--- sweep=%d, err_max=%3.3e \n',swp, err_max);
+       end;
        swp=swp+1;
+       not_converged = (err_max>eps);
+       err_max = 0;
      end
    else
     if ( i < d-1 )
@@ -516,7 +529,12 @@ while ( swp <= nswp && not_converged )
        pos=numel(cry_left);
        cry_right=cry_left(pos-ry(d)*n(d)*ry(d+1)*k+1:pos); 
        cry_left(pos-ry(d)*n(d)*ry(d+1)*k+1:pos)=[];
+       if (verb>0)
+        fprintf('--- sweep=%d, err_max=%3.3e \n',swp, err_max);
+       end;       
        swp=swp+1;
+       not_converged = (err_max>eps);
+       err_max = 0;       
        %One block should go from cry_left to cry_right (?) --- seems no :)
      end
    end
