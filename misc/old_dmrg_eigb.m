@@ -32,6 +32,8 @@ function [y,ev] = dmrg_eigb(a,k,eps,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 
+warning('This realisation is old and not optimal. Consider using dmrg_eig');
+
 %Default parameters
 y0=[];
 nswp=4;
