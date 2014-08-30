@@ -42,7 +42,9 @@ function [y,Jyl,Jyr,ilocl,ilocr]=greedy2_cross(n, fun, tol, varargin)
 %
 % 
 % This procedure implements Algorithm 2 from 
-%   D. Savostyanov, http://arxiv.org/pdf/1305.1818v2.pdf.
+%   D. Savostyanov, Quasioptimality of maximum-volume cross interpolation of tensors, Linear Algebra Applications 458, pp 217-244, 2014. 
+%    http://dx.doi.org/10.1016/j.laa.2014.06.006
+% Please cite this paper if your research benefits from the use of this code.
 % Development of the MATLAB version: S. Dolgov.
 % Please send feedback to: {dmitry.savostyanov,sergey.v.dolgov}@gmail.com
 %

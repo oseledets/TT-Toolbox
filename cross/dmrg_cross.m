@@ -23,8 +23,12 @@ function [y]=dmrg_cross(d,n,fun,eps,varargin)
 %       d=10; n=2; fun = @(ind) sum(ind);
 %       tt=dmrg_cross(d,n,fun,1e-7);
 %
-%  Vectorized version contributed by Prof. Le Song (http://www.cc.gatech.edu/~lsong/) 
+%  This code implements the algorithm from
+%  D. Savostyanov, I. Oseledets, Fast adaptive interpolation of multi-dimensional arrays in tensor train format,
+%  http://dx.doi.org/10.1109/nDS.2011.6076873
+%  Please cite this paper if your research benefits from the use of this code.
 %
+%  Vectorized version contributed by Prof. Le Song (http://www.cc.gatech.edu/~lsong/) 
 %
 %
 % TT-Toolbox 2.2, 2009-2013
