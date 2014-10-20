@@ -21,7 +21,11 @@ function [x,testdata,z]=amen_solve2(A, y, tol, varargin)
 %       o kicktype - how to truncate Z: 'svd', 'als' or 'rand' ['als']
 %       o kickrank2 - size of the secondary random enrichment for Z 
 %         (kicktype=='als' only) [0]
-%       o ismex - shall we use the MEX lib solve3d_2 for local solution [false]
+%       o ismex - shall we use the MEX lib solve3d_2 for local solution
+%         instead of gmres. It safely switches off automatically if
+%         solve3d_2 is not found in the MATLAB path, as well as on complex
+%         data. To obtain solve3d_2, you need to compile it in the
+%         TT-Toolbox/fmex directory, please follow instructions there [true]
 %       o resid_damp - solve local problems with accuracy tol/resid_damp.
 %         Larger value may reduce a spurious noise from inexact local
 %         solutions, but increase CPU time [2]
