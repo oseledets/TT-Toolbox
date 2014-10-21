@@ -1,14 +1,20 @@
 addpath(pwd)
-cd core/
+cd core
 addpath(pwd)
-cd ../exp
+cd ..
+cd exp
 addpath(pwd)
-cd ../cross
+cd ..
+cd cross
 addpath(pwd)
-cd ../fmex
+cd ..
+cd fmex
 addpath(pwd)
-cd ../misc
+cd ..
+cd misc
 addpath(pwd)
-cd ../solve
+cd ..
+cd solve
 addpath(pwd)
+cd ..
 
