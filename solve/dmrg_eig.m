@@ -202,7 +202,7 @@ max_dx = 0;
 max_res = 0;
 max_matvecs = 0;
 
-while (swp<=nswp)
+while (swp<=nswp)||(dir>0)
     % Extract the matrix parts, accelerate a plenty of iterations with them
     % Phi1: 1, rx'1, rx1, ra1
     % Phi2: ra2, rx'2, rx2, 1
@@ -281,45 +281,39 @@ while (swp<=nswp)
     % Initial residual
     res_prev = norm(local_matvec(sol_prev, rx1,nloc,rx2,b, rx1,nloc,rx2, Phi1, A1, Phi2, 1,ra1,ra2)-sol_prev*diag(theta));
     
-    % Check whether we actually need to solve anything
-    if (res_prev>real_tol)
-        if (rx1*nloc*rx2<max_full_size) % Full solution
-            %      |     |    |
-            % B = Phi1 - A1 - Phi2
-            %      |     |    |
-            Bxx = assemble_local_matrix(Phi1, A1, Phi2, 1,ra1,ra2, rx1,nloc,rx2, rx1,nloc,rx2);
-            Bxx = (Bxx+Bxx')*0.5; % Ensure the symmetry. At least now...
-            [sol,L]=eig(Bxx);
-            L = diag(L);
-            L = real(L); % exclude possible i*1e-15 noise
-            [~,ind] = sort(L, 'ascend');
-            theta = L(ind(1:b));
-            sol = sol(:,ind(1:b));
-            num_matvecs = 1;
-        else % Iterative solution
-            if (usemex)
-                Phi1m = reshape(Phi1{1}, rx1, rx1, ra1);
-                Phi2m = reshape(Phi2{1}, ra2*rx2, rx2);
-                Phi2m = Phi2m.';
-                Phi2m = reshape(Phi2m, rx2, ra2, rx2);
-                A1m = reshape(A1{1}, ra1, nloc, nloc, ra2);
-                [sol,theta, num_matvecs]=eig3d_primme(Phi1m,A1m,Phi2m,real_tol,b,sol_prev,local_iters);
-            else
-                [sol,theta,~,lambdaHistory]=lobpcg(sol_prev,@(x)local_matvec(x, rx1,nloc,rx2,[], rx1,nloc,rx2, Phi1, A1, Phi2, 1,ra1,ra2),  real_tol, local_iters);
-                num_matvecs = numel(lambdaHistory);
-            end;
+    if (rx1*nloc*rx2<max_full_size) % Full solution
+        %      |     |    |
+        % B = Phi1 - A1 - Phi2
+        %      |     |    |
+        Bxx = assemble_local_matrix(Phi1, A1, Phi2, 1,ra1,ra2, rx1,nloc,rx2, rx1,nloc,rx2);
+        Bxx = (Bxx+Bxx')*0.5; % Ensure the symmetry. At least now...
+        [sol,L]=eig(Bxx);
+        L = diag(L);
+        L = real(L); % exclude possible i*1e-15 noise
+        [~,ind] = sort(L, 'ascend');
+        theta = L(ind(1:b));
+        sol = sol(:,ind(1:b));
+        num_matvecs = 1;
+    else % Iterative solution
+        if (usemex)
+            Phi1m = reshape(Phi1{1}, rx1, rx1, ra1);
+            Phi2m = reshape(Phi2{1}, ra2*rx2, rx2);
+            Phi2m = Phi2m.';
+            Phi2m = reshape(Phi2m, rx2, ra2, rx2);
+            A1m = reshape(A1{1}, ra1, nloc, nloc, ra2);
+            [sol,theta, num_matvecs]=eig3d_primme(Phi1m,A1m,Phi2m,real_tol,b,sol_prev,local_iters);
+        else
+            [sol,theta,~,lambdaHistory]=lobpcg(sol_prev,@(x)local_matvec(x, rx1,nloc,rx2,[], rx1,nloc,rx2, Phi1, A1, Phi2, 1,ra1,ra2),  real_tol, local_iters);
+            num_matvecs = numel(lambdaHistory);
         end;
-        
-        % count the number of MatVecs
-        max_matvecs = max(max_matvecs, num_matvecs);
-        
-        if (~strcmp(trunc_norm, 'fro'))
-            % We need the new residual for the corresp. trunc. strategy
-            res_new = norm(local_matvec(sol, rx1,nloc,rx2,b, rx1,nloc,rx2, Phi1, A1, Phi2, 1,ra1,ra2)-sol*diag(theta));
-        end;
-    else
-        res_new = res_prev;
-        sol = sol_prev;
+    end;
+    
+    % count the number of MatVecs
+    max_matvecs = max(max_matvecs, num_matvecs);
+    
+    if (~strcmp(trunc_norm, 'fro'))
+        % We need the new residual for the corresp. trunc. strategy
+        res_new = norm(local_matvec(sol, rx1,nloc,rx2,b, rx1,nloc,rx2, Phi1, A1, Phi2, 1,ra1,ra2)-sol*diag(theta));
     end;
 
     % L2-norm convergence check. 
@@ -414,9 +408,10 @@ while (swp<=nswp)
             vx = vx*rv.';
         end;
         
+        r = size(ux, 2);
+        
         if (numblocks==1)
             % Drop the [r x r] factor to the next core -- White's prediction
-            r = size(ux, 2);
             cr2 = crx{i+1};
             cr2 = reshape(cr2, rx(i+1), n(i+1)*rx(i+2));
             vx = reshape(vx, rx(i+1), b*r);
@@ -454,9 +449,10 @@ while (swp<=nswp)
             ux = ux*rv.';
         end;
         
+        r = size(vx, 2);
+        
         if (numblocks==1)
             % Drop the [r x r] factor to the next core -- White's prediction
-            r = size(vx, 2);
             cr2 = crx{i-1};
             cr2 = reshape(cr2, rx(i-1)*n(i-1), rx(i));
             ux = reshape(ux, b, rx(i)*r);
