@@ -1,4 +1,5 @@
-function [x]=solve3d_2ml(Phi1, A, Phi2, y, tol, x0, prec, local_restart, local_iters)
+function [x,flg,iter]=solve3d_2ml(Phi1, A, Phi2, y, tol, x0, prec, local_restart, local_iters)
+% Technical routine for iterative solution of local ALS/DMRG problems
 
 dy = bfun3(Phi1, A, Phi2, x0);
 dy = y-dy;
@@ -74,7 +75,8 @@ if (real_tol<1)
         mv = @(x)bfun3(Phi1, A, Phi2, jac_apply(jacs, prec, x, rx1, n, rx2));
     end;
     
-    [dx,flg] = gmres(mv, dy, local_restart, real_tol, local_iters);
+    [dx,flg,RELRES,iter] = gmres(mv, dy, local_restart, real_tol, local_iters);
+    iter = (iter(1)-1)*local_restart + iter(2);
     if (~isempty(jacs))
         dx = jac_apply(jacs, prec, dx, rx1, n, rx2);
     end;
