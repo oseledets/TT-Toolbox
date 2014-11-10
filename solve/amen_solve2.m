@@ -494,7 +494,7 @@ for swp=1:nswp
             
             res_prev = norm(bfun3(Phi1, A1, Phi2, sol_prev) - rhs)/norm_rhs;
             
-%             if (res_prev>real_tol)
+            if (norm_rhs>0)
                 if (~ismex)
                     sol = solve3d_2ml(Phi1, A1, Phi2, rhs, real_tol*norm_rhs, sol_prev, local_prec_char, local_restart, local_iters);
                 else % use MEX
@@ -502,10 +502,10 @@ for swp=1:nswp
                 end;
                 
                 res_new = norm(bfun3(Phi1, A1, Phi2, sol) - rhs)/norm_rhs;
-%             else
-%                 sol = sol_prev;
-%                 res_new = res_prev;
-%             end;
+            else
+                sol = zeros(numel(sol_prev), 1);
+                res_new = 0;
+            end;
             
         end;
         
