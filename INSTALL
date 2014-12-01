@@ -25,20 +25,23 @@
 	where "your_cpu_alias" shall be one of possible variants from Makefile.in 
 	### Important ###
 	1) There are separate Makefile.in and Makefile.cpu in fmex/ and fmex/tt-fort
-	2) In fmex/tt-fort, you must choose a preset with 8-byte integers: i8-gnu or i8-intel 
+	2) In fmex/tt-fort, you must choose a preset depending on your machine: 
+           with 8-byte integers on a x64 system: i8-gnu or i8-intel, and
+           with 4-byte integers on a x32 system: i4-gnu or i4-intel
 	################
 	You may take any of our presets (eg. "default") given in Makefile.in,
 	or write your own, naming the variables (CC, COPT and so on) similarly to the existing aliases.
-	A reasonable idea is to start from the example Makefile.cpu.default files.
+	A reasonable idea is to start from the example Makefile.cpu.default files (for x64 systems),
+        or Makefile.cpu.default32 (for x32 systems)
 	You may invoke
 		cp Makefile.cpu.default Makefile.cpu
 	staying in fmex/ and fmex/tt-fort/ directories.
-	Please make sure that 8-byte integers are used, i.e. the parameters -fdefault-integer-8 for 
+	For x64 systems, please make sure that 8-byte integers are used, i.e. the parameters -fdefault-integer-8 for 
 	gfortran or -i8 for Intel are passed in the compiler options.
 	After that, run make in fmex/.
 	The library mytt.a will be built in tt-fort/ automatically, followed by the MEX files in fmex/.
 
-	The whole sequence of commands for the default GNU compilation thus may be as follows:
+	The whole sequence of commands for the default x64 GNU compilation thus may be as follows:
 		git submodule init
 		git submodule update
 		cd fmex/tt-fort
@@ -46,4 +49,6 @@
 		cd ../
 		cp Makefile.cpu.default Makefile.cpu
 		make
+
+        On a x32 machine, replace Makefile.cpu.default by Makefile.cpu.default32 in the commands above.
 

@@ -4,7 +4,7 @@
 include Makefile.in
 
 
-all: mytt.a fort_mvk4_mex fort_amen_solve_mex uchol solve3d solve3d_2 tt_read tt_write
+all: mytt.a fort_mvk4_mex fort_amen_solve_mex uchol solve3d solve3d_2 tt_read tt_write eig3d_primme
 
 mytt.a:
 	cd tt-fort; make

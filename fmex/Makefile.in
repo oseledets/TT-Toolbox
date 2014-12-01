@@ -1,4 +1,5 @@
 include Makefile.cpu
+# Gnu compiler on a 64-bit machine
 ifeq ($(CPU),default)
       FOPT    = -fdefault-integer-8 -ffree-line-length-none -O2 -fPIC -Itt-fort/
       FC   = gfortran
@@ -10,6 +11,7 @@ ifeq ($(CPU),default)
       MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
       MLLIB2 = 
 endif
+# Intel compiler on a 64-bit machine
 ifeq ($(CPU),default-intel)
       FOPT    = -i8 -O2 -fPIC -vec-report=0 -Itt-fort/
       FC   = ifort
@@ -22,6 +24,33 @@ ifeq ($(CPU),default-intel)
       MLLIB2 = ${MKLROOT}/../compiler/lib/intel64/libifcoremt_pic.a 
 endif
 
+# Gnu compiler on a 32-bit machine
+ifeq ($(CPU),default-x32)
+      FOPT    = -ffree-line-length-none -O2 -fPIC -Itt-fort/
+      FC   = gfortran
+      LDR   = gfortran -fPIC
+      CC    = gcc
+      COPT = -O2 -fPIC
+      LIB   = 
+      MATLAB = matlab
+      MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+      MLLIB2 = 
+endif
+# Intel compiler on a 32-bit machine
+ifeq ($(CPU),default-intel-x32)
+      FOPT    = -O2 -fPIC -vec-report=0 -Itt-fort/
+      FC   = ifort
+      LDR   = ifort -fPIC -static-intel
+      CC    = icc
+      COPT = -O2 -fPIC
+      LIB   = -mkl
+      MATLAB = matlab
+      MCFLAGS = -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+      MLLIB2 = ${MKLROOT}/../compiler/lib/intel64/libifcoremt_pic.a 
+endif
+
+
+####### Below are some presets for Moscow and Leipzig machines. Poke around them on your own risk
 
 ifeq ($(CPU),mac-gfort)
       FOPT    = -m64 -std=f2008 -ffree-line-length-none -fdefault-integer-8 #-xSSE4.2

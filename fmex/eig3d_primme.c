@@ -52,7 +52,10 @@ void PrimmeMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    }
 }
 
-#define int __int32
+
+#ifdef __int32
+  #define int __int32
+#endif
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 // Input: Phi1 [r1',r1,ra1], A[ra1,n',n,ra2], Phi2[r2,ra2,r2'], tol, B, sol_prev, max_matvecs = 500, max_basis_size = 100
