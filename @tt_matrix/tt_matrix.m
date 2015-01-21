@@ -52,7 +52,7 @@ end
 if (isa(varargin{1}, 'tt_tensor'))
     tt=varargin{1};
     d=tt.d;
-    if (nargin==3)&&(isa(varargin{2},'double'))&&(isa(varargin{3},'double'))
+    if (nargin==3)&&(is_array(varargin{2}))&&(is_array(varargin{3}))
         n=varargin{2}(:);
         m=varargin{3}(:);
         if ( numel(n) == 1 )
@@ -74,7 +74,7 @@ return
 end
 
 %From old format
-if ( nargin == 1 ) && isa(varargin{1},'cell') 
+if ( nargin == 1 ) && isa(varargin{1},'cell')
     t=tt_matrix;
    tt=varargin{1};
    tt1=tt_mat_to_vec(tt); 
@@ -91,10 +91,10 @@ if ( nargin == 1 ) && isa(varargin{1},'cell')
 end
 
 % From full format
-if (isa(varargin{1}, 'double')) %  || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
+if (is_array(varargin{1})) %  || nargin ==2 && is_array(varargin{1}) && is_array(varargin{2}))
     t=tt_matrix;
     b=varargin{1};
-    if (nargin==2)&&(isa(varargin{2},'double'))&&(~isempty(varargin{2}))
+    if (nargin==2)&&(is_array(varargin{2}))&&(~isempty(varargin{2}))
         eps=varargin{2};
     else
         eps=1e-14;

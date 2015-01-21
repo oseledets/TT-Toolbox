@@ -7,7 +7,7 @@ function [c] = mtimes(a,b)
 %   with sizes consistent to the respective "tail" rank of a tensor (or a
 %   scalar).
 
-if isa(a,'double') && isa(b,'tt_tensor')
+if is_array(a) && isa(b,'tt_tensor')
     d = b.d;
     cr1 = b.core(b.ps(1):b.ps(2)-1);
     cr1 = reshape(cr1, b.r(1), b.n(1)*b.r(2));
@@ -44,7 +44,7 @@ if isa(a,'double') && isa(b,'tt_tensor')
 %     c.ps=ps;
 %     c.core=crc;
 %     c.r=r;
-elseif isa(a,'tt_tensor') && isa(b,'double') 
+elseif isa(a,'tt_tensor') && is_array(b) 
     d = a.d;
     crd = a.core(a.ps(d):a.ps(d+1)-1);
     crd = reshape(crd, a.r(d)*a.n(d), a.r(d+1));

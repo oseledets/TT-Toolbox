@@ -22,11 +22,11 @@ elseif ( isempty(c) )
 end
 
 % To add a scalar to all elements, as with vectors
-if (isa(b, 'double'))
+if (is_array(b))
     a = (b*tt_ones(c.n))+c;
     return;
 end;
-if (isa(c, 'double'))
+if (is_array(c))
     a = (c*tt_ones(b.n))+b;
     return;
 end;

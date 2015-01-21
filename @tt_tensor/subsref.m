@@ -26,7 +26,7 @@ switch s(1).type
       end
       if ( mn == 1 ) %Special case
          ind=pp{1};
-         if ( isa(ind,'double') )
+         if ( is_array(ind) )
            for i=1:d
              pp{i}=ind(i);
            end

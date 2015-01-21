@@ -51,7 +51,7 @@ end
 %from tt_tensor (ordinary one or QTT)
 if ( isa(varargin{1},'tt_tensor') )
     if ( nargin == 3 )
-        if (isa(varargin{2}, 'cell'))&&(isa(varargin{3}, 'double'))
+        if (isa(varargin{2}, 'cell'))&&(is_array(varargin{3}))
             % TT with quantization
             tt=varargin{1};
             sz=varargin{2};
@@ -93,7 +93,7 @@ if (nargin==2) && isa(varargin{1}, 'cell') && isa(varargin{2}, 'tt_tensor')
     t.sz = cell(t.dphys, 1);
     for i=1:t.dphys
         t.tuck{i} = varargin{1}{i};
-        if (isa(t.tuck{i}, 'double'))
+        if (is_array(t.tuck{i}))
             t.tuck{i} = tt_tensor(t.tuck{i});
         end;
         t.sz{i} = t.tuck{i}.n;
@@ -102,7 +102,7 @@ if (nargin==2) && isa(varargin{1}, 'cell') && isa(varargin{2}, 'tt_tensor')
 end;
 
 %From full format
-if (  nargin ==3 && isa(varargin{1},'double') && isa(varargin{2},'cell') && isa(varargin{3},'double'))
+if (  nargin ==3 && is_array(varargin{1}) && isa(varargin{2},'cell') && is_array(varargin{3}))
     %The method is as follows. %Tr
     t=qtt_tucker;
     a=varargin{1};
