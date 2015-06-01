@@ -94,7 +94,7 @@ end
 if (is_array(varargin{1})) %  || nargin ==2 && is_array(varargin{1}) && is_array(varargin{2}))
     t=tt_matrix;
     b=varargin{1};
-    if (nargin==2)&&(is_array(varargin{2}))&&(~isempty(varargin{2}))
+    if (nargin>=2)&&(is_array(varargin{2}))&&(~isempty(varargin{2}))
         eps=varargin{2};
     else
         eps=1e-14;
