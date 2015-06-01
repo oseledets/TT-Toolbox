@@ -94,7 +94,7 @@ end
 if (isa(varargin{1}, 'double')) %  || nargin ==2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
     t=tt_matrix;
     b=varargin{1};
-    if (nargin==2)&&(isa(varargin{2},'double'))&&(~isempty(varargin{2}))
+    if (nargin>=2)&&(isa(varargin{2},'double'))&&(~isempty(varargin{2}))
         eps=varargin{2};
     else
         eps=1e-14;
