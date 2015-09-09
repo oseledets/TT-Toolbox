@@ -7,6 +7,7 @@ function [tt]=round(tt,varargin)
 %   accuracy 
 %   EPS and maximal rank RMAX. RMAX can be array of ranks or a number
 %
+% Please see @qtt_tucker/round2 for a more accurate version of the algorithm
 %
 % TT-Toolbox 2.2, 2009-2012
 %
@@ -60,7 +61,10 @@ for i=d:-1:1
    cr=permute(cr,[2,1,3]); cr=reshape(cr,n(i),rtt(i)*rtt(i+1));
    [u,s,v]=svd(cr,'econ');
    s=diag(s);
-   r=my_chop2(s,norm(s)*eps/sqrt(tolcorr));
+   r=my_chop2(s,norm(s)*eps/sqrt(tolcorr));   
+   if (~isempty(rmax))
+       r = min(r,rmax);
+   end;
    u=u(:,1:r); s=s(1:r); v=v(:,1:r);
    tuck{i}=tuck{i}*(u*diag(s)); 
    if (isempty(rmax))
