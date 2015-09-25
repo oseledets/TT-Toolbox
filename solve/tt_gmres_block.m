@@ -223,6 +223,10 @@ for it=1:max_iters
     if (resid<tol_exit); break; end;
 end;
 
+if (verb>0)
+    fprintf('==tt-gmres== iter=%d, resid=%3.3e, time=%g\n', it, resid, toc(t_gmres_start));
+end;
+
 if (nargout>1)
     td{1}=td{1}(:, 1:it);
     td{2}=td{2}(:, 1:it);
