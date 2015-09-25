@@ -26,9 +26,9 @@ function [c] = mtimes(a,b,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-if (isa(a,'tt_matrix') && isa(b,'double') && numel(b) == 1 || (isa(b,'tt_matrix') && isa(a,'double') && numel(a) == 1) )
+if (isa(a,'tt_matrix') && is_array(b) && numel(b) == 1 || (isa(b,'tt_matrix') && is_array(a) && numel(a) == 1) )
    c=tt_matrix;
-    if (  isa(b,'double') )
+    if (is_array(b))
       c.n=a.n; c.m=a.m; c.tt=(a.tt)*b;
    else
       c.n=b.n; c.m=b.m; c.tt=a*(b.tt);
@@ -66,7 +66,7 @@ elseif ( isa(a,'tt_matrix') && isa(b,'tt_tensor') && nargin == 2)
 elseif ( isa(a,'tt_tensor') && isa(b,'tt_matrix') && nargin == 2)
     c = mtimes(b.', a);
 %         fprintf('vector-by-matrix not implemented yet \n');
-elseif ( isa(a,'tt_matrix') && isa(b,'double') && nargin == 2 )
+elseif ( isa(a,'tt_matrix') && is_array(b) && nargin == 2 )
     %TT-matrix by full vector product
     n=a.n; m=a.m; tt=a.tt; cra=tt.core; d=tt.d; ps=tt.ps; r=tt.r;
     rb=size(b,2);

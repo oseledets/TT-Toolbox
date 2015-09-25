@@ -2,7 +2,7 @@ function t = tt_tensor(varargin)
 %TT-tensor constructor
 %   T=TT_TENSOR(ARRAY) Converts from a full array with accuracy 1e-14
 %   T=TT_TENSOR(ARRAY,EPS) Converts from a full array with accuracy EPS
-%   T=TT_TENSOR(ARRAY,EPS,SZ,R1,R2) Converts from a full array which is 
+%   T=TT_TENSOR(ARRAY,EPS,SZ,R1,R2) Converts from a full array which is
 %   treated as an array with mode sizes SZ and tail ranks R1 and R2. The
 %   accuracy is set to EPS
 %
@@ -172,17 +172,17 @@ if ( nargin == 1 && isa(varargin{1}, 'qtt_tucker') )
 end
 
 %From full format
-if isa(varargin{1},'double')
+if is_array(varargin{1})
     t=tt_tensor;
     b=varargin{1};
-    if ( nargin >= 2 && isa(varargin{2},'double') && (~isempty(varargin{2})))
+    if ( nargin >= 2 && is_array(varargin{2}) && (~isempty(varargin{2})))
         eps=varargin{2};
     else
         eps=1e-14;
     end
     
     % check for a custom n
-    if ( nargin >= 3 && isa(varargin{3},'double') && (~isempty(varargin{3})))
+    if ( nargin >= 3 && is_array(varargin{3}) && (~isempty(varargin{3})))
         n = varargin{3};
     else
         n = size(b);
@@ -191,10 +191,10 @@ if isa(varargin{1},'double')
     d = numel(n);
     r = ones(d+1,1);
     % check for tailing ranks
-    if (nargin >= 4 && isa(varargin{4},'double') && numel(varargin{4})==1)
+    if (nargin >= 4 && is_array(varargin{4}) && numel(varargin{4})==1)
         r(1) = varargin{4};
     end;
-    if (nargin >= 5 && isa(varargin{5},'double') && numel(varargin{5})==1)
+    if (nargin >= 5 && is_array(varargin{5}) && numel(varargin{5})==1)
         r(d+1) = varargin{5};
     end;
     
@@ -213,7 +213,11 @@ if isa(varargin{1},'double')
     end
     
     c=b;
-    core=[];
+    if isa(varargin{1}, 'gpuArray')
+      core=gpuArray([]);
+    else
+      core=[];
+    end
     pos=1;
     ep=eps/sqrt(d-1);
     for i=1:d-1
@@ -222,7 +226,7 @@ if isa(varargin{1},'double')
         s=diag(s); r1=my_chop2(s,ep*norm(s));
         u=u(:,1:r1); s=s(1:r1);
         r(i+1)=r1;
-        core(pos:pos+r(i)*n(i)*r(i+1)-1)=u(:);
+        core(pos:pos+r(i)*n(i)*r(i+1)-1, 1)=u(:);
         v=v(:,1:r1);
         v=v*diag(s); c=v';
         pos=pos+r(i)*n(i)*r(i+1);

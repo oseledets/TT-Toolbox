@@ -12,10 +12,10 @@ function [c] = mtimes(a,b)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-if isa(a,'double') && isa(b,'qtt_tucker')
+if is_array(a) && isa(b,'qtt_tucker')
     c=b;
     c.core=a*b.core;
-elseif isa(a,'qtt_tucker') && isa(b,'double') 
+elseif isa(a,'qtt_tucker') && is_array(b) 
     c=a;
     c.core=a.core*b;
 elseif (isa(a,'qtt_tucker'))&&(isa(b, 'qtt_tucker'))
