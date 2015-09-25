@@ -214,9 +214,9 @@ if is_array(varargin{1})
     
     c=b;
     if isa(varargin{1}, 'gpuArray')
-      core=[];
-    else
       core=gpuArray([]);
+    else
+      core=[];
     end
     pos=1;
     ep=eps/sqrt(d-1);
