@@ -1,4 +1,4 @@
-function [p] = dot(tt1,tt2,do_qr)
+function [p] = dot(tt1,tt2,chunk_start,chunk_end,do_qr)
 %Dot  product of two TT tensors
 %   [PR]=DOT(TT1,TT2) -- dot product of two TT-tensors
 %
@@ -9,6 +9,10 @@ function [p] = dot(tt1,tt2,do_qr)
 % In general, returns a 4D tensor of sizes 
 % r0(tt1), r0(tt2), rd(tt1), rd(tt2)
 % If r0(tt1) = r0(tt2) = 1 it returns a matrix of size rd(tt1) x rd(tt2)
+%
+%   [PR]=DOT(TT1,TT2,CHUNK_START,CHUNK_END[,DO_QR]) If TT2.d>TT1.d, returns a
+%   tt_tensor obtained from TT2 by projecting its chunk from CHUNK_START to
+%   CHUNK_END onto TT1. Convenient for extracting slices.
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -22,8 +26,38 @@ function [p] = dot(tt1,tt2,do_qr)
 %---------------------------
 
 
-if (nargin<3)||(isempty(do_qr))
+if (nargin<3)
     do_qr = false;
+end;
+if (nargin==3)
+    do_qr = chunk_start;
+end;
+if (nargin>3) % dot is only applied to a chunk of tt2
+    if (nargin<5)
+        do_qr = false;
+    end;
+    if (tt2.d>tt1.d)
+        % chunk_start and chunk_end refer to tt1
+        tt2_chunk1 = chunk(tt2, chunk_start, chunk_end);
+        D = dot(tt1, tt2_chunk1, do_qr);
+        D = reshape(D, tt2.r(chunk_start), tt2.r(chunk_end+1));
+        p = [];
+        if (chunk_start>1)
+            tt2_chunk1 = chunk(tt2, 1, chunk_start-1);
+            p = tt2_chunk1*D;            
+        end;
+        if (chunk_end<tt2.d)
+            tt2_chunk2 = chunk(tt2, chunk_end+1, tt2.d);
+            if (isempty(p))
+                p = D*tt2_chunk2;
+            else
+                p = tkron(p, tt2_chunk2);
+            end;
+        end;
+    else
+        error('chunky dot is defined only if tt2.d>tt1.d');
+    end;
+    return;
 end;
 
 if (do_qr)
