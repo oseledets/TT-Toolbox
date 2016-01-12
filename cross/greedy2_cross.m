@@ -1,4 +1,4 @@
-function [y,Jyl,Jyr,ilocl,ilocr]=greedy2_cross(n, fun, tol, varargin)
+function [y,Jyl,Jyr,ilocl,ilocr,evalcnt]=greedy2_cross(n, fun, tol, varargin)
 % Two-site greedy cross interpolation scheme.
 %   [y,Jyl,Jyr,ilocl,ilocr]=greedy2_cross(n, fun, tol, varargin)
 % Tries to interpolate the tensor with mode sizes n specified by the
@@ -84,6 +84,8 @@ while (i<length(vars))
             auxfun = vars{i+1};             
         case 'locsearch'
             locsearch = vars{i+1};               
+        case 'xtru'
+            xtru = vars{i+1};               
         otherwise
             warning('Option %s was not recognized', vars{i});
     end;
@@ -426,16 +428,23 @@ while (swp<=nswp)
     % Check the convergence, restart
     if ((i==d)||(i==0))
         if (verb>0)
+          if (exist('xtru'))
+ytest=formtensor(y,mid_inv,d,ry,n);
+            fprintf('=greedy_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d, err_tru=%3.3e\n', swp, max_dx, max(ry), evalcnt, norm(ytest-xtru)/norm(xtru));
+          else
             fprintf('=greedy_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d\n', swp, max_dx, max(ry), evalcnt);
+          end;        
         end;
         
-        if (dir>0)&&(last_sweep)
-            break;
-        end;
+       % if (dir>0)&&(last_sweep)
+       %     break;
+       % end;
         
         if (max_dx<tol_exit)
-            last_sweep = true;
+		break;
+            %last_sweep = true;
         end;
+
         
         max_dx = 0;
         i=1;
@@ -443,6 +452,12 @@ while (swp<=nswp)
     end;
 end;
 
+
+y=formtensor(y,mid_inv,d,ry,n);
+end
+
+
+function [y]=formtensor(y,mid_inv,d,ry,n)
 % Merge mid_inv: y:=inv(L)*y*inv(U)
 for i=1:d
     y{i} = reshape(y{i}, ry(i), n(i)*ry(i+1));
@@ -453,7 +468,6 @@ for i=1:d
 end;
 y = cell2core(tt_tensor,y);
 end
-
 
 function [y]=autovecfun(fun, J, vec)
 if (vec)
