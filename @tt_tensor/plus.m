@@ -85,10 +85,10 @@ for i=1:d
 end
 a.core=cr;
 
-% estimate the over-rank and compress if necessary
-a.over=erank(a)-max(max(erank(b)-b.over, erank(c)-c.over),0);
-if (erank(a) > 16*(erank(a)-a.over) )
- a=round(a,1.e-14);
-end
+% % estimate the over-rank and compress if necessary
+% a.over=erank(a)-max(max(erank(b)-b.over, erank(c)-c.over),0);
+% if (erank(a) > 16*(erank(a)-a.over) )
+%  a=round(a,1.e-14);
+% end
 return
 end
