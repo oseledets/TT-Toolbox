@@ -1,4 +1,4 @@
-function [y]=amen_cross(inp, fun, tol, varargin)
+function [y,Y]=amen_cross(inp, fun, tol, varargin)
 % Block cross with error-based enrichment.
 % function [y]=amen_cross(inp, fun, tol, varargin)
 % Tries to interpolate the function(s) via the error-enriched maxvol-cross.
@@ -31,8 +31,11 @@ function [y]=amen_cross(inp, fun, tol, varargin)
 %       o tol_exit - stopping difference between consecutive iterations [tol]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o vec - whether index-fun can accept and return vectorized values [false]
+%       o exitdir - if 1, return after the forward sweep, if -1, return the
+%                   backward sweep [1]
 %       o auxinp - secondary input data
 %       o auxfun - secondary input function
+%       o max_err_jumps - stop when error increased max_err_jumps times.
 %
 %********
 %   References for the alternating optimization with enrichment (AMEn):
@@ -70,6 +73,8 @@ kickrank = 2;
 tol_exit = tol;
 verb = 1;
 vec = false;
+exitdir=1;
+max_err_jumps = 2;
 
 auxinp = [];
 auxfun = [];
@@ -97,6 +102,10 @@ while (i<length(vars))
             auxinp = vars{i+1}; 
         case 'auxfun'
             auxfun = vars{i+1};             
+        case 'exitdir'
+            exitdir=vars{i+1};
+        case 'max_err_jumps'
+            max_err_jumps=vars{i+1};            
         otherwise
             warning('Option %s was not recognized', vars{i});
     end;
@@ -269,11 +278,18 @@ for i=d:-1:2
     end;
 end;
 
+
+if (verb>2)
+    Y = cell(d,nswp);
+end;
+
 last_sweep = false;
 ievalcnt = 0;
 fevalcnt = 0;
 b = []; % A block size will be stored here
 max_dx = 0;
+max_dx_prev = inf;
+err_raise_cnt = 0;
 swp = 1;
 dir = 1;
 i = 1;
@@ -745,16 +761,47 @@ while (swp<=nswp)
             fprintf('=amen_cross= swp=%d, max_dx=%3.3e, max_rank=%d, #ifun_evals=%d, #ffun_evals=%d\n', swp, max_dx, max(ry), ievalcnt, fevalcnt);
         end;
         
-        if (dir>0)&&(last_sweep)
+        if (verb>2)
+            % Log intermediate solutions
+            % Distribute norms equally...
+            Y(:,swp) = y;
+            nrm1 = exp(sum(log(nrms))/d);
+            % ... and plug them into x
+            for j=1:d
+                Y{j,swp} = Y{j,swp}*nrm1;
+            end;
+            if (dir>0)
+                Y{d,swp} = reshape(Y{d,swp}, ry(d), n(d), b);
+            else
+                Y{1,swp} = reshape(Y{1,swp}, n(2)*ry(2), b);
+                Y{1,swp} = Y{1,swp}.';
+                Y{1,swp} = reshape(Y{1,swp}, b, n(2), ry(2));
+            end;
+            Y{1,swp} = cell2core(tt_tensor,Y(:,swp));
+            Y{2,swp} = ievalcnt;
+        end;
+        
+        if (dir==exitdir)&&(last_sweep)
             break;
         end;
         
-        if (dir<0)
-            if (max_dx<tol_exit)
-                last_sweep = true;
+        if (max_dx>max_dx_prev)
+            err_raise_cnt = err_raise_cnt+1;
+        end;
+
+        if (max_dx<tol_exit)||(swp==nswp-1)||(err_raise_cnt>=max_err_jumps)
+            last_sweep = true;
+            % Check if we are going to exit after the wrong sweep.
+            % Increase nswp if necessary
+            if (dir==exitdir)
+                nswp = nswp+1;
+            end;
+            if (err_raise_cnt>=max_err_jumps)
+                fprintf('=amen_cross= Will exit since the error stopped decreasing\n');
             end;
         end;
         
+        max_dx_prev = max_dx;
         max_dx = 0;
         dir = -dir;
         i = i+dir;
@@ -770,8 +817,17 @@ for i=1:d
     y{i} = y{i}*nrms;
 end;
 
-y{d} = reshape(y{d}, ry(d), n(d), b);
+if (exitdir>0)
+    y{d} = reshape(y{d}, ry(d), n(d), b);
+else
+    y{1} = reshape(y{1}, n(1), ry(2), b);
+    y{1} = permute(y{1}, [3,1,2]);
+end;
 y = cell2core(tt_tensor,y);
+
+if (verb>2)
+    Y = Y(1:2,1:min(swp,nswp));
+end;
 end
 
 
