@@ -1,4 +1,4 @@
-TT-Toolbox (TT=Tensor Train) Version 2.2.1
+####TT-Toolbox (TT=Tensor Train) Version 2.2.1
 
 TT(Tensor Train) format is an efficient way for low-parametric
 representation of high-dimensional tensors. The TT-Toolbox
@@ -18,15 +18,15 @@ tensors in TT-format. It includes:
     * Computation of maximal and minimal elements of a tensor
     * and several others
 	
-New in Version 2.2.1
+######New in Version 2.2.1
     * Blockwise assembly of tt_matrices added via 
-	'''Matlab
+	```MATLAB
 	ttM=tt_blockwise({ttA ttB ttC;ttD ttE ttF})
-	'''
+	```
 	* subtensor extraction is now possible via
-	'''Matlab
+	```MATLAB
 	ttv2=ttv(1,2,:,2,2,:,:,:,1) or ttv2=ttv({1,2,':',2,2,':',':',':',1})
-	'''
+	```
 	For additional help see code of @tt_tensor/subsref.m
 
 New in Version 2.2
