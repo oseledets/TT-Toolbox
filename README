@@ -20,9 +20,13 @@ tensors in TT-format. It includes:
 	
 New in Version 2.2.1
     * Blockwise assembly of tt_matrices added via 
+	'''Matlab
 	ttM=tt_blockwise({ttA ttB ttC;ttD ttE ttF})
+	'''
 	* subtensor extraction is now possible via
+	'''Matlab
 	ttv2=ttv(1,2,:,2,2,:,:,:,1) or ttv2=ttv({1,2,':',2,2,':',':',':',1})
+	'''
 	For additional help see code of @tt_tensor/subsref.m
 
 New in Version 2.2
