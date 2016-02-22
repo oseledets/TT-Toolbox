@@ -1,4 +1,5 @@
 *.mod
 *.so
 *.m~
+*.asv
 Makefile.cpu

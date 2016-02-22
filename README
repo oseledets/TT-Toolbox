@@ -17,6 +17,13 @@ tensors in TT-format. It includes:
     * Construction of basic operators and functions (Laplace operator, function of a TT-tensor)
     * Computation of maximal and minimal elements of a tensor
     * and several others
+	
+New in Version 2.2.1
+    * Blockwise assembly of tt_matrices added via 
+	ttM=tt_blockwise({ttA ttB ttC;ttD ttE ttF})
+	* subtensor extraction is now possible via
+	ttv2=ttv(1,2,:,2,2,:,:,:,1) or ttv2=ttv({1,2,':',2,2,':',':',':',1})
+	For additional help see code of @tt_tensor/subsref.m
 
 New in Version 2.2
     * Better documentation

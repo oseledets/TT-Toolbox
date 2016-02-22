@@ -1,10 +1,14 @@
 function y = tt_blockwise(arr)
-%By Alexey Boyko, Skolkovo Institute of Science and Technology,
-%a.boyko@skoltech.ru
-%alexey.boyko@skolkovotech.ru
-%Moscow, Russia, 2015
-%contribution to TT-Toolbox by Oseledets et.al
-%
+%% TT-Toolbox 2.2.1, 2009-2015
+%This is TT Toolbox, written by Ivan Oseledets et al.
+%Institute of Numerical Mathematics, Moscow, Russia
+%webpage: http://spring.inm.ras.ru/osel
+
+%for questions on this particular code email Alexey Boyko, Skolkovo Institute of Science and Technology,
+% a.boyko@skoltech.ru or alexey.boyko@skolkovotech.ru
+%Moscow, Russia, 2016
+
+%%
 %INPUTS
 % arr {2d cell array} of <tt_matrix>  variables
 %OUTPUTS
