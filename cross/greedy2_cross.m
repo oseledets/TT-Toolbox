@@ -101,6 +101,10 @@ if (~isempty(aux))
     aux = core2cell(aux);
     phiauxl = cell(d+1,1); phiauxl{1}=1; phiauxl{d+1}=1;
     phiauxr = cell(d+1,1); phiauxr{1}=1; phiauxr{d+1}=1;
+    for i=2:d
+        phiauxl{i} = ones(1,raux(i));
+        phiauxr{i} = ones(raux(i),1);
+    end;
 end;
 
 % Factorized inverse interpolation matrix -- in the form U^{-1}, L^{-1}
