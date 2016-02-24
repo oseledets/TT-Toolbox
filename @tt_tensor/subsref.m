@@ -76,7 +76,7 @@ switch s(1).type
     end
     
     mn=numel(idxs);
-    if(mn < d && mn > 1)
+    if(mn < d)
         elem=tt_subtensor(tt,idxs,vals);
     else
 
