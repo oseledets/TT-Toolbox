@@ -264,7 +264,7 @@ if (~isempty(auxmat))
                             [n1,n2]=size(auxmat{ki}{i,j});
                             ri = 1; ri2 = 1;
                         else
-                            [ri,n1,n2,ri2]=size(auxmat{ki,kj}{i,j});
+                            [ri,n1,n2,ri2]=size(auxmat{ki}{i,j});
                         end;
                         if (n1~=n(i))
                             error('Mismatching TT dimensionalities in Aux matrix (%d)', ki);
