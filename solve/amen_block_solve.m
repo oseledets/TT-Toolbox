@@ -46,9 +46,9 @@ function [x] = amen_block_solve(A, y, tol, varargin)
 % cell array), then
 % numel(Ai{i,j})==numel(XAX1{i,j})==numel(XAX2{i,j}) is the number of
 % Kronecker summands in A{i,j}.
-% For each k, size(XAX1{i,j}{k})==[rxi1,rxj1,1],
-%             size(Ai{i,j}{k}) == [ni,nj] (since Ai{i,j}{k} is sparse),
-%             size(XAX2{i,j}{k})==[1,rxi2,rxj2].
+% For each k, size(XAX1{i,j}{k})==[rxi1,rxj1,ra1],
+%             size(Ai{i,j}{k}) == [ra1*ni,nj*ra2] (since Ai{i,j}{k} is sparse),
+%             size(XAX2{i,j}{k})==[ra2,rxi2,rxj2].
 %
 % If A{i,j} was given as a tt_matrix, then all numels above are ones, and
 %             size(XAX1{i,j}{1})==[rxi1,rxj1,ra1],
@@ -202,7 +202,13 @@ for kj=1:K
                         if (issparse(A{ki,kj}{i,j}))
                             % Sparse matrix can only have TT ranks 1
                             [n1,n2]=size(A{ki,kj}{i,j});
-                            ri = 1; ri2 = 1;
+                            ri = n1/n(i);
+                            ri2 = n2/n(i);
+                            if (abs(ri-round(ri))>sqrt(eps))||(abs(ri2-round(ri2))>sqrt(eps))
+                                error('A(%d,%d) is sparse, but the sizes are not divisible by n', ki, kj);
+                            end;
+                            n1 = n(i);
+                            n2 = n(i);
                         else
                             [ri,n1,n2,ri2]=size(A{ki,kj}{i,j});
                         end;
@@ -1058,6 +1064,8 @@ end
 function [y]=loc_solve_default(XAX1, Ai, XAX2, XY1,yi,XY2, tol, sol_prev, local_iters, max_full_size)
 % Extract the sizes
 K = size(Ai,1);
+n = size(yi{1}{1},2);
+% Extract the matrix sizes
 ra = cell(K,K);
 for ki=1:K
     for kj=1:K
@@ -1068,18 +1076,16 @@ for ki=1:K
             ra{ki,kj} = ones(2,R);
             for j=1:R
                 if (issparse(Ai{ki,kj}{j}))
-                    ra{ki,kj}(:,j) = 1;
-                    n = size(Ai{ki,kj}{1},1);
+                    ra{ki,kj}(1,j) = size(Ai{ki,kj}{j},1)/n;
+                    ra{ki,kj}(2,j) = size(Ai{ki,kj}{j},2)/n;
                 else
                     ra{ki,kj}(1,j) = size(Ai{ki,kj}{j},1);
                     ra{ki,kj}(2,j) = size(Ai{ki,kj}{j},4);
-                    n = size(Ai{ki,kj}{1},2);
                 end;
             end;
         end;
     end;
 end;
-
 % Assemble the RHS
 sz = r1*n*r2*ones(K,1);
 locpos = cumsum([1; sz]);
@@ -1132,15 +1138,22 @@ for k=1:Ra
 end;
 if (sparseflag)
     B = sparse(rw2*rw1*n, rx2*rx1*m); % reverse order !!!
-    % Currently only canonical sparse matrices are allowed
     for k=1:Ra
-        tmp = reshape(WAX2{k}, rw2, rx2);
-        tmp = sparse(tmp);
-        Bk = reshape(WAX1{k}, rw1, rx1);
-        Bk = sparse(Bk);
-        Bk = kron(Bk, tmp); % mind endiannes
-        Bk = kron(A{k}, Bk); % mind endiannes
-        B = B+Bk;
+        Bk = sparse(rw1*n, rx1*m*ra2(k));
+        Ak = reshape(A{k}, ra1(k), []);
+        for j=1:ra1(k)
+            tmp = WAX1{k}(:,:,j);
+            tmp = sparse(tmp);
+            Bk = Bk + kron(reshape(Ak(j,:), n, m*ra2(k)), tmp);
+        end;
+        Bk = reshape(Bk, rw1*n*rx1*m, ra2(k));
+        for j=1:ra2(k)
+            tmp = reshape(WAX2{k}(j,:,:), rw2, rx2);
+            tmp = sparse(tmp);
+            Ak = Bk(:,j);
+            Ak = reshape(Ak, rw1*n, rx1*m);
+            B = B+kron(Ak, tmp);
+        end;
     end;
 else
     B = zeros(rw1*n*rw2, rx1*m*rx2);
