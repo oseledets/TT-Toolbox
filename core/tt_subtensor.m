@@ -13,8 +13,6 @@ function y1=tt_subtensor(ttv,list_of_idx,list_of_vals)
 G=core2cell(ttv);
 
 Nidx=numel(list_of_idx);
-%this thing freezes 7th harmonic to 1st value (not the 2nd), and calculates
-%subtensor, which is smaller
 
 for k=Nidx:-1:1
     idx = list_of_idx(k);
