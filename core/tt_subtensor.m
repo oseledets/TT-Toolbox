@@ -55,9 +55,6 @@ else
     y1=cell2core(tt_tensor,G);
 end
 
-
- 
-
 end
 
 
