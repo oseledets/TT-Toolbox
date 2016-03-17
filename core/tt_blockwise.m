@@ -31,7 +31,8 @@ function y = tt_blockwise(arr)
         for j=1:m
 %             full(a{i,j})
             if (i~=1)||(j~=1)
-                block=zeros(n,m); block(i,j)=1;
+                block=zeros(n,m); 
+                block(i,j)=1;
                 y=y+tkron(arr{i,j},tt_matrix(block));
             end
         end
