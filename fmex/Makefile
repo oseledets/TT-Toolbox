@@ -4,7 +4,7 @@
 include Makefile.in
 
 
-all: mytt.a fort_mvk4_mex fort_amen_solve_mex uchol solve3d solve3d_2 tt_read tt_write eig3d_primme
+all: mytt.a fort_mvk4_mex fort_amen_solve_mex uchol solve3d solve3d_2 tt_read tt_write eig3d_primme localcross
 
 mytt.a:
 	cd tt-fort; make
@@ -37,6 +37,9 @@ tt_read: tt_read.c
 
 tt_write: tt_write.c
 	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims tt_write.c -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)" LDF="$(LDR)"; exit;'
+
+localcross: localcross_mex.c
+	$(MATLAB) -nodisplay -r 'mex -v -largeArrayDims localcross_mex.c -lmwlapack -lmwblas $(MLLIB2) FC=$(FC) FOPTIMFLAGS="$(FOPT)"  CC=$(CC) COPTIMFLAGS="$(COPT) $(COPTIMFLAGS)" CFLAGS="$(MCFLAGS)" LD="$(LDR)" LDF="$(LDR)"; exit;'
 
 #
 # .f.o:
