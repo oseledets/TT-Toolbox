@@ -20,7 +20,7 @@ function z=mtkron(varargin)
 
     z=varargin{1};
     if numel(z)~=1
-        % in case it a cell array of tt_tensors as a single input
+        % in case it's a cell array of tt_tensors as a single input
         varargin=z;
         z=varargin{1};
     end
