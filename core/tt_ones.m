@@ -23,15 +23,21 @@ if (numel(n) == 1)
     else
         d=1;
     end;
-  n=n*ones(1,d);
+    if d>0
+    n=n*ones(1,d);
+    end
 else
-  d=numel(n);
+    d=numel(n);
 end
 
+if d>0
  tt=cell(d,1);
  for k=1:d
     tt{k} = ones(n(k),1); %sqrt(n);
  end
  tt=tt_tensor(tt); %Bydlocode @
+else
+ tt=tt_tensor(1);
+end
 return
 end
