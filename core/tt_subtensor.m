@@ -17,9 +17,11 @@ Nidx=numel(list_of_idx);
 for k=Nidx:-1:1
     idx = list_of_idx(k);
     val = list_of_vals(k);
-    BackConvolve = (idx>1); 
-    G{idx}=G{idx}(:,val,:);
     
+    
+    G{idx}=G{idx}(:,val,:);
+    if numel(G)>1
+        BackConvolve = (idx>1); 
 %     if numel(G{idx})~=1
         if BackConvolve
             %here is the scenario fo convolve with previous index   
@@ -45,8 +47,7 @@ for k=Nidx:-1:1
             %we keep all core numbers except for the frozen one (idx)
             G{idx}=reshape(G{idx},[size(G{idx},1),sz(2),sz(3)]);
         end
-% end
-        
+    end   
 end
 
 if numel(G) ==1 && numel(G{:})==1
