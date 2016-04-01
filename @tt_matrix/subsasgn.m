@@ -12,7 +12,18 @@ function t = subsasgn(t,s,b)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
+
 switch s(1).type
+    case '()'
+        if size(s(1).subs)==[1 2] 
+            if numel(s(1).subs{1})==1 && numel(s(1).subs{2})==1
+                list_of_idx=1:numel(t.m);
+                list_of_vals(1,:)=indexify(s(1).subs{1},t.n.');
+                list_of_vals(2,:)=indexify(s(1).subs{2},t.m.');
+            end
+        end
+        elem=tt_submatrix(t,list_of_idx,list_of_vals);
+        t=t+(b-elem)*tt_onlyone([s(1).subs{1} s(1).subs{2}],t);
     case '.'
         switch s(1).subs
             case 'n'

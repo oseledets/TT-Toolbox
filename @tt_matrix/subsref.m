@@ -12,7 +12,8 @@ function elem = subsref(tt,s)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-switch s(1).type
+
+switch s(1).type    
     case '()'
         if size(s(1).subs)==[1 2] 
             if numel(s(1).subs{1})==1 && numel(s(1).subs{2})==1
