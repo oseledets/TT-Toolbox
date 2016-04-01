@@ -1,6 +1,6 @@
 function elem = subsref(tt,s)
 % Evaluate cores of TT-matrix and fields of the TT-matrix structure
-%   A=TT{I} computes the I-th core of the TT-representation
+% A=TT{I} computes the I-th core of the TT-representation
 %   
 %
 % TT-Toolbox 2.2.2, 2009-2016
@@ -8,9 +8,10 @@ function elem = subsref(tt,s)
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
-%
-%For all questions, bugs and suggestions please mail
-%ivan.oseledets@gmail.com
+%latest tweaks by Alexey Boyko,
+%Skolkovo Institute of Science and Technology,
+%a.boyko@skoltech.ru or alexey.boyko@skolkovotech.ru
+%Moscow, Russia, 2016
 %---------------------------
 
 switch s(1).type    

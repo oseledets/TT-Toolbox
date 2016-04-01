@@ -1,15 +1,18 @@
 function y1=tt_subtensor(ttv,list_of_idx,list_of_vals)
-%% TT-Toolbox 2.2.1, 2009-2016
+%This function freezes some (or all) cores to some particular values
+% from appropriate values from 1-by-numel(list_of_idx) variable list_of_vals
+% list_of_idx should be in strict ascending order!
+% list of vals is 2-by-d array containing values in range from 1 to coresize{i}
+%
+% TT-Toolbox 2.2.2, 2009-2016
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
-
 %for questions on this particular code email Alexey Boyko, Skolkovo Institute of Science and Technology,
 % a.boyko@skoltech.ru or alexey.boyko@skolkovotech.ru
 %Moscow, Russia, 2016
-%%
-% list_of_idx should be in strict ascending order!
-% list of vals must contain 1 or 2 as values
+
+
 G=core2cell(ttv);
 % keyboard
 Nidx=numel(list_of_idx);
