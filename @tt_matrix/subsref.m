@@ -3,7 +3,7 @@ function elem = subsref(tt,s)
 %   A=TT{I} computes the I-th core of the TT-representation
 %   
 %
-% TT-Toolbox 2.2, 2009-2012
+% TT-Toolbox 2.2.2, 2009-2016
 %
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
@@ -12,10 +12,24 @@ function elem = subsref(tt,s)
 %For all questions, bugs and suggestions please mail
 %ivan.oseledets@gmail.com
 %---------------------------
-
 switch s(1).type
     case '()'
-        error('Elementwise computation is not yet supported');
+        if size(s(1).subs)==[1 2] 
+            if numel(s(1).subs{1})==1 && numel(s(1).subs{2})==1
+                list_of_idx=1:numel(tt.m);
+                list_of_vals(1,:)=indexify(s(1).subs{1},tt.n.');
+                list_of_vals(2,:)=indexify(s(1).subs{2},tt.m.');
+            elseif size( s(1).subs{2},1 )==2 && size( s(1).subs{1},2 )==size( s(1).subs{2},2 )
+                if size( s(1).subs{1},1 )==1
+                    list_of_idx=s(1).subs{1};
+                    list_of_vals=s(1).subs{2};
+                elseif size( s(1).subs{1},1 )==2
+                    error('Assymetric submatrix extraction is not yet supported');
+                end
+            end
+        end
+        elem=tt_submatrix(tt,list_of_idx,list_of_vals);
+%         %ind=double(s);
     case '.'
         switch s(1).subs               
             case 'n'
