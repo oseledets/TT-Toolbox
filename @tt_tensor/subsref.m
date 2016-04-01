@@ -39,7 +39,6 @@ function [elem] = subsref(tt,s)
 
 %---------------------------
 
-
 switch s(1).type    
     case '()'
     %Evaluate element of a tensor in position s
