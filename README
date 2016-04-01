@@ -20,7 +20,7 @@ tensors in TT-format. It includes:
 	
 New in Version 2.2.2
     * one-element MATLAB-style subsref and subsassgn now possible for tt_matrix:
-	current_value=ttm(123,4567) and ttm(123,4567)=newvalue
+	current_value=ttm(123,4567) and ttm(123,4567)=new_value
     * submatrix extraction is now possible: 
 	ttm2=ttm([1 2 7],[1 2 1;1 1 2]) 
 	For additional help see code of @tt_matrix/subsref.m and core/tt_submatrix.m
