@@ -3,16 +3,27 @@ function t = subsasgn(t,s,b)
 %   T{I} = B Set i-th core to be equal to B
 %
 %
-% TT-Toolbox 2.2, 2009-2012
-%
+%TT-Toolbox 2.2.2, 2009-2016
 %This is TT Toolbox, written by Ivan Oseledets et al.
 %Institute of Numerical Mathematics, Moscow, Russia
 %webpage: http://spring.inm.ras.ru/osel
-%
-%For all questions, bugs and suggestions please mail
-%ivan.oseledets@gmail.com
+%latest tweaks by Alexey Boyko,
+%Skolkovo Institute of Science and Technology,
+%a.boyko@skoltech.ru or alexey.boyko@skolkovotech.ru
+%Moscow, Russia, 2016
 %---------------------------
+
 switch s(1).type
+    case '()'
+        if size(s(1).subs)==[1 2] 
+            if numel(s(1).subs{1})==1 && numel(s(1).subs{2})==1
+                list_of_idx=1:numel(t.m);
+                list_of_vals(1,:)=indexify(s(1).subs{1},t.n.');
+                list_of_vals(2,:)=indexify(s(1).subs{2},t.m.');
+            end
+        end
+        elem=tt_submatrix(t,list_of_idx,list_of_vals);
+        t=t+(b-elem)*tt_onlyone([s(1).subs{1} s(1).subs{2}],t);
     case '.'
         switch s(1).subs
             case 'n'
