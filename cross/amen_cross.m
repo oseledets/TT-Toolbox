@@ -1,4 +1,4 @@
-function [y]=amen_cross(inp, fun, tol, varargin)
+function [y,Y]=amen_cross(inp, fun, tol, varargin)
 % Block cross with error-based enrichment.
 % function [y]=amen_cross(inp, fun, tol, varargin)
 % Tries to interpolate the function(s) via the error-enriched maxvol-cross.
@@ -31,8 +31,13 @@ function [y]=amen_cross(inp, fun, tol, varargin)
 %       o tol_exit - stopping difference between consecutive iterations [tol]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o vec - whether index-fun can accept and return vectorized values [false]
+%       o exitdir - if 1, return after the forward sweep, if -1, return the
+%                   backward sweep, if 0, after any [1]
 %       o auxinp - secondary input data
 %       o auxfun - secondary input function
+%       o max_err_jumps - stop when error increased max_err_jumps times.
+%       o trunc_method - truncate ranks using TT-SVD (svd) or (cross) over
+%                        rn x r local samples. The latter seems more robust
 %
 %********
 %   References for the alternating optimization with enrichment (AMEn):
@@ -70,6 +75,10 @@ kickrank = 2;
 tol_exit = tol;
 verb = 1;
 vec = false;
+exitdir=1;
+max_err_jumps = 2;
+trunc_method = 'cross';
+% trunc_method = 'svd';
 
 auxinp = [];
 auxfun = [];
@@ -97,6 +106,12 @@ while (i<length(vars))
             auxinp = vars{i+1}; 
         case 'auxfun'
             auxfun = vars{i+1};             
+        case 'exitdir'
+            exitdir=vars{i+1};
+        case 'max_err_jumps'
+            max_err_jumps=vars{i+1};
+        case 'trunc_method'
+            trunc_method=vars{i+1};
         otherwise
             warning('Option %s was not recognized', vars{i});
     end;
@@ -169,22 +184,25 @@ ry = y.r;
 y = core2cell(y);
 
 if (zrank>0)
-    z = tt_rand(n,d,zrank,-1);
-    rz = z.r;
-    z = core2cell(z);
+    rz = [1; zrank*ones(d-1,1); 1];
+%     z = tt_rand(n,d,zrank,-1);
+%     rz = z.r;
+%     z = core2cell(z);
     % Interp matrices for z and y->z    
-    phizz = cell(d+1,1);
-    phizz{1} = 1;
-    phizz{d+1} = 1;
+%     phizz = cell(d+1,1);
+%     phizz{1} = 1;
+%     phizz{d+1} = 1;
     phizy = cell(d+1,1);
     phizy{1} = 1;
     phizy{d+1} = 1;
 end;
 
 % Interp matrices for y
-phiyy = cell(d+1,1);
-phiyy{1} = 1;
-phiyy{d+1}=1;
+if (strcmp(trunc_method, 'svd'))
+    phiyy = cell(d+1,1);
+    phiyy{1} = 1;
+    phiyy{d+1}=1;
+end;
 
 if (~isempty(ifun))
     % Some place to store global indices
@@ -199,20 +217,31 @@ nrms = ones(d,1);
 for i=d:-1:2
     cry = reshape(y{i}, ry(i), n(i)*ry(i+1));
     [cry,rv]=qr(cry.', 0);
+    rv = rv.';
+    cry = cry.';
+    if (~strcmp(trunc_method, 'svd'))
+        ind = maxvol2(cry.');
+        yy = cry(:,ind);
+        cry = yy\cry;
+        rv = rv*yy;
+        nrms(i) = 1;
+    end;
     cr2 = reshape(y{i-1}, ry(i-1)*n(i-1), ry(i));
-    cr2 = cr2*rv.';
-    ry(i) = size(cry,2);
-    y{i} = reshape(cry.', ry(i), n(i), ry(i+1));
-    y{i-1} = reshape(cr2, ry(i-1), n(i-1), ry(i));
+    cr2 = cr2*rv;
+    ry(i) = size(cry,1);
+    y{i} = reshape(cry, ry(i), n(i), ry(i+1));
+    y{i-1} = reshape(cr2, ry(i-1), n(i-1), ry(i));   
     
-    cry = reshape(y{i}, ry(i)*n(i), ry(i+1));
-    cry = cry*phiyy{i+1};
-    cry = reshape(cry, ry(i), n(i)*ry(i+1));
-    ind = maxvol2(cry.');
-    phiyy{i} = cry(:,ind);
-    % Extract the scale
-    nrms(i) = 1./min(svd(phiyy{i}));
-    phiyy{i} = phiyy{i}.*nrms(i);    
+    if (strcmp(trunc_method, 'svd'))
+        cry = reshape(y{i}, ry(i)*n(i), ry(i+1));
+        cry = cry*phiyy{i+1};
+        cry = reshape(cry, ry(i), n(i)*ry(i+1));
+        ind = maxvol2(cry.');
+        phiyy{i} = cry(:,ind);
+        % Extract the scale
+        nrms(i) = 1./min(svd(phiyy{i}));
+        phiyy{i} = phiyy{i}.*nrms(i);
+    end;
     if (~isempty(ifun))
         % Index function is present
         Jy{i} = indexmerge((1:n(i))', Jy{i+1});
@@ -231,21 +260,23 @@ for i=d:-1:2
     
     if (zrank>0)
         % The same for residual
-        crz = reshape(z{i}, rz(i), n(i)*rz(i+1));
-        [crz,rv]=qr(crz.', 0);
-        cr2 = reshape(z{i-1}, rz(i-1)*n(i-1), rz(i));
-        cr2 = cr2*rv.';
+        crz = randn(n(i)*rz(i+1), rz(i));
+%         crz = reshape(z{i}, rz(i), n(i)*rz(i+1));
+        [crz,~]=qr(crz, 0);
+        ind = maxvol2(crz);        
+%         cr2 = reshape(z{i-1}, rz(i-1)*n(i-1), rz(i));
+%         cr2 = cr2*rv.'*crz(ind,:).';
         rz(i) = size(crz,2);
-        z{i} = reshape(crz.', rz(i), n(i), rz(i+1));
-        z{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
+%         z{i} = reshape(crz.', rz(i), n(i), rz(i+1));
+%         z{i-1} = reshape(cr2, rz(i-1), n(i-1), rz(i));
         
-        crz = reshape(z{i}, rz(i)*n(i), rz(i+1));
-        crz = crz*phizz{i+1};
-        crz = reshape(crz, rz(i), n(i)*rz(i+1));
-        ind = maxvol2(crz.');
-        phizz{i} = crz(:,ind);
-        nrmz = 1./min(svd(phizz{i}));
-        phizz{i} = phizz{i}.*nrmz;
+%         crz = reshape(z{i}, rz(i)*n(i), rz(i+1));
+%         crz = crz*phizz{i+1};
+%         crz = reshape(crz, rz(i), n(i)*rz(i+1));
+%         ind = maxvol2(crz.');
+%         phizz{i} = crz(:,ind);
+%         nrmz = 1./min(svd(phizz{i}));
+%         phizz{i} = phizz{i}.*nrmz;
         if (~isempty(ifun))
             Jz{i} = indexmerge((1:n(i))', Jz{i+1});
             Jz{i} = Jz{i}(ind,:);
@@ -269,11 +300,18 @@ for i=d:-1:2
     end;
 end;
 
+
+if (verb>2)
+    Y = cell(d,nswp);
+end;
+
 last_sweep = false;
 ievalcnt = 0;
 fevalcnt = 0;
 b = []; % A block size will be stored here
 max_dx = 0;
+max_dx_prev = inf;
+err_raise_cnt = 0;
 swp = 1;
 dir = 1;
 i = 1;
@@ -331,33 +369,88 @@ while (swp<=nswp)
         error('The initial solution is exactly zero. Try a better initial guess\n');
     end;
     
-    % Apply interpolation matrices
-    cry = reshape(cry, ry(i), n(i)*ry(i+1)*b);
-    cry = phiyy{i} \ cry;
-    cry = reshape(cry, ry(i)*n(i)*ry(i+1), b);
-    cry = cry.';
-    cry = reshape(cry, b*ry(i)*n(i), ry(i+1));
-    cry = cry/phiyy{i+1};
-    cry = reshape(cry, b, ry(i)*n(i)*ry(i+1));
-    cry = cry.';       
-    
-    nrms(i) = norm(cry, 'fro');
-    cry = cry./nrms(i);
+    if (strcmp(trunc_method, 'svd'))
+        % Apply interpolation matrices
+        cry = reshape(cry, ry(i), n(i)*ry(i+1)*b);
+        cry = phiyy{i} \ cry;
+        cry = reshape(cry, ry(i)*n(i)*ry(i+1), b);
+        cry = cry.';
+        cry = reshape(cry, b*ry(i)*n(i), ry(i+1));
+        cry = cry/phiyy{i+1};
+        cry = reshape(cry, b, ry(i)*n(i)*ry(i+1));
+        cry = cry.';
+        
+        nrms(i) = norm(cry, 'fro');
+        cry = cry./nrms(i);
+    else
+        nrms(i) = 1; % we don't need this in index representation
+    end;
     
     y_prev = reshape(y{i}, ry(i)*n(i)*ry(i+1), b);
-    y_prev = y_prev./norm(y_prev, 'fro');
-    dx = norm(cry-y_prev, 'fro');
+%     if (strcmp(trunc_method, 'svd'))
+%         y_prev = reshape(y_prev, ry(i)*n(i)*ry(i+1), b);
+%     else
+%         y_prev = reshape(y_prev, ry(i), n(i)*ry(i+1)*b);
+%         y_prev = phiyy{i}*y_prev; %
+%         y_prev = reshape(y_prev, ry(i)*n(i)*ry(i+1), b);
+%         y_prev = y_prev.';
+%         y_prev = reshape(y_prev, b*ry(i)*n(i), ry(i+1));
+%         y_prev = y_prev*phiyy{i+1};
+%         y_prev = reshape(y_prev, b, ry(i)*n(i)*ry(i+1));
+%         y_prev = y_prev.';
+%         y_prev = y_prev./norm(y_prev, 'fro');
+%     end;
+    
+    dx = norm(cry-y_prev, 'fro'); % /norm(cry,'fro');
     max_dx = max(max_dx,dx);
     
     % Truncation, etc
     if (dir>0)&&(i<d)
         cry = reshape(cry, ry(i)*n(i), ry(i+1)*b);
-        [u,s,v]=svd(cry, 'econ');
-        s = diag(s);
-        r = my_chop2(s, norm(s)*tol/sqrt(d));
-        u = u(:,1:r);
-        v = diag(s(1:r))*v(:,1:r)';       
-        
+        if (strcmp(trunc_method, 'svd'))
+            [u,s,v]=svd(cry, 'econ');
+            s = diag(s);
+            r = my_chop2(s, norm(s)*tol/sqrt(d));
+            u = u(:,1:r);
+            v = diag(s(1:r))*v(:,1:r)';
+        else
+            % Full-pivot cross should be more accurate
+            [u,v]=localcross(cry, tol/sqrt(d));
+%             minsz = min(ry(i)*n(i), ry(i+1)*b);
+%             u = zeros(ry(i)*n(i), minsz);
+%             v = zeros(minsz, ry(i+1)*b);
+%             res = cry;
+%             val_max = 0;
+%             for r=1:minsz
+%                 res = reshape(res, [], 1);
+%                 [val,piv]=max(abs(res));
+%                 val_max = max(val_max, abs(cry(piv)));
+%                 piv = tt_ind2sub([ry(i)*n(i), ry(i+1)*b], piv);
+%                 if (val<tol*val_max/sqrt(d))
+%                     break;
+%                 end;
+%                 res = reshape(res, ry(i)*n(i), ry(i+1)*b);
+%                 u(:,r) = res(:, piv(2));
+%                 v(r,:) = res(piv(1), :)/res(piv(1),piv(2));
+%                 res = res - u(:,r)*v(r,:);
+%             end;
+%             u = u(:, 1:r);
+%             u = reshape(u, ry(i), n(i)*r); % u
+% %             u = phiyy{i}\u;
+%             u = reshape(u, ry(i)*n(i), r);
+%             v = v(1:r, :);
+%             v = reshape(v, r*ry(i+1), b);
+%             v = v.';
+%             v = reshape(v, b*r, ry(i+1));
+% %             v = v/phiyy{i+1};
+%             v = reshape(v, b, r*ry(i+1));
+%             v = v.';
+%             v = reshape(v, r, ry(i+1)*b);
+%             % qr u, in case we don't have enrichment
+%             [u,rv]=qr(u,0);
+%             v = rv*v;
+        end;
+
         if (zrank>0)&&(~last_sweep)
             % Project onto Ez
             crys = u*v;
@@ -405,21 +498,23 @@ while (swp<=nswp)
                 end;
             end;
             crz = crz/nrms(i) - cryz;
+%             fprintf('\tswp=%d,i=%d,|y|=%3.3e,|z|=%3.3e,',swp,i,norm(cryz,'fro'),norm(crz,'fro'));
             % Apply interpolation matrices
             crz = reshape(crz, rz(i), n(i)*rz(i+1)*b);
-            crz = phizz{i} \ crz;
+%             crz = phizz{i} \ crz;
             crz = reshape(crz, rz(i)*n(i)*rz(i+1), b);
             crz = crz.';
             crz = reshape(crz, b*rz(i)*n(i), rz(i+1));
-            crz = crz/phizz{i+1};
+%             crz = crz/phizz{i+1};
             crz = reshape(crz, b, rz(i)*n(i)*rz(i+1));
             crz = crz.';
             crz = reshape(crz, rz(i)*n(i), rz(i+1)*b);
-            [crz,sz,vz]=svd(crz, 'econ');
+            [crz,~]=localcross(crz,0);
+%             [crz,~,~]=svd(crz, 'econ');
             crz = crz(:,1:min(size(crz,2),zrank));
             if (zrank2>0)
-                crz = [crz, randn(rz(i)*n(i), zrank2)];
-                [crz,sz]=qr(crz,0);
+                crs = [crz, randn(rz(i)*n(i), zrank2)];
+                [crz,~]=qr(crs,0);
             end;
             
             % Compute S
@@ -458,23 +553,35 @@ while (swp<=nswp)
             % Apply interpolation matrices - here crys is already in the
             % core variables from the left
             crs = reshape(crs, ry(i), n(i)*rz(i+1)*b);
-            crs = phiyy{i} \ crs;
+%             crs = phiyy{i}\crs;
             crs = reshape(crs, ry(i)*n(i)*rz(i+1), b);
             
             crs = crs/nrms(i) - crys;
+%             fprintf('|s|=%3.3e\n',norm(crs,'fro'));
             
             crs = crs.';
             crs = reshape(crs, b*ry(i)*n(i), rz(i+1));
-            crs = crs/phizz{i+1};
+%             crs = crs/phizz{i+1};
             crs = reshape(crs, b, ry(i)*n(i)*rz(i+1));
             crs = crs.';
             crs = reshape(crs, ry(i)*n(i), rz(i+1)*b);
-            [crs,sz,vz]=svd(crs, 'econ');
+            [crs,~]=localcross(crs,0);
+%             [crs,~,~]=svd(crs, 'econ');
             crs = crs(:,1:min(size(crs,2),kickrank));
             % Enrichment itself
             [u,rv]=qr([u,crs], 0);
-            v = [v; zeros(size(crs,2), ry(i+1)*b)];
-            v = rv*v;
+            crs = [v; zeros(size(crs,2), ry(i+1)*b)];
+            v = rv*crs;
+        end;
+        
+        if (~strcmp(trunc_method, 'svd'))
+            % In the index representation, compute the maxvol immediately
+            % and derive u of the form [I ; 0]
+            ind = maxvol2(u);
+            yy = u(ind,:);
+            u = u/yy;
+            v = yy*v;
+            nrms(i) = 1;
         end;
         
         r = size(u,2);
@@ -490,14 +597,16 @@ while (swp<=nswp)
         y{i+1} = reshape(cr2, ry(i+1), n(i+1), ry(i+2), b);
         
         % Maxvols and phis
-        u = reshape(u, ry(i), n(i)*ry(i+1));
-        u = phiyy{i}*u;
-        u = reshape(u, ry(i)*n(i), ry(i+1));
-        ind = maxvol2(u);
-        phiyy{i+1} = u(ind,:);
-        % Extract scales
-        nrms(i) = 1./min(svd(phiyy{i+1}));
-        phiyy{i+1} = phiyy{i+1}.*nrms(i);
+        if (strcmp(trunc_method, 'svd'))
+            u = reshape(u, ry(i), n(i)*ry(i+1));
+            u = phiyy{i}*u;
+            u = reshape(u, ry(i)*n(i), ry(i+1));
+            ind = maxvol2(u);
+            phiyy{i+1} = u(ind,:);
+            % Extract scales
+            nrms(i) = 1./min(svd(phiyy{i+1}));
+            phiyy{i+1} = phiyy{i+1}.*nrms(i);
+        end;
         if (~isempty(ifun))
             Jy{i+1} = indexmerge(Jy{i}, (1:n(i))');
             Jy{i+1} = Jy{i+1}(ind,:);
@@ -512,14 +621,14 @@ while (swp<=nswp)
         end;
         if (zrank>0)&&(~last_sweep)
             rz(i+1) = size(crz,2);
-            z{i} = crz;
-            crz = reshape(crz, rz(i), n(i)*rz(i+1));
-            crz = phizz{i}*crz;
-            crz = reshape(crz, rz(i)*n(i), rz(i+1));
+%             z{i} = crz;
+%             crz = reshape(crz, rz(i), n(i)*rz(i+1));
+%             crz = phizz{i}*crz;
+%             crz = reshape(crz, rz(i)*n(i), rz(i+1));
             ind = maxvol2(crz);
-            phizz{i+1} = crz(ind,:);
-            nrmz = 1./min(svd(phizz{i+1}));
-            phizz{i+1} = phizz{i+1}.*nrmz;
+%             phizz{i+1} = crz(ind,:);
+%             nrmz = 1./min(svd(phizz{i+1}));
+%             phizz{i+1} = phizz{i+1}.*nrmz;
             if (~isempty(ifun))
                 Jz{i+1} = indexmerge(Jz{i}, (1:n(i))');
                 Jz{i+1} = Jz{i+1}(ind,:);
@@ -539,13 +648,54 @@ while (swp<=nswp)
             phizy{i+1} = phizy{i+1}.*nrms(i);
         end;
     elseif (dir<0)&&(i>1)
-        cry = cry.';
+        cry = cry.';        
         cry = reshape(cry, b*ry(i), n(i)*ry(i+1));
-        [u,s,v]=svd(cry, 'econ');
-        s = diag(s);
-        r = my_chop2(s, norm(s)*tol/sqrt(d));
-        u = u(:,1:r)*diag(s(1:r));
-        v = v(:,1:r)';
+        if (strcmp(trunc_method, 'svd'))
+            [u,s,v]=svd(cry, 'econ');
+            s = diag(s);
+            r = my_chop2(s, norm(s)*tol/sqrt(d));
+            u = u(:,1:r)*diag(s(1:r));
+            v = v(:,1:r)';
+        else
+            % Full-pivot cross should be more accurate
+            [v,u]=localcross(cry.', tol/sqrt(d)); % we need orthogonal v
+            v = v.';
+            u = u.';
+%             minsz = min(b*ry(i), n(i)*ry(i+1));
+%             u = zeros(b*ry(i), minsz);
+%             v = zeros(minsz, n(i)*ry(i+1));
+%             res = cry;
+%             val_max = 0;
+%             for r=1:minsz
+%                 res = reshape(res, [], 1);
+%                 [val,piv]=max(abs(res));
+%                 val_max = max(val_max, abs(cry(piv)));
+%                 piv = tt_ind2sub([b*ry(i), n(i)*ry(i+1)], piv);
+%                 if (val<tol*val_max/sqrt(d))
+%                     break;
+%                 end;
+%                 res = reshape(res, b*ry(i), n(i)*ry(i+1));
+%                 u(:,r) = res(:, piv(2));
+%                 v(r,:) = res(piv(1), :)/res(piv(1),piv(2));
+%                 res = res - u(:,r)*v(r,:);
+%             end;
+%             u = u(:, 1:r);
+%             u = reshape(u, b, ry(i)*r);
+%             u = u.';
+%             u = reshape(u, ry(i), r*b);
+% %             u = phiyy{i}\u;
+%             u = reshape(u, ry(i)*r, b);
+%             u = u.';
+%             u = reshape(u, b*ry(i), r);
+%             v = v(1:r, :);
+%             v = reshape(v, r*n(i), ry(i+1));
+% %             v = v/phiyy{i+1};
+%             v = reshape(v, r, n(i)*ry(i+1));
+%             % qr v, in case we don't have enrichment
+%             [v,rv]=qr(v.',0);
+%             v = v.';
+%             u = u*rv.';
+        end;
         
         if (zrank>0)&&(~last_sweep)
             % Project onto Ez
@@ -595,21 +745,24 @@ while (swp<=nswp)
                 end;
             end;
             crz = crz/nrms(i) - cryz;
+%             fprintf('\tswp=%d,i=%d,|y|=%3.3e,|z|=%3.3e,',swp,i,norm(cryz,'fro'),norm(crz,'fro'));
             % Apply interpolation matrices
             crz = reshape(crz, b*rz(i)*n(i), rz(i+1));
-            crz = crz/phizz{i+1};            
+%             crz = crz/phizz{i+1};            
             crz = reshape(crz, b, rz(i)*n(i)*rz(i+1));
             crz = crz.';
             crz = reshape(crz, rz(i), n(i)*rz(i+1)*b);
-            crz = phizz{i} \ crz;            
+%             crz = phizz{i} \ crz;            
             crz = reshape(crz, rz(i)*n(i)*rz(i+1), b);
             crz = crz.';
             crz = reshape(crz, b*rz(i), n(i)*rz(i+1));
-            [vz,sz,crz]=svd(crz, 'econ');
-            crz = conj(crz(:,1:min(size(crz,2),zrank)));
+            [crz,~]=localcross(crz.',0);
+            crz = crz(:,1:min(size(crz,2),zrank));
+%             [~,~,crz]=svd(crz, 'econ');
+%             crz = conj(crz(:,1:min(size(crz,2),zrank)));
             if (zrank2>0)
-                crz = [crz, randn(n(i)*rz(i+1), zrank2)];
-                [crz,sz]=qr(crz,0);
+                crs = [crz, randn(n(i)*rz(i+1), zrank2)];
+                [crz,~]=qr(crs,0);
             end;            
             crz = crz.';
             
@@ -649,24 +802,35 @@ while (swp<=nswp)
             end;            
             % Apply interpolation matrices
             crs = reshape(crs, b*rz(i)*n(i), ry(i+1));
-            crs = crs/phiyy{i+1};            
+%             crs = crs/phiyy{i+1};
             crs = reshape(crs, b, rz(i)*n(i)*ry(i+1));
             
             crs = crs/nrms(i) - crys;
+%             fprintf('|s|=%3.3e\n', norm(crs,'fro'));
 
             crs = crs.';
             crs = reshape(crs, rz(i), n(i)*ry(i+1)*b);
-            crs = phizz{i} \ crs;            
+%             crs = phizz{i} \ crs;            
             crs = reshape(crs, rz(i)*n(i)*ry(i+1), b);
             crs = crs.';
             crs = reshape(crs, b*rz(i), n(i)*ry(i+1));
-            [vz,sz,crs]=svd(crs, 'econ');
-            crs = crs(:,1:min(size(crs,2),kickrank))';
+            [crs,~]=localcross(crs.', 0);
+            crs = crs(:,1:min(size(crs,2),kickrank)).';
+%             [~,~,crs]=svd(crs, 'econ');
+%             crs = crs(:,1:min(size(crs,2),kickrank))';
             % Enrichment itself
             [v,rv]=qr([v;crs].', 0);
-            u = [u, zeros(b*ry(i), size(crs,1))];
-            u = u*rv.';
+            crs = [u, zeros(b*ry(i), size(crs,1))];
+            u = crs*rv.';
             v = v.';
+        end;
+        
+        if (~strcmp(trunc_method, 'svd'))
+            ind = maxvol2(v.');
+            yy = v(:,ind);
+            v = yy\v;
+            u = u*yy;
+            nrms(i) = 1;
         end;
         
         r = size(v,1);
@@ -680,14 +844,16 @@ while (swp<=nswp)
         y{i-1} = reshape(cr2, ry(i-1), n(i-1), ry(i), b);
         
         % Maxvols and phis
-        v = reshape(v, ry(i)*n(i), ry(i+1));
-        v = v*phiyy{i+1};
-        v = reshape(v, ry(i), n(i)*ry(i+1));
-        ind = maxvol2(v.');
-        phiyy{i} = v(:,ind);
-        % Extract scales
-        nrms(i) = 1./min(svd(phiyy{i}));
-        phiyy{i} = phiyy{i}.*nrms(i);
+        if (strcmp(trunc_method, 'svd'))
+            v = reshape(v, ry(i)*n(i), ry(i+1));
+            v = v*phiyy{i+1};
+            v = reshape(v, ry(i), n(i)*ry(i+1));
+            ind = maxvol2(v.');
+            phiyy{i} = v(:,ind);
+            % Extract scales
+            nrms(i) = 1./min(svd(phiyy{i}));
+            phiyy{i} = phiyy{i}.*nrms(i);
+        end;
         if (~isempty(ifun))
             Jy{i} = indexmerge((1:n(i))', Jy{i+1});
             Jy{i} = Jy{i}(ind,:);
@@ -704,14 +870,14 @@ while (swp<=nswp)
         end;
         if (zrank>0)&&(~last_sweep)
             rz(i) = size(crz,1);
-            z{i} = crz;
-            crz = reshape(crz, rz(i)*n(i), rz(i+1));
-            crz = crz*phizz{i+1};
-            crz = reshape(crz, rz(i), n(i)*rz(i+1));
+%             z{i} = crz;
+%             crz = reshape(crz, rz(i)*n(i), rz(i+1));
+%             crz = crz*phizz{i+1};
+%             crz = reshape(crz, rz(i), n(i)*rz(i+1));
             ind = maxvol2(crz.');
-            phizz{i} = crz(:,ind);
-            nrmz = 1./min(svd(phizz{i}));
-            phizz{i} = phizz{i}.*nrmz;
+%             phizz{i} = crz(:,ind);
+%             nrmz = 1./min(svd(phizz{i}));
+%             phizz{i} = phizz{i}.*nrmz;
             if (~isempty(ifun))
                 Jz{i} = indexmerge((1:n(i))', Jz{i+1});
                 Jz{i} = Jz{i}(ind,:);
@@ -734,6 +900,16 @@ while (swp<=nswp)
             phizy{i} = phizy{i}.*nrms(i);   
         end;
     else
+%         if (~strcmp(trunc_method, 'svd'))
+%             cry = reshape(cry, ry(i), n(i)*ry(i+1)*b);
+%             cry = phiyy{i}\cry;
+%             cry = reshape(cry, ry(i)*n(i)*ry(i+1), b);
+%             cry = cry.';
+%             cry = reshape(cry, b*ry(i)*n(i), ry(i+1));
+%             cry = cry/phiyy{i+1};
+%             cry = reshape(cry, b, ry(i)*n(i)*ry(i+1));
+%             cry = cry.';
+%         end;
         y{i} = reshape(cry, ry(i), n(i), ry(i+1), b);
     end;
     
@@ -745,16 +921,53 @@ while (swp<=nswp)
             fprintf('=amen_cross= swp=%d, max_dx=%3.3e, max_rank=%d, #ifun_evals=%d, #ffun_evals=%d\n', swp, max_dx, max(ry), ievalcnt, fevalcnt);
         end;
         
-        if (dir>0)&&(last_sweep)
+        if (verb>2)
+            % Log intermediate solutions
+            % Distribute norms equally...
+            Y(:,swp) = y;
+            nrm1 = exp(sum(log(nrms))/d);
+            % ... and plug them into x
+            for j=1:d
+                Y{j,swp} = Y{j,swp}*nrm1;
+            end;
+            if (dir>0)
+                Y{d,swp} = reshape(Y{d,swp}, ry(d), n(d), b);
+            else
+                Y{1,swp} = reshape(Y{1,swp}, n(2)*ry(2), b);
+                Y{1,swp} = Y{1,swp}.';
+                Y{1,swp} = reshape(Y{1,swp}, b, n(2), ry(2));
+            end;
+            Y{1,swp} = cell2core(tt_tensor,Y(:,swp));
+            Y{2,swp} = ievalcnt;
+        end;
+                      
+        if (last_sweep)&&(((exitdir~=0)&&(dir==exitdir))||(exitdir==0))
             break;
         end;
         
-        if (dir<0)
-            if (max_dx<tol_exit)
-                last_sweep = true;
+        if (max_dx>max_dx_prev)
+            err_raise_cnt = err_raise_cnt+1;
+        end;
+
+%         if ((max_dx<tol_exit)||(swp==nswp)||(err_raise_cnt>=max_err_jumps))        
+        if (max_dx<tol_exit)||(swp==nswp-1)||(err_raise_cnt>=max_err_jumps)
+            last_sweep = true;
+            % Check if we are going to exit after the wrong sweep.
+            % Increase nswp if necessary
+            if (exitdir~=0)&&(dir==exitdir)
+                nswp = nswp+1;
             end;
+            if (err_raise_cnt>=max_err_jumps)
+                fprintf('=amen_cross= Will exit since the error stopped decreasing\n');
+            end;
+%             if (dir==exitdir)
+%                 break;
+%             else
+%                 nswp = nswp+1;
+%             end;
         end;
         
+        max_dx_prev = max_dx;
         max_dx = 0;
         dir = -dir;
         i = i+dir;
@@ -770,8 +983,17 @@ for i=1:d
     y{i} = y{i}*nrms;
 end;
 
-y{d} = reshape(y{d}, ry(d), n(d), b);
+if (dir>0)
+    y{d} = reshape(y{d}, ry(d), n(d), b);
+else
+    y{1} = reshape(y{1}, n(1), ry(2), b);
+    y{1} = permute(y{1}, [3,1,2]);
+end;
 y = cell2core(tt_tensor,y);
+
+if (verb>2)
+    Y = Y(1:2,1:min(swp,nswp));
+end;
 end
 
 

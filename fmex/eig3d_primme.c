@@ -53,9 +53,9 @@ void PrimmeMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 }
 
 
-#ifdef __int32
-  #define int __int32
-#endif
+// We needed to make int 8-byte in primme.
+// However, Matlab wants it 4-byte. Undefine...
+#undef int
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 // Input: Phi1 [r1',r1,ra1], A[ra1,n',n,ra2], Phi2[r2,ra2,r2'], tol, B, sol_prev, max_matvecs = 500, max_basis_size = 100

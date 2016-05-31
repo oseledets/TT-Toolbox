@@ -536,45 +536,58 @@ for swp=1:nswp
             if (strcmp(trunc_norm, 'fro')) % We are happy with L2 truncation (when? but let it be)
                 r = my_chop2(s, real_tol*resid_damp*norm(s));
             else
-                % check the residual trunc
-                % start from the old rank
-                r = min(rx(i)*n(i),rx(i+1));
-                r = max(r-kickrank, 1);
-                
-                cursol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
-                if (rx(i)*n(i)*rx(i+1)<max_full_size)
-                    cursol = cursol(:);
-                    res = norm(B*cursol-rhs)/norm_rhs;
-                else
-                    res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
-                end;
-                if (res<max(real_tol, res_new)*resid_damp)
-                    drank = -1; % rank is overestimated; decrease
-                else
-                    drank = 1; % residual is large; increase the rank
-                end;
-                while (r>0)&&(r<=numel(s))
-                    cursol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
-                    if (rx(i)*n(i)*rx(i+1)<max_full_size)
-                        cursol = cursol(:);
-                        res = norm(B*cursol(:)-rhs)/norm_rhs;
-                    else
-                        res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
-                    end;
-                    if (drank>0)
-                        if (res<max(real_tol, res_new)*resid_damp)
-                            break;
-                        end;
-                    else
-                        if (res>=max(real_tol, res_new)*resid_damp)
-                            break;
-                        end;
-                    end;
-                    r = r+drank;
-                end;
-                if (drank<0)
-                    r=r+1;
-                end;
+               for r=(min(rx(i)*n(i),rx(i+1))-1):-1:1
+                   cursol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
+                   if (rx(i)*n(i)*rx(i+1)<max_full_size)
+                       cursol = cursol(:);
+                       res = norm(B*cursol(:)-rhs)/norm_rhs;
+                   else
+                       res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+                   end;
+                   if (res>max(real_tol*resid_damp, res_new))
+                       break;
+                   end;
+               end;
+               r=r+1;                
+%                 % check the residual trunc
+%                 % start from the old rank
+%                 r = min(rx(i)*n(i),rx(i+1));
+%                 r = max(r-kickrank, 1);
+%                 
+%                 cursol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
+%                 if (rx(i)*n(i)*rx(i+1)<max_full_size)
+%                     cursol = cursol(:);
+%                     res = norm(B*cursol-rhs)/norm_rhs;
+%                 else
+%                     res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+%                 end;
+%                 if (res<max(real_tol, res_new)*resid_damp)
+%                     drank = -1; % rank is overestimated; decrease
+%                 else
+%                     drank = 1; % residual is large; increase the rank
+%                 end;
+%                 while (r>0)&&(r<=numel(s))
+%                     cursol = u(:,1:r)*diag(s(1:r))*v(:,1:r)';
+%                     if (rx(i)*n(i)*rx(i+1)<max_full_size)
+%                         cursol = cursol(:);
+%                         res = norm(B*cursol(:)-rhs)/norm_rhs;
+%                     else
+%                         res = norm(bfun3(Phi1, A1, Phi2, cursol)-rhs)/norm_rhs;
+%                     end;
+%                     if (drank>0)
+%                         if (res<max(real_tol, res_new)*resid_damp)
+%                             break;
+%                         end;
+%                     else
+%                         if (res>=max(real_tol, res_new)*resid_damp)
+%                             break;
+%                         end;
+%                     end;
+%                     r = r+drank;
+%                 end;
+%                 if (drank<0)
+%                     r=r+1;
+%                 end;
             end;
             
             r = min(r, numel(s));
