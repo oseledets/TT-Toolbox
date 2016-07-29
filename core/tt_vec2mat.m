@@ -21,6 +21,6 @@ function ttm=tt_vec2mat(ttv,tol)
 
     list_for_standard_permute=[1:d;d+1:d+d];
     list_for_standard_permute=list_for_standard_permute(:)';
-    ttv_readyformat=reshape(permute(ttv,list_for_standard_permute,tol*1e-2),modes.^2);
-    ttm=tt_matrix(ttv_readyformat,modes,modes,tol*1e-2);
+    ttv_readyformat=reshape(permute(ttv,list_for_standard_permute,tol),modes.^2);
+    ttm=tt_matrix(ttv_readyformat,modes,modes,tol);
 end
