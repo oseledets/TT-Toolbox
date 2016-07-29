@@ -17,11 +17,10 @@ function ttm=tt_vec2mat(ttv,tol)
     %alexey.boyko@skolkovotech.ru    
 
     d=ttv.d/2; 
-    tol=1e-5;
     modes = ttv.n(1:d);
 
     list_for_standard_permute=[1:d;d+1:d+d];
     list_for_standard_permute=list_for_standard_permute(:)';
-    ttv_readyformat=reshape(permute(ttv,list_for_standard_permute,tol),modes.^2);
-    ttm=tt_matrix(ttv_readyformat,modes,modes);
+    ttv_readyformat=reshape(permute(ttv,list_for_standard_permute,tol*1e-2),modes.^2);
+    ttm=tt_matrix(ttv_readyformat,modes,modes,tol*1e-2);
 end
