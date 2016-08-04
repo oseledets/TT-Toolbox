@@ -1,4 +1,4 @@
-function ttm=tt_vec2mat(ttv,tol)
+function ttm=tt_vec2mat(ttv)
    
     %    ttv is a QTT tt_vector(tt_tensor) of a full lenght N^2
     %    ttm is a QTT tt_matrix equivalent to simple reshape of this vector
@@ -16,11 +16,12 @@ function ttm=tt_vec2mat(ttv,tol)
     %Last tweaks by Alexey Boyko of Oseledets' group
     %alexey.boyko@skolkovotech.ru    
 
-    d=ttv.d/2; 
-    modes = ttv.n(1:d);
+%     d=ttv.d/2; 
+    modes  = ttv.n(1:2:ttv.d);
+    modes2 = ttv.n(2:2:ttv.d);
 
-    list_for_standard_permute=[1:d;d+1:d+d];
-    list_for_standard_permute=list_for_standard_permute(:)';
-    ttv_readyformat=reshape(permute(ttv,list_for_standard_permute,tol),modes.^2);
-    ttm=tt_matrix(ttv_readyformat,modes,modes,tol);
+%     list_for_standard_permute=[1:d;d+1:d+d];
+%     list_for_standard_permute=list_for_standard_permute(:)';
+    ttv_readyformat=reshape(ttv,modes.*modes2);
+    ttm=tt_matrix(ttv_readyformat,modes,modes2);
 end
