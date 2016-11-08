@@ -33,7 +33,17 @@ switch s(1).type
             case 'r'
                 t.tt.r=b;
             case 'core'
-                t.tt.core=b;
+                % I don't want to dispatch all the rest subs to the core,
+                % because MATLAB will copy it. Fortunately, only () is
+                % reasonable here.
+                if (numel(s)>1)&&(strcmp(s(2).type,'()'))
+                    if (size(s(2).subs{1},1)==1)
+                        s(2).subs{1}=s(2).subs{1}';
+                    end;
+                    t.tt.core(s(2).subs{1})=b;
+                else
+                    t.tt.core=b;
+                end;
             case 'ps'
                 t.tt.ps=b;
             case 'tt'

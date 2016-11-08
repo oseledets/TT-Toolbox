@@ -139,7 +139,7 @@ for it=1:max_iters
         u = b;
     end;
     beta = norm(u);
-    if (verb>0)
+    if (verb>1)
         fprintf('==fgmres== iter=%d, |r| = %g, time=%g  \n', it-1, beta, toc(t_gmres_start));
     end;
     % Prepare the first Householder vector
@@ -258,7 +258,7 @@ for it=1:max_iters
 end;
 
 if (verb>0)
-    fprintf('==fgmres== iter=%d, resid=%3.3e, time=%g\n', it, resid, toc(t_gmres_start));
+    fprintf('==fgmres== iters: %d outer + %d inner, resid: %3.3e, time: %g\n', it-1, j, resid, toc(t_gmres_start));
 end;
 
 % Output
