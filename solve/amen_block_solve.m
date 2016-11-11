@@ -945,6 +945,7 @@ for k=1:Ra
     WAX2{k} = xc.'*WAX2{k}; % size rx2, ra2 rw2
     WAX2{k} = reshape(WAX2{k}, rx2*ra2(k), rw2);
     WAX2{k} = WAX2{k}.';
+    WAX2{k} = full(WAX2{k}); % Housekeeping. Matlab can make it sparse if WAX1 was 1
     WAX2{k} = reshape(WAX2{k}, rw2, rx2, ra2(k));
 end;
 end
@@ -985,6 +986,7 @@ for k=1:Ra
     WAX1{k} = wc*WAX1{k}; % size rw1, rx1 ra1
     WAX1{k} = reshape(WAX1{k}, rw1*rx1, ra1(k));
     WAX1{k} = WAX1{k}.';
+    WAX1{k} = full(WAX1{k}); % Housekeeping. Matlab can make it sparse if WAX2 was 1
     WAX1{k} = reshape(WAX1{k}, ra1(k), rw1, rx1);
 end;
 end
