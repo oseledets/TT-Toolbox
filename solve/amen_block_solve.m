@@ -534,6 +534,9 @@ while (swp<=nswp)
                         auxi = reshape(auxi, raux{ki}(j+1,m)*raux{ki}(j,m)*n(j), maux(ki,j));
                     end;
                     u = auxi*u;
+                    if (numel(u)==1)
+                        u = full(u);
+                    end;
                     u = reshape(u, raux{ki}(j+1,m), raux{ki}(j,m), n(j), rx(j+1), rx(j));
                     u = permute(u, [2,5,3,1,4]);
                     u = reshape(u, raux{ki}(j,m)*rx(j), n(j), raux{ki}(j+1,m)*rx(j+1));

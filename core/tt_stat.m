@@ -14,29 +14,29 @@ function [out_val,out_ind,nevals]=tt_stat(tt, varargin)
 % Additional parameters can be given in varargin in the form 
 % 'param_name', param_value:
 %       'kickrank': enrich tt by random subspaces of sizes kickrank. Larger
-%       kickrank improves the accuracy in "difficult" cases, for the price
-%       of larger neval. Default value is 1.
-%       'nswp': number of alternating iterations (default 2)
+%       kickrank may improve the accuracy in "difficult" cases, for the price
+%       of larger neval. Default value is 0.
+%       'nswp': number of alternating iterations (default 3)
 %
 % Examples:
 %   Mimic the call to tt_abs_max, tt_max and tt_min simultaneously:
-%       [out,ind,neval]=tt_stat(x, 'lm', 'lr', 'sr');
+%       [out,ind,neval]=tt_stat(tt, 'lm', 'lr', 'sr');
 %   The same with kickrank set to 5:
-%       [out,ind,neval]=tt_stat(x, 'lm', 'lr', 'sr', 'kickrank', 5);
+%       [out,ind,neval]=tt_stat(tt, 'lm', 'lr', 'sr', 'kickrank', 5);
 %   Minimize the banana function on a grid 32768 x 32768:
 %       n = 15;
 %       x = tkron(tt_x(2,n)/2^n, tt_ones(2,n));
 %       y = tkron(tt_ones(2,n), tt_x(2,n)/2^n);
 %       f = (0.5-x).^2 + 100*(y-x.^2).^2;
-%       v = tt_stat(f,'sm','nswp',15)
-%   This should give values below 1e-8 in ~50% of runs.
+%       v = tt_stat(f,'sm','nswp',11)
+%   This should give v ~ 2e-13.
 %
 % The difference with tt_*max* is the usage of dnr^2 entries 
 % instead of dr^2 (outputs are sought over TT blocks, not density matrices).
 % Besides, it can carry out several iterations with random enrichment.
 
-kickrank = 1; 
-nswp = 2; % these seem to be good params at least for 'LM'
+kickrank = 0; % random enrich may actually perturb the values, but sometimes it converges faster
+nswp = 3; % these seem to be enough quite often
 
 if (numel(varargin)==0)
     error('at least one sought quantity is needed');
@@ -62,10 +62,6 @@ while (j<=numel(varargin))
     j = j+1;
 end;
 soughts(cellfun('isempty', soughts))=[];
-
-if (kickrank==0)
-    nswp = 1;
-end;
 
 d = tt.d;
 n = tt.n;
@@ -109,6 +105,10 @@ while (swp<=nswp)
         q = q*XX0{i+1};
         q = reshape(q, r(i)*n(i)*r(i+1), 1);
         nevals = nevals + r(i)*n(i)*r(i+1); % number of evaluations
+        ind_new = zeros(numel(soughts), 3);
+        % We need to add the found extrema indices to maxvol, since they
+        % will likely give good estimates in the next dimensions.        
+        pos = 0;
         for j=1:numel(soughts)
             out_changed = false;
             if (strcmpi(soughts{j}, 'lm'))
@@ -138,6 +138,9 @@ while (swp<=nswp)
             if (out_changed)
                 out_val(j) = q(ind);
                 ind = tt_ind2sub([r(i), n(i), r(i+1)], ind);
+                % Add the new index to the expansion set
+                ind_new(pos+1,:) = ind;
+                pos = pos+1;
                 if (i>1)&&(i<d)
                     out_ind(:,j) = indexmerge(ind_global{i}(ind(1),:), ind(2), ind_global{i+1}(ind(3),:));
                 elseif (i==1)
@@ -163,6 +166,7 @@ while (swp<=nswp)
                 end;
             end;
         end;
+        ind_new = ind_new(1:pos, :);
         
         % Subtract units to get fresh indices
         for j=1:numel(soughts)
@@ -174,8 +178,17 @@ while (swp<=nswp)
     
     if (dir>0)&&(i<d)
         q = reshape(q, r(i)*n(i), r(i+1));
-        rr = randn(r(i)*n(i), kickrank);
-        [q,~]=qr([q, rr],0);
+        rr = zeros(r(i)*n(i), pos);
+        % Enrich it by the extrema indices (just add corresponding unit
+        % vectors)
+        if (pos>0)
+            for j=1:pos
+                rr(tt_sub2ind([r(i), n(i)], ind_new(j,1:2)), j) = 1;
+            end;
+        end;
+        % Enrich it by random
+        rr2 = randn(r(i)*n(i), kickrank);
+        [q,~]=qr([q, rr, rr2],0);
         rnew = size(q,2);
         
         % Maxvol
@@ -201,12 +214,22 @@ while (swp<=nswp)
     elseif (dir<0)&&(i>1)
         % QR and right indices
         if (swp==0)
+            % Don't perturb the original solution, just QR
             q = reshape(tt{i}, r(i), n(i)*r(i+1));
+            rr = zeros(n(i)*r(i+1), 0);
         else
             q = reshape(q, r(i), n(i)*r(i+1));
+            % Enrich by the extrema indices
+            rr = zeros(n(i)*r(i+1), pos);
+            if (pos>0)
+                for j=1:pos
+                    rr(tt_sub2ind([n(i) r(i+1)], ind_new(j,2:3)), j) = 1;
+                end;
+            end;
         end;
-        rr = randn(n(i)*r(i+1), kickrank*double(swp>0));
-        [q,rv]=qr([q.',rr], 0);
+        % Enrich by random
+        rr2 = randn(n(i)*r(i+1), kickrank*double(swp>0));
+        [q,rv]=qr([q.',rr,rr2], 0);
         rv = rv(:,1:r(i)).';
         q = q.';
         rnew = size(q,1);
