@@ -23,6 +23,15 @@ if (numel(n)==1)
     n = n*ones(1,d);
 end;
 
+% Return a 1x1 matrix as a special case
+if (prod(n)==1)
+    S = tt_eye(1);
+    if (i~=0)
+        S = S*0;
+    end;
+    return;
+end;
+
 % Check for negative i - transpose if necessary
 trans = false;
 if (min(i)<0)
