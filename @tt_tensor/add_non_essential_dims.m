@@ -1,5 +1,6 @@
 function enlarged_tt = add_non_essential_dims(small_tt, new_n, old_vars_pos)
-    % enlarged_tt = add_non_essential_dims(small_tt, new_n, old_vars_pos) creates enlarged version of TT-tensor.
+    % enlarged_tt = add_non_essential_dims(small_tt, new_n, old_vars_pos) 
+    % creates enlarged version of tt_tensor, expanding it by ones.
     % Mode sizes of the enlarged_tt are equal to new_n.
     % First dimension of the small_tt is old_vars_pos(1) dimension of the enlarged_tt.
     % This procedure doesn't increase the maximal TT-rank.
@@ -30,7 +31,7 @@ function enlarged_tt = add_non_essential_dims(small_tt, new_n, old_vars_pos)
     end
 
     if ~isvector(new_n) | ~isvector(old_vars_pos) | small_tt.d ~= length(old_vars_pos)
-    	error('Wrong usage, see help add_non_essential_dims.');
+    	error('Wrong usage, see help tt_tensor.add_non_essential_dims.');
     end
 
 
