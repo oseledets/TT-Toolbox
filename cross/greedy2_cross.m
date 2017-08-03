@@ -97,13 +97,32 @@ ry = ones(d+1,1);
 y = cell(d,1);
 
 if (~isempty(aux))
-    raux = aux.r;
-    aux = core2cell(aux);
-    phiauxl = cell(d+1,1); phiauxl{1}=1; phiauxl{d+1}=1;
-    phiauxr = cell(d+1,1); phiauxr{1}=1; phiauxr{d+1}=1;
-    for i=2:d
-        phiauxl{i} = ones(1,raux(i));
-        phiauxr{i} = ones(raux(i),1);
+    if (isa(aux, 'tt_tensor'))
+        raux = aux.r;
+        aux = core2cell(aux);
+        phiauxl = cell(d+1,1); phiauxl{1}=1; phiauxl{d+1}=1;
+        phiauxr = cell(d+1,1); phiauxr{1}=1; phiauxr{d+1}=1;
+        for i=2:d
+            phiauxl{i} = ones(1,raux(i));
+            phiauxr{i} = ones(raux(i),1);
+        end;
+        Raux = 1;
+    else
+        Raux = size(aux, 2);
+        raux = ones(d+1,Raux);
+        aux = [aux; cell(d-1, Raux)];
+        phiauxl = cell(d+1,Raux);
+        phiauxr = cell(d+1,Raux);
+        for j=1:Raux
+            raux(:,j) = aux{1,j}.r;
+            aux(:,j) = core2cell(aux{1,j});
+            phiauxl{1,j}=1; phiauxl{d+1,j}=1;
+            phiauxr{1,j}=1; phiauxr{d+1,j}=1;
+            for i=2:d
+                phiauxl{i,j} = ones(1,raux(i,j));
+                phiauxr{i,j} = ones(raux(i,j),1);
+            end;
+        end;
     end;
 end;
 
@@ -133,13 +152,16 @@ for i=d:-1:1
     J = indexmerge(Jyl{i}, (1:n(i))', Jyr{i+1});
     evalcnt = evalcnt + size(J,1);
     cry1 = autovecfun(fun, J, vec);
-    if (~isempty(aux))
-        craux1 = reshape(aux{i}, raux(i), n(i)*raux(i+1));
-        craux1 = phiauxl{i}*craux1;
-        craux1 = reshape(craux1, ry(i)*n(i), raux(i+1));
-        craux1 = craux1*phiauxr{i+1};
-        craux1 = reshape(craux1, ry(i)*n(i)*ry(i+1), 1);
-        cry1 = cry1+auxfun(craux1);
+    if (~isempty(aux))     
+        craux = zeros(ry(i)*n(i)*ry(i+1), Raux);
+        for j=1:Raux
+            craux1 = reshape(aux{i,j}, raux(i,j), n(i)*raux(i+1,j));
+            craux1 = phiauxl{i,j}*craux1;
+            craux1 = reshape(craux1, ry(i)*n(i), raux(i+1,j));
+            craux1 = craux1*phiauxr{i+1,j};
+            craux(:,j) = reshape(craux1, ry(i)*n(i)*ry(i+1), 1);
+        end;
+        cry1 = cry1+auxfun(craux);
     end;
     
     if (i>1)        
@@ -152,10 +174,12 @@ for i=d:-1:1
         Jyr{i} = Jyr{i}(ilocr{i},:);
         
         if (~isempty(aux))
-            phiauxr{i} = reshape(aux{i}, raux(i)*n(i), raux(i+1));
-            phiauxr{i} = phiauxr{i}*phiauxr{i+1};
-            phiauxr{i} = reshape(phiauxr{i}, raux(i), n(i)*ry(i+1));
-            phiauxr{i} = phiauxr{i}(:, ilocr{i});
+            for j=1:Raux
+                phiauxr{i,j} = reshape(aux{i,j}, raux(i)*n(i), raux(i+1,j));
+                phiauxr{i,j} = phiauxr{i,j}*phiauxr{i+1,j};
+                phiauxr{i,j} = reshape(phiauxr{i,j}, raux(i,j), n(i)*ry(i+1));
+                phiauxr{i,j} = phiauxr{i,j}(:, ilocr{i});
+            end;
         end;
     end;
     
@@ -166,12 +190,15 @@ for i=1:d
     evalcnt = evalcnt + size(J,1);
     cry1 = autovecfun(fun, J, vec);
     if (~isempty(aux))
-        craux1 = reshape(aux{i}, raux(i), n(i)*raux(i+1));
-        craux1 = phiauxl{i}*craux1;
-        craux1 = reshape(craux1, ry(i)*n(i), raux(i+1));
-        craux1 = craux1*phiauxr{i+1};
-        craux1 = reshape(craux1, ry(i)*n(i)*ry(i+1), 1);
-        cry1 = cry1+auxfun(craux1);
+        craux = zeros(ry(i)*n(i)*ry(i+1), Raux);
+        for j=1:Raux
+            craux1 = reshape(aux{i,j}, raux(i,j), n(i)*raux(i+1,j));
+            craux1 = phiauxl{i,j}*craux1;
+            craux1 = reshape(craux1, ry(i)*n(i), raux(i+1,j));
+            craux1 = craux1*phiauxr{i+1,j};
+            craux(:,j) = reshape(craux1, ry(i)*n(i)*ry(i+1), 1);
+        end;
+        cry1 = cry1+auxfun(craux);
     end;
     
     if (i<d)
@@ -182,10 +209,12 @@ for i=1:d
         Jyl{i+1} = indexmerge(Jyl{i}, (1:n(i))');
         Jyl{i+1} = Jyl{i+1}(ilocl{i+1},:);
         if (~isempty(aux))
-            phiauxl{i+1} = reshape(aux{i}, raux(i), n(i)*raux(i+1));
-            phiauxl{i+1} = phiauxl{i}*phiauxl{i+1};
-            phiauxl{i+1} = reshape(phiauxl{i+1}, ry(i)*n(i), raux(i+1));
-            phiauxl{i+1} = phiauxl{i+1}(ilocl{i+1}, :);
+            for j=1:Raux
+                phiauxl{i+1,j} = reshape(aux{i,j}, raux(i,j), n(i)*raux(i+1,j));
+                phiauxl{i+1,j} = phiauxl{i,j}*phiauxl{i+1,j};
+                phiauxl{i+1,j} = reshape(phiauxl{i+1,j}, ry(i)*n(i), raux(i+1,j));
+                phiauxl{i+1,j} = phiauxl{i+1,j}(ilocl{i+1}, :);
+            end;
         end;
     end;
     
@@ -220,12 +249,16 @@ while (swp<=nswp)
     end;
     
     if (~isempty(aux))
-        craux1 = reshape(aux{i}, raux(i), n(i)*raux(i+1));
-        craux1 = phiauxl{i}*craux1;
-        craux1 = reshape(craux1, ry(i)*n(i), raux(i+1));
-        craux2 = reshape(aux{i+1}, raux(i+1)*n(i+1), raux(i+2));
-        craux2 = craux2*phiauxr{i+2};
-        craux2 = reshape(craux2, raux(i+1), n(i+1)*ry(i+2));
+        craux1 = cell(1,Raux);
+        craux2 = cell(1,Raux);
+        for j=1:Raux
+            craux = reshape(aux{i,j}, raux(i,j), n(i)*raux(i+1,j));
+            craux = phiauxl{i,j}*craux;
+            craux1{j} = reshape(craux, ry(i)*n(i), raux(i+1,j));
+            craux = reshape(aux{i+1,j}, raux(i+1,j)*n(i+1), raux(i+2,j));
+            craux = craux*phiauxr{i+2,j};
+            craux2{j} = reshape(craux, raux(i+1,j), n(i+1)*ry(i+2));
+        end;
     end;
     
     % Check that we are not in the full rank case
@@ -255,8 +288,10 @@ while (swp<=nswp)
             evalcnt = evalcnt + size(J,1);
             cre1 = autovecfun(fun, J, vec);
             if (~isempty(aux))
-                craux = craux1(cind1,:)*craux2(:,cind2(indr));
-                craux = craux(:);
+                craux = zeros(numel(cind1)*numel(indr), Raux);
+                for j=1:Raux
+                    craux(:,j) = reshape(craux1{j}(cind1,:)*craux2{j}(:,cind2(indr)), [], 1);
+                end;
                 craux = auxfun(craux);
                 cre1 = cre1+craux;
             end;
@@ -275,8 +310,10 @@ while (swp<=nswp)
             evalcnt = evalcnt + size(J,1);
             cre2 = autovecfun(fun, J, vec);
             if (~isempty(aux))
-                craux = craux1(cind1(indl),:)*craux2(:,cind2);
-                craux = craux(:);
+                craux = zeros(numel(indl)*numel(cind2), Raux);
+                for j=1:Raux                
+                    craux(:,j) = reshape(craux1{j}(cind1(indl),:)*craux2{j}(:,cind2), [], 1);
+                end;
                 craux = auxfun(craux);
                 cre2 = cre2+craux;
             end;
@@ -303,9 +340,11 @@ while (swp<=nswp)
             evalcnt = evalcnt + testsz;
             crt = autovecfun(fun, J, vec);
             if (~isempty(aux))
-                craux = zeros(testsz, 1);
-                for j=1:testsz
-                    craux(j) = craux1(tind(j,1),:)*craux2(:,tind(j,2));
+                craux = zeros(testsz, Raux);
+                for k=1:Raux
+                    for j=1:testsz
+                        craux(j,k) = craux1{k}(tind(j,1),:)*craux2{k}(:,tind(j,2));
+                    end;
                 end;
                 crt = crt+auxfun(craux);
             end;
@@ -331,7 +370,10 @@ while (swp<=nswp)
             evalcnt = evalcnt + size(J,1);
             crt = autovecfun(fun, J, vec);
             if (~isempty(aux))
-                craux = craux1(cind1,:)*craux2(:,tind(imax2,2));
+                craux = zeros(numel(cind1), Raux);
+                for j=1:Raux
+                    craux(:,j) = craux1{j}(cind1,:)*craux2{j}(:,tind(imax2,2));
+                end;
                 crt = crt+auxfun(craux);
             end;
             maxy = max(maxy, max(abs(crt)));
@@ -364,15 +406,20 @@ while (swp<=nswp)
             evalcnt = evalcnt + size(Jl,1);
             cre1 = autovecfun(fun, Jl, vec);
             if (~isempty(aux))
-                craux = craux1*craux2(:,imax2);
+                craux = zeros(ry(i)*n(i), Raux);
+                for j=1:Raux
+                    craux(:,j) = craux1{j}*craux2{j}(:,imax2);
+                end;
                 cre1 = cre1+auxfun(craux);
             end;
             
             evalcnt = evalcnt + size(Jr,1);
             cre2 = autovecfun(fun, Jr, vec);
             if (~isempty(aux))
-                craux = craux1(imax1,:)*craux2;
-                craux = craux(:);
+                craux = zeros(n(i+1)*ry(i+2), Raux);
+                for j=1:Raux
+                    craux(:,j) = craux1{j}(imax1,:)*craux2{j};
+                end;
                 cre2 = cre2+auxfun(craux);
             end;            
             
@@ -423,8 +470,10 @@ while (swp<=nswp)
     end;         
     
     if (~isempty(aux))
-        phiauxl{i+1} = craux1(ilocl{i+1}, :);
-        phiauxr{i+1} = craux2(:, ilocr{i+1});
+        for j=1:Raux
+            phiauxl{i+1,j} = craux1{j}(ilocl{i+1}, :);
+            phiauxr{i+1,j} = craux2{j}(:, ilocr{i+1});
+        end;
     end;
     
     i = i+dir;
@@ -432,23 +481,17 @@ while (swp<=nswp)
     % Check the convergence, restart
     if ((i==d)||(i==0))
         if (verb>0)
-          if (exist('xtru'))
-ytest=formtensor(y,mid_inv,d,ry,n);
-            fprintf('=greedy_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d, err_tru=%3.3e\n', swp, max_dx, max(ry), evalcnt, norm(ytest-xtru)/norm(xtru));
-          else
-            fprintf('=greedy_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d\n', swp, max_dx, max(ry), evalcnt);
-          end;        
+            if (exist('xtru'))
+                ytest=formtensor(y,mid_inv,d,ry,n);
+                fprintf('=greedy_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d, err_tru=%3.3e\n', swp, max_dx, max(ry), evalcnt, norm(ytest-xtru)/norm(xtru));
+            else
+                fprintf('=greedy_cross= swp=%d, max_dx=%3.3e, max_rank=%d, cum#evals=%d\n', swp, max_dx, max(ry), evalcnt);
+            end;
         end;
-        
-       % if (dir>0)&&(last_sweep)
-       %     break;
-       % end;
         
         if (max_dx<tol_exit)
-		break;
-            %last_sweep = true;
+            break;
         end;
-
         
         max_dx = 0;
         i=1;
