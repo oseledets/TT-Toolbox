@@ -575,6 +575,9 @@ while (swp<=nswp)
     sol = reshape(sol, rx(i)*n(i)*rx(i+1), K);
     for kj=1:K
         scales(kj) = norm(sol(:,kj));
+        if (scales(kj)==0)
+            scales(kj) = 1;
+        end;
         sol(:,kj) = sol(:,kj)/scales(kj);
     end;
  

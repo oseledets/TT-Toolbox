@@ -1,19 +1,21 @@
 function [c] = mtimes(a,b,varargin)
 %C=A*B: Matrix-by-matrix, matrix-by-vector, matrix-by-number multiplication
 %   [C]=MTIMES(A,B) if A is a TT-matrix and B is a TT-matrix, computes
-%   matrix-by-matrix product, 
+%   matrix-by-matrix product. A and B should have the same numbers of cores
+%   and consistent mode sizes core by core.
 %
 %   [C]=MTIMES(A,B) if A is a TT-matrix and B is TT-tensor, computes
-%   matrix-by-vector product,
+%   matrix-by-vector product. A and B should have the same numbers of cores
+%   and consistent mode sizes core by core.
 %
 %   [C]=MTIMES(A,B) if A is a TT-matrix and B is a full tensor, computes
-%   matrix-by-vector product,
+%   matrix-by-vector product. The total sizes should be consistent.
 %
 %   [C]=MTIMES(A,B) if A is a TT-matrix and B is a number, computes their
-%   product,
+%   product.
 %
 %   [C]=MTIMES(A,B) if A is a number and B is a TT-matrix, computes their
-%   product
+%   product.
 %
 %
 % TT-Toolbox 2.2, 2009-2012
