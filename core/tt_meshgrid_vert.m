@@ -8,31 +8,42 @@ function [X]=tt_meshgrid_vert(varargin)
 %       the representations
 %   X = TT_MESHGRID_VERT(T,D) Computes the d-dimensional meshgrid, using T as a
 %       one-dimensional grid
+%   X = TT_MESHGRID_VERT(..., 'id', M) Expands with M instead of all-ones
 
-if (nargin==1)&&(isa(varargin{1}, 'cell'))
+vars = varargin;
+M = [];
+for i=1:numel(vars)
+    if (isa(vars{i}, 'char'))&&(strcmp(vars{i},'id'))
+        M = vars{i+1};
+        vars(i:i+1) = [];
+        break;
+    end
+end
+
+if (numel(vars)==1)&&(isa(vars{1}, 'cell'))
     % We have a cell array of 1d points
-    X = varargin{1};
+    X = vars{1};
     d = numel(X);
     X = reshape(X, 1, d);
-elseif (nargin==2)&&(isa(varargin{1}, 'tt_tensor'))&&(isscalar(varargin{2}))
+elseif (numel(vars)==2)&&(isa(vars{1}, 'tt_tensor')||isa(vars{1}, 'tt_matrix'))&&(isscalar(vars{2}))
     % First argument is a single x, second argument is the dimension
-    d = varargin{2};
+    d = vars{2};
     X = cell(1, d);
     for i=1:d
-        X{i} = varargin{1}; % make the same format as in the first case
-    end;
+        X{i} = vars{1}; % make the same format as in the first case
+    end
 else
     % A set of independent x
-    d = nargin;
+    d = numel(vars);
     X = cell(1,d);
     for i=1:d
-        if (isa(varargin{i}, 'tt_tensor'))
-            X{i} = varargin{i};
+        if (isa(vars{i}, 'tt_tensor')||isa(vars{i}, 'tt_matrix'))
+            X{i} = vars{i};
         else
             error('wrong input %d to tt_meshgrid_vert', i);
-        end;
-    end;
-end;
+        end
+    end
+end
 
 % Now X contains 1D tt_tensors. Expand them by ones
 
@@ -43,15 +54,31 @@ pos = ones(d+1,1);
 for i=1:d
     n = [n; X{i}.n];
     pos(i+1) = pos(i)+X{i}.d;
-end;
+end
 % Expand
 for i=1:d
     if (i>1)
-        X{i} = tkron(tt_ones(n(1:pos(i)-1)), X{i});
-    end;
+        if (isempty(M))
+            expand = tt_ones(n(1:pos(i)-1));
+        else
+            expand = M;
+            if (i>2)
+                expand = mtkron(repmat({M},1,i-1));
+            end
+        end
+        X{i} = tkron(expand, X{i});
+    end
     if (i<d)
-        X{i} = tkron(X{i}, tt_ones(n(pos(i+1):pos(d+1)-1)));
-    end;
-end;
+        if (isempty(M))
+            expand = tt_ones(n(pos(i+1):pos(d+1)-1));
+        else
+            expand = M;
+            if (i<d-1)
+                expand = mtkron(repmat({M},1,d-i));
+            end
+        end        
+        X{i} = tkron(X{i}, expand);
+    end
+end
 
 end
