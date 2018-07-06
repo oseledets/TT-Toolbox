@@ -6,6 +6,7 @@ function [res]=tt_x(n,varargin)
 %   This function returns its TT-decomposition with rank 2
 %   This function is useful for the computation of the QTT-decomposition
 %   of the function y=x
+%   [RES]=TT_X(N,D,XMIN): Vector with elements XMIN:XMIN+N(1)*...*N(D)-1
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -27,7 +28,10 @@ if (numel(n) == 1)
 else
   d=numel(n);
 end
-
+xmin = 0;
+if (numel(varargin)>1)
+    xmin = varargin{2};
+end;
 
 
 res=cell(d,1);
@@ -49,7 +53,7 @@ res{d}=ones(n(d),2);
 res{d}(:,2)=ni.*(0:n(d)-1);
 
 res{1}=ones(n(1),2);
-res{1}(:,1)=0:n(1)-1;
+res{1}(:,1)=(0:n(1)-1) + xmin;
 
 if (d==1)
     res{1}=res{1}*[1;0];

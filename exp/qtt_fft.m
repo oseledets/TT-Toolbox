@@ -114,7 +114,7 @@ for i=1:D
     else
         cury=cury*rv;
     end;
-    y = kron(y, cury);
+    y = tkron(y, cury);
 end;
 
 end

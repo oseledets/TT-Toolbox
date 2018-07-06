@@ -55,7 +55,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ind = (double *)malloc(sizeof(double)*minsz);
 
   sz = n*m;
-  dcopy_(&sz, Y, &ione, res, &ione);
+  dcopy(&sz, Y, &ione, res, &ione);
   /* i = idamax_(&sz, Y, &ione);
   val_max = fabs(Y[i]); */
 
@@ -81,13 +81,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     piv1 = piv2 % n;
     piv2 = (int)(piv2/n);
     ind[r] = (double)(piv1+1);
-    dcopy_(&n, &res[piv2*n], &ione, &u[r*n], &ione);
-    dcopy_(&m, &res[piv1], &n, &vt[r*m], &ione);
+    dcopy(&n, &res[piv2*n], &ione, &u[r*n], &ione);
+    dcopy(&m, &res[piv1], &n, &vt[r*m], &ione);
     val = 1.0/res[piv1+piv2*n];
-    dscal_(&m,&val,&vt[r*m],&ione);
+    dscal(&m,&val,&vt[r*m],&ione);
     /* res = res - u(:,r)*v(r,:) */
     val = -1.0;
-    dger_(&n, &m, &val, &u[r*n], &ione, &vt[r*m],&ione, res, &n);
+    dger(&n, &m, &val, &u[r*n], &ione, &vt[r*m],&ione, res, &n);
   }
   if (r==0) {
     /* There was a zero matrix */
@@ -99,12 +99,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   /* QR u */
   sz = -1;
-  dgeqrf_(&n, &r, u, &n, &res[1], &res[0], &sz, &i);
+  dgeqrf(&n, &r, u, &n, &res[1], &res[0], &sz, &i);
   sz = (mwIndex)res[0];
   work = (double *)malloc(sizeof(double)*sz);
-  dgeqrf_(&n, &r, u, &n, res, work, &sz, &i);
-  dtrmm_(&cR, &cU, &cT, &cN, &m, &r, &done, u, &n, vt, &m);
-  dorgqr_(&n, &r, &r, u, &n, res, work, &sz, &i);
+  dgeqrf(&n, &r, u, &n, res, work, &sz, &i);
+  dtrmm(&cR, &cU, &cT, &cN, &m, &r, &done, u, &n, vt, &m);
+  dorgqr(&n, &r, &r, u, &n, res, work, &sz, &i);
   
   free(work);
   free(res);
@@ -113,18 +113,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   plhs[0] = mxCreateDoubleMatrix(n, r, mxREAL);
   res = mxGetPr(plhs[0]);
   sz = n*r;
-  dcopy_(&sz, u, &ione, res, &ione);
+  dcopy(&sz, u, &ione, res, &ione);
   plhs[1] = mxCreateDoubleMatrix(r, m, mxREAL);
   res = mxGetPr(plhs[1]);
   /* vt should be transposed */
   for (i=0; i<r; i++) {
-    dcopy_(&m, &vt[i*m], &ione, &res[i], &r);
+    dcopy(&m, &vt[i*m], &ione, &res[i], &r);
   }
   /* return ind */
   if (nlhs>2) {
     plhs[2] = mxCreateDoubleMatrix(ione, r, mxREAL);
     res = mxGetPr(plhs[2]);
-    dcopy_(&r, ind, &ione, res, &ione);
+    dcopy(&r, ind, &ione, res, &ione);
   }
 
   free(u);

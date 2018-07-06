@@ -26,6 +26,7 @@ function [x] = amen_block_solve(A, y, tol, varargin)
 %   o local_iters:  maximal number of local gmres iterations [1000]
 %   o resid_damp:   if the local system is solved iteratively, its accuracy
 %                   is tol/sqrt(d-1)/resid_damp [100]
+%   o trunc_norm: truncation norm: frobenius or residual ['residual']
 %   o tol_exit: the method stops if all relative local residuals in one 
 %               sweep are less than tol_exit [tol]
 %   o exitdir:  if 1: return the solution with k in the last block, x^d(i_d,k),
@@ -100,6 +101,7 @@ kickrank = 4;
 local_iters = 1000; % only for gmres
 max_full_size = 0; % don't use the backslash by default
 resid_damp = 1e2;
+trunc_norm = 'resid'; % or 'fro': truncation norm
 % Exit tolerance
 tol_exit = tol;
 exitdir = 1; % Sweep direction in which the method should exit
@@ -125,6 +127,8 @@ for i=1:2:length(varargin)-1
             max_full_size = varargin{i+1};            
         case 'resid_damp'
             resid_damp = varargin{i+1};
+        case 'trunc_norm'
+            trunc_norm = varargin{i+1};            
         case 'tol_exit'
             tol_exit = varargin{i+1};            
         case 'exitdir'
@@ -144,6 +148,8 @@ if (isempty(solfun))
     % Default solution function with GMRES, if user did not give something else
     solfun = @(i, XAX1,Ai,XAX2, XY1,yi,XY2, tol, sol_prev)loc_solve_default(XAX1, Ai, XAX2, XY1,yi,XY2, tol, sol_prev, local_iters, max_full_size);
 end;
+
+trunc_norm = trunc_norm(1:min(3,numel(trunc_norm)));
 
 % Block size
 K = numel(y);
@@ -487,7 +493,7 @@ while (swp<=nswp)
     % Check the previous residual
     res_prev = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
     df = [];    
-    if (res_prev>tol/sqrt(d)/resid_damp)||(i==dy_dim)
+    if ((res_prev>tol/sqrt(d)/resid_damp)||(i==dy_dim))
         % Solve the problem if needed
         if (all(cellfun('isempty', auxi)))
             sol = solfun(i, XAX1,Ai,XAX2, XY1,yi,XY2, tol/sqrt(d)/resid_damp, sol_prev);
@@ -569,9 +575,12 @@ while (swp<=nswp)
     sol = reshape(sol, rx(i)*n(i)*rx(i+1), K);
     for kj=1:K
         scales(kj) = norm(sol(:,kj));
+        if (scales(kj)==0)
+            scales(kj) = 1;
+        end;
         sol(:,kj) = sol(:,kj)/scales(kj);
     end;
-
+ 
     % Rebuild the shifted RHS, we need it to control the residual
     rhs_shf = zeros(locpos(K+1)-1, 1);
     for ki=1:K
@@ -599,19 +608,23 @@ while (swp<=nswp)
         sol = reshape(sol, rx(i)*n(i), rx(i+1)*K);
         [u,s,v]=svd(sol, 'econ');
         s = diag(s);
-        % Residual thresholding
-        sol_prev = u(:,1)*s(1)*v(:,1)';
-        sol_prev = reshape(sol_prev, rx(i)*n(i)*rx(i+1), K);
-        sol_prev = sol_prev*diag(scales);
-        resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
-        for rnew=2:numel(s)
-            if (resid>max(tol/sqrt(d), res_new*resid_damp))
-                sol_new_solid = u(:,rnew)*s(rnew)*v(:,rnew)';
-                sol_new_solid = reshape(sol_new_solid, rx(i)*n(i)*rx(i+1), K);
-                sol_prev = sol_prev+sol_new_solid*diag(scales);
-                resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
-            else
-                break;
+        if (strcmpi(trunc_norm, 'fro'))
+            rnew = my_chop2(s, norm(s)*tol/sqrt(d));
+        else
+            % Residual thresholding
+            sol_prev = u(:,1)*s(1)*v(:,1)';
+            sol_prev = reshape(sol_prev, rx(i)*n(i)*rx(i+1), K);
+            sol_prev = sol_prev*diag(scales);
+            resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
+            for rnew=2:numel(s)
+                if (resid>max(tol/sqrt(d), res_new*resid_damp))
+                    sol_new_solid = u(:,rnew)*s(rnew)*v(:,rnew)';
+                    sol_new_solid = reshape(sol_new_solid, rx(i)*n(i)*rx(i+1), K);
+                    sol_prev = sol_prev+sol_new_solid*diag(scales);
+                    resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
+                else
+                    break;
+                end;
             end;
         end;
         u = u(:,1:rnew);
@@ -698,20 +711,24 @@ while (swp<=nswp)
         sol = reshape(sol, K*rx(i), n(i)*rx(i+1));
         [u,s,v]=svd(sol, 'econ');
         s = diag(s);
-        % Residual thresholding
-        sol_prev = u(:,1)*s(1)*v(:,1)';
-        sol_prev = reshape(sol_prev, K, rx(i)*n(i)*rx(i+1));
-        sol_prev = sol_prev.'*diag(scales);
-        resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
-        for rnew=2:numel(s)
-            if (resid>max(tol/sqrt(d), res_new*resid_damp))
-                sol_new_solid = u(:,rnew)*s(rnew)*v(:,rnew)';
-                sol_new_solid = reshape(sol_new_solid, K, rx(i)*n(i)*rx(i+1));
-                sol_new_solid = sol_new_solid.';
-                sol_prev = sol_prev+sol_new_solid*diag(scales);
-                resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
-            else
-                break;
+        if (strcmpi(trunc_norm, 'fro'))
+            rnew = my_chop2(s, norm(s)*tol/sqrt(d));
+        else
+            % Residual thresholding
+            sol_prev = u(:,1)*s(1)*v(:,1)';
+            sol_prev = reshape(sol_prev, K, rx(i)*n(i)*rx(i+1));
+            sol_prev = sol_prev.'*diag(scales);
+            resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
+            for rnew=2:numel(s)
+                if (resid>max(tol/sqrt(d), res_new*resid_damp))
+                    sol_new_solid = u(:,rnew)*s(rnew)*v(:,rnew)';
+                    sol_new_solid = reshape(sol_new_solid, K, rx(i)*n(i)*rx(i+1));
+                    sol_new_solid = sol_new_solid.';
+                    sol_prev = sol_prev+sol_new_solid*diag(scales);
+                    resid = norm(block_local_matvec(sol_prev, XAX1, Ai, XAX2, rx(i),n(i),rx(i+1), rx(i),n(i),rx(i+1), raK)-rhs_shf)/norm(rhs_shf);
+                else
+                    break;
+                end;
             end;
         end;
         u = u(:,1:rnew);
@@ -875,8 +892,14 @@ while (swp<=nswp)
         if ((exitdir>0)&&(i>d))||((exitdir<0)&&(i<1))
             % Full backward-forward sweep done
             fprintf('==amen_block_solve== swp=%d, max_dx=%3.3e, max_res=%3.3e, max_rank=%d, max_z=%3.3e\n', swp, max_dx, max_res, max(rx(:)), max_z);
-            if (max_res<tol_exit)
-                break;
+            if (strcmpi(trunc_norm, 'fro'))
+                if (max_dx<tol_exit)
+                    break;
+                end;
+            else
+                if (max_res<tol_exit)
+                    break;
+                end;
             end;
             
             max_dx = 0;
