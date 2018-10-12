@@ -20,15 +20,19 @@ k(1)=1;
 k(2:n)=siz(1:n-1);
 k = cumprod(k);
 ind = idx-1;
-ind = ind*k;
-ind = ind+1;
 
-% ind = zeros(size(idx,1), 1);
-% shift=1;
-% for i=1:d
-%     ind=ind+shift*(idx(:,i)-1);
-%     shift = shift*siz(i);
-% end;
-% ind=ind+1;
+% Apply to blocks of the second dimension (useful for QTT)
+I = size(ind,1);
+ind = reshape(ind, I*n, []);
+ind = ind.';
+ind = reshape(ind, [], n);
+
+% Merging of multi-indices
+ind = ind*k;
+
+ind = reshape(ind, [], I);
+ind = ind.';
+
+ind = ind+1;
 
 end
