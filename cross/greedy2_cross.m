@@ -31,7 +31,7 @@ function [y,Jyl,Jyr,ilocl,ilocr,evalcnt]=greedy2_cross(n, fun, tol, varargin)
 %       o tol_exit - stopping difference between consecutive iterations [tol]
 %       o verb - verbosity level, 0-silent, 1-sweep info, 2-block info [1]
 %       o vec - whether fun can accept and return vectorized values [false]
-%       o aux - a tt_tensor for auxiliary funcrs contribution []
+%       o aux - set of tt_tensors for auxiliary funcrs contribution []
 %       o auxfun - an auxiliary function defined pointwise at the elements
 %           of aux []
 %       o 'locsearch' - an algorithm for the error pivoting in superblocks:
@@ -62,10 +62,11 @@ nswp = 20;
 tol_exit = tol;
 verb = 1;
 vec = false;
-aux = []; % Extra tt_tensor to pass into this cross
+aux = []; % Extra tt_tensors to pass into this cross
 auxfun = []; % the total function equals fun(ind)+auxfun(aux(ind)), since simple aux(ind) via tt_tensor/subsref suxx.
 % locsearch = 'als';
 locsearch = 'lot';
+y0 = [];
 
 i = 1;
 while (i<length(vars))
@@ -85,7 +86,9 @@ while (i<length(vars))
         case 'locsearch'
             locsearch = vars{i+1};               
         case 'xtru'
-            xtru = vars{i+1};               
+            xtru = vars{i+1};
+        case 'y0'
+            y0 = vars{i+1};
         otherwise
             warning('Option %s was not recognized', vars{i});
     end;
@@ -139,11 +142,15 @@ evalcnt = 0;
 
 % Start with some rand indices
 for i=1:d-1
-    ilocl{i+1} = rand(1,1)*ry(i)*n(i);
-    ilocl{i+1} = round(ilocl{i+1});
-    if (ilocl{i+1}==0)
-        ilocl{i+1} = 1;
-    end;
+    if (isempty(y0))
+        ilocl{i+1} = rand(1,1)*ry(i)*n(i);
+        ilocl{i+1} = round(ilocl{i+1});
+        if (ilocl{i+1}==0)
+            ilocl{i+1} = 1;
+        end;
+    else
+        ilocl{i+1} = y0(i);
+    end
     Jyl{i+1} = indexmerge(Jyl{i}, (1:n(i))');
     Jyl{i+1} = Jyl{i+1}(ilocl{i+1},:);
 end;
@@ -175,7 +182,7 @@ for i=d:-1:1
         
         if (~isempty(aux))
             for j=1:Raux
-                phiauxr{i,j} = reshape(aux{i,j}, raux(i)*n(i), raux(i+1,j));
+                phiauxr{i,j} = reshape(aux{i,j}, raux(i,j)*n(i), raux(i+1,j));
                 phiauxr{i,j} = phiauxr{i,j}*phiauxr{i+1,j};
                 phiauxr{i,j} = reshape(phiauxr{i,j}, raux(i,j), n(i)*ry(i+1));
                 phiauxr{i,j} = phiauxr{i,j}(:, ilocr{i});
