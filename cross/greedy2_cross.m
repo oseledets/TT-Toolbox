@@ -105,10 +105,10 @@ if (~isempty(aux))
         aux = core2cell(aux);
         phiauxl = cell(d+1,1); phiauxl{1}=1; phiauxl{d+1}=1;
         phiauxr = cell(d+1,1); phiauxr{1}=1; phiauxr{d+1}=1;
-        for i=2:d
-            phiauxl{i} = ones(1,raux(i));
-            phiauxr{i} = ones(raux(i),1);
-        end;
+%         for i=2:d
+%             phiauxl{i} = ones(1,raux(i));
+%             phiauxr{i} = ones(raux(i),1);
+%         end;
         Raux = 1;
     else
         Raux = size(aux, 2);
@@ -121,10 +121,10 @@ if (~isempty(aux))
             aux(:,j) = core2cell(aux{1,j});
             phiauxl{1,j}=1; phiauxl{d+1,j}=1;
             phiauxr{1,j}=1; phiauxr{d+1,j}=1;
-            for i=2:d
-                phiauxl{i,j} = ones(1,raux(i,j));
-                phiauxr{i,j} = ones(raux(i,j),1);
-            end;
+%             for i=2:d
+%                 phiauxl{i,j} = ones(1,raux(i,j));
+%                 phiauxr{i,j} = ones(raux(i,j),1);
+%             end;
         end;
     end;
 end;
@@ -153,6 +153,15 @@ for i=1:d-1
     end
     Jyl{i+1} = indexmerge(Jyl{i}, (1:n(i))');
     Jyl{i+1} = Jyl{i+1}(ilocl{i+1},:);
+    
+    if (~isempty(aux))
+        for j=1:Raux
+            craux1 = reshape(aux{i,j}, raux(i,j), n(i)*raux(i+1,j));
+            craux1 = phiauxl{i,j}*craux1;
+            craux1 = reshape(craux1, ry(i)*n(i), raux(i+1,j));            
+            phiauxl{i+1,j} = craux1(ilocl{i+1}, :);
+        end;
+    end;
 end;
 % Perform one sweep back-forth to fix the initial index
 for i=d:-1:1
