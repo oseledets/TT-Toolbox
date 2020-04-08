@@ -175,7 +175,7 @@ else
         end;
         rx = X.r;
         X = core2cell(X);
-    elseif (isa(Y,'tt_matrix'))
+    elseif (isa(X,'tt_matrix'))
         if (X.d~=d)||(any(X.n~=n))||(any(X.m~=k))
             error('Mismatching dimensions in x0');
         end;        
@@ -239,6 +239,12 @@ for i=1:d-1
         ZX(i+1) = leftreduce_vector(ZX(i), cr, X(i), rz(i),n(i),k(i),rz(i+1), 1,rx(i),rx(i+1));
     end;    
 end;
+
+% Normalize the last block for small error on good initial guess
+nrmr = norm(X{d}(:));
+if (nrmr>0)
+    X{d} = X{d}/nrmr;
+end
 
 i = d;
 dir = -1;
