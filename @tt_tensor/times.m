@@ -1,6 +1,6 @@
 function [a]=times(b,c,varargin)
 %A=B.*C
-%   [A]=TIMES(B,C) Hadamard product of two TT-tensors
+%[A]=TIMES(B,C) Hadamard product of two TT-tensors
 %
 %
 % TT-Toolbox 2.2, 2009-2012
@@ -13,7 +13,27 @@ function [a]=times(b,c,varargin)
 %ivan.oseledets@gmail.com
 %---------------------------
 
-if (nargin == 2 )
+if (nargin == 2)    
+    if b.d ~= c.d   % if shapes not the same, do broadcasting        
+        if b.d > c.d 
+            [c,b]=deal(b,c); % swap b and c, so that b is always the smaller one
+        end         
+        [ib, ~]=ismember(b.n, c.n);  %check whether every element of b.n is in c.n.       
+        if any(ib==0)
+           error('Mode sizes do not match, broadcasting failed.');
+        else
+            loc=zeros(b.d,1);
+            cn=c.n;
+            [~, loc(1)]=ismember(b.n(1), cn);        
+            for i=2:b.d 
+                cn(loc(i-1)) = -1; 
+                [~, loc(i)]=ismember(b.n(i), cn);                
+            end             
+        end  % here I didn't check whether loc is in ascending order...
+        
+        b=add_non_essential_dims(b, c.n, loc); % this makes b and c the same shape.
+    end     
+ 
     d=b.d; n=b.n; crb=b.core; crc=c.core; rb=b.r; rc=c.r;
     psb=b.ps; psc=c.ps;
     %Ranks are just a product
