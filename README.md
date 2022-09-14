@@ -42,4 +42,3 @@ New in Version 2.2
 * `dmrg_cross` method for black-box tensor approximation
 * Convolution in QTT-format
 
- TT-Toolbox 2.2. can be downloaded from http://spring.inm.ras.ru/osel
