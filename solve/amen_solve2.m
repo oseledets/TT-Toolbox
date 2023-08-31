@@ -397,7 +397,7 @@ for swp=1:nswp
             rr=qr(res2.', 0);
             Rs{i} = triu(rr(1:min(size(rr)), :)).';
             curnorm = norm(Rs{i}, 'fro');
-            if (Rs{i}>0)
+            if (curnorm>0)
                 Rs{i} = Rs{i}/curnorm;
             end;
         end;
