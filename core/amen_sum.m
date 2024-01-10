@@ -474,7 +474,9 @@ end;
 
 if (vectype==1)
     y = cell2core(tt_tensor, y);
-    z = cell2core(tt_tensor, z);
+    if (kickrank>0)
+        z = cell2core(tt_tensor, z);
+    end
 end;
 
 end
