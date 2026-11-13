@@ -26,7 +26,9 @@ function [tt] = tt_qtoepl(x, d)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 D = numel(d);
-tt = tt_qshiftstack(d);
+% tt_qshiftstack reverses all cores, including the order of axis blocks.
+% Reverse the input depths so the resulting blocks match d in sz below.
+tt = tt_qshiftstack(d(end:-1:1));
 
 sz=[];
 for K=1:D
