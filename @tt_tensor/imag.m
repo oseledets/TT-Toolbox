@@ -19,8 +19,8 @@ function [b]=imag(a)
 
 if (a.d==1)
     b=a;
-    b.core=real(b.core);
-    exit;
+    b.core=imag(b.core);
+    return
 end
 d=a.d;
 

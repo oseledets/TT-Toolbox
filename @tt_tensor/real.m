@@ -20,7 +20,7 @@ function [b]=real(a)
 if (a.d==1)
     b=a;
     b.core=real(b.core);
-    exit;
+    return
 end
 d=a.d;
 
