@@ -162,7 +162,7 @@ for nitout=1:maxout
         max_wrank = max(tt_ranks(w));
                 
         for i=1:j
-            H(i,j)=tt_dot(w, v{i});
+            H(i,j)=tt_dot(v{i}, w);
 %             w = tt_axpy2(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, min(eps_z/err_for_trunc, 0.5), max_rank);
             max_w_rank = max([max_w_rank; tt_ranks(w)]);
             w = tt_axpy2(0,1, w, log(abs(H(i,j))+1e-308), -1*sign(H(i,j)), v{i}, eps_z, max_rank);
